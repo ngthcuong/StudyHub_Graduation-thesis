@@ -318,12 +318,14 @@ describe("CertificateRegistry", function () {
           "ipfs://3"
         );
 
-      const student1Certs = await certificateRegistry.getStudentCertificates(
-        student1.address
-      );
-      const student2Certs = await certificateRegistry.getStudentCertificates(
-        student2.address
-      );
+      const student1Certs =
+        await certificateRegistry.getStudentCertificatesByStudent(
+          student1.address
+        );
+      const student2Certs =
+        await certificateRegistry.getStudentCertificatesByStudent(
+          student2.address
+        );
 
       expect(student1Certs.length).to.equal(2);
       expect(student2Certs.length).to.equal(1);
