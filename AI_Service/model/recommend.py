@@ -31,9 +31,9 @@ def recommend_learning_path(new_student: list):
     avg_time = similar_students['time_available'].mean()
 
     return {
-        "✅ Lộ trình học": recommended_path,
-        "✅ Bài học nên học tiếp": top_lessons,
-        "✅ Kỹ năng yếu cần cải thiện": skill_names,
-        "✅ Phong cách học hiệu quả": "Qua video, luyện tập thực hành",
-        "✅ Lịch học phù hợp": f"Mỗi tuần nên dành khoảng {round(avg_time)} giờ học"
+        "Lộ trình học": recommended_path,
+        "Bài học nên học tiếp": top_lessons,
+        "Kỹ năng yếu cần cải thiện": skill_names,
+        "Phong cách học hiệu quả": "Qua video, luyện tập thực hành",
+        "Lịch học phù hợp": f"Mỗi tuần nên dành khoảng {round(avg_time)} giờ học"
     }
