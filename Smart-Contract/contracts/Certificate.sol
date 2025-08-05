@@ -86,20 +86,6 @@ contract CertificateRegistry is AccessControl {
     }
 
     /**
-     * @notice Hàm lấy toàn bộ chứng chỉ (cho Admin)
-     * @return listCertificates mảng danh sách chứa toàn bộ chứng chỉ
-     */
-    function getAllCertificates() public view returns (Certificate[] memory) {
-        Certificate[] memory listCertificates = new Certificate[](
-            allCertificateHashes.length
-        );
-        for (uint i = 0; i < allCertificateHashes.length; i++) {
-            listCertificates[i] = certificates[allCertificateHashes[i]];
-        }
-        return listCertificates;
-    }
-
-    /**
      * @dev Hàm so sánh không phân biệt hoa hay thường
      */
     function _containsIgnoreCase(
@@ -149,74 +135,97 @@ contract CertificateRegistry is AccessControl {
      * @notice Hàm lấy toàn bộ chứng chỉ của người học
      * @param _student địa chỉ ví của người học
      * @return listCertificates mảng danh sách các chứng chỉ của người học
+     * @return total tổng số chứng chỉ tìm được
      */
     function getStudentCertificatesByStudent(
         address _student
-    ) public view returns (Certificate[] memory) {
+    )
+        public
+        view
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
         bytes32[] memory hashes = studentCertificates[_student];
-        Certificate[] memory listCertificates = new Certificate[](
-            hashes.length
-        );
-        for (uint i = 0; i < hashes.length; i++) {
+        total = hashes.length;
+
+        listCertificates = new Certificate[](total);
+        for (uint i = 0; i < total; i++) {
             listCertificates[i] = certificates[hashes[i]];
         }
-        return listCertificates;
+        // return (listCertificates, total);
     }
 
     /**
      * @notice Hàm tìm kiếm chứng chỉ theo hash
      * @param _student địa chỉ ví của người học
      * @param _certHash hash của chứng chỉ
-     * @return listCertificates mảng chứa các chứng chỉ
+     * @return certificate chứng chỉ tìm thấy
      */
     function getStudentCertificateByHash(
         address _student,
         bytes32 _certHash
-    ) public view returns (Certificate[] memory) {
-        bytes32[] memory hashes = studentCertificates[_student];
-        Certificate[] memory temp = new Certificate[](hashes.length);
-        uint count = 0;
+    ) public view returns (Certificate memory certificate) {
+        // Kiểm tra certificate có tồn tại không
+        require(
+            certificates[_certHash].certHash != 0,
+            "Certificate not found."
+        );
 
-        for (uint i = 0; i < hashes.length; i++) {
-            if (certificates[hashes[i]].certHash == _certHash) {
-                temp[count++] = certificates[hashes[i]];
-            }
-        }
+        // Kiểm tra certificate có thuộc về student này không
+        require(
+            certificates[_certHash].student == _student,
+            "Certificate does not belong to this student."
+        );
 
-        Certificate[] memory listCertificates = new Certificate[](count);
-        for (uint i = 0; i < count; i++) {
-            listCertificates[i] = temp[i];
-        }
-        return listCertificates;
+        return certificates[_certHash];
     }
 
     /**
      * @notice Hàm tìm kiếm chứng chỉ theo tên khóa học
      * @param _student địa chỉ ví của người học
      * @param _keyword tên khóa học
+     * @return listCertificates mảng danh sách các chứng chỉ của người học
+     * @return total tổng số chứng chỉ tìm được
      */
     function getStudentCertificateByCourseName(
         address _student,
         string memory _keyword
-    ) public view returns (Certificate[] memory) {
-        bytes32[] memory hashes = studentCertificates[_student];
-        Certificate[] memory temp = new Certificate[](hashes.length);
-        uint count = 0;
+    )
+        public
+        view
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
 
+        // Danh sách chứng chỉ của người học
+        bytes32[] memory hashes = studentCertificates[_student];
+
+        total = 0;
         for (uint i = 0; i < hashes.length; i++) {
             if (
                 _containsIgnoreCase(
                     certificates[hashes[i]].courseName,
                     _keyword
                 )
-            ) temp[count++] = certificates[hashes[i]];
+            ) {
+                total++;
+            }
         }
 
-        Certificate[] memory listCertificates = new Certificate[](count);
-        for (uint i = 0; i < count; i++) {
-            listCertificates[i] = temp[i];
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[hashes[i]].courseName,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[hashes[i]];
+            }
         }
-        return listCertificates;
+
+        // Trả về danh sách chứng chỉ và số lượng tìm được
+        // return (listCertificates, total);
     }
 
     /**
@@ -225,28 +234,36 @@ contract CertificateRegistry is AccessControl {
      * @param _fromDate từ ngày
      * @param _toDate đến ngày
      * @return listCertificates mảng danh sách chứa các chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
      */
     function getStudentCertificateByDate(
         address _student,
         uint _fromDate,
         uint _toDate
-    ) public view returns (Certificate[] memory) {
+    )
+        public
+        view
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
         bytes32[] memory hashes = studentCertificates[_student];
-        Certificate[] memory temp = new Certificate[](hashes.length);
-        uint count = 0;
 
+        total = 0;
         for (uint i = 0; i < hashes.length; i++) {
             uint issuedDate = certificates[hashes[i]].issuedDate;
             if (issuedDate >= _fromDate && issuedDate <= _toDate) {
-                temp[count++] = certificates[hashes[i]];
+                total++;
             }
         }
 
-        Certificate[] memory listCertificates = new Certificate[](count);
-        for (uint i = 0; i < count; i++) {
-            listCertificates[i] = temp[i];
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            uint issuedDate = certificates[hashes[i]].issuedDate;
+            if (issuedDate >= _fromDate && issuedDate <= _toDate) {
+                listCertificates[currentIndex++] = certificates[hashes[i]];
+            }
         }
-        return listCertificates;
+        // return (listCertificates, total);
     }
 
     /*
@@ -256,18 +273,42 @@ contract CertificateRegistry is AccessControl {
     */
 
     /**
+     * @notice Hàm lấy toàn bộ chứng chỉ (cho Admin)
+     * @return listCertificates mảng danh sách chứa toàn bộ chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
+     */
+    function getAllCertificates()
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        total = allCertificateHashes.length;
+        listCertificates = new Certificate[](total);
+
+        for (uint i = 0; i < total; i++) {
+            listCertificates[i] = certificates[allCertificateHashes[i]];
+        }
+        // return (listCertificates, total);
+    }
+
+    /**
      * @notice Hàm tìm kếm chứng chỉ theo tên khóa học
      * @param _keyword tên của khóa học
      * @return listCertificates mảng danh sách các chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
      */
     function adminSearchByCourse(
         string memory _keyword
-    ) public view onlyRole(ADMIN_ROLE) returns (Certificate[] memory) {
-        Certificate[] memory temp = new Certificate[](
-            allCertificateHashes.length
-        );
-        uint count = 0;
+    )
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
 
+        total = 0;
         for (uint i = 0; i < allCertificateHashes.length; i++) {
             if (
                 _containsIgnoreCase(
@@ -275,30 +316,45 @@ contract CertificateRegistry is AccessControl {
                     _keyword
                 )
             ) {
-                temp[count++] = certificates[allCertificateHashes[i]];
+                total++;
             }
         }
 
-        Certificate[] memory listCertificates = new Certificate[](count);
-        for (uint i = 0; i < count; i++) {
-            listCertificates[i] = temp[i];
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[allCertificateHashes[i]].courseName,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[
+                    allCertificateHashes[i]
+                ];
+            }
         }
-        return listCertificates;
+        // return (listCertificates, total);
     }
 
     /**
      * @notice Hàm tìm kiếm chứng chỉ theo tên người học
      * @param _keyword tên của người học
      * @return listCertificates mảng danh sách các chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
      */
     function adminSearchByStudentName(
         string memory _keyword
-    ) public view onlyRole(ADMIN_ROLE) returns (Certificate[] memory) {
-        Certificate[] memory temp = new Certificate[](
-            allCertificateHashes.length
-        );
-        uint count = 0;
+    )
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
 
+        total = 0;
+        // Tính tổng số khóa học tìm thấy
         for (uint i = 0; i < allCertificateHashes.length; i++) {
             if (
                 _containsIgnoreCase(
@@ -306,15 +362,25 @@ contract CertificateRegistry is AccessControl {
                     _keyword
                 )
             ) {
-                temp[count++] = certificates[allCertificateHashes[i]];
+                total++;
             }
         }
 
-        Certificate[] memory listCertificates = new Certificate[](count);
-        for (uint i = 0; i < count; i++) {
-            listCertificates[i] = temp[i];
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[allCertificateHashes[i]].studentName,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[
+                    allCertificateHashes[i]
+                ];
+            }
         }
-        return listCertificates;
+        // return (listCertificates, total);
     }
 
     /**
@@ -322,27 +388,35 @@ contract CertificateRegistry is AccessControl {
      * @param _fromDate từ ngày
      * @param _toDate đến ngày
      * @return listCertificates mảng danh sách chứa các chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
      */
     function adminSearchByDate(
         uint _fromDate,
         uint _toDate
-    ) public view onlyRole(ADMIN_ROLE) returns (Certificate[] memory) {
-        Certificate[] memory temp = new Certificate[](
-            allCertificateHashes.length
-        );
-        uint count = 0;
-
+    )
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        total = 0;
         for (uint i = 0; i < allCertificateHashes.length; i++) {
             uint issuedDate = certificates[allCertificateHashes[i]].issuedDate;
             if (issuedDate >= _fromDate && issuedDate <= _toDate) {
-                temp[count++] = certificates[allCertificateHashes[i]];
+                total++;
             }
         }
 
-        Certificate[] memory listCertificates = new Certificate[](count);
-        for (uint i = 0; i < count; i++) {
-            listCertificates[i] = temp[i];
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            uint issuedDate = certificates[allCertificateHashes[i]].issuedDate;
+            if (issuedDate >= _fromDate && issuedDate <= _toDate) {
+                listCertificates[currentIndex++] = certificates[
+                    allCertificateHashes[i]
+                ];
+            }
         }
-        return listCertificates;
+        // return (listCertificates, total);
     }
 }

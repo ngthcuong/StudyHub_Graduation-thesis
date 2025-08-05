@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test",
+    "test:coverage": "hardhat coverage",
+    "test:deployment": "hardhat test test/Certificate.deployment.test.js",
+    "test:issuing": "hardhat test test/Certificate.issuing.test.js",
+    "test:student": "hardhat test test/Certificate.student-search.test.js",
+    "test:admin": "hardhat test test/Certificate.admin-search.test.js",
+    "test:find": "hardhat test test/Certificate.basic-queries.test.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +21,7 @@
     "hardhat": "^2.26.1"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.4.0"
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.1"
   }
 }
