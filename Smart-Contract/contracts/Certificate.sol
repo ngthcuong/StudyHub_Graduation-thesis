@@ -212,23 +212,30 @@ contract CertificateRegistry is AccessControl {
 
         // Danh sách chứng chỉ của người học
         bytes32[] memory hashes = studentCertificates[_student];
-        Certificate[] memory matchedHashes = new Certificate[](hashes.length);
-        total = 0;
 
-        // Duyệt qua từng chứng chỉ để tìm khóa học phù hợp
+        total = 0;
         for (uint i = 0; i < hashes.length; i++) {
             if (
                 _containsIgnoreCase(
                     certificates[hashes[i]].courseName,
                     _keyword
                 )
-            ) matchedHashes[total++] = certificates[hashes[i]];
+            ) {
+                total++;
+            }
         }
 
-        // Copy các chứng chỉ từ matchedHashes vào listCertificates
         listCertificates = new Certificate[](total);
-        for (uint i = 0; i < total; i++) {
-            listCertificates[i] = matchedHashes[i];
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[hashes[i]].courseName,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[hashes[i]];
+            }
         }
 
         // Trả về danh sách chứng chỉ và số lượng tìm được
@@ -253,19 +260,22 @@ contract CertificateRegistry is AccessControl {
         returns (Certificate[] memory listCertificates, uint256 total)
     {
         bytes32[] memory hashes = studentCertificates[_student];
-        Certificate[] memory matchedHashes = new Certificate[](hashes.length);
-        total = 0;
 
+        total = 0;
         for (uint i = 0; i < hashes.length; i++) {
             uint issuedDate = certificates[hashes[i]].issuedDate;
             if (issuedDate >= _fromDate && issuedDate <= _toDate) {
-                matchedHashes[total++] = certificates[hashes[i]];
+                total++;
             }
         }
 
         listCertificates = new Certificate[](total);
-        for (uint i = 0; i < total; i++) {
-            listCertificates[i] = matchedHashes[i];
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            uint issuedDate = certificates[hashes[i]].issuedDate;
+            if (issuedDate >= _fromDate && issuedDate <= _toDate) {
+                listCertificates[currentIndex++] = certificates[hashes[i]];
+            }
         }
         // return (listCertificates, total);
     }
