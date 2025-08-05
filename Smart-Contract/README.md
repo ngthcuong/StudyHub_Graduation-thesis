@@ -12,6 +12,10 @@ npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Cetificate.js
 ```
 
+# 0: Clean artifacts
+
+npx hardhat clean
+
 # 1. Compile để đảm bảo contract OK
 
 npx hardhat compile
