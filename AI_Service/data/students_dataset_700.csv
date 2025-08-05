@@ -1,0 +1,701 @@
+level,age,goal,learning_style,time_available,vocab_score,grammar_score,listening_score,speaking_score,reading_score,writing_score,recommended_path,next_focus,top_3_recommendations
+B2,22,Phỏng vấn,App,1,76,69,62,84,70,66,IELTS prep,Nói,Vocabulary: Travel; Listening: Map Labelling; Grammar: Present Perfect
+A1,29,Giao tiếp,Nghe,6,43,22,26,27,31,34,Beginner path,Từ vựng,Listening: Map Labelling; Grammar: Past Simple; Writing: Email Format
+A1,35,IELTS 6.5,Ví dụ,9,39,23,42,21,0,18,Beginner path,Từ vựng,Vocabulary: Work; Vocabulary: Travel; Reading: News Articles
+C1,25,Giao tiếp,Nghe,5,91,77,100,93,91,97,Beginner path,Từ vựng,Speaking: Daily Routine; Grammar: Present Perfect; Listening: Conversations
+B1,23,IELTS 6.5,Đọc,10,62,49,44,67,66,69,General English,Viết,Listening: Conversations; Speaking: Daily Routine; Vocabulary: Travel
+C1,31,IELTS 6.5,Nghe,11,91,97,86,100,92,81,General English,Nghe,Speaking: Daily Routine; Writing: Email Format; Vocabulary: Work
+B2,17,Phỏng vấn,Nghe,15,74,80,78,65,81,78,Conversation intensive,Ngữ pháp,Speaking: Introductions; Writing: Email Format; Listening: Map Labelling
+A1,25,Phỏng vấn,Ví dụ,12,18,23,11,18,40,16,Beginner path,Từ vựng,Reading: Short Stories; Grammar: Present Perfect; Writing: Paragraph Structure
+A2,29,Giao tiếp,Ví dụ,10,57,46,45,24,36,47,Conversation intensive,Nói,Vocabulary: Travel; Grammar: Present Perfect; Writing: Paragraph Structure
+B2,20,IELTS 6.5,App,11,89,79,98,75,69,76,IELTS prep,Nói,Grammar: Past Simple; Listening: Conversations; Vocabulary: Work
+A1,17,Phỏng vấn,Ví dụ,9,35,26,36,54,35,27,Conversation intensive,Ngữ pháp,Vocabulary: Work; Grammar: Past Simple; Writing: Email Format
+B1,34,Phỏng vấn,Nghe,9,61,67,52,58,63,49,Beginner path,Ngữ pháp,Speaking: Introductions; Listening: Map Labelling; Reading: News Articles
+A2,22,Phỏng vấn,Đọc,13,41,58,42,60,28,38,General English,Ngữ pháp,Writing: Email Format; Vocabulary: Travel; Listening: Conversations
+B2,27,IELTS 6.5,App,3,73,86,78,79,59,75,Conversation intensive,Nói,Listening: Map Labelling; Grammar: Past Simple; Speaking: Daily Routine
+C1,22,Giao tiếp,App,6,85,94,96,92,89,92,General English,Nói,Speaking: Daily Routine; Reading: News Articles; Grammar: Past Simple
+A2,32,Giao tiếp,Đọc,2,41,61,51,47,37,49,Beginner path,Viết,Speaking: Introductions; Grammar: Present Perfect; Listening: Map Labelling
+A1,16,Giao tiếp,App,3,27,32,30,21,17,28,Conversation intensive,Nghe,Reading: News Articles; Speaking: Introductions; Grammar: Present Perfect
+A1,22,Giao tiếp,App,6,13,26,43,32,26,44,General English,Ngữ pháp,Listening: Conversations; Writing: Email Format; Reading: News Articles
+A2,28,Giao tiếp,Đọc,4,50,59,36,49,43,49,Conversation intensive,Nói,Speaking: Daily Routine; Reading: News Articles; Vocabulary: Travel
+C1,34,Giao tiếp,Đọc,3,95,82,90,80,100,93,General English,Nghe,Grammar: Present Perfect; Grammar: Past Simple; Listening: Map Labelling
+A2,20,Giao tiếp,Ví dụ,2,55,44,48,31,46,41,IELTS prep,Nghe,Listening: Conversations; Vocabulary: Work; Reading: News Articles
+B2,32,IELTS 6.5,Ví dụ,1,78,77,75,77,72,61,General English,Nói,Grammar: Past Simple; Listening: Map Labelling; Vocabulary: Work
+B2,21,Giao tiếp,Ví dụ,14,85,90,76,64,63,77,General English,Nói,Reading: Short Stories; Vocabulary: Travel; Speaking: Daily Routine
+A2,30,IELTS 6.5,Nghe,15,57,47,56,44,20,50,Beginner path,Nghe,Writing: Paragraph Structure; Speaking: Introductions; Writing: Email Format
+A1,26,IELTS 6.5,Nghe,8,18,40,15,24,34,24,IELTS prep,Viết,Grammar: Past Simple; Vocabulary: Work; Listening: Conversations
+C1,32,Giao tiếp,Nghe,8,94,89,94,92,100,90,General English,Đọc,Reading: News Articles; Reading: Short Stories; Speaking: Daily Routine
+C1,26,Phỏng vấn,App,9,92,75,96,82,92,93,General English,Nghe,Writing: Paragraph Structure; Grammar: Past Simple; Vocabulary: Travel
+B2,17,Giao tiếp,App,5,80,82,74,73,75,58,Beginner path,Nói,Listening: Conversations; Vocabulary: Travel; Grammar: Past Simple
+A2,15,Giao tiếp,Đọc,3,53,45,48,61,51,53,General English,Nghe,Grammar: Past Simple; Grammar: Present Perfect; Vocabulary: Travel
+B2,27,Giao tiếp,App,14,68,76,69,68,76,84,Conversation intensive,Nghe,Writing: Paragraph Structure; Vocabulary: Travel; Vocabulary: Work
+B2,28,IELTS 6.5,Ví dụ,3,73,72,78,63,72,71,Beginner path,Ngữ pháp,Reading: News Articles; Reading: Short Stories; Writing: Paragraph Structure
+A2,19,IELTS 6.5,Ví dụ,6,22,36,40,36,41,57,General English,Nghe,Writing: Email Format; Grammar: Past Simple; Speaking: Introductions
+A1,23,Phỏng vấn,App,11,24,45,34,15,25,30,General English,Nghe,Listening: Map Labelling; Vocabulary: Travel; Vocabulary: Work
+C1,22,Phỏng vấn,App,1,75,100,95,79,100,85,Conversation intensive,Từ vựng,Speaking: Daily Routine; Listening: Conversations; Writing: Email Format
+B2,17,Phỏng vấn,Nghe,14,70,60,77,77,71,72,Beginner path,Đọc,Writing: Paragraph Structure; Listening: Conversations; Vocabulary: Work
+C1,33,IELTS 6.5,Nghe,3,100,97,83,79,90,96,Conversation intensive,Nói,Reading: Short Stories; Speaking: Introductions; Grammar: Present Perfect
+B1,15,IELTS 6.5,Nghe,1,55,48,56,67,67,67,General English,Ngữ pháp,Listening: Conversations; Grammar: Past Simple; Grammar: Present Perfect
+A2,29,Giao tiếp,App,11,39,51,38,46,58,40,Beginner path,Nói,Grammar: Past Simple; Speaking: Daily Routine; Writing: Email Format
+A2,32,IELTS 6.5,Nghe,1,44,47,46,46,48,26,Conversation intensive,Ngữ pháp,Reading: News Articles; Reading: Short Stories; Vocabulary: Work
+B1,26,Phỏng vấn,App,13,71,75,61,52,44,65,Conversation intensive,Nói,Speaking: Introductions; Grammar: Present Perfect; Reading: Short Stories
+B1,18,Giao tiếp,App,14,54,63,65,67,56,69,Beginner path,Viết,Speaking: Daily Routine; Speaking: Introductions; Writing: Paragraph Structure
+A2,22,Phỏng vấn,App,10,43,49,28,47,26,56,Beginner path,Đọc,Listening: Conversations; Grammar: Present Perfect; Grammar: Past Simple
+A2,17,Phỏng vấn,Nghe,1,31,45,56,47,72,36,IELTS prep,Ngữ pháp,Listening: Conversations; Grammar: Present Perfect; Reading: Short Stories
+A2,35,IELTS 6.5,App,7,54,64,46,42,57,62,Conversation intensive,Nghe,Reading: Short Stories; Listening: Conversations; Vocabulary: Work
+B1,30,Phỏng vấn,App,14,50,61,78,47,67,57,Beginner path,Từ vựng,Speaking: Introductions; Listening: Conversations; Writing: Email Format
+B1,28,Phỏng vấn,Nghe,1,60,65,57,48,71,58,IELTS prep,Nghe,Listening: Conversations; Vocabulary: Travel; Reading: Short Stories
+B1,19,IELTS 6.5,Đọc,6,54,47,52,54,48,60,IELTS prep,Viết,Vocabulary: Travel; Speaking: Daily Routine; Grammar: Present Perfect
+B1,25,Giao tiếp,Nghe,13,73,90,45,58,50,51,Beginner path,Nói,Listening: Map Labelling; Vocabulary: Work; Grammar: Past Simple
+A1,34,Phỏng vấn,Nghe,9,19,42,27,25,31,41,General English,Nghe,Speaking: Introductions; Speaking: Daily Routine; Reading: News Articles
+B2,27,Phỏng vấn,Nghe,7,69,81,53,74,62,80,Beginner path,Nghe,Reading: Short Stories; Writing: Paragraph Structure; Listening: Map Labelling
+A1,23,Giao tiếp,App,6,17,47,21,42,39,25,Conversation intensive,Từ vựng,Listening: Map Labelling; Listening: Conversations; Grammar: Past Simple
+B1,24,IELTS 6.5,Đọc,3,65,52,49,57,52,49,Conversation intensive,Từ vựng,Vocabulary: Travel; Reading: News Articles; Grammar: Past Simple
+A2,33,Giao tiếp,App,14,37,41,49,65,37,68,General English,Nghe,Grammar: Past Simple; Writing: Paragraph Structure; Listening: Map Labelling
+B2,31,Phỏng vấn,Đọc,1,76,69,79,69,78,55,IELTS prep,Nghe,Speaking: Introductions; Speaking: Daily Routine; Reading: News Articles
+B1,24,IELTS 6.5,Nghe,3,73,51,49,60,72,58,Beginner path,Ngữ pháp,Reading: News Articles; Speaking: Introductions; Reading: Short Stories
+B1,32,IELTS 6.5,Đọc,11,49,62,58,38,63,47,Beginner path,Nghe,Speaking: Daily Routine; Vocabulary: Work; Grammar: Present Perfect
+B2,26,Phỏng vấn,Ví dụ,4,86,61,69,91,78,97,IELTS prep,Nghe,Grammar: Past Simple; Listening: Map Labelling; Vocabulary: Work
+B2,26,Giao tiếp,App,10,67,61,77,78,79,79,Beginner path,Viết,Speaking: Daily Routine; Reading: News Articles; Writing: Email Format
+B1,19,IELTS 6.5,Ví dụ,7,76,47,58,57,60,66,Beginner path,Ngữ pháp,Vocabulary: Work; Grammar: Present Perfect; Vocabulary: Travel
+A1,26,IELTS 6.5,Ví dụ,11,17,33,34,22,28,19,Beginner path,Viết,Vocabulary: Travel; Speaking: Daily Routine; Listening: Conversations
+B2,25,Giao tiếp,Ví dụ,2,74,79,90,79,74,85,Beginner path,Từ vựng,Writing: Paragraph Structure; Vocabulary: Travel; Reading: News Articles
+A1,19,Giao tiếp,Đọc,5,46,41,39,34,34,20,Beginner path,Đọc,Grammar: Past Simple; Speaking: Introductions; Speaking: Daily Routine
+B1,24,Giao tiếp,App,6,40,67,58,90,66,61,IELTS prep,Viết,Speaking: Introductions; Listening: Map Labelling; Reading: Short Stories
+B1,32,Giao tiếp,Nghe,4,75,65,63,48,37,56,Conversation intensive,Ngữ pháp,Reading: Short Stories; Grammar: Present Perfect; Listening: Map Labelling
+B2,33,Giao tiếp,Ví dụ,14,93,74,81,95,78,76,General English,Từ vựng,Vocabulary: Travel; Listening: Conversations; Writing: Email Format
+A2,15,Phỏng vấn,App,15,35,47,42,31,58,45,Conversation intensive,Nghe,Writing: Email Format; Vocabulary: Work; Reading: Short Stories
+B2,27,Phỏng vấn,Nghe,11,58,85,52,87,68,58,IELTS prep,Đọc,Grammar: Present Perfect; Listening: Map Labelling; Reading: Short Stories
+A1,22,Giao tiếp,Ví dụ,12,44,29,46,34,39,28,General English,Viết,Speaking: Daily Routine; Vocabulary: Travel; Grammar: Present Perfect
+A2,34,Phỏng vấn,Đọc,11,34,39,40,49,39,50,IELTS prep,Từ vựng,Grammar: Past Simple; Writing: Email Format; Writing: Paragraph Structure
+A2,16,IELTS 6.5,Nghe,8,40,39,46,40,46,44,IELTS prep,Đọc,Writing: Paragraph Structure; Listening: Conversations; Listening: Map Labelling
+B1,20,Giao tiếp,Đọc,11,45,60,70,65,74,55,Conversation intensive,Viết,Vocabulary: Work; Writing: Paragraph Structure; Speaking: Daily Routine
+B1,25,Giao tiếp,Đọc,9,74,67,49,63,51,76,Conversation intensive,Nói,Listening: Conversations; Writing: Email Format; Reading: News Articles
+C1,31,Phỏng vấn,Ví dụ,9,97,94,98,76,78,100,Conversation intensive,Viết,Grammar: Past Simple; Listening: Map Labelling; Vocabulary: Work
+C1,25,IELTS 6.5,Ví dụ,6,94,92,79,80,87,75,General English,Nghe,Vocabulary: Travel; Writing: Email Format; Grammar: Present Perfect
+A2,15,Phỏng vấn,Đọc,13,38,34,59,69,29,60,Conversation intensive,Nghe,Vocabulary: Travel; Speaking: Daily Routine; Reading: News Articles
+A1,26,IELTS 6.5,Ví dụ,11,0,48,25,26,38,17,Conversation intensive,Nói,Grammar: Present Perfect; Listening: Conversations; Writing: Email Format
+C1,35,Phỏng vấn,Ví dụ,9,93,92,75,80,85,84,IELTS prep,Nghe,Grammar: Past Simple; Reading: News Articles; Writing: Paragraph Structure
+B2,25,Phỏng vấn,Đọc,13,69,70,73,88,72,73,Beginner path,Nói,Speaking: Daily Routine; Grammar: Present Perfect; Vocabulary: Travel
+A2,27,Giao tiếp,Nghe,8,33,51,44,45,55,63,Beginner path,Viết,Grammar: Past Simple; Vocabulary: Travel; Speaking: Introductions
+A2,18,IELTS 6.5,Ví dụ,6,22,47,36,60,26,43,IELTS prep,Ngữ pháp,Vocabulary: Travel; Grammar: Present Perfect; Listening: Map Labelling
+A1,16,Giao tiếp,Ví dụ,4,29,36,21,49,19,31,IELTS prep,Viết,Reading: Short Stories; Grammar: Present Perfect; Listening: Conversations
+B1,17,Giao tiếp,Ví dụ,3,77,53,91,75,63,68,Beginner path,Nói,Speaking: Introductions; Vocabulary: Travel; Grammar: Present Perfect
+A1,31,IELTS 6.5,Ví dụ,6,34,21,29,24,38,18,General English,Nói,Reading: News Articles; Vocabulary: Work; Grammar: Present Perfect
+C1,29,Giao tiếp,Đọc,8,83,99,87,83,100,94,IELTS prep,Viết,Speaking: Daily Routine; Grammar: Past Simple; Grammar: Present Perfect
+A2,25,Phỏng vấn,Ví dụ,1,50,40,42,62,49,37,Conversation intensive,Đọc,Listening: Conversations; Writing: Paragraph Structure; Grammar: Past Simple
+A1,33,Phỏng vấn,App,2,13,29,39,37,26,17,Beginner path,Từ vựng,Speaking: Daily Routine; Vocabulary: Work; Speaking: Introductions
+C1,25,Giao tiếp,App,6,85,84,69,97,100,79,Beginner path,Ngữ pháp,Vocabulary: Work; Speaking: Introductions; Listening: Map Labelling
+A1,19,Phỏng vấn,Nghe,3,32,33,38,37,34,31,Conversation intensive,Viết,Reading: News Articles; Writing: Email Format; Vocabulary: Work
+C1,19,Phỏng vấn,Ví dụ,12,100,81,93,87,100,96,IELTS prep,Đọc,Reading: Short Stories; Listening: Map Labelling; Listening: Conversations
+C1,30,Phỏng vấn,App,9,92,95,75,100,64,85,Conversation intensive,Đọc,Reading: News Articles; Grammar: Past Simple; Listening: Map Labelling
+B1,20,IELTS 6.5,App,12,43,50,51,54,52,68,General English,Ngữ pháp,Reading: Short Stories; Writing: Paragraph Structure; Grammar: Past Simple
+B1,29,Giao tiếp,Đọc,12,78,64,60,61,74,59,Beginner path,Viết,Speaking: Introductions; Listening: Map Labelling; Reading: News Articles
+C1,27,Giao tiếp,Đọc,8,91,99,98,79,87,83,Beginner path,Đọc,Writing: Email Format; Vocabulary: Work; Reading: Short Stories
+B2,26,Phỏng vấn,Ví dụ,9,91,73,80,79,80,78,IELTS prep,Nói,Grammar: Past Simple; Listening: Conversations; Writing: Paragraph Structure
+B2,19,Giao tiếp,Ví dụ,13,70,84,82,76,75,43,Beginner path,Nói,Reading: News Articles; Listening: Conversations; Speaking: Daily Routine
+A1,16,IELTS 6.5,Ví dụ,8,45,28,19,23,22,25,IELTS prep,Nghe,Writing: Paragraph Structure; Speaking: Daily Routine; Writing: Email Format
+B2,28,Phỏng vấn,App,11,78,68,66,76,77,77,Conversation intensive,Viết,Speaking: Introductions; Listening: Map Labelling; Grammar: Past Simple
+C1,30,IELTS 6.5,Đọc,5,98,98,90,75,95,89,General English,Nói,Vocabulary: Travel; Listening: Map Labelling; Reading: News Articles
+C1,18,IELTS 6.5,Ví dụ,8,81,84,80,100,93,100,IELTS prep,Ngữ pháp,Speaking: Introductions; Grammar: Present Perfect; Speaking: Daily Routine
+B2,26,IELTS 6.5,Nghe,2,82,70,69,75,80,68,Beginner path,Viết,Writing: Paragraph Structure; Writing: Email Format; Reading: News Articles
+B2,34,IELTS 6.5,Ví dụ,11,81,64,81,60,57,77,General English,Đọc,Vocabulary: Work; Writing: Paragraph Structure; Reading: News Articles
+A1,17,Phỏng vấn,Đọc,12,26,49,31,28,43,32,Beginner path,Từ vựng,Writing: Paragraph Structure; Speaking: Introductions; Listening: Map Labelling
+C1,29,Phỏng vấn,App,2,100,89,98,83,93,85,Conversation intensive,Nói,Listening: Conversations; Vocabulary: Work; Grammar: Present Perfect
+B2,21,Phỏng vấn,App,3,80,71,86,71,75,76,General English,Từ vựng,Speaking: Introductions; Grammar: Present Perfect; Vocabulary: Work
+B2,35,Giao tiếp,Ví dụ,14,72,66,62,79,72,70,IELTS prep,Đọc,Listening: Conversations; Listening: Map Labelling; Vocabulary: Travel
+B1,26,Giao tiếp,Đọc,6,44,63,84,44,60,53,IELTS prep,Nghe,Grammar: Present Perfect; Grammar: Past Simple; Vocabulary: Travel
+B2,17,IELTS 6.5,Đọc,11,74,80,82,58,81,79,Beginner path,Từ vựng,Listening: Map Labelling; Speaking: Introductions; Speaking: Daily Routine
+B2,34,Phỏng vấn,App,15,64,76,65,63,77,82,General English,Nghe,Listening: Map Labelling; Grammar: Present Perfect; Reading: News Articles
+A2,26,Giao tiếp,Ví dụ,8,45,37,57,34,38,64,General English,Ngữ pháp,Writing: Email Format; Vocabulary: Travel; Grammar: Past Simple
+B2,26,Phỏng vấn,Đọc,1,61,79,83,67,78,78,IELTS prep,Nói,Grammar: Past Simple; Listening: Map Labelling; Writing: Email Format
+C1,21,IELTS 6.5,Nghe,5,81,78,85,100,91,80,IELTS prep,Từ vựng,Speaking: Introductions; Listening: Map Labelling; Writing: Paragraph Structure
+A2,19,Phỏng vấn,Ví dụ,7,41,41,35,50,51,34,Conversation intensive,Ngữ pháp,Vocabulary: Work; Grammar: Past Simple; Reading: Short Stories
+B2,20,Giao tiếp,App,11,56,71,67,78,85,91,General English,Ngữ pháp,Speaking: Introductions; Grammar: Present Perfect; Reading: News Articles
+A1,26,Phỏng vấn,Ví dụ,14,26,24,35,24,21,34,Beginner path,Nói,Vocabulary: Work; Speaking: Daily Routine; Grammar: Past Simple
+A1,23,IELTS 6.5,App,6,14,30,31,17,23,16,General English,Viết,Writing: Email Format; Writing: Paragraph Structure; Vocabulary: Travel
+A1,25,IELTS 6.5,Nghe,12,32,18,28,15,17,45,Beginner path,Đọc,Reading: Short Stories; Listening: Map Labelling; Grammar: Past Simple
+A2,30,IELTS 6.5,App,10,47,43,31,35,50,28,IELTS prep,Đọc,Grammar: Past Simple; Grammar: Present Perfect; Speaking: Introductions
+B1,23,Giao tiếp,App,9,62,71,42,53,68,65,Beginner path,Nói,Grammar: Past Simple; Grammar: Present Perfect; Speaking: Daily Routine
+B1,25,Giao tiếp,Nghe,8,69,39,62,66,44,64,General English,Đọc,Vocabulary: Travel; Listening: Map Labelling; Writing: Paragraph Structure
+A2,30,IELTS 6.5,Nghe,1,43,50,46,54,51,57,General English,Nghe,Speaking: Daily Routine; Listening: Map Labelling; Reading: Short Stories
+A1,22,Phỏng vấn,Ví dụ,6,41,12,33,38,22,28,General English,Đọc,Writing: Email Format; Grammar: Past Simple; Listening: Map Labelling
+A2,21,IELTS 6.5,Ví dụ,7,23,52,47,40,55,43,Beginner path,Đọc,Writing: Email Format; Speaking: Daily Routine; Reading: News Articles
+B2,31,Giao tiếp,App,7,73,86,80,62,56,68,Conversation intensive,Viết,Listening: Conversations; Vocabulary: Travel; Reading: Short Stories
+A1,29,IELTS 6.5,App,2,41,34,22,23,27,18,Conversation intensive,Nghe,Vocabulary: Travel; Listening: Conversations; Speaking: Introductions
+B2,22,Giao tiếp,Nghe,12,85,64,83,87,97,58,Conversation intensive,Nói,Grammar: Present Perfect; Vocabulary: Travel; Writing: Paragraph Structure
+B1,24,Phỏng vấn,Nghe,4,63,49,61,68,62,63,Conversation intensive,Nói,Grammar: Past Simple; Listening: Conversations; Speaking: Daily Routine
+A2,17,Giao tiếp,Ví dụ,5,43,38,38,40,39,30,IELTS prep,Đọc,Writing: Paragraph Structure; Vocabulary: Work; Reading: News Articles
+C1,19,Giao tiếp,Nghe,9,72,86,100,95,68,70,Beginner path,Nói,Vocabulary: Work; Grammar: Past Simple; Grammar: Present Perfect
+A2,17,Phỏng vấn,App,13,36,44,34,39,48,53,Beginner path,Từ vựng,Vocabulary: Travel; Reading: News Articles; Grammar: Past Simple
+A2,19,Giao tiếp,App,9,62,34,50,49,61,40,IELTS prep,Nghe,Speaking: Introductions; Speaking: Daily Routine; Vocabulary: Travel
+A2,27,Giao tiếp,App,6,45,42,47,40,33,36,Conversation intensive,Nghe,Vocabulary: Work; Listening: Map Labelling; Grammar: Present Perfect
+B2,18,IELTS 6.5,App,9,68,87,85,71,80,85,IELTS prep,Đọc,Grammar: Past Simple; Vocabulary: Work; Listening: Map Labelling
+B2,15,Phỏng vấn,Đọc,2,88,57,71,55,100,72,General English,Nghe,Vocabulary: Work; Listening: Map Labelling; Speaking: Daily Routine
+A1,28,IELTS 6.5,Đọc,5,40,21,23,19,43,42,IELTS prep,Từ vựng,Writing: Paragraph Structure; Vocabulary: Travel; Speaking: Introductions
+C1,35,Phỏng vấn,Nghe,1,94,93,88,98,73,86,IELTS prep,Nói,Vocabulary: Travel; Vocabulary: Work; Writing: Paragraph Structure
+A1,26,Giao tiếp,Đọc,15,38,36,25,25,29,16,Conversation intensive,Nghe,Grammar: Past Simple; Writing: Paragraph Structure; Grammar: Present Perfect
+B1,23,Giao tiếp,Đọc,7,69,63,51,68,48,56,Conversation intensive,Ngữ pháp,Reading: Short Stories; Writing: Paragraph Structure; Writing: Email Format
+B2,34,Phỏng vấn,Nghe,8,77,83,72,90,78,86,General English,Ngữ pháp,Reading: News Articles; Grammar: Present Perfect; Listening: Conversations
+A1,34,Phỏng vấn,Nghe,9,29,12,27,22,13,13,IELTS prep,Viết,Listening: Map Labelling; Vocabulary: Work; Grammar: Past Simple
+A1,29,Giao tiếp,Ví dụ,12,23,19,25,30,24,24,Beginner path,Ngữ pháp,Speaking: Daily Routine; Vocabulary: Work; Listening: Conversations
+B2,17,Giao tiếp,Ví dụ,3,67,76,88,56,86,85,Beginner path,Từ vựng,Listening: Map Labelling; Vocabulary: Travel; Grammar: Past Simple
+B1,30,IELTS 6.5,App,5,49,58,66,44,67,49,Conversation intensive,Nói,Listening: Map Labelling; Vocabulary: Travel; Writing: Paragraph Structure
+A2,19,Giao tiếp,Nghe,1,41,32,45,46,51,49,Beginner path,Ngữ pháp,Writing: Email Format; Reading: Short Stories; Speaking: Introductions
+B1,33,Phỏng vấn,Đọc,5,63,71,65,50,52,67,Beginner path,Viết,Grammar: Past Simple; Writing: Paragraph Structure; Reading: News Articles
+C1,28,Giao tiếp,Ví dụ,6,83,90,94,84,100,86,IELTS prep,Ngữ pháp,Speaking: Daily Routine; Writing: Email Format; Grammar: Present Perfect
+B1,19,Phỏng vấn,Đọc,8,64,68,75,60,43,54,General English,Đọc,Vocabulary: Travel; Vocabulary: Work; Speaking: Daily Routine
+B1,26,Phỏng vấn,Ví dụ,15,63,66,65,58,54,61,Conversation intensive,Nghe,Writing: Paragraph Structure; Reading: Short Stories; Grammar: Past Simple
+A1,23,Giao tiếp,Nghe,1,20,25,24,31,29,26,Conversation intensive,Nói,Grammar: Present Perfect; Listening: Conversations; Grammar: Past Simple
+C1,30,Phỏng vấn,Đọc,2,89,74,89,89,90,87,Beginner path,Nghe,Reading: News Articles; Grammar: Present Perfect; Listening: Map Labelling
+B2,18,Phỏng vấn,Đọc,9,73,66,67,55,66,84,IELTS prep,Từ vựng,Speaking: Daily Routine; Writing: Email Format; Listening: Map Labelling
+A2,32,IELTS 6.5,Đọc,14,57,24,50,47,37,50,IELTS prep,Nghe,Listening: Conversations; Speaking: Daily Routine; Grammar: Present Perfect
+B1,27,Giao tiếp,App,6,52,51,62,43,43,69,Beginner path,Nghe,Listening: Map Labelling; Reading: News Articles; Listening: Conversations
+B1,35,IELTS 6.5,Ví dụ,11,59,59,45,58,56,63,General English,Nói,Listening: Conversations; Listening: Map Labelling; Grammar: Present Perfect
+B2,15,IELTS 6.5,Đọc,9,80,82,65,63,72,52,General English,Từ vựng,Writing: Email Format; Listening: Conversations; Vocabulary: Travel
+B1,16,IELTS 6.5,App,3,62,63,79,58,69,38,General English,Từ vựng,Writing: Email Format; Speaking: Introductions; Grammar: Past Simple
+A1,23,IELTS 6.5,App,6,47,21,35,22,36,43,IELTS prep,Từ vựng,Reading: News Articles; Speaking: Introductions; Writing: Paragraph Structure
+C1,21,Giao tiếp,Nghe,15,100,91,93,90,98,100,Conversation intensive,Viết,Vocabulary: Travel; Grammar: Past Simple; Listening: Map Labelling
+A2,33,Phỏng vấn,Nghe,5,43,40,59,41,49,53,Beginner path,Nghe,Vocabulary: Work; Reading: Short Stories; Grammar: Past Simple
+B2,23,Giao tiếp,Ví dụ,14,66,63,81,80,56,77,General English,Nói,Reading: Short Stories; Grammar: Past Simple; Speaking: Introductions
+A2,29,Phỏng vấn,Đọc,10,39,52,62,65,40,30,General English,Ngữ pháp,Reading: Short Stories; Writing: Email Format; Grammar: Present Perfect
+B1,21,Giao tiếp,Nghe,7,74,53,53,53,43,62,IELTS prep,Nói,Writing: Paragraph Structure; Speaking: Daily Routine; Reading: News Articles
+A1,19,IELTS 6.5,Nghe,9,44,31,34,24,41,35,Beginner path,Nghe,Reading: News Articles; Listening: Conversations; Speaking: Introductions
+B1,23,Giao tiếp,Ví dụ,14,66,62,45,88,59,72,Conversation intensive,Ngữ pháp,Reading: News Articles; Grammar: Present Perfect; Grammar: Past Simple
+A2,30,Giao tiếp,Nghe,4,53,49,34,45,44,33,Conversation intensive,Nói,Vocabulary: Travel; Vocabulary: Work; Reading: Short Stories
+A2,30,IELTS 6.5,Nghe,10,37,39,30,32,69,43,Beginner path,Đọc,Writing: Email Format; Listening: Map Labelling; Reading: Short Stories
+B1,31,Giao tiếp,Nghe,8,72,62,38,84,61,75,Conversation intensive,Viết,Listening: Conversations; Vocabulary: Work; Speaking: Introductions
+C1,24,Phỏng vấn,Nghe,3,92,89,89,100,98,83,Beginner path,Nói,Reading: Short Stories; Listening: Conversations; Reading: News Articles
+A2,31,IELTS 6.5,Nghe,3,39,62,50,30,50,56,Conversation intensive,Từ vựng,Grammar: Present Perfect; Listening: Map Labelling; Reading: News Articles
+B2,34,Giao tiếp,App,10,80,76,71,60,60,78,Beginner path,Ngữ pháp,Vocabulary: Work; Speaking: Daily Routine; Reading: Short Stories
+C1,32,IELTS 6.5,Đọc,4,100,99,100,91,83,97,IELTS prep,Ngữ pháp,Vocabulary: Work; Speaking: Introductions; Grammar: Present Perfect
+A1,19,Phỏng vấn,Ví dụ,4,41,37,27,31,19,37,IELTS prep,Ngữ pháp,Reading: Short Stories; Writing: Paragraph Structure; Writing: Email Format
+A1,19,Phỏng vấn,App,7,13,43,18,48,34,17,IELTS prep,Viết,Speaking: Daily Routine; Speaking: Introductions; Grammar: Past Simple
+A2,31,IELTS 6.5,Ví dụ,4,46,48,53,55,58,30,General English,Nghe,Vocabulary: Work; Listening: Conversations; Writing: Email Format
+B1,29,Giao tiếp,Đọc,15,64,55,55,54,75,77,Beginner path,Đọc,Grammar: Past Simple; Vocabulary: Travel; Writing: Email Format
+B1,31,Phỏng vấn,Ví dụ,13,46,60,69,60,67,69,General English,Nghe,Listening: Conversations; Reading: Short Stories; Reading: News Articles
+A2,34,Giao tiếp,Đọc,15,59,41,36,54,48,35,Conversation intensive,Viết,Reading: Short Stories; Listening: Map Labelling; Speaking: Daily Routine
+B1,29,Phỏng vấn,Nghe,9,62,70,72,71,58,47,Beginner path,Đọc,Grammar: Past Simple; Writing: Paragraph Structure; Reading: News Articles
+A2,29,Phỏng vấn,Ví dụ,1,26,47,48,56,55,30,Beginner path,Viết,Grammar: Past Simple; Listening: Conversations; Listening: Map Labelling
+C1,21,Giao tiếp,Đọc,15,79,73,100,99,89,63,Conversation intensive,Nghe,Listening: Conversations; Grammar: Present Perfect; Vocabulary: Work
+A2,27,IELTS 6.5,App,12,38,53,43,43,48,38,IELTS prep,Đọc,Reading: News Articles; Reading: Short Stories; Vocabulary: Work
+B2,31,IELTS 6.5,Nghe,13,84,81,72,76,63,69,Beginner path,Từ vựng,Grammar: Past Simple; Listening: Conversations; Speaking: Introductions
+C1,25,Giao tiếp,App,3,69,91,86,100,88,68,Conversation intensive,Nghe,Grammar: Past Simple; Vocabulary: Travel; Reading: Short Stories
+B2,31,IELTS 6.5,Đọc,9,77,90,76,78,72,89,General English,Ngữ pháp,Grammar: Past Simple; Speaking: Daily Routine; Reading: Short Stories
+A1,35,Phỏng vấn,Đọc,6,10,26,21,36,49,17,Beginner path,Ngữ pháp,Listening: Map Labelling; Speaking: Daily Routine; Grammar: Past Simple
+C1,30,Phỏng vấn,Đọc,7,79,95,86,68,95,90,Beginner path,Viết,Speaking: Daily Routine; Vocabulary: Work; Reading: Short Stories
+C1,16,IELTS 6.5,Đọc,10,78,86,87,100,92,91,Beginner path,Nghe,Vocabulary: Work; Reading: News Articles; Grammar: Past Simple
+B2,25,Giao tiếp,Ví dụ,15,76,76,78,62,79,72,Conversation intensive,Đọc,Listening: Map Labelling; Grammar: Present Perfect; Speaking: Daily Routine
+C1,21,Phỏng vấn,Đọc,9,98,93,92,84,88,92,IELTS prep,Đọc,Reading: Short Stories; Listening: Map Labelling; Writing: Paragraph Structure
+A1,22,Giao tiếp,App,10,54,33,51,34,30,43,Conversation intensive,Viết,Listening: Conversations; Speaking: Introductions; Reading: Short Stories
+A2,21,Giao tiếp,Đọc,13,40,21,55,42,61,46,Conversation intensive,Ngữ pháp,Listening: Map Labelling; Reading: News Articles; Speaking: Daily Routine
+B1,17,Giao tiếp,Đọc,5,70,67,60,53,61,55,IELTS prep,Viết,Listening: Conversations; Reading: Short Stories; Reading: News Articles
+A1,33,IELTS 6.5,App,1,43,29,24,20,40,18,Conversation intensive,Nói,Speaking: Introductions; Reading: News Articles; Writing: Paragraph Structure
+B2,25,IELTS 6.5,Ví dụ,7,59,73,68,64,62,70,Conversation intensive,Từ vựng,Grammar: Past Simple; Speaking: Introductions; Grammar: Present Perfect
+B2,33,IELTS 6.5,App,9,66,89,82,73,80,76,IELTS prep,Viết,Writing: Paragraph Structure; Writing: Email Format; Vocabulary: Work
+A2,18,Giao tiếp,Nghe,5,76,45,40,29,47,31,Beginner path,Nói,Grammar: Past Simple; Listening: Map Labelling; Writing: Email Format
+C1,28,Phỏng vấn,Ví dụ,14,94,83,100,93,76,99,IELTS prep,Ngữ pháp,Vocabulary: Work; Speaking: Daily Routine; Grammar: Present Perfect
+B2,32,Phỏng vấn,Ví dụ,8,77,85,51,75,80,69,Beginner path,Đọc,Grammar: Past Simple; Writing: Paragraph Structure; Grammar: Present Perfect
+C1,28,IELTS 6.5,Nghe,12,79,93,70,87,83,85,Conversation intensive,Nói,Reading: Short Stories; Grammar: Present Perfect; Vocabulary: Work
+B1,29,IELTS 6.5,Nghe,10,45,69,65,69,39,56,General English,Đọc,Writing: Email Format; Vocabulary: Work; Grammar: Past Simple
+A2,28,Phỏng vấn,App,13,40,47,52,40,40,46,General English,Ngữ pháp,Speaking: Daily Routine; Speaking: Introductions; Grammar: Past Simple
+C1,34,Giao tiếp,Nghe,15,96,97,94,86,58,100,IELTS prep,Nghe,Vocabulary: Travel; Listening: Map Labelling; Reading: News Articles
+A2,20,IELTS 6.5,Nghe,8,30,40,36,52,54,52,Conversation intensive,Từ vựng,Vocabulary: Travel; Speaking: Introductions; Writing: Email Format
+C1,24,IELTS 6.5,Đọc,10,79,87,93,96,86,74,IELTS prep,Đọc,Vocabulary: Work; Writing: Email Format; Listening: Conversations
+B1,17,Giao tiếp,Ví dụ,5,69,49,58,64,68,58,Conversation intensive,Nói,Speaking: Introductions; Writing: Email Format; Vocabulary: Work
+A1,17,Giao tiếp,Đọc,14,28,46,37,29,28,33,Conversation intensive,Viết,Grammar: Present Perfect; Writing: Paragraph Structure; Reading: News Articles
+A1,25,IELTS 6.5,Nghe,11,22,48,30,44,20,46,Conversation intensive,Ngữ pháp,Vocabulary: Travel; Vocabulary: Work; Speaking: Introductions
+B2,25,Phỏng vấn,App,3,70,91,77,85,73,85,Conversation intensive,Đọc,Writing: Email Format; Listening: Map Labelling; Writing: Paragraph Structure
+B2,26,IELTS 6.5,Đọc,1,76,67,71,87,65,95,Beginner path,Nghe,Speaking: Daily Routine; Reading: Short Stories; Grammar: Present Perfect
+A2,19,Phỏng vấn,Đọc,14,63,40,51,31,46,30,Beginner path,Viết,Listening: Conversations; Speaking: Daily Routine; Grammar: Present Perfect
+C1,35,Phỏng vấn,App,2,100,76,86,88,93,87,Beginner path,Viết,Reading: Short Stories; Listening: Conversations; Grammar: Present Perfect
+A2,21,Phỏng vấn,Đọc,15,53,54,43,41,35,39,Conversation intensive,Viết,Reading: News Articles; Grammar: Past Simple; Reading: Short Stories
+B2,29,IELTS 6.5,Ví dụ,15,88,79,62,66,73,72,Conversation intensive,Viết,Vocabulary: Work; Grammar: Present Perfect; Listening: Map Labelling
+A1,28,IELTS 6.5,Đọc,8,15,16,35,36,24,19,IELTS prep,Từ vựng,Speaking: Daily Routine; Writing: Email Format; Speaking: Introductions
+A1,27,Phỏng vấn,Đọc,14,35,32,38,30,19,31,Conversation intensive,Nói,Writing: Email Format; Grammar: Present Perfect; Vocabulary: Work
+B2,31,Giao tiếp,Nghe,9,87,82,100,91,84,77,Conversation intensive,Ngữ pháp,Writing: Paragraph Structure; Vocabulary: Travel; Listening: Conversations
+B2,27,Giao tiếp,Nghe,3,59,84,77,78,81,74,IELTS prep,Từ vựng,Grammar: Present Perfect; Speaking: Daily Routine; Writing: Email Format
+A1,34,Phỏng vấn,Đọc,6,21,31,31,34,9,16,Beginner path,Đọc,Grammar: Past Simple; Speaking: Daily Routine; Vocabulary: Work
+B1,34,Phỏng vấn,Đọc,15,59,79,86,54,71,51,IELTS prep,Nói,Vocabulary: Work; Vocabulary: Travel; Listening: Conversations
+C1,17,Giao tiếp,Nghe,6,77,94,96,100,97,100,General English,Nghe,Grammar: Past Simple; Grammar: Present Perfect; Listening: Map Labelling
+A1,22,Phỏng vấn,Đọc,1,24,25,32,29,16,19,Beginner path,Từ vựng,Vocabulary: Work; Vocabulary: Travel; Grammar: Past Simple
+C1,20,Phỏng vấn,Đọc,9,87,99,87,93,85,90,Conversation intensive,Đọc,Reading: Short Stories; Vocabulary: Travel; Listening: Conversations
+C1,26,IELTS 6.5,Nghe,9,93,86,75,85,83,87,Conversation intensive,Từ vựng,Speaking: Daily Routine; Listening: Conversations; Grammar: Present Perfect
+C1,17,IELTS 6.5,Đọc,2,98,76,74,74,99,79,IELTS prep,Từ vựng,Speaking: Introductions; Vocabulary: Work; Grammar: Present Perfect
+B2,16,Phỏng vấn,Đọc,10,79,75,68,71,74,85,Beginner path,Viết,Grammar: Present Perfect; Vocabulary: Work; Grammar: Past Simple
+A2,25,Phỏng vấn,Đọc,8,43,51,42,44,53,35,IELTS prep,Nói,Vocabulary: Travel; Listening: Map Labelling; Listening: Conversations
+A2,20,Phỏng vấn,Ví dụ,3,32,37,42,40,40,45,General English,Nói,Reading: News Articles; Writing: Email Format; Speaking: Introductions
+A2,23,Phỏng vấn,App,5,55,51,39,35,50,39,Beginner path,Đọc,Vocabulary: Work; Grammar: Past Simple; Grammar: Present Perfect
+B2,28,Phỏng vấn,Ví dụ,10,78,78,69,83,68,71,Beginner path,Ngữ pháp,Listening: Map Labelling; Writing: Paragraph Structure; Speaking: Introductions
+B2,26,Giao tiếp,Ví dụ,5,84,75,84,77,67,73,IELTS prep,Từ vựng,Speaking: Daily Routine; Writing: Paragraph Structure; Vocabulary: Work
+A1,20,Phỏng vấn,App,7,19,23,37,27,5,29,IELTS prep,Từ vựng,Reading: Short Stories; Grammar: Past Simple; Speaking: Introductions
+C1,25,Phỏng vấn,Nghe,12,83,94,90,96,98,69,Conversation intensive,Từ vựng,Speaking: Introductions; Reading: Short Stories; Vocabulary: Travel
+B1,24,Phỏng vấn,App,7,47,72,65,62,49,65,Beginner path,Nghe,Grammar: Past Simple; Listening: Conversations; Vocabulary: Work
+A2,24,Giao tiếp,Nghe,1,53,55,40,56,50,23,Conversation intensive,Từ vựng,Writing: Paragraph Structure; Listening: Conversations; Reading: Short Stories
+A1,20,IELTS 6.5,App,10,35,30,25,21,14,34,Beginner path,Nói,Listening: Map Labelling; Speaking: Introductions; Speaking: Daily Routine
+B1,33,Phỏng vấn,Đọc,9,50,62,50,45,62,52,Conversation intensive,Từ vựng,Writing: Paragraph Structure; Reading: Short Stories; Vocabulary: Work
+B2,18,Giao tiếp,App,15,58,56,61,77,64,79,Conversation intensive,Viết,Speaking: Introductions; Writing: Email Format; Vocabulary: Work
+A2,34,Giao tiếp,Nghe,14,51,52,46,35,51,66,Conversation intensive,Đọc,Speaking: Introductions; Reading: News Articles; Vocabulary: Travel
+A1,25,Phỏng vấn,App,11,46,44,17,36,29,8,Beginner path,Nói,Writing: Paragraph Structure; Grammar: Past Simple; Listening: Map Labelling
+A1,19,Giao tiếp,Nghe,2,35,35,34,28,21,25,General English,Ngữ pháp,Listening: Conversations; Vocabulary: Travel; Listening: Map Labelling
+B2,24,Giao tiếp,Nghe,12,69,66,62,68,66,85,Conversation intensive,Đọc,Vocabulary: Work; Speaking: Daily Routine; Reading: News Articles
+B1,17,Phỏng vấn,Ví dụ,15,67,55,56,62,60,41,Conversation intensive,Từ vựng,Reading: Short Stories; Writing: Email Format; Reading: News Articles
+A2,19,Phỏng vấn,App,1,60,49,33,26,37,46,General English,Từ vựng,Vocabulary: Travel; Grammar: Present Perfect; Reading: Short Stories
+A2,18,IELTS 6.5,Ví dụ,6,51,45,56,36,54,40,Beginner path,Nghe,Vocabulary: Work; Writing: Email Format; Speaking: Daily Routine
+A2,16,Phỏng vấn,Nghe,8,45,51,64,40,55,31,Beginner path,Ngữ pháp,Listening: Map Labelling; Writing: Email Format; Vocabulary: Work
+B2,35,Phỏng vấn,App,7,74,76,87,78,71,66,Conversation intensive,Ngữ pháp,Grammar: Present Perfect; Listening: Map Labelling; Writing: Paragraph Structure
+B2,28,IELTS 6.5,Đọc,8,70,66,86,72,82,60,IELTS prep,Viết,Reading: News Articles; Grammar: Past Simple; Reading: Short Stories
+A2,17,Giao tiếp,Ví dụ,11,47,43,39,44,55,36,Beginner path,Từ vựng,Reading: News Articles; Speaking: Daily Routine; Vocabulary: Work
+A1,16,Phỏng vấn,Nghe,14,27,27,32,38,45,20,General English,Ngữ pháp,Speaking: Introductions; Vocabulary: Travel; Listening: Conversations
+B1,20,Giao tiếp,Nghe,8,41,59,57,65,61,51,Beginner path,Từ vựng,Listening: Map Labelling; Reading: News Articles; Speaking: Introductions
+B2,34,Phỏng vấn,Nghe,8,74,76,70,83,62,79,Conversation intensive,Viết,Grammar: Present Perfect; Vocabulary: Travel; Writing: Email Format
+A2,23,Giao tiếp,Ví dụ,14,46,43,61,54,46,51,Beginner path,Nói,Vocabulary: Work; Grammar: Past Simple; Vocabulary: Travel
+C1,17,IELTS 6.5,Ví dụ,13,85,83,79,92,82,100,Conversation intensive,Viết,Listening: Map Labelling; Grammar: Present Perfect; Speaking: Daily Routine
+A1,18,Giao tiếp,Nghe,10,48,36,40,36,37,35,General English,Đọc,Grammar: Past Simple; Vocabulary: Travel; Listening: Conversations
+C1,18,Giao tiếp,Nghe,11,98,83,81,78,89,100,Beginner path,Đọc,Vocabulary: Travel; Listening: Conversations; Writing: Paragraph Structure
+C1,33,IELTS 6.5,Ví dụ,1,84,98,87,81,95,88,General English,Nói,Grammar: Past Simple; Reading: Short Stories; Listening: Map Labelling
+A2,28,Giao tiếp,Ví dụ,12,27,39,41,48,59,43,Conversation intensive,Nói,Grammar: Past Simple; Speaking: Introductions; Vocabulary: Work
+A1,26,IELTS 6.5,Nghe,13,15,15,32,24,35,25,General English,Đọc,Reading: News Articles; Writing: Email Format; Reading: Short Stories
+B2,33,Phỏng vấn,Đọc,7,76,87,85,58,77,72,Beginner path,Nghe,Speaking: Daily Routine; Writing: Email Format; Vocabulary: Work
+B1,26,Giao tiếp,Đọc,13,74,45,73,69,51,77,Beginner path,Nghe,Vocabulary: Travel; Writing: Email Format; Listening: Conversations
+A1,18,Phỏng vấn,App,12,21,28,32,20,22,42,Conversation intensive,Đọc,Listening: Conversations; Reading: Short Stories; Listening: Map Labelling
+A2,35,Phỏng vấn,App,8,41,57,54,41,52,39,Beginner path,Nói,Speaking: Daily Routine; Reading: Short Stories; Reading: News Articles
+B1,25,Phỏng vấn,Đọc,4,51,59,43,46,58,48,General English,Đọc,Listening: Map Labelling; Listening: Conversations; Speaking: Daily Routine
+A1,24,Phỏng vấn,Đọc,2,39,27,24,29,23,26,Beginner path,Đọc,Listening: Map Labelling; Reading: News Articles; Vocabulary: Work
+B1,26,Giao tiếp,Đọc,15,48,41,60,62,58,47,Conversation intensive,Nghe,Writing: Email Format; Reading: News Articles; Vocabulary: Travel
+B2,27,Phỏng vấn,App,14,75,87,67,76,66,65,Beginner path,Đọc,Writing: Email Format; Listening: Map Labelling; Listening: Conversations
+B1,15,Phỏng vấn,Đọc,2,57,55,57,59,67,71,General English,Viết,Writing: Email Format; Vocabulary: Work; Speaking: Daily Routine
+C1,28,IELTS 6.5,Nghe,8,78,100,84,92,100,94,Conversation intensive,Nói,Listening: Map Labelling; Reading: Short Stories; Grammar: Present Perfect
+A1,23,Giao tiếp,App,3,32,16,27,36,26,41,IELTS prep,Viết,Grammar: Present Perfect; Vocabulary: Work; Reading: News Articles
+A1,20,Phỏng vấn,Ví dụ,9,26,25,30,26,40,14,Conversation intensive,Nói,Reading: News Articles; Vocabulary: Work; Grammar: Present Perfect
+C1,19,Giao tiếp,Ví dụ,7,84,100,100,95,87,76,General English,Ngữ pháp,Vocabulary: Travel; Grammar: Past Simple; Listening: Conversations
+A2,17,Giao tiếp,Nghe,5,45,51,43,32,60,61,General English,Ngữ pháp,Speaking: Daily Routine; Grammar: Past Simple; Speaking: Introductions
+A1,20,Giao tiếp,App,15,52,32,18,25,33,15,Beginner path,Đọc,Vocabulary: Travel; Listening: Map Labelling; Grammar: Past Simple
+A1,26,IELTS 6.5,Nghe,4,23,19,44,25,39,25,Conversation intensive,Từ vựng,Listening: Conversations; Listening: Map Labelling; Vocabulary: Work
+A2,27,Phỏng vấn,Đọc,6,37,51,43,54,58,50,General English,Nghe,Writing: Email Format; Grammar: Present Perfect; Vocabulary: Travel
+B2,30,Phỏng vấn,App,14,69,83,73,95,67,70,Conversation intensive,Đọc,Writing: Email Format; Reading: Short Stories; Vocabulary: Work
+A1,22,IELTS 6.5,Ví dụ,9,28,36,23,22,32,34,IELTS prep,Từ vựng,Grammar: Past Simple; Writing: Email Format; Reading: Short Stories
+B1,19,IELTS 6.5,App,4,57,68,65,59,56,69,Beginner path,Viết,Listening: Map Labelling; Grammar: Present Perfect; Writing: Email Format
+A1,21,Phỏng vấn,App,12,20,34,21,33,14,28,General English,Nghe,Vocabulary: Work; Grammar: Present Perfect; Reading: Short Stories
+C1,27,Phỏng vấn,Đọc,2,83,100,82,78,81,97,IELTS prep,Viết,Reading: Short Stories; Grammar: Present Perfect; Writing: Email Format
+B1,31,IELTS 6.5,Ví dụ,5,56,64,61,54,54,33,General English,Đọc,Listening: Conversations; Grammar: Past Simple; Speaking: Daily Routine
+A1,35,IELTS 6.5,Đọc,9,25,31,32,37,38,27,General English,Viết,Speaking: Introductions; Vocabulary: Work; Listening: Conversations
+A2,23,IELTS 6.5,Ví dụ,3,45,64,48,51,51,45,General English,Viết,Vocabulary: Travel; Listening: Map Labelling; Writing: Paragraph Structure
+A1,30,Phỏng vấn,Đọc,6,21,24,45,36,19,19,Conversation intensive,Nói,Vocabulary: Work; Reading: Short Stories; Writing: Paragraph Structure
+A2,24,Giao tiếp,Nghe,4,62,43,29,39,65,20,IELTS prep,Nghe,Vocabulary: Work; Reading: News Articles; Grammar: Present Perfect
+C1,32,Phỏng vấn,Đọc,3,88,89,76,100,86,72,Beginner path,Viết,Vocabulary: Work; Grammar: Present Perfect; Reading: Short Stories
+C1,33,IELTS 6.5,App,13,84,94,89,100,100,100,General English,Nói,Speaking: Daily Routine; Grammar: Past Simple; Vocabulary: Work
+B1,25,IELTS 6.5,Nghe,8,57,51,54,59,52,65,IELTS prep,Từ vựng,Listening: Map Labelling; Vocabulary: Work; Reading: News Articles
+A2,23,Phỏng vấn,Đọc,13,47,53,38,43,39,49,Conversation intensive,Viết,Speaking: Daily Routine; Reading: News Articles; Vocabulary: Travel
+A2,33,Phỏng vấn,Đọc,4,57,47,36,56,56,53,IELTS prep,Đọc,Writing: Paragraph Structure; Speaking: Introductions; Speaking: Daily Routine
+A2,31,IELTS 6.5,App,6,50,45,34,57,56,29,IELTS prep,Ngữ pháp,Vocabulary: Work; Grammar: Past Simple; Writing: Email Format
+B2,30,Phỏng vấn,Đọc,1,80,65,84,70,57,90,Beginner path,Đọc,Speaking: Introductions; Listening: Map Labelling; Speaking: Daily Routine
+A1,16,Giao tiếp,Nghe,13,28,21,33,20,10,20,IELTS prep,Viết,Reading: Short Stories; Listening: Conversations; Vocabulary: Work
+A1,24,Phỏng vấn,Đọc,4,25,35,18,29,41,27,General English,Đọc,Listening: Conversations; Vocabulary: Travel; Reading: Short Stories
+B1,21,Phỏng vấn,Ví dụ,4,46,61,60,49,63,56,General English,Nói,Speaking: Daily Routine; Vocabulary: Travel; Reading: News Articles
+B1,24,Phỏng vấn,Nghe,12,53,46,67,60,60,60,Conversation intensive,Đọc,Listening: Conversations; Grammar: Past Simple; Writing: Paragraph Structure
+B2,19,Giao tiếp,Đọc,1,83,82,53,75,68,74,General English,Ngữ pháp,Speaking: Daily Routine; Reading: News Articles; Vocabulary: Travel
+A1,26,Giao tiếp,Ví dụ,7,44,5,26,35,32,30,Beginner path,Ngữ pháp,Vocabulary: Travel; Reading: News Articles; Grammar: Past Simple
+B2,17,Phỏng vấn,App,8,58,83,70,77,90,76,Conversation intensive,Nói,Reading: Short Stories; Listening: Conversations; Vocabulary: Work
+B1,31,Phỏng vấn,Ví dụ,11,66,50,61,63,69,64,Conversation intensive,Nghe,Speaking: Introductions; Grammar: Present Perfect; Writing: Email Format
+A2,28,Giao tiếp,Nghe,5,53,40,49,27,42,56,General English,Từ vựng,Speaking: Introductions; Reading: Short Stories; Grammar: Present Perfect
+B2,16,Phỏng vấn,Nghe,14,78,72,84,74,69,75,IELTS prep,Từ vựng,Vocabulary: Work; Speaking: Introductions; Vocabulary: Travel
+A2,32,IELTS 6.5,Nghe,15,59,57,42,41,24,50,Conversation intensive,Đọc,Writing: Email Format; Grammar: Past Simple; Vocabulary: Work
+A1,27,Giao tiếp,App,1,5,31,26,28,31,38,Beginner path,Ngữ pháp,Grammar: Present Perfect; Writing: Email Format; Vocabulary: Work
+B2,27,Phỏng vấn,Ví dụ,13,58,97,87,80,77,61,General English,Nói,Writing: Email Format; Reading: Short Stories; Speaking: Introductions
+A2,26,IELTS 6.5,Ví dụ,2,27,71,53,50,50,20,IELTS prep,Từ vựng,Listening: Map Labelling; Writing: Paragraph Structure; Listening: Conversations
+A2,33,Giao tiếp,App,9,38,52,52,22,48,35,Beginner path,Ngữ pháp,Listening: Conversations; Writing: Email Format; Listening: Map Labelling
+A2,30,Giao tiếp,App,8,46,55,44,44,40,64,General English,Nói,Listening: Conversations; Grammar: Present Perfect; Grammar: Past Simple
+C1,35,Giao tiếp,Nghe,11,83,96,81,83,95,100,Beginner path,Nói,Grammar: Present Perfect; Grammar: Past Simple; Writing: Email Format
+B1,26,Giao tiếp,Nghe,15,45,64,73,46,57,53,Conversation intensive,Nói,Listening: Conversations; Speaking: Daily Routine; Listening: Map Labelling
+B2,19,Phỏng vấn,App,13,73,73,88,56,74,70,Conversation intensive,Đọc,Writing: Email Format; Speaking: Introductions; Listening: Conversations
+B1,18,Phỏng vấn,App,13,59,62,52,35,51,75,IELTS prep,Đọc,Reading: Short Stories; Listening: Map Labelling; Grammar: Present Perfect
+A2,34,Giao tiếp,Ví dụ,8,40,61,41,55,52,21,IELTS prep,Nghe,Writing: Paragraph Structure; Grammar: Present Perfect; Grammar: Past Simple
+C1,19,Phỏng vấn,Đọc,14,74,91,92,95,88,87,General English,Từ vựng,Writing: Paragraph Structure; Speaking: Introductions; Reading: News Articles
+A1,19,Giao tiếp,Nghe,8,51,28,32,30,16,38,IELTS prep,Nghe,Vocabulary: Travel; Reading: News Articles; Grammar: Present Perfect
+A2,20,Giao tiếp,App,4,48,40,40,45,50,45,IELTS prep,Ngữ pháp,Grammar: Past Simple; Listening: Map Labelling; Speaking: Daily Routine
+A1,26,Phỏng vấn,App,5,32,29,38,26,36,28,Beginner path,Nghe,Speaking: Introductions; Reading: News Articles; Speaking: Daily Routine
+A2,25,IELTS 6.5,Ví dụ,14,36,46,42,51,28,41,General English,Nói,Listening: Conversations; Writing: Paragraph Structure; Vocabulary: Work
+C1,23,IELTS 6.5,Nghe,13,82,72,86,85,96,97,Conversation intensive,Viết,Grammar: Present Perfect; Listening: Map Labelling; Writing: Email Format
+C1,24,IELTS 6.5,App,10,80,92,96,89,81,84,Beginner path,Nói,Vocabulary: Travel; Grammar: Present Perfect; Writing: Paragraph Structure
+B1,17,IELTS 6.5,App,7,49,43,63,55,50,55,IELTS prep,Nói,Grammar: Present Perfect; Writing: Email Format; Speaking: Daily Routine
+C1,15,Giao tiếp,Nghe,8,96,78,91,76,97,100,General English,Ngữ pháp,Listening: Map Labelling; Reading: News Articles; Reading: Short Stories
+B1,22,Phỏng vấn,Nghe,12,60,65,73,49,47,67,Beginner path,Nghe,Vocabulary: Travel; Reading: Short Stories; Grammar: Past Simple
+B2,25,Phỏng vấn,Nghe,8,87,78,62,65,75,98,Beginner path,Đọc,Reading: News Articles; Listening: Conversations; Vocabulary: Work
+B2,15,Phỏng vấn,Nghe,12,89,71,75,79,61,72,Conversation intensive,Từ vựng,Writing: Paragraph Structure; Writing: Email Format; Grammar: Present Perfect
+A2,21,Phỏng vấn,Nghe,8,46,64,25,52,47,42,Conversation intensive,Nghe,Speaking: Daily Routine; Vocabulary: Travel; Listening: Map Labelling
+B2,21,Giao tiếp,App,10,79,60,71,74,83,84,Beginner path,Đọc,Listening: Map Labelling; Vocabulary: Work; Grammar: Past Simple
+B1,27,Phỏng vấn,Nghe,5,40,69,56,40,62,51,Conversation intensive,Ngữ pháp,Reading: News Articles; Grammar: Past Simple; Speaking: Introductions
+B2,17,Phỏng vấn,Ví dụ,12,70,71,75,81,62,71,Beginner path,Nói,Speaking: Introductions; Speaking: Daily Routine; Listening: Map Labelling
+C1,24,Phỏng vấn,App,3,78,70,81,79,100,100,General English,Ngữ pháp,Writing: Paragraph Structure; Writing: Email Format; Listening: Map Labelling
+A1,33,IELTS 6.5,Ví dụ,15,23,17,34,26,29,19,Beginner path,Nghe,Grammar: Past Simple; Vocabulary: Work; Reading: News Articles
+A2,35,IELTS 6.5,Nghe,9,45,41,39,26,58,52,IELTS prep,Đọc,Grammar: Past Simple; Speaking: Daily Routine; Vocabulary: Travel
+A1,26,Phỏng vấn,Ví dụ,12,43,37,13,40,20,27,Beginner path,Đọc,Speaking: Daily Routine; Vocabulary: Travel; Writing: Email Format
+B2,33,Phỏng vấn,App,2,70,100,74,77,84,78,Beginner path,Từ vựng,Listening: Map Labelling; Speaking: Daily Routine; Vocabulary: Work
+A1,25,Giao tiếp,Ví dụ,14,10,45,24,1,25,19,Beginner path,Ngữ pháp,Grammar: Past Simple; Grammar: Present Perfect; Listening: Map Labelling
+B1,19,Phỏng vấn,Nghe,9,56,54,61,50,56,75,General English,Viết,Grammar: Present Perfect; Listening: Conversations; Writing: Paragraph Structure
+A2,24,Giao tiếp,App,15,27,44,52,38,48,40,IELTS prep,Nghe,Reading: Short Stories; Vocabulary: Work; Writing: Paragraph Structure
+B1,15,Phỏng vấn,Ví dụ,5,63,71,55,62,62,66,Conversation intensive,Viết,Writing: Email Format; Listening: Map Labelling; Reading: News Articles
+B1,22,Giao tiếp,Ví dụ,14,61,63,64,63,66,59,Conversation intensive,Ngữ pháp,Writing: Paragraph Structure; Reading: Short Stories; Vocabulary: Travel
+B2,26,IELTS 6.5,App,15,61,74,85,71,81,61,General English,Viết,Grammar: Past Simple; Listening: Map Labelling; Vocabulary: Work
+B1,29,Phỏng vấn,Nghe,9,59,43,65,81,59,78,General English,Nói,Speaking: Daily Routine; Vocabulary: Travel; Speaking: Introductions
+B1,23,Giao tiếp,Đọc,13,40,66,73,72,77,62,Conversation intensive,Đọc,Vocabulary: Travel; Speaking: Daily Routine; Writing: Email Format
+A1,20,Giao tiếp,Nghe,12,38,66,32,11,39,16,Conversation intensive,Đọc,Grammar: Present Perfect; Speaking: Introductions; Grammar: Past Simple
+A2,28,Giao tiếp,Đọc,14,36,32,61,48,46,33,Conversation intensive,Ngữ pháp,Speaking: Daily Routine; Grammar: Present Perfect; Writing: Paragraph Structure
+A2,24,Phỏng vấn,Nghe,12,32,69,45,40,30,36,Conversation intensive,Ngữ pháp,Grammar: Present Perfect; Speaking: Daily Routine; Grammar: Past Simple
+A1,30,Giao tiếp,App,9,30,18,36,21,37,0,Conversation intensive,Đọc,Writing: Email Format; Grammar: Past Simple; Grammar: Present Perfect
+C1,26,Phỏng vấn,Đọc,5,81,80,100,85,83,90,Beginner path,Đọc,Reading: News Articles; Speaking: Introductions; Vocabulary: Work
+A2,17,Giao tiếp,Ví dụ,2,48,50,51,80,63,34,IELTS prep,Ngữ pháp,Grammar: Past Simple; Grammar: Present Perfect; Listening: Map Labelling
+A1,24,Giao tiếp,Đọc,15,30,33,34,27,21,31,Conversation intensive,Từ vựng,Vocabulary: Travel; Listening: Conversations; Grammar: Past Simple
+A2,23,IELTS 6.5,Đọc,6,35,83,49,48,41,32,IELTS prep,Ngữ pháp,Vocabulary: Work; Reading: Short Stories; Vocabulary: Travel
+B2,33,Giao tiếp,Nghe,7,67,76,68,57,74,74,General English,Từ vựng,Grammar: Past Simple; Grammar: Present Perfect; Speaking: Introductions
+C1,21,Phỏng vấn,Nghe,9,74,92,90,94,81,75,Beginner path,Đọc,Grammar: Present Perfect; Writing: Email Format; Listening: Map Labelling
+A2,30,IELTS 6.5,Đọc,13,29,44,22,51,40,43,IELTS prep,Đọc,Grammar: Past Simple; Writing: Email Format; Vocabulary: Work
+A2,15,Phỏng vấn,App,15,49,45,23,34,43,50,IELTS prep,Viết,Writing: Paragraph Structure; Listening: Map Labelling; Grammar: Past Simple
+B1,23,Giao tiếp,App,11,38,67,56,67,49,56,IELTS prep,Đọc,Vocabulary: Work; Grammar: Present Perfect; Listening: Conversations
+B1,34,Giao tiếp,Đọc,10,53,60,64,67,65,70,Conversation intensive,Đọc,Writing: Paragraph Structure; Writing: Email Format; Listening: Conversations
+C1,19,IELTS 6.5,Ví dụ,14,97,98,84,93,82,98,IELTS prep,Nghe,Listening: Conversations; Reading: News Articles; Listening: Map Labelling
+A2,24,Giao tiếp,App,10,44,43,56,54,34,49,Beginner path,Ngữ pháp,Grammar: Present Perfect; Speaking: Daily Routine; Grammar: Past Simple
+A2,33,Giao tiếp,Nghe,5,47,55,55,33,72,53,IELTS prep,Ngữ pháp,Writing: Email Format; Speaking: Daily Routine; Grammar: Present Perfect
+B2,29,Phỏng vấn,Nghe,2,88,85,78,52,55,63,General English,Đọc,Reading: Short Stories; Writing: Email Format; Speaking: Daily Routine
+B2,34,Phỏng vấn,Đọc,12,69,68,90,84,59,78,General English,Ngữ pháp,Vocabulary: Work; Speaking: Introductions; Grammar: Present Perfect
+B2,15,Phỏng vấn,Nghe,9,73,69,77,67,81,76,Conversation intensive,Ngữ pháp,Listening: Conversations; Listening: Map Labelling; Vocabulary: Travel
+B1,16,IELTS 6.5,App,13,61,67,64,49,61,60,IELTS prep,Nói,Listening: Conversations; Listening: Map Labelling; Reading: Short Stories
+B1,21,IELTS 6.5,Đọc,15,52,64,64,66,58,54,Beginner path,Đọc,Grammar: Present Perfect; Listening: Map Labelling; Writing: Email Format
+B1,34,IELTS 6.5,App,11,63,45,60,66,51,61,Conversation intensive,Viết,Grammar: Past Simple; Writing: Paragraph Structure; Listening: Map Labelling
+B1,21,Phỏng vấn,Nghe,12,52,39,47,65,51,68,General English,Ngữ pháp,Vocabulary: Travel; Listening: Map Labelling; Reading: News Articles
+A1,24,Giao tiếp,Ví dụ,13,37,24,22,34,21,45,General English,Từ vựng,Grammar: Present Perfect; Reading: News Articles; Vocabulary: Travel
+C1,18,Phỏng vấn,Đọc,11,95,80,74,95,92,85,Beginner path,Ngữ pháp,Reading: Short Stories; Reading: News Articles; Listening: Map Labelling
+B2,16,Giao tiếp,Ví dụ,14,71,82,75,65,68,67,General English,Đọc,Speaking: Introductions; Listening: Conversations; Writing: Paragraph Structure
+A2,30,Phỏng vấn,Nghe,4,31,42,46,50,32,59,Conversation intensive,Đọc,Vocabulary: Travel; Speaking: Daily Routine; Reading: Short Stories
+C1,30,IELTS 6.5,App,10,89,99,89,97,87,100,Beginner path,Đọc,Reading: Short Stories; Grammar: Present Perfect; Reading: News Articles
+B1,25,IELTS 6.5,Đọc,14,57,67,57,46,56,50,General English,Ngữ pháp,Speaking: Daily Routine; Speaking: Introductions; Listening: Map Labelling
+C1,33,IELTS 6.5,Ví dụ,15,77,81,93,83,95,96,Beginner path,Nói,Reading: Short Stories; Vocabulary: Work; Listening: Conversations
+B1,31,Phỏng vấn,Đọc,9,52,60,63,56,62,53,Conversation intensive,Nói,Reading: Short Stories; Writing: Paragraph Structure; Speaking: Daily Routine
+A1,16,Phỏng vấn,Ví dụ,7,45,29,32,43,41,30,General English,Viết,Grammar: Past Simple; Grammar: Present Perfect; Listening: Conversations
+C1,24,Phỏng vấn,Ví dụ,2,68,91,73,84,89,97,General English,Ngữ pháp,Listening: Map Labelling; Vocabulary: Work; Writing: Email Format
+C1,34,Phỏng vấn,Đọc,1,100,100,96,68,100,87,Beginner path,Nghe,Listening: Conversations; Vocabulary: Work; Speaking: Daily Routine
+B1,30,IELTS 6.5,Nghe,8,54,54,67,61,34,39,General English,Từ vựng,Grammar: Past Simple; Reading: News Articles; Speaking: Introductions
+A1,24,Phỏng vấn,Nghe,14,57,19,46,27,36,16,General English,Đọc,Speaking: Daily Routine; Listening: Conversations; Writing: Paragraph Structure
+A1,34,Giao tiếp,Đọc,14,42,31,33,44,28,44,General English,Viết,Reading: Short Stories; Vocabulary: Work; Grammar: Past Simple
+A2,26,IELTS 6.5,Nghe,14,49,30,57,59,66,36,Conversation intensive,Viết,Listening: Conversations; Grammar: Past Simple; Grammar: Present Perfect
+A2,34,Giao tiếp,Nghe,6,36,29,30,51,52,37,Beginner path,Ngữ pháp,Listening: Conversations; Writing: Paragraph Structure; Grammar: Present Perfect
+A1,35,Giao tiếp,Đọc,10,17,23,24,23,32,20,Conversation intensive,Viết,Speaking: Daily Routine; Speaking: Introductions; Grammar: Present Perfect
+B2,15,Phỏng vấn,Ví dụ,6,89,61,79,86,76,78,Conversation intensive,Từ vựng,Listening: Conversations; Writing: Paragraph Structure; Grammar: Past Simple
+B2,26,Giao tiếp,Ví dụ,14,76,77,83,87,68,88,Beginner path,Nghe,Writing: Paragraph Structure; Speaking: Introductions; Vocabulary: Work
+C1,25,Phỏng vấn,Ví dụ,5,91,95,80,94,95,89,IELTS prep,Từ vựng,Grammar: Past Simple; Writing: Paragraph Structure; Writing: Email Format
+A2,17,Giao tiếp,Nghe,4,60,45,39,47,50,39,IELTS prep,Đọc,Speaking: Daily Routine; Speaking: Introductions; Reading: News Articles
+B1,28,Phỏng vấn,Đọc,7,75,54,47,56,68,63,Conversation intensive,Nói,Grammar: Present Perfect; Speaking: Daily Routine; Listening: Conversations
+B2,15,Giao tiếp,Nghe,9,80,70,86,74,81,63,IELTS prep,Viết,Speaking: Daily Routine; Reading: News Articles; Vocabulary: Travel
+B2,28,Phỏng vấn,App,2,79,89,61,78,84,62,Beginner path,Từ vựng,Speaking: Introductions; Listening: Map Labelling; Writing: Paragraph Structure
+B1,16,Giao tiếp,Nghe,14,60,72,60,53,58,61,Conversation intensive,Từ vựng,Speaking: Daily Routine; Reading: Short Stories; Writing: Email Format
+B1,24,Phỏng vấn,Đọc,14,56,39,66,67,69,64,Conversation intensive,Từ vựng,Listening: Conversations; Listening: Map Labelling; Vocabulary: Travel
+C1,19,Phỏng vấn,Nghe,5,100,85,76,92,100,94,Conversation intensive,Đọc,Grammar: Present Perfect; Speaking: Introductions; Listening: Map Labelling
+A1,17,Giao tiếp,Nghe,11,16,24,37,38,39,24,Conversation intensive,Nói,Speaking: Daily Routine; Writing: Paragraph Structure; Vocabulary: Travel
+B1,20,Giao tiếp,App,15,61,62,53,73,51,58,Beginner path,Nói,Vocabulary: Travel; Grammar: Present Perfect; Writing: Email Format
+B2,23,Phỏng vấn,Đọc,8,77,67,78,72,73,56,Conversation intensive,Nghe,Speaking: Introductions; Grammar: Past Simple; Vocabulary: Travel
+A1,28,Phỏng vấn,Ví dụ,10,7,26,31,23,22,31,Conversation intensive,Nghe,Vocabulary: Work; Vocabulary: Travel; Writing: Paragraph Structure
+A1,23,IELTS 6.5,App,5,40,22,25,13,43,25,General English,Nghe,Vocabulary: Work; Speaking: Daily Routine; Reading: News Articles
+A1,22,Giao tiếp,Nghe,5,27,32,14,27,25,20,General English,Nghe,Writing: Paragraph Structure; Grammar: Past Simple; Vocabulary: Travel
+A2,25,Phỏng vấn,App,1,63,40,58,52,47,40,IELTS prep,Viết,Reading: Short Stories; Vocabulary: Travel; Writing: Email Format
+C1,18,IELTS 6.5,Đọc,3,83,100,97,90,87,92,General English,Đọc,Listening: Conversations; Vocabulary: Work; Listening: Map Labelling
+B1,18,Giao tiếp,Ví dụ,4,66,62,74,69,75,37,General English,Nghe,Writing: Paragraph Structure; Vocabulary: Work; Speaking: Introductions
+B1,23,IELTS 6.5,App,1,61,68,53,55,64,48,Beginner path,Đọc,Speaking: Daily Routine; Writing: Email Format; Listening: Map Labelling
+B1,33,Phỏng vấn,Đọc,15,58,47,58,69,48,36,IELTS prep,Viết,Speaking: Introductions; Speaking: Daily Routine; Reading: Short Stories
+B2,29,IELTS 6.5,Nghe,12,63,84,79,76,82,77,General English,Viết,Vocabulary: Work; Writing: Email Format; Vocabulary: Travel
+C1,27,Phỏng vấn,Ví dụ,11,94,87,100,77,83,100,General English,Đọc,Speaking: Introductions; Listening: Map Labelling; Writing: Paragraph Structure
+A1,17,Phỏng vấn,Đọc,10,32,24,40,38,37,10,Beginner path,Ngữ pháp,Grammar: Past Simple; Grammar: Present Perfect; Writing: Paragraph Structure
+B1,22,IELTS 6.5,Nghe,4,63,56,63,77,58,58,IELTS prep,Nghe,Writing: Email Format; Listening: Map Labelling; Speaking: Introductions
+A2,15,IELTS 6.5,App,9,38,34,32,31,43,42,IELTS prep,Nghe,Listening: Map Labelling; Grammar: Past Simple; Speaking: Daily Routine
+B1,15,Phỏng vấn,App,3,48,60,64,67,50,62,Conversation intensive,Nói,Writing: Email Format; Listening: Map Labelling; Listening: Conversations
+A2,28,Phỏng vấn,App,3,48,24,39,23,60,47,Beginner path,Ngữ pháp,Speaking: Introductions; Speaking: Daily Routine; Listening: Map Labelling
+B1,30,Giao tiếp,Đọc,2,60,41,76,60,51,57,IELTS prep,Nói,Grammar: Present Perfect; Speaking: Introductions; Listening: Map Labelling
+B2,25,Phỏng vấn,App,15,72,75,89,95,90,65,Beginner path,Nghe,Reading: News Articles; Grammar: Past Simple; Listening: Map Labelling
+B1,26,Giao tiếp,Nghe,4,66,57,43,66,44,51,General English,Nói,Writing: Paragraph Structure; Reading: News Articles; Vocabulary: Travel
+B1,15,Giao tiếp,Đọc,9,41,54,52,58,51,58,Beginner path,Từ vựng,Reading: Short Stories; Vocabulary: Travel; Grammar: Past Simple
+A2,22,Phỏng vấn,Ví dụ,7,42,48,48,37,43,44,General English,Nói,Vocabulary: Work; Reading: Short Stories; Listening: Map Labelling
+A1,20,IELTS 6.5,Ví dụ,10,28,34,25,46,41,19,IELTS prep,Đọc,Vocabulary: Travel; Writing: Email Format; Grammar: Present Perfect
+B1,24,Phỏng vấn,Ví dụ,2,54,60,43,58,69,67,IELTS prep,Viết,Reading: News Articles; Speaking: Daily Routine; Writing: Email Format
+B1,15,Giao tiếp,App,5,77,58,77,61,65,53,Beginner path,Viết,Speaking: Introductions; Reading: News Articles; Writing: Paragraph Structure
+A1,22,IELTS 6.5,Đọc,7,41,29,46,26,34,37,Conversation intensive,Đọc,Grammar: Past Simple; Vocabulary: Travel; Listening: Conversations
+B1,21,Giao tiếp,App,3,55,57,65,57,69,53,Beginner path,Ngữ pháp,Speaking: Daily Routine; Writing: Email Format; Reading: News Articles
+B1,20,Giao tiếp,App,8,64,60,67,68,53,64,IELTS prep,Từ vựng,Vocabulary: Travel; Writing: Paragraph Structure; Writing: Email Format
+B1,27,Phỏng vấn,Nghe,12,76,59,58,67,60,68,General English,Từ vựng,Reading: Short Stories; Writing: Paragraph Structure; Listening: Map Labelling
+B1,34,Giao tiếp,Ví dụ,1,68,60,71,51,73,49,Beginner path,Viết,Speaking: Introductions; Vocabulary: Travel; Grammar: Present Perfect
+A1,22,Giao tiếp,App,11,24,15,28,33,23,29,Conversation intensive,Từ vựng,Vocabulary: Work; Reading: News Articles; Listening: Conversations
+A2,16,Giao tiếp,App,6,49,45,19,41,43,50,Beginner path,Ngữ pháp,Reading: News Articles; Vocabulary: Work; Grammar: Present Perfect
+A2,20,Giao tiếp,App,3,45,53,35,57,51,48,IELTS prep,Ngữ pháp,Reading: News Articles; Grammar: Past Simple; Vocabulary: Travel
+B1,21,Phỏng vấn,App,14,61,72,67,54,62,50,Conversation intensive,Từ vựng,Reading: Short Stories; Vocabulary: Travel; Grammar: Past Simple
+A1,21,Phỏng vấn,App,1,29,32,21,14,10,24,IELTS prep,Từ vựng,Vocabulary: Travel; Writing: Email Format; Grammar: Past Simple
+A1,25,Phỏng vấn,Đọc,15,36,10,14,12,24,44,Conversation intensive,Nghe,Reading: News Articles; Writing: Email Format; Speaking: Introductions
+B1,27,IELTS 6.5,Đọc,3,56,69,53,65,76,60,Conversation intensive,Nói,Speaking: Daily Routine; Reading: Short Stories; Writing: Paragraph Structure
+C1,25,Phỏng vấn,Nghe,5,82,100,91,80,95,95,Beginner path,Viết,Writing: Email Format; Writing: Paragraph Structure; Reading: News Articles
+C1,32,Giao tiếp,Đọc,7,84,100,77,80,94,93,Conversation intensive,Nghe,Listening: Conversations; Writing: Email Format; Vocabulary: Travel
+B2,26,Phỏng vấn,Ví dụ,10,89,83,65,78,85,51,IELTS prep,Đọc,Listening: Map Labelling; Grammar: Present Perfect; Reading: News Articles
+A1,32,IELTS 6.5,Ví dụ,7,34,51,29,45,25,26,Beginner path,Ngữ pháp,Writing: Email Format; Listening: Map Labelling; Grammar: Present Perfect
+C1,19,Giao tiếp,Ví dụ,13,86,89,92,84,88,80,Conversation intensive,Nghe,Grammar: Present Perfect; Reading: Short Stories; Speaking: Introductions
+A1,17,IELTS 6.5,Ví dụ,14,30,20,14,37,27,28,General English,Nói,Reading: Short Stories; Speaking: Daily Routine; Vocabulary: Travel
+B2,17,Giao tiếp,Ví dụ,8,77,85,87,69,69,79,IELTS prep,Nói,Listening: Conversations; Grammar: Present Perfect; Writing: Paragraph Structure
+A1,25,Phỏng vấn,App,3,47,29,23,23,30,29,Conversation intensive,Ngữ pháp,Reading: Short Stories; Writing: Email Format; Grammar: Present Perfect
+C1,15,IELTS 6.5,Ví dụ,7,73,100,91,91,87,93,Beginner path,Từ vựng,Writing: Email Format; Listening: Map Labelling; Speaking: Introductions
+A1,33,IELTS 6.5,Ví dụ,7,24,31,37,55,17,25,Conversation intensive,Từ vựng,Speaking: Daily Routine; Grammar: Past Simple; Vocabulary: Travel
+A2,32,IELTS 6.5,Đọc,10,66,28,39,43,44,37,IELTS prep,Nói,Reading: Short Stories; Listening: Conversations; Speaking: Daily Routine
+B2,20,Giao tiếp,App,9,56,63,87,65,84,76,Beginner path,Nghe,Reading: News Articles; Listening: Map Labelling; Speaking: Introductions
+B1,28,Phỏng vấn,App,5,51,59,75,59,57,63,Beginner path,Nói,Vocabulary: Travel; Listening: Map Labelling; Speaking: Introductions
+A2,26,IELTS 6.5,App,3,37,56,42,54,53,48,General English,Viết,Listening: Map Labelling; Speaking: Daily Routine; Grammar: Present Perfect
+B1,34,IELTS 6.5,App,5,60,66,43,48,60,49,Conversation intensive,Viết,Grammar: Past Simple; Reading: Short Stories; Listening: Conversations
+A2,29,Giao tiếp,App,14,49,61,53,36,29,46,IELTS prep,Viết,Writing: Paragraph Structure; Writing: Email Format; Vocabulary: Travel
+A2,33,Giao tiếp,Nghe,13,54,58,32,32,50,35,Conversation intensive,Đọc,Vocabulary: Travel; Writing: Paragraph Structure; Reading: Short Stories
+C1,17,IELTS 6.5,Nghe,12,88,100,88,100,71,100,Beginner path,Ngữ pháp,Writing: Email Format; Reading: Short Stories; Speaking: Daily Routine
+B2,19,IELTS 6.5,Ví dụ,13,84,87,74,61,83,87,Conversation intensive,Nói,Vocabulary: Work; Speaking: Daily Routine; Listening: Conversations
+A2,22,IELTS 6.5,Đọc,7,38,37,42,41,42,36,Beginner path,Viết,Writing: Paragraph Structure; Speaking: Introductions; Speaking: Daily Routine
+A2,26,IELTS 6.5,App,12,30,61,50,60,42,55,General English,Đọc,Grammar: Past Simple; Reading: Short Stories; Listening: Conversations
+B1,32,Phỏng vấn,Đọc,5,61,55,62,58,68,62,General English,Từ vựng,Speaking: Introductions; Reading: News Articles; Grammar: Present Perfect
+A2,35,Giao tiếp,Nghe,7,40,64,59,41,44,51,IELTS prep,Ngữ pháp,Reading: News Articles; Grammar: Present Perfect; Writing: Paragraph Structure
+B1,23,Giao tiếp,Đọc,14,67,61,59,50,51,60,General English,Viết,Vocabulary: Work; Reading: Short Stories; Listening: Map Labelling
+A2,33,IELTS 6.5,App,10,45,29,51,34,48,43,Conversation intensive,Nói,Listening: Map Labelling; Listening: Conversations; Vocabulary: Work
+A2,19,Phỏng vấn,App,7,42,6,42,30,59,39,General English,Từ vựng,Speaking: Daily Routine; Listening: Conversations; Writing: Paragraph Structure
+B1,19,Giao tiếp,App,6,51,63,65,51,70,64,Conversation intensive,Ngữ pháp,Listening: Map Labelling; Listening: Conversations; Grammar: Present Perfect
+B2,18,Phỏng vấn,App,8,91,98,73,67,61,94,IELTS prep,Nói,Reading: News Articles; Listening: Conversations; Reading: Short Stories
+A1,23,IELTS 6.5,Ví dụ,2,36,38,57,27,13,51,IELTS prep,Viết,Reading: Short Stories; Grammar: Present Perfect; Listening: Conversations
+B2,27,Phỏng vấn,Đọc,5,69,78,81,70,74,73,Conversation intensive,Nói,Reading: Short Stories; Speaking: Introductions; Reading: News Articles
+B2,19,IELTS 6.5,Đọc,6,53,61,69,84,81,89,IELTS prep,Nghe,Vocabulary: Travel; Vocabulary: Work; Writing: Email Format
+C1,24,IELTS 6.5,Nghe,4,93,100,100,86,97,90,Beginner path,Đọc,Speaking: Introductions; Speaking: Daily Routine; Grammar: Past Simple
+B2,19,IELTS 6.5,Đọc,11,92,66,60,78,56,75,Conversation intensive,Nói,Reading: Short Stories; Reading: News Articles; Speaking: Daily Routine
+A1,20,Phỏng vấn,Đọc,15,24,43,34,14,25,46,Beginner path,Nghe,Speaking: Introductions; Reading: News Articles; Listening: Conversations
+A1,33,Phỏng vấn,Ví dụ,8,32,34,0,26,6,26,General English,Nghe,Speaking: Daily Routine; Grammar: Present Perfect; Writing: Paragraph Structure
+B1,24,Phỏng vấn,Nghe,11,63,67,58,50,57,68,General English,Đọc,Speaking: Daily Routine; Grammar: Past Simple; Vocabulary: Travel
+C1,35,Giao tiếp,Ví dụ,11,96,87,74,87,82,78,IELTS prep,Nghe,Speaking: Daily Routine; Grammar: Present Perfect; Reading: News Articles
+B2,18,Giao tiếp,Đọc,1,71,67,82,78,78,80,Beginner path,Nói,Grammar: Past Simple; Vocabulary: Travel; Speaking: Introductions
+A1,34,IELTS 6.5,Đọc,13,27,17,38,20,30,27,IELTS prep,Đọc,Vocabulary: Travel; Speaking: Daily Routine; Writing: Email Format
+A2,35,IELTS 6.5,Nghe,6,40,54,42,19,28,60,General English,Từ vựng,Grammar: Past Simple; Reading: News Articles; Vocabulary: Work
+C1,16,Phỏng vấn,Nghe,14,82,95,91,95,92,85,IELTS prep,Nghe,Listening: Conversations; Speaking: Introductions; Writing: Paragraph Structure
+A1,18,Giao tiếp,App,5,19,37,22,31,42,35,General English,Đọc,Listening: Conversations; Vocabulary: Work; Vocabulary: Travel
+C1,28,Phỏng vấn,App,13,84,90,91,92,64,93,General English,Từ vựng,Vocabulary: Travel; Grammar: Present Perfect; Listening: Conversations
+C1,29,Giao tiếp,Ví dụ,9,80,89,82,85,82,99,IELTS prep,Đọc,Reading: News Articles; Speaking: Daily Routine; Speaking: Introductions
+C1,21,Giao tiếp,Ví dụ,12,91,94,88,89,95,77,IELTS prep,Nói,Grammar: Past Simple; Reading: News Articles; Speaking: Introductions
+B1,31,Phỏng vấn,App,13,53,64,44,64,62,63,Conversation intensive,Từ vựng,Vocabulary: Travel; Listening: Map Labelling; Writing: Email Format
+A2,34,IELTS 6.5,Ví dụ,9,44,29,40,43,48,51,Beginner path,Ngữ pháp,Reading: News Articles; Speaking: Daily Routine; Writing: Paragraph Structure
+C1,33,IELTS 6.5,Nghe,7,80,84,89,90,100,99,Beginner path,Nghe,Listening: Map Labelling; Vocabulary: Work; Writing: Email Format
+B1,35,IELTS 6.5,App,1,68,70,70,54,60,40,IELTS prep,Nói,Speaking: Daily Routine; Grammar: Past Simple; Listening: Map Labelling
+A1,33,IELTS 6.5,Đọc,1,31,36,46,36,29,15,General English,Viết,Speaking: Introductions; Writing: Email Format; Speaking: Daily Routine
+C1,31,Giao tiếp,App,14,91,90,96,78,82,89,IELTS prep,Nghe,Listening: Conversations; Reading: Short Stories; Speaking: Introductions
+B2,16,Giao tiếp,App,1,87,79,70,87,80,69,IELTS prep,Nói,Speaking: Introductions; Writing: Paragraph Structure; Listening: Map Labelling
+A2,28,Phỏng vấn,Nghe,10,54,52,49,48,43,35,Beginner path,Nghe,Speaking: Daily Routine; Listening: Conversations; Grammar: Past Simple
+A2,26,Giao tiếp,Đọc,14,49,63,30,53,25,35,Conversation intensive,Đọc,Grammar: Past Simple; Grammar: Present Perfect; Vocabulary: Work
+B2,17,Phỏng vấn,Ví dụ,11,67,76,79,82,84,80,Beginner path,Ngữ pháp,Writing: Paragraph Structure; Speaking: Introductions; Listening: Conversations
+B2,25,Phỏng vấn,App,13,79,62,70,63,88,60,Beginner path,Nói,Grammar: Present Perfect; Writing: Paragraph Structure; Speaking: Introductions
+A2,32,Giao tiếp,Ví dụ,3,48,55,66,41,37,55,IELTS prep,Nghe,Listening: Conversations; Reading: News Articles; Writing: Email Format
+C1,34,Phỏng vấn,Đọc,2,86,100,96,99,94,79,Beginner path,Viết,Speaking: Daily Routine; Reading: Short Stories; Speaking: Introductions
+A2,22,IELTS 6.5,Nghe,7,56,51,49,30,37,35,Beginner path,Từ vựng,Writing: Paragraph Structure; Vocabulary: Work; Writing: Email Format
+A2,27,IELTS 6.5,Nghe,4,40,51,41,57,52,42,Conversation intensive,Nói,Reading: Short Stories; Speaking: Introductions; Writing: Email Format
+B1,23,IELTS 6.5,App,8,71,59,77,68,64,61,Conversation intensive,Ngữ pháp,Speaking: Introductions; Grammar: Past Simple; Listening: Map Labelling
+B2,22,Giao tiếp,Đọc,9,78,74,74,65,85,65,General English,Ngữ pháp,Writing: Paragraph Structure; Writing: Email Format; Speaking: Introductions
+C1,34,Phỏng vấn,Nghe,13,100,89,83,76,80,95,IELTS prep,Viết,Listening: Map Labelling; Listening: Conversations; Vocabulary: Work
+A2,17,Giao tiếp,Đọc,14,48,37,41,37,28,39,General English,Ngữ pháp,Grammar: Past Simple; Listening: Conversations; Reading: News Articles
+A1,22,Phỏng vấn,Nghe,6,26,11,33,33,35,27,Conversation intensive,Đọc,Grammar: Present Perfect; Reading: Short Stories; Writing: Paragraph Structure
+C1,25,Phỏng vấn,App,14,80,84,83,99,100,83,IELTS prep,Ngữ pháp,Writing: Paragraph Structure; Listening: Map Labelling; Reading: News Articles
+B2,18,Phỏng vấn,Đọc,9,100,69,53,73,60,63,IELTS prep,Nghe,Grammar: Past Simple; Listening: Conversations; Reading: News Articles
+B1,27,IELTS 6.5,Nghe,12,65,85,55,50,48,78,General English,Đọc,Grammar: Present Perfect; Reading: Short Stories; Listening: Map Labelling
+A1,19,IELTS 6.5,Đọc,14,28,19,13,51,6,25,Conversation intensive,Nghe,Grammar: Present Perfect; Listening: Map Labelling; Vocabulary: Travel
+A2,29,IELTS 6.5,Đọc,2,19,63,37,62,48,48,Conversation intensive,Đọc,Vocabulary: Travel; Writing: Email Format; Speaking: Daily Routine
+A2,16,IELTS 6.5,Nghe,12,46,54,41,40,29,43,Beginner path,Đọc,Grammar: Past Simple; Speaking: Introductions; Listening: Conversations
+A1,30,Phỏng vấn,Nghe,9,30,11,23,33,30,34,IELTS prep,Viết,Listening: Map Labelling; Grammar: Past Simple; Reading: Short Stories
+B1,31,Phỏng vấn,App,1,51,76,57,60,48,35,General English,Nghe,Speaking: Introductions; Speaking: Daily Routine; Writing: Email Format
+A2,30,Phỏng vấn,App,8,43,50,44,45,58,44,Conversation intensive,Ngữ pháp,Listening: Map Labelling; Vocabulary: Work; Reading: Short Stories
+B1,18,IELTS 6.5,App,7,57,59,61,57,64,57,IELTS prep,Viết,Grammar: Present Perfect; Reading: News Articles; Speaking: Introductions
+A1,32,Giao tiếp,Ví dụ,11,37,40,27,21,36,0,Conversation intensive,Từ vựng,Speaking: Daily Routine; Speaking: Introductions; Listening: Map Labelling
+A2,27,Giao tiếp,Nghe,3,54,38,64,37,51,48,General English,Từ vựng,Grammar: Present Perfect; Listening: Map Labelling; Reading: Short Stories
+B2,25,Phỏng vấn,App,14,75,100,49,82,63,77,IELTS prep,Đọc,Writing: Paragraph Structure; Grammar: Present Perfect; Listening: Map Labelling
+B1,31,Giao tiếp,App,1,59,64,67,62,45,50,Beginner path,Ngữ pháp,Listening: Conversations; Listening: Map Labelling; Grammar: Present Perfect
+C1,29,Phỏng vấn,Nghe,11,100,100,79,94,100,73,Conversation intensive,Từ vựng,Vocabulary: Travel; Writing: Paragraph Structure; Speaking: Daily Routine
+A2,16,Giao tiếp,Ví dụ,7,44,37,60,25,36,52,Beginner path,Nghe,Listening: Map Labelling; Vocabulary: Work; Speaking: Daily Routine
+B2,19,Giao tiếp,Ví dụ,9,70,83,60,84,67,78,Conversation intensive,Ngữ pháp,Speaking: Daily Routine; Writing: Email Format; Grammar: Present Perfect
+B1,21,Giao tiếp,Đọc,7,89,58,76,69,63,62,IELTS prep,Đọc,Listening: Map Labelling; Speaking: Introductions; Vocabulary: Work
+B1,20,IELTS 6.5,Ví dụ,3,63,69,42,43,65,53,Beginner path,Đọc,Grammar: Present Perfect; Vocabulary: Work; Listening: Conversations
+B2,27,IELTS 6.5,Đọc,9,75,75,81,80,63,63,IELTS prep,Ngữ pháp,Grammar: Present Perfect; Writing: Email Format; Vocabulary: Work
+A2,16,IELTS 6.5,Nghe,5,45,35,24,59,44,47,IELTS prep,Ngữ pháp,Grammar: Past Simple; Vocabulary: Travel; Speaking: Introductions
+B2,34,Giao tiếp,Ví dụ,1,50,57,68,91,67,76,General English,Nghe,Listening: Map Labelling; Vocabulary: Work; Listening: Conversations
+A2,27,Giao tiếp,Đọc,10,51,43,37,44,44,43,Conversation intensive,Từ vựng,Listening: Conversations; Listening: Map Labelling; Vocabulary: Work
+B2,27,IELTS 6.5,Ví dụ,6,77,67,77,71,82,69,Beginner path,Nói,Reading: News Articles; Grammar: Present Perfect; Vocabulary: Work
+C1,32,Giao tiếp,Đọc,9,100,100,76,97,93,87,Beginner path,Nghe,Writing: Paragraph Structure; Vocabulary: Travel; Vocabulary: Work
+B2,27,Phỏng vấn,Đọc,14,76,84,81,68,56,85,Beginner path,Nói,Speaking: Daily Routine; Grammar: Present Perfect; Writing: Paragraph Structure
+C1,28,IELTS 6.5,Ví dụ,6,88,81,92,87,87,100,Conversation intensive,Nghe,Writing: Paragraph Structure; Listening: Map Labelling; Listening: Conversations
+A2,33,IELTS 6.5,Nghe,9,38,38,50,34,34,31,Beginner path,Nói,Grammar: Present Perfect; Speaking: Introductions; Listening: Map Labelling
+C1,32,IELTS 6.5,Nghe,8,84,100,99,79,94,90,General English,Từ vựng,Writing: Paragraph Structure; Listening: Map Labelling; Reading: Short Stories
+B2,20,IELTS 6.5,Nghe,2,81,87,63,83,71,92,General English,Viết,Vocabulary: Work; Listening: Conversations; Speaking: Introductions
+C1,24,Giao tiếp,Nghe,12,100,85,74,91,83,73,Beginner path,Ngữ pháp,Reading: News Articles; Listening: Conversations; Speaking: Daily Routine
+B1,18,IELTS 6.5,Ví dụ,8,63,53,59,59,54,54,Beginner path,Viết,Listening: Conversations; Writing: Email Format; Grammar: Present Perfect
+A1,32,IELTS 6.5,Nghe,10,26,26,38,32,18,43,General English,Ngữ pháp,Grammar: Present Perfect; Grammar: Past Simple; Reading: Short Stories
+C1,27,IELTS 6.5,Đọc,1,86,83,95,100,100,98,Conversation intensive,Từ vựng,Writing: Paragraph Structure; Listening: Conversations; Reading: News Articles
+A1,34,IELTS 6.5,Ví dụ,4,37,57,30,25,27,32,General English,Nói,Reading: News Articles; Vocabulary: Travel; Writing: Paragraph Structure
+B1,34,IELTS 6.5,Nghe,10,57,69,71,56,76,56,Conversation intensive,Nghe,Vocabulary: Work; Reading: Short Stories; Vocabulary: Travel
+B2,32,Giao tiếp,Nghe,15,79,85,70,74,71,64,IELTS prep,Ngữ pháp,Listening: Map Labelling; Reading: Short Stories; Vocabulary: Work
+B1,23,Phỏng vấn,Ví dụ,13,63,53,50,56,45,56,General English,Từ vựng,Reading: Short Stories; Writing: Email Format; Listening: Conversations
+B1,34,IELTS 6.5,Ví dụ,5,63,60,70,67,62,77,Beginner path,Viết,Speaking: Daily Routine; Listening: Conversations; Listening: Map Labelling
+A1,19,IELTS 6.5,Đọc,2,32,37,44,33,38,32,General English,Ngữ pháp,Listening: Conversations; Speaking: Introductions; Writing: Paragraph Structure
+A2,25,Giao tiếp,Nghe,12,41,40,52,43,43,52,Conversation intensive,Từ vựng,Grammar: Present Perfect; Speaking: Daily Routine; Speaking: Introductions
+B1,17,Phỏng vấn,Nghe,15,63,39,51,59,42,65,Conversation intensive,Từ vựng,Grammar: Present Perfect; Speaking: Daily Routine; Grammar: Past Simple
+C1,26,Giao tiếp,App,12,98,100,100,90,78,87,Conversation intensive,Đọc,Grammar: Present Perfect; Vocabulary: Work; Listening: Conversations
+B2,18,Phỏng vấn,Đọc,6,90,89,83,62,88,70,General English,Đọc,Speaking: Introductions; Reading: News Articles; Listening: Map Labelling
+A1,19,Giao tiếp,Nghe,10,23,31,24,18,27,26,IELTS prep,Nghe,Grammar: Past Simple; Grammar: Present Perfect; Writing: Email Format
+B1,34,Giao tiếp,App,15,41,66,53,63,67,64,Beginner path,Nói,Reading: News Articles; Vocabulary: Travel; Grammar: Past Simple
+A1,32,Giao tiếp,Đọc,2,28,49,29,28,25,19,IELTS prep,Viết,Vocabulary: Travel; Reading: News Articles; Writing: Paragraph Structure
+B2,30,Giao tiếp,Đọc,3,76,77,76,51,72,74,IELTS prep,Nói,Listening: Conversations; Grammar: Past Simple; Vocabulary: Travel
+A2,18,Giao tiếp,Ví dụ,10,60,49,63,53,54,37,General English,Từ vựng,Writing: Email Format; Grammar: Present Perfect; Vocabulary: Work
+A1,30,IELTS 6.5,Nghe,8,43,48,59,26,18,26,Conversation intensive,Từ vựng,Writing: Email Format; Listening: Conversations; Reading: News Articles
+A2,29,Giao tiếp,Nghe,11,42,48,62,50,49,55,IELTS prep,Đọc,Grammar: Past Simple; Reading: News Articles; Writing: Email Format
+A1,31,Phỏng vấn,Đọc,7,37,21,31,32,43,19,General English,Đọc,Grammar: Present Perfect; Reading: News Articles; Listening: Map Labelling
+A2,19,Phỏng vấn,Nghe,13,46,52,29,42,52,35,Beginner path,Từ vựng,Writing: Paragraph Structure; Listening: Conversations; Speaking: Daily Routine
+A1,28,Phỏng vấn,Nghe,12,22,29,34,9,15,21,IELTS prep,Ngữ pháp,Reading: Short Stories; Listening: Map Labelling; Grammar: Past Simple
+B2,28,Giao tiếp,App,4,68,85,69,65,66,89,Conversation intensive,Nghe,Reading: Short Stories; Listening: Map Labelling; Grammar: Present Perfect
+C1,26,Giao tiếp,Ví dụ,13,98,88,93,85,82,100,Beginner path,Từ vựng,Listening: Conversations; Listening: Map Labelling; Vocabulary: Work
+B2,32,IELTS 6.5,Nghe,7,70,67,77,78,67,90,Conversation intensive,Viết,Grammar: Past Simple; Vocabulary: Work; Vocabulary: Travel
+B2,29,Giao tiếp,App,11,54,92,83,65,64,60,Conversation intensive,Viết,Vocabulary: Work; Speaking: Introductions; Writing: Email Format
+A2,24,Phỏng vấn,App,12,53,39,38,47,34,59,IELTS prep,Viết,Speaking: Daily Routine; Reading: News Articles; Grammar: Present Perfect
+A2,20,IELTS 6.5,Nghe,4,48,33,46,48,49,43,IELTS prep,Từ vựng,Reading: Short Stories; Reading: News Articles; Vocabulary: Travel
+A2,28,Giao tiếp,App,3,40,37,40,46,50,49,General English,Nói,Reading: News Articles; Writing: Email Format; Speaking: Daily Routine
+A1,28,Phỏng vấn,Đọc,13,38,26,47,21,43,24,IELTS prep,Đọc,Vocabulary: Travel; Writing: Paragraph Structure; Writing: Email Format
+A1,34,Phỏng vấn,Đọc,12,29,31,27,37,17,31,Conversation intensive,Ngữ pháp,Grammar: Past Simple; Listening: Map Labelling; Writing: Paragraph Structure
+A1,34,IELTS 6.5,Đọc,9,20,7,34,43,30,28,IELTS prep,Nghe,Vocabulary: Travel; Writing: Paragraph Structure; Reading: News Articles
+B2,30,Giao tiếp,App,5,69,64,72,76,74,73,General English,Nghe,Speaking: Introductions; Vocabulary: Work; Writing: Paragraph Structure
+A2,34,IELTS 6.5,App,7,51,33,56,51,45,43,Conversation intensive,Từ vựng,Writing: Email Format; Grammar: Present Perfect; Vocabulary: Work
+A1,17,Giao tiếp,Ví dụ,2,34,41,20,43,24,20,Beginner path,Ngữ pháp,Listening: Map Labelling; Grammar: Past Simple; Vocabulary: Travel
+A2,28,Phỏng vấn,Nghe,5,43,28,56,45,39,47,General English,Nghe,Grammar: Present Perfect; Vocabulary: Work; Listening: Conversations
+B1,19,Giao tiếp,App,14,64,61,48,78,69,48,Conversation intensive,Đọc,Listening: Conversations; Reading: News Articles; Writing: Email Format
+A1,30,Phỏng vấn,App,14,26,33,38,35,39,21,General English,Viết,Reading: News Articles; Reading: Short Stories; Vocabulary: Travel
+A2,22,Giao tiếp,App,3,53,59,42,40,54,49,Beginner path,Viết,Grammar: Past Simple; Vocabulary: Work; Speaking: Daily Routine
+A1,21,Giao tiếp,Ví dụ,15,41,35,18,19,39,37,Beginner path,Viết,Speaking: Introductions; Reading: Short Stories; Listening: Map Labelling
+C1,19,Phỏng vấn,Nghe,11,97,85,81,83,91,94,General English,Từ vựng,Speaking: Introductions; Vocabulary: Travel; Vocabulary: Work
+B2,34,IELTS 6.5,Đọc,11,80,79,62,65,83,86,IELTS prep,Nghe,Vocabulary: Work; Reading: Short Stories; Vocabulary: Travel
+A1,16,Giao tiếp,Ví dụ,4,21,32,28,28,50,49,General English,Nói,Speaking: Introductions; Vocabulary: Travel; Listening: Map Labelling
+A1,34,Phỏng vấn,App,3,27,24,45,14,14,54,Conversation intensive,Nói,Vocabulary: Travel; Speaking: Introductions; Writing: Paragraph Structure
+B1,16,IELTS 6.5,Nghe,7,71,60,60,76,48,74,Conversation intensive,Nghe,Vocabulary: Work; Vocabulary: Travel; Grammar: Past Simple
+A1,25,Giao tiếp,Ví dụ,14,28,32,25,39,42,24,Beginner path,Từ vựng,Listening: Conversations; Vocabulary: Work; Vocabulary: Travel
+B2,16,IELTS 6.5,Nghe,1,81,80,83,75,78,66,General English,Từ vựng,Speaking: Daily Routine; Reading: Short Stories; Vocabulary: Travel
+B2,20,Phỏng vấn,App,1,79,72,80,88,50,89,Beginner path,Ngữ pháp,Vocabulary: Travel; Listening: Conversations; Speaking: Daily Routine
+C1,29,Phỏng vấn,Ví dụ,9,96,99,88,85,77,75,General English,Viết,Reading: News Articles; Listening: Conversations; Speaking: Daily Routine
+A1,30,Giao tiếp,Ví dụ,14,26,31,20,31,18,23,IELTS prep,Đọc,Speaking: Introductions; Listening: Map Labelling; Writing: Email Format
+B1,28,IELTS 6.5,Đọc,13,74,74,62,65,63,56,Beginner path,Viết,Listening: Map Labelling; Vocabulary: Travel; Writing: Paragraph Structure
+B1,29,IELTS 6.5,App,6,53,58,56,54,67,70,Beginner path,Viết,Writing: Email Format; Listening: Map Labelling; Grammar: Past Simple
+B2,30,IELTS 6.5,Nghe,9,100,82,88,94,76,78,IELTS prep,Ngữ pháp,Listening: Conversations; Speaking: Daily Routine; Grammar: Present Perfect
+A2,18,IELTS 6.5,Ví dụ,4,29,49,54,50,53,36,Beginner path,Nghe,Vocabulary: Travel; Listening: Map Labelling; Speaking: Introductions
+B2,28,Giao tiếp,Đọc,13,55,79,87,63,68,76,Beginner path,Đọc,Writing: Paragraph Structure; Listening: Conversations; Vocabulary: Work
+B1,34,Giao tiếp,Ví dụ,15,41,78,62,58,65,89,General English,Viết,Reading: News Articles; Grammar: Past Simple; Writing: Email Format
+A2,26,Phỏng vấn,Đọc,7,47,53,56,53,47,50,General English,Nói,Writing: Email Format; Vocabulary: Travel; Speaking: Daily Routine
+B2,19,IELTS 6.5,Đọc,9,77,78,67,85,64,70,Conversation intensive,Đọc,Writing: Paragraph Structure; Grammar: Past Simple; Reading: News Articles
+A2,19,Giao tiếp,Ví dụ,10,45,51,48,38,61,64,IELTS prep,Viết,Grammar: Past Simple; Vocabulary: Travel; Grammar: Present Perfect
+B1,24,IELTS 6.5,Ví dụ,6,61,66,52,68,56,56,Conversation intensive,Ngữ pháp,Vocabulary: Work; Reading: News Articles; Reading: Short Stories
+A1,25,Phỏng vấn,Ví dụ,4,42,44,30,11,19,22,Beginner path,Nghe,Grammar: Past Simple; Listening: Map Labelling; Speaking: Introductions
+B1,15,IELTS 6.5,Đọc,13,43,66,32,55,50,62,IELTS prep,Viết,Vocabulary: Work; Reading: News Articles; Grammar: Past Simple
+A1,24,Phỏng vấn,Nghe,11,32,36,25,28,27,28,Conversation intensive,Ngữ pháp,Grammar: Past Simple; Listening: Conversations; Reading: News Articles
+A1,19,Giao tiếp,App,8,28,20,41,27,29,22,IELTS prep,Nghe,Speaking: Introductions; Grammar: Present Perfect; Speaking: Daily Routine
+C1,24,Phỏng vấn,Nghe,14,85,89,82,77,88,90,General English,Từ vựng,Speaking: Daily Routine; Reading: News Articles; Writing: Paragraph Structure
+B1,31,Phỏng vấn,Nghe,12,60,59,68,34,62,71,Beginner path,Nghe,Speaking: Introductions; Grammar: Past Simple; Vocabulary: Work
+B1,26,Phỏng vấn,Nghe,13,35,69,58,60,60,37,Beginner path,Đọc,Vocabulary: Work; Grammar: Present Perfect; Grammar: Past Simple
+A1,22,IELTS 6.5,Nghe,4,27,33,27,32,34,28,IELTS prep,Đọc,Writing: Paragraph Structure; Writing: Email Format; Vocabulary: Work
+A2,20,Giao tiếp,App,13,48,55,43,50,38,43,Beginner path,Đọc,Listening: Conversations; Reading: News Articles; Writing: Email Format
+C1,28,IELTS 6.5,App,8,86,63,95,97,80,74,IELTS prep,Nói,Reading: News Articles; Writing: Paragraph Structure; Vocabulary: Work
+B2,15,IELTS 6.5,Đọc,5,71,82,56,66,79,72,General English,Ngữ pháp,Listening: Map Labelling; Reading: Short Stories; Speaking: Introductions
+A1,24,Phỏng vấn,Nghe,11,26,27,41,32,32,41,IELTS prep,Viết,Listening: Conversations; Speaking: Introductions; Grammar: Past Simple
+A1,15,IELTS 6.5,App,5,47,25,23,30,25,29,IELTS prep,Đọc,Grammar: Past Simple; Speaking: Daily Routine; Writing: Email Format
+B1,31,IELTS 6.5,Nghe,1,52,50,56,51,60,25,Conversation intensive,Nghe,Reading: News Articles; Reading: Short Stories; Vocabulary: Travel
+A1,16,Phỏng vấn,Nghe,14,37,34,26,44,12,37,Beginner path,Đọc,Grammar: Present Perfect; Listening: Map Labelling; Speaking: Daily Routine
+A2,34,IELTS 6.5,App,3,35,38,23,29,66,41,General English,Nghe,Speaking: Introductions; Writing: Paragraph Structure; Vocabulary: Travel
+A2,26,IELTS 6.5,Đọc,7,45,36,61,43,39,42,Conversation intensive,Nói,Grammar: Past Simple; Listening: Conversations; Vocabulary: Work
+A2,26,Phỏng vấn,Đọc,1,34,44,56,53,38,61,General English,Từ vựng,Reading: Short Stories; Speaking: Introductions; Writing: Email Format
+C1,19,Giao tiếp,Ví dụ,7,78,85,92,100,100,89,General English,Ngữ pháp,Vocabulary: Travel; Speaking: Introductions; Writing: Paragraph Structure
+B1,31,Phỏng vấn,App,13,69,59,59,47,51,43,Beginner path,Ngữ pháp,Vocabulary: Travel; Reading: Short Stories; Speaking: Daily Routine
+A1,24,IELTS 6.5,Đọc,13,29,30,33,32,24,38,Beginner path,Nói,Speaking: Daily Routine; Speaking: Introductions; Listening: Map Labelling
+A2,33,Giao tiếp,Ví dụ,2,44,44,51,44,42,33,Conversation intensive,Ngữ pháp,Reading: Short Stories; Vocabulary: Travel; Writing: Paragraph Structure
+B1,25,Phỏng vấn,App,13,60,43,72,46,47,53,Conversation intensive,Ngữ pháp,Listening: Map Labelling; Reading: Short Stories; Grammar: Present Perfect
+B2,34,IELTS 6.5,Ví dụ,1,88,83,100,90,89,96,IELTS prep,Ngữ pháp,Listening: Map Labelling; Vocabulary: Work; Grammar: Past Simple
+A2,28,IELTS 6.5,App,1,35,51,55,39,39,20,IELTS prep,Ngữ pháp,Grammar: Present Perfect; Reading: Short Stories; Writing: Paragraph Structure
+C1,28,IELTS 6.5,Nghe,1,87,80,83,95,85,82,Beginner path,Ngữ pháp,Grammar: Present Perfect; Listening: Conversations; Vocabulary: Travel
+A2,29,IELTS 6.5,App,9,51,34,55,46,47,46,General English,Từ vựng,Listening: Map Labelling; Listening: Conversations; Reading: News Articles
+C1,27,IELTS 6.5,Nghe,10,90,94,80,98,97,84,IELTS prep,Từ vựng,Grammar: Past Simple; Writing: Email Format; Speaking: Daily Routine
+A2,35,Phỏng vấn,Đọc,13,55,40,50,47,55,55,Conversation intensive,Ngữ pháp,Grammar: Present Perfect; Writing: Email Format; Speaking: Introductions
+A1,26,Phỏng vấn,Đọc,11,19,45,20,45,20,23,Beginner path,Nói,Listening: Conversations; Writing: Email Format; Reading: Short Stories
+B2,20,Giao tiếp,App,15,71,65,56,75,63,83,Conversation intensive,Nói,Writing: Email Format; Grammar: Present Perfect; Reading: Short Stories
+B2,26,IELTS 6.5,App,10,71,76,81,98,80,63,Beginner path,Nói,Reading: Short Stories; Vocabulary: Travel; Reading: News Articles
+C1,31,Phỏng vấn,Đọc,5,100,80,79,87,99,83,General English,Từ vựng,Vocabulary: Travel; Writing: Paragraph Structure; Speaking: Daily Routine
+A2,20,Phỏng vấn,Nghe,11,46,46,34,37,47,43,IELTS prep,Viết,Writing: Paragraph Structure; Vocabulary: Travel; Listening: Conversations
+B1,21,Giao tiếp,Đọc,4,49,55,63,57,70,56,General English,Nói,Grammar: Present Perfect; Vocabulary: Travel; Listening: Map Labelling
+A2,31,IELTS 6.5,Đọc,5,48,27,54,46,55,58,IELTS prep,Nói,Grammar: Present Perfect; Vocabulary: Work; Writing: Email Format
+A1,24,Phỏng vấn,Nghe,15,25,34,32,23,25,19,Beginner path,Nghe,Reading: News Articles; Speaking: Daily Routine; Grammar: Past Simple
+B2,33,IELTS 6.5,Ví dụ,13,89,85,78,78,62,67,General English,Đọc,Speaking: Daily Routine; Reading: Short Stories; Reading: News Articles
+A1,26,Phỏng vấn,App,8,39,29,25,38,24,48,Beginner path,Ngữ pháp,Grammar: Past Simple; Grammar: Present Perfect; Listening: Conversations
+A1,20,Giao tiếp,App,5,28,36,54,39,27,32,Beginner path,Từ vựng,Grammar: Present Perfect; Writing: Email Format; Vocabulary: Work
+B1,22,Phỏng vấn,App,14,57,49,66,59,61,62,IELTS prep,Ngữ pháp,Grammar: Past Simple; Reading: News Articles; Speaking: Introductions
+B2,24,IELTS 6.5,Đọc,5,87,86,58,78,72,68,IELTS prep,Viết,Writing: Paragraph Structure; Listening: Conversations; Reading: News Articles
+B2,28,IELTS 6.5,Nghe,14,78,68,64,77,76,85,Conversation intensive,Ngữ pháp,Speaking: Daily Routine; Reading: News Articles; Grammar: Present Perfect
+A2,32,Phỏng vấn,Đọc,7,42,54,52,36,56,62,General English,Đọc,Listening: Conversations; Writing: Paragraph Structure; Listening: Map Labelling
+B1,31,Phỏng vấn,Nghe,4,65,75,73,70,57,58,IELTS prep,Viết,Listening: Map Labelling; Writing: Email Format; Grammar: Present Perfect
+C1,30,IELTS 6.5,App,2,94,99,71,84,95,98,Beginner path,Nói,Listening: Map Labelling; Writing: Email Format; Grammar: Present Perfect
+B1,18,IELTS 6.5,App,5,56,59,47,68,43,36,IELTS prep,Đọc,Speaking: Daily Routine; Speaking: Introductions; Listening: Map Labelling
+A1,22,IELTS 6.5,Đọc,5,19,40,28,31,25,37,Beginner path,Nghe,Speaking: Daily Routine; Listening: Map Labelling; Listening: Conversations
+C1,30,Phỏng vấn,Ví dụ,11,78,90,97,90,100,86,General English,Viết,Grammar: Present Perfect; Speaking: Introductions; Reading: Short Stories
+A1,30,Phỏng vấn,App,9,16,19,24,40,47,7,General English,Viết,Writing: Email Format; Speaking: Daily Routine; Reading: Short Stories
+B1,34,IELTS 6.5,Ví dụ,2,71,55,51,69,49,63,Conversation intensive,Ngữ pháp,Vocabulary: Travel; Listening: Map Labelling; Writing: Email Format
+A1,18,IELTS 6.5,App,3,26,24,16,18,25,47,General English,Đọc,Vocabulary: Travel; Speaking: Daily Routine; Grammar: Past Simple
+A1,35,Phỏng vấn,Ví dụ,12,39,44,48,28,24,21,IELTS prep,Đọc,Writing: Paragraph Structure; Vocabulary: Work; Vocabulary: Travel
+A2,26,IELTS 6.5,Đọc,9,50,56,55,40,50,35,General English,Nói,Vocabulary: Work; Writing: Paragraph Structure; Listening: Conversations
+A1,15,Giao tiếp,Nghe,15,17,14,37,28,37,37,Conversation intensive,Đọc,Speaking: Introductions; Speaking: Daily Routine; Grammar: Past Simple
+A2,34,IELTS 6.5,Nghe,3,43,44,45,53,58,61,Conversation intensive,Nói,Vocabulary: Work; Writing: Email Format; Grammar: Past Simple
+C1,31,Phỏng vấn,Nghe,6,89,81,100,97,100,84,General English,Viết,Vocabulary: Travel; Reading: News Articles; Writing: Email Format
+A1,16,Giao tiếp,Ví dụ,14,48,32,29,43,58,35,Conversation intensive,Ngữ pháp,Reading: News Articles; Grammar: Present Perfect; Vocabulary: Travel
+A1,23,Phỏng vấn,Nghe,1,15,17,29,35,37,45,General English,Nói,Writing: Paragraph Structure; Reading: Short Stories; Speaking: Introductions
+A2,29,Phỏng vấn,App,6,32,36,50,40,40,50,General English,Ngữ pháp,Speaking: Introductions; Listening: Map Labelling; Vocabulary: Work
+C1,25,Giao tiếp,App,12,98,84,84,73,90,92,Conversation intensive,Từ vựng,Speaking: Daily Routine; Speaking: Introductions; Grammar: Past Simple
+C1,15,IELTS 6.5,Đọc,9,85,95,79,97,98,88,IELTS prep,Viết,Writing: Email Format; Vocabulary: Travel; Speaking: Introductions
+B1,33,IELTS 6.5,Ví dụ,13,64,69,62,63,67,59,Beginner path,Từ vựng,Vocabulary: Travel; Grammar: Past Simple; Vocabulary: Work
+C1,17,Phỏng vấn,Đọc,15,92,100,78,92,75,91,General English,Nghe,Speaking: Daily Routine; Grammar: Present Perfect; Listening: Conversations
+B2,21,Giao tiếp,Đọc,9,72,75,77,86,73,76,IELTS prep,Nghe,Listening: Conversations; Writing: Email Format; Vocabulary: Travel
+A1,28,Phỏng vấn,Ví dụ,10,13,26,29,33,39,37,Beginner path,Đọc,Writing: Email Format; Grammar: Present Perfect; Grammar: Past Simple
+B2,33,IELTS 6.5,Nghe,4,76,52,85,74,67,84,Beginner path,Nghe,Grammar: Past Simple; Listening: Conversations; Reading: Short Stories
+A2,18,IELTS 6.5,Đọc,10,50,60,32,57,45,51,IELTS prep,Đọc,Vocabulary: Travel; Grammar: Past Simple; Listening: Map Labelling
+A2,35,IELTS 6.5,Nghe,14,33,62,65,39,59,39,General English,Viết,Reading: News Articles; Writing: Email Format; Vocabulary: Travel
+A2,30,Phỏng vấn,Ví dụ,9,36,49,41,39,53,48,Conversation intensive,Nói,Reading: Short Stories; Speaking: Introductions; Listening: Conversations
+B2,35,Phỏng vấn,Đọc,7,79,69,68,64,65,73,Conversation intensive,Nghe,Speaking: Daily Routine; Reading: Short Stories; Listening: Map Labelling
+B1,27,Phỏng vấn,Nghe,12,65,66,70,41,63,59,Beginner path,Ngữ pháp,Grammar: Past Simple; Listening: Conversations; Grammar: Present Perfect
+B1,19,IELTS 6.5,App,6,51,73,41,74,49,46,Conversation intensive,Ngữ pháp,Grammar: Present Perfect; Writing: Email Format; Reading: News Articles
+A1,20,Giao tiếp,Đọc,10,13,24,26,41,20,25,IELTS prep,Từ vựng,Speaking: Introductions; Listening: Conversations; Vocabulary: Work
+A2,20,IELTS 6.5,App,13,56,33,51,50,45,58,Beginner path,Nói,Vocabulary: Travel; Reading: Short Stories; Listening: Map Labelling
+B1,29,Phỏng vấn,App,12,68,53,58,44,54,72,General English,Đọc,Reading: Short Stories; Listening: Conversations; Writing: Paragraph Structure
+C1,35,IELTS 6.5,Ví dụ,6,100,93,89,82,81,96,General English,Đọc,Speaking: Introductions; Listening: Conversations; Grammar: Present Perfect
+B2,22,IELTS 6.5,Đọc,12,63,80,94,70,63,89,Conversation intensive,Từ vựng,Listening: Conversations; Reading: Short Stories; Grammar: Present Perfect
+A1,32,IELTS 6.5,App,4,8,42,49,47,53,21,General English,Từ vựng,Reading: Short Stories; Grammar: Present Perfect; Listening: Conversations
+A1,32,IELTS 6.5,App,15,29,17,36,48,25,49,Beginner path,Viết,Speaking: Introductions; Listening: Map Labelling; Speaking: Daily Routine
+A2,32,Giao tiếp,Ví dụ,6,47,40,38,25,27,46,Beginner path,Nghe,Grammar: Present Perfect; Listening: Map Labelling; Reading: Short Stories
+B1,28,Phỏng vấn,Nghe,2,52,46,47,58,50,67,General English,Từ vựng,Writing: Email Format; Vocabulary: Travel; Listening: Map Labelling
+A2,21,Phỏng vấn,Đọc,3,19,39,47,39,44,43,General English,Viết,Listening: Conversations; Vocabulary: Travel; Reading: Short Stories
+C1,22,Giao tiếp,Ví dụ,9,77,90,100,83,84,89,IELTS prep,Ngữ pháp,Writing: Paragraph Structure; Vocabulary: Travel; Reading: Short Stories
+A2,24,Giao tiếp,Ví dụ,1,48,66,48,48,50,54,General English,Ngữ pháp,Grammar: Present Perfect; Speaking: Introductions; Speaking: Daily Routine
+C1,15,IELTS 6.5,Đọc,11,95,96,91,89,96,99,Conversation intensive,Ngữ pháp,Listening: Map Labelling; Reading: Short Stories; Vocabulary: Work
+A2,19,Phỏng vấn,App,13,45,35,30,46,50,48,Conversation intensive,Nghe,Writing: Paragraph Structure; Vocabulary: Work; Listening: Map Labelling
+A2,18,Giao tiếp,Đọc,13,29,16,48,45,52,37,IELTS prep,Ngữ pháp,Reading: News Articles; Speaking: Daily Routine; Speaking: Introductions
+B1,25,Giao tiếp,App,5,46,81,42,51,57,60,IELTS prep,Từ vựng,Reading: News Articles; Writing: Email Format; Speaking: Introductions
+C1,26,IELTS 6.5,App,14,90,93,97,86,78,83,IELTS prep,Nói,Vocabulary: Work; Listening: Map Labelling; Listening: Conversations
+A2,35,IELTS 6.5,Nghe,2,51,51,33,54,46,35,IELTS prep,Đọc,Reading: News Articles; Vocabulary: Work; Reading: Short Stories
+A1,33,Phỏng vấn,Ví dụ,4,35,27,41,33,18,11,Beginner path,Nghe,Grammar: Present Perfect; Reading: Short Stories; Writing: Paragraph Structure
+B1,23,IELTS 6.5,Ví dụ,6,56,41,53,60,35,60,General English,Viết,Writing: Paragraph Structure; Grammar: Past Simple; Writing: Email Format
+C1,31,IELTS 6.5,Đọc,6,82,75,87,100,84,94,General English,Nghe,Listening: Map Labelling; Writing: Paragraph Structure; Grammar: Past Simple
+C1,29,Giao tiếp,App,3,100,84,89,57,82,91,Conversation intensive,Ngữ pháp,Writing: Paragraph Structure; Listening: Conversations; Speaking: Introductions
+B1,18,Giao tiếp,Nghe,14,73,59,69,73,62,70,Beginner path,Đọc,Grammar: Past Simple; Grammar: Present Perfect; Listening: Map Labelling
+A2,25,Giao tiếp,App,3,25,42,32,36,47,38,Conversation intensive,Viết,Writing: Paragraph Structure; Listening: Conversations; Reading: News Articles
+A1,15,Giao tiếp,Đọc,7,25,16,23,30,38,26,Conversation intensive,Từ vựng,Reading: Short Stories; Writing: Email Format; Vocabulary: Work
+A2,19,IELTS 6.5,Nghe,1,57,51,42,46,35,39,IELTS prep,Viết,Listening: Map Labelling; Grammar: Past Simple; Speaking: Introductions
+B1,24,IELTS 6.5,Đọc,7,68,50,83,62,66,45,IELTS prep,Ngữ pháp,Speaking: Introductions; Vocabulary: Work; Grammar: Past Simple
+A2,16,Phỏng vấn,App,5,44,48,47,51,36,32,IELTS prep,Nói,Listening: Conversations; Speaking: Daily Routine; Grammar: Past Simple
+B2,31,Phỏng vấn,Ví dụ,4,77,82,77,68,61,77,Beginner path,Nghe,Listening: Conversations; Listening: Map Labelling; Speaking: Introductions
+A2,19,Phỏng vấn,App,10,35,42,40,49,50,48,Conversation intensive,Đọc,Vocabulary: Work; Writing: Paragraph Structure; Writing: Email Format
+C1,16,IELTS 6.5,Ví dụ,7,89,95,100,83,100,96,General English,Nghe,Writing: Email Format; Vocabulary: Work; Reading: Short Stories
+B1,30,Phỏng vấn,Nghe,1,54,55,58,56,52,64,Conversation intensive,Ngữ pháp,Vocabulary: Work; Reading: Short Stories; Speaking: Introductions
+A2,20,IELTS 6.5,Đọc,13,56,39,43,49,57,39,General English,Từ vựng,Grammar: Past Simple; Listening: Conversations; Speaking: Introductions
+C1,29,Phỏng vấn,Đọc,4,54,93,94,100,100,100,General English,Đọc,Grammar: Present Perfect; Writing: Email Format; Writing: Paragraph Structure
+B2,27,Phỏng vấn,Đọc,6,71,73,69,67,82,72,General English,Ngữ pháp,Speaking: Daily Routine; Vocabulary: Work; Reading: Short Stories
+B2,22,IELTS 6.5,Đọc,9,79,61,57,66,75,77,General English,Nói,Listening: Map Labelling; Speaking: Daily Routine; Vocabulary: Travel
+A1,27,Giao tiếp,Nghe,2,38,25,29,15,14,45,IELTS prep,Đọc,Reading: Short Stories; Speaking: Introductions; Reading: News Articles
+B1,25,IELTS 6.5,Ví dụ,10,54,61,48,43,64,65,Beginner path,Từ vựng,Speaking: Daily Routine; Vocabulary: Travel; Reading: Short Stories
+A2,27,IELTS 6.5,Nghe,7,57,36,59,36,61,35,IELTS prep,Ngữ pháp,Writing: Paragraph Structure; Reading: Short Stories; Listening: Map Labelling
+A2,31,IELTS 6.5,Ví dụ,1,47,57,20,41,40,48,Conversation intensive,Ngữ pháp,Speaking: Introductions; Vocabulary: Work; Vocabulary: Travel
