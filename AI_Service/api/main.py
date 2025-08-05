@@ -1,8 +1,8 @@
  # FastAPI server để gọi gợi ý qua API
 
 from fastapi import FastAPI
-from pydantic import BaseModel
-from model.recommend import recommend_learning_path
+from pydantic import BaseModel # dùng để định nghĩa schema đầu vào (tự động kiểm tra kiểu dữ liệu).
+from model.recommend import recommend_learning_path #hàm xử lý logic gợi ý, bạn đã viết trước đó trong file model/recommend.py.
 
 app = FastAPI()
 
