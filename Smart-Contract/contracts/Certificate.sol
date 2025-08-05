@@ -86,20 +86,6 @@ contract CertificateRegistry is AccessControl {
     }
 
     /**
-     * @notice Hàm lấy toàn bộ chứng chỉ (cho Admin)
-     * @return listCertificates mảng danh sách chứa toàn bộ chứng chỉ
-     */
-    function getAllCertificates() public view returns (Certificate[] memory) {
-        Certificate[] memory listCertificates = new Certificate[](
-            allCertificateHashes.length
-        );
-        for (uint i = 0; i < allCertificateHashes.length; i++) {
-            listCertificates[i] = certificates[allCertificateHashes[i]];
-        }
-        return listCertificates;
-    }
-
-    /**
      * @dev Hàm so sánh không phân biệt hoa hay thường
      */
     function _containsIgnoreCase(
@@ -285,6 +271,26 @@ contract CertificateRegistry is AccessControl {
                                 HÀM TÌM KIẾM CHO ADMIN  
     ===================================================================================
     */
+
+    /**
+     * @notice Hàm lấy toàn bộ chứng chỉ (cho Admin)
+     * @return listCertificates mảng danh sách chứa toàn bộ chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
+     */
+    function getAllCertificates()
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        total = allCertificateHashes.length;
+        listCertificates = new Certificate[](total);
+
+        for (uint i = 0; i < total; i++) {
+            listCertificates[i] = certificates[allCertificateHashes[i]];
+        }
+        // return (listCertificates, total);
+    }
 
     /**
      * @notice Hàm tìm kếm chứng chỉ theo tên khóa học
