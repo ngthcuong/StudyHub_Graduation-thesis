@@ -6,6 +6,7 @@ const connectToDB = require("./src/configs/database");
 // Routes
 const courseRoutes = require("./src/routes/courseRoutes");
 const userRoutes = require("./src/routes/userRoutes");
+const certificateRoutes = require("./src/routes/certificateRoutes");
 
 require("dotenv").config();
 
@@ -27,6 +28,7 @@ app.use(cors(corsOptions));
 // Routes
 app.use("/api/v1", courseRoutes);
 app.use("/api/v1", userRoutes);
+app.use("/api/v1", certificateRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {
