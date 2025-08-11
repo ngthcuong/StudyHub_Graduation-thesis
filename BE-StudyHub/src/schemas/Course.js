@@ -34,6 +34,11 @@ const courseSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    teacherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     cost: {
       type: Number,
       required: true,

@@ -10,7 +10,7 @@ const certificateController = {
       );
       res.status(201).json({
         message: "Certificate created successfully!",
-        course: savedCertificate,
+        certificate: savedCertificate,
       });
     } catch (error) {
       console.error("Error creating certificate:", error);

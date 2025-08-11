@@ -7,7 +7,7 @@ const userController = {
       const savedUser = await userModel.createUser(userData);
       res.status(201).json({
         message: "User created successfully!",
-        course: savedUser,
+        user: savedUser,
       });
     } catch (error) {
       console.error("Error creating user:", error);
