@@ -3,6 +3,10 @@ const cors = require("cors");
 const http = require("http");
 const connectToDB = require("./src/configs/database");
 
+// Routes
+const courseRoutes = require("./src/routes/courseRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+
 require("dotenv").config();
 
 // Create Expresss App and HTTP Server
@@ -19,6 +23,10 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+
+// Routes
+app.use("/api/v1", courseRoutes);
+app.use("/api/v1", userRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {
