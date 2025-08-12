@@ -1,12 +1,12 @@
-import { ethers } from "ethers";
-import config from "../configs/config";
-import abi from "../configs/CertificateRegistry.abi.json" assert { type: "json" };
+const { ethers } = require("ethers");
+const config = require("../configs/config");
+const abi = require("../configs/CertificateRegistry.abi.json");
 
 const provider = new ethers.JsonRpcProvider(config.rpcUrl);
 const wallet = new ethers.Wallet(config.adminPk, provider);
 const contract = new ethers.Contract(config.contractAddress, abi, wallet);
 
-export async function issueCertificate(
+async function issueCertificate(
   student,
   studentName,
   issuer,
@@ -36,10 +36,16 @@ export async function issueCertificate(
   return { certHash, txHash: receipt.transactionHash };
 }
 
-export function getCertificateByHash(hash) {
+function getCertificateByHash(hash) {
   return contract.getCertificateByHash(hash);
 }
 
-export function getStudentCertificatesByStudent(address) {
+function getStudentCertificatesByStudent(address) {
   return contract.getStudentCertificatesByStudent(address);
 }
+
+module.exports = {
+  issueCertificate,
+  getCertificateByHash,
+  getStudentCertificatesByStudent,
+};

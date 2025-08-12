@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   mongoDBUri: process.env.MONGODB_URI,
   rpcUrl: process.env.SEPOLIA_RPC_URL,
   adminPk: process.env.PRIVATE_KEY,
