@@ -2,6 +2,14 @@ const mongoose = require("mongoose");
 
 const certificateSchema = new mongoose.Schema(
   {
+    certHash: {
+      type: String,
+      require: true,
+    },
+    issuer: {
+      type: String,
+      require: true,
+    },
     learnerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "teacher", "admin"],
       default: "student",
     },
+    certificates: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Certificate",
+    },
   },
   { timestamps: true }
 );
