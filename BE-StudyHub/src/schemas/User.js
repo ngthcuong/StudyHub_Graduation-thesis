@@ -29,6 +29,16 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "teacher", "admin"],
       default: "student",
     },
+    walletAddress: {
+      type: String,
+      require: true,
+      unique: true,
+      trim: true,
+      match: [/^0x[a-fA-F0-9]{40}$/, "Please provide a valid wallet address"],
+    },
+    avatarUrl: { type: String, trim: true },
+    organization: { type: String, trim: true },
+    status: { type: String, enum: ["active", "inactive"], default: "active" },
     certificates: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "Certificate",

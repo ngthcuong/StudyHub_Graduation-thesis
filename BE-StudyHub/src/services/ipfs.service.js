@@ -1,24 +1,91 @@
 const config = require("../configs/config");
-const { Web3Storage, File } = require("web3.storage");
+const pinataSDK = require("@pinata/sdk");
+const { Readable } = require("stream");
 
-const w3 = new Web3Storage({ token: config.w3sToken });
+const pinata = new pinataSDK({ pinataJWTKey: config.pinataJwt });
 
-async function uploadFileBuffer(filename, buffer, mime) {
-  const files = [new File([buffer], filename, { type: mime })];
-  const cid = await w3.put(files, { wrapWithDirectory: false });
-  return { cid, uri: `ipfs://${cid}`, gateway: `https://w3s.link/ipfs/${cid}` };
+function ipfsUriToCid(uri) {
+  return uri?.startsWith("ipfs://") ? uri.slice(7) : uri;
 }
 
-async function uploadJSON(obj) {
-  const blob = new Blob([JSON.stringify(obj, null, 2)], {
-    type: "application/json",
-  });
-  const file = new File([blob], "metadata.json", { type: "application/json" });
-  const cid = await w3.put([file], { wrapWithDirectory: false });
-  return { cid, uri: `ipfs://${cid}`, gateway: `https://w3s.link/ipfs/${cid}` };
+async function fetchJSONFromIPFS(uriOrCid) {
+  const cid = ipfsUriToCid(uriOrCid);
+  const url = `${config.pinataGatewayBase}/ipfs/${cid}`;
+  const { data } = await axios.get(url, { responseType: "json" });
+  return data;
+}
+
+function bufferToStream(buffer) {
+  const stream = new Readable();
+  stream.push(buffer);
+  stream.push(null);
+  return stream;
+}
+
+async function uploadFileBuffer(filename, buffer, mime) {
+  const fileStream = bufferToStream(buffer);
+  const options = {
+    pinataMetadata: { name: filename },
+    pinataOptions: { cidVersion: 1 },
+  };
+  const result = await pinata.pinFileToIPFS(fileStream, options);
+  const cid = result.IpfsHash;
+  return {
+    cid,
+    uri: `ipfs://${cid}`,
+    gateway: `${config.pinataGatewayBase}/ipfs/${cid}`,
+    mime,
+  };
+}
+
+async function uploadJSON(obj, meta = {}) {
+  const options = {
+    pinataMetadata: {
+      name: meta.name || "metadata.json",
+      ...(meta.keyvalues ? { keyvalues: meta.keyvalues } : {}),
+    },
+    pinataOptions: { cidVersion: 1 },
+  };
+  const result = await pinata.pinJSONToIPFS(obj, options);
+  const cid = result.IpfsHash;
+  return {
+    cid,
+    uri: `ipfs://${cid}`,
+    gateway: `${config.pinataGatewayBase}/ipfs/${cid}`,
+  };
+}
+
+async function searchMetadataByKeyvalues(
+  keyvalues = {},
+  pageLimit = 50,
+  pageOffset = 0
+) {
+  const options = {
+    status: "pinned",
+    pageLimit,
+    pageOffset,
+    metadata: {
+      name: "metadata.json",
+      keyvalues,
+    },
+  };
+  const result = await pinata.pinList(options);
+  return (
+    result?.rows?.map((row) => ({
+      cid: row.ipfs_pin_hash,
+      uri: `ipfs://${row.ipfs_pin_hash}`,
+      gateway: `${config.pinataGatewayBase}/ipfs/${row.ipfs_pin_hash}`,
+      metadata: row.metadata,
+      size: row.size,
+      date_pinned: row.date_pinned,
+      date_unpinned: row.date_unpinned,
+    })) || []
+  );
 }
 
 module.exports = {
   uploadFileBuffer,
   uploadJSON,
+  searchMetadataByKeyvalues,
+  fetchJSONFromIPFS,
 };
