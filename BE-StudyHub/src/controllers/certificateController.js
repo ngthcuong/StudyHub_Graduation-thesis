@@ -10,6 +10,7 @@ const {
   getStudentCertificatesByStudent: readByStudent,
 } = require("../services/ether.service");
 const config = require("../configs/config");
+const { buildCertificateMetadata } = require("../utils/certificateMetadata");
 const { toPlain } = require("../utils/helper");
 
 const createCertificate = async (req, res) => {
@@ -47,17 +48,16 @@ const issueCertificate = async (req, res, next) => {
       );
     }
 
-    const metadata = {
-      version: "1.0",
-      type: "studyhub-certificate",
-      issuer: { name: issuer },
-      student: { address: student, name: studentName },
-      course: { name: courseName },
-      uploadedAt: Date.now(),
-      files: fileInfo
-        ? { main: `ipfs://${fileInfo.cid}`, mime: req.file.mimetype }
-        : undefined,
-    };
+    // Build JSON metadata
+    const metadata = buildCertificateMetadata({
+      issuer,
+      studentAddress: student,
+      studentName,
+      courseName,
+      fileInfo: fileInfo && { cid: fileInfo.cid, mime: req.file.mimetype },
+    });
+
+    // Lưu JSON lên IPFS (Pinata)
     const meta = await uploadJSON(metadata, {
       name: "studyhub-certificate.json",
       keyvalues: {
@@ -69,6 +69,7 @@ const issueCertificate = async (req, res, next) => {
       },
     });
 
+    // Gọi on-chain với metadataURI (ipfs://CID)
     const { certHash, txHash } = await issueOnChain(
       student,
       studentName,
@@ -124,6 +125,7 @@ const getStudentCertificatesByStudent = async (req, res, next) => {
     next(error);
   }
 };
+
 const searchCertificates = async (req, res, next) => {
   try {
     const { student, issuer, courseName, studentName, limit, offset } =
