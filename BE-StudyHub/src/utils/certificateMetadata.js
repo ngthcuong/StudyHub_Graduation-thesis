@@ -1,31 +1,21 @@
+// src/utils/certificateMetadata.js
 const buildCertificateMetadata = ({
   version = "1.0",
   issuer,
   studentAddress,
   studentName,
   courseName,
-  fileInfo, // {cid, mine} hoặc undefined
-  extra, // object tùy chọn để mở rộng schema
+  extra, // optional
 }) => {
   return {
     version,
     type: "studyhub-certificate",
     issuer: { name: issuer },
-    student: {
-      address: studentAddress,
-      name: studentName,
-    },
-    courseName: {
-      name: courseName,
-    },
-    uploadedAt: Date.now(),
-    file: fileInfo
-      ? { main: `ipfs://${fileInfo.cid}`, mime: fileInfo.mime }
-      : undefined,
+    student: { address: studentAddress, name: studentName },
+    course: { name: courseName },
+    issuedAt: Date.now(),
     ...extra,
   };
 };
 
-module.exports = {
-  buildCertificateMetadata,
-};
+module.exports = { buildCertificateMetadata };

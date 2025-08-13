@@ -1,3 +1,4 @@
+// Chuyển dữ liệu từ BigInt -> String
 function toPlain(value) {
   if (typeof value === "bigint") return value.toString();
   if (Array.isArray(value)) return value.map(toPlain);

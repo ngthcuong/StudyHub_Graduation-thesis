@@ -1,18 +1,24 @@
 const certificateModel = require("../models/certificateModel");
 const {
-  uploadFileBuffer,
   uploadJSON,
   searchMetadataByKeyvalues,
+  updatePinataKeyvalues,
 } = require("../services/ipfs.service");
 const {
   issueCertificate: issueOnChain,
   getCertificateByHash: readByHash,
   getStudentCertificatesByStudent: readByStudent,
-} = require("../services/ether.service");
+} = require("../services/ethers.service");
 const config = require("../configs/config");
 const { buildCertificateMetadata } = require("../utils/certificateMetadata");
 const { toPlain } = require("../utils/helper");
 
+/**
+ * Tạo bản ghi chứng chỉ trong cơ sở dữ liệu (KHÔNG phát hành on-chain).
+ * @param {import('express').Request} req - Body chứa dữ liệu chứng chỉ
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ */
 const createCertificate = async (req, res) => {
   try {
     const certificateData = req.body;
@@ -32,6 +38,14 @@ const createCertificate = async (req, res) => {
   }
 };
 
+/**
+ * Phát hành chứng chỉ: upload metadata JSON lên Pinata/IPFS,
+ * gọi smart contract để phát hành với metadataURI, sau đó lưu chứng chỉ vào DB
+ * @param {import('express').Request} req - JSON body: { student, studentName, issuer, courseName, learnerId?, courseId? }
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
 const issueCertificate = async (req, res, next) => {
   try {
     const { student, studentName, issuer, courseName } = req.body;
@@ -54,7 +68,6 @@ const issueCertificate = async (req, res, next) => {
       studentAddress: student,
       studentName,
       courseName,
-      fileInfo: fileInfo && { cid: fileInfo.cid, mime: req.file.mimetype },
     });
 
     // Lưu JSON lên IPFS (Pinata)
@@ -77,7 +90,10 @@ const issueCertificate = async (req, res, next) => {
       courseName,
       meta.uri
     );
+    // Bổ sung certHash vào keyvalues để search nhanh hơn
+    await updatePinataKeyvalues(meta.cid, { certHash });
 
+    // Tạo và lưu chứng chỉ vào database
     await certificateModel.createCertificate({
       certHash,
       issuer,
@@ -86,7 +102,6 @@ const issueCertificate = async (req, res, next) => {
       issueDate: new Date(),
       metadataURI: meta.uri,
       metadataCID: meta.cid,
-      fileCID: fileInfo?.cid ?? null,
       txHash,
       network: "sepolia",
     });
@@ -96,7 +111,6 @@ const issueCertificate = async (req, res, next) => {
       certHash,
       metadataURI: meta.uri,
       metadataCID: meta.cid,
-      fileCID: fileInfo?.cid ?? null,
       txHash,
       contract: config.contractAddress,
     });
@@ -106,9 +120,23 @@ const issueCertificate = async (req, res, next) => {
   }
 };
 
+/**
+ * Lấy thông tin chứng chỉ on-chain theo certHash.
+ * Ghi chú: dữ liệu có kiểu BigInt (vd issuedDate) sẽ được chuyển sang string bằng toPlain.
+ * @param {import('express').Request} req - params: { hash }
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
 const getCertificateByHash = async (req, res, next) => {
   try {
-    const cert = await readByHash(req.params.hash);
+    const hash = req.params.hash;
+    if (!hash) {
+      return res
+        .status(400)
+        .json({ error: "Missing certificate's hash fields" });
+    }
+    const cert = await readByHash(hash);
     return res.json(toPlain(cert));
   } catch (error) {
     console.error("Can not find certificate by hash: ", error);
@@ -116,16 +144,38 @@ const getCertificateByHash = async (req, res, next) => {
   }
 };
 
+/**
+ * Lấy danh sách chứng chỉ của một sinh viên theo địa chỉ ví on-chain.
+ * Trả về { total, list } trong đó BigInt đã được chuyển sang string (toPlain).
+ * @param {import('express').Request} req - params: { address }
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
 const getStudentCertificatesByStudent = async (req, res, next) => {
   try {
-    const [list, total] = await readByStudent(req.params.address);
-    return res.json({ total: Number(total), list });
+    const studentAddress = req.params.address;
+    if (!studentAddress) {
+      return res
+        .status(400)
+        .json({ error: "Missing student's address fields" });
+    }
+    const [list, total] = await readByStudent(studentAddress);
+    return res.json({ total: Number(total), list: toPlain(list) });
   } catch (error) {
     console.error("Can not get list certificates by student: ", error);
     next(error);
   }
 };
 
+/**
+ * Tìm kiếm metadata chứng chỉ đã pin trên Pinata theo bộ lọc keyvalues.
+ * Hỗ trợ phân trang qua limit/offset; trả về danh sách rút gọn kèm CID và URL gateway.
+ * @param {import('express').Request} req - query: { student?, issuer?, courseName?, studentName?, limit?, offset? }
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
 const searchCertificates = async (req, res, next) => {
   try {
     const { student, issuer, courseName, studentName, limit, offset } =
