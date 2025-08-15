@@ -4,6 +4,7 @@ const http = require("http");
 const connectToDB = require("./src/configs/database");
 
 // Routes
+const authRoutes = require("./src/routes/authRoutes");
 const courseRoutes = require("./src/routes/courseRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const certificateRoutes = require("./src/routes/certificateRoutes");
@@ -26,9 +27,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Routes
-app.use("/api/v1", courseRoutes);
-app.use("/api/v1", userRoutes);
-app.use("/api/v1", certificateRoutes);
+app.use("/app/v1/auth", authRoutes);
+app.use("/api/v1/courses", courseRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/certs", certificateRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {

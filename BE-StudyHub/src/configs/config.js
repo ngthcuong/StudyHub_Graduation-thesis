@@ -5,4 +5,5 @@ module.exports = {
   contractAddress: process.env.CONTRACT_ADDRESS,
   pinataJwt: process.env.PINATA_JWT,
   pinataGatewayBase: process.env.PINATA_GATEWAY_BASE,
+  jwtKey: process.env.JWT_SECRET,
 };

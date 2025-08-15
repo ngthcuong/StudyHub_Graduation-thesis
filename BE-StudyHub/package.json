@@ -21,6 +21,7 @@
     "ethers": "^6.15.0",
     "express": "^5.1.0",
     "http": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.17.1",
     "multer": "^2.0.2",
