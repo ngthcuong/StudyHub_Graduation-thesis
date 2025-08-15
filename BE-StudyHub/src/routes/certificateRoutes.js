@@ -4,13 +4,14 @@ const {
   getCertificateByHash,
   issueCertificate,
   searchCertificates,
+  getStudentCertificatesByStudent,
 } = require("../controllers/certificateController");
-const upload = require("../middlewares/upload");
 const router = express.Router();
 
 router.post("/certificates", createCertificate);
-router.get("/certificates/:hash", getCertificateByHash);
-router.put("/certificates/issue", upload.single("file"), issueCertificate);
 router.get("/certificates/search", searchCertificates);
+router.post("/certificates/issue", issueCertificate);
+router.get("/certificates/student/:address", getStudentCertificatesByStudent);
+router.get("/certificates/:hash", getCertificateByHash);
 
 module.exports = router;

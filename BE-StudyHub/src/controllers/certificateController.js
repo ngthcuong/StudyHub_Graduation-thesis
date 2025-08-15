@@ -11,7 +11,11 @@ const {
 } = require("../services/ethers.service");
 const config = require("../configs/config");
 const { buildCertificateMetadata } = require("../utils/certificateMetadata");
-const { toPlain } = require("../utils/helper");
+const {
+  toPlain,
+  structureCertificateData,
+  structureCertificateList,
+} = require("../utils/helper");
 
 /**
  * Tạo bản ghi chứng chỉ trong cơ sở dữ liệu (KHÔNG phát hành on-chain).
@@ -50,17 +54,21 @@ const issueCertificate = async (req, res, next) => {
   try {
     const { student, studentName, issuer, courseName } = req.body;
     if (!student || !studentName || !issuer || !courseName) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({
+        error: "Missing required fields",
+        received: req.body,
+        required: ["student", "studentName", "issuer", "courseName"],
+      });
     }
 
-    let fileInfo = null;
-    if (req.file) {
-      fileInfo = await uploadFileBuffer(
-        req.file.originalname,
-        req.file.buffer,
-        req.file.mimetype
-      );
-    }
+    // let fileInfo = null;
+    // if (req.file) {
+    //   fileInfo = await uploadFileBuffer(
+    //     req.file.originalname,
+    //     req.file.buffer,
+    //     req.file.mimetype
+    //   );
+    // }
 
     // Build JSON metadata
     const metadata = buildCertificateMetadata({
@@ -77,7 +85,7 @@ const issueCertificate = async (req, res, next) => {
         type: "studyhub-certificate",
         student: student.toLowerCase(),
         studentName,
-        issuer,
+        issuer: issuer.toLowerCase(),
         courseName,
       },
     });
@@ -137,7 +145,14 @@ const getCertificateByHash = async (req, res, next) => {
         .json({ error: "Missing certificate's hash fields" });
     }
     const cert = await readByHash(hash);
-    return res.json(toPlain(cert));
+
+    // Cấu trúc lại dữ liệu để dễ đọc
+    const structuredCert = structureCertificateData(cert);
+
+    return res.json({
+      certificate: structuredCert,
+      raw: toPlain(cert), // Giữ lại dữ liệu gốc nếu cần
+    });
   } catch (error) {
     console.error("Can not find certificate by hash: ", error);
     next(error);
@@ -155,13 +170,19 @@ const getCertificateByHash = async (req, res, next) => {
 const getStudentCertificatesByStudent = async (req, res, next) => {
   try {
     const studentAddress = req.params.address;
+    console.log(studentAddress);
+
     if (!studentAddress) {
       return res
         .status(400)
         .json({ error: "Missing student's address fields" });
     }
     const [list, total] = await readByStudent(studentAddress);
-    return res.json({ total: Number(total), list: toPlain(list) });
+    const structuredList = structureCertificateList(toPlain(list));
+    return res.json({
+      total: Number(total),
+      certificates: structuredList,
+    });
   } catch (error) {
     console.error("Can not get list certificates by student: ", error);
     next(error);
@@ -184,10 +205,14 @@ const searchCertificates = async (req, res, next) => {
     if (student)
       keyvalues.student = { value: String(student).toLowerCase(), op: "eq" };
     if (issuer) keyvalues.issuer = { value: String(issuer), op: "eq" };
-    if (courseName)
-      keyvalues.courseName = { value: String(courseName), op: "eq" };
-    if (studentName)
-      keyvalues.studentName = { value: String(studentName), op: "eq" };
+    if (courseName) {
+      const encodedCourseName = encodeURIComponent(String(courseName));
+      keyvalues.courseName = { value: encodedCourseName, op: "eq" };
+    }
+    if (studentName) {
+      const encodedStudentName = encodeURIComponent(String(studentName));
+      keyvalues.studentName = { value: encodedStudentName, op: "eq" };
+    }
 
     const rows = await searchMetadataByKeyvalues(
       keyvalues,
