@@ -65,19 +65,19 @@ class RedisService {
         throw new Error("Redis not connected");
       }
 
-      const key = `token:${userId}:${token}`;
+      const key = `access_token:${userId}:${token}`;
       await this.client.setEx(
         key,
         expiresIn,
         JSON.stringify({
           userId,
           token,
-          createdAt: new Date().toISOString,
-          expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
         })
       );
 
-      await this.client.sAdd(`user_token:${userId}`, token);
+      await this.client.sAdd(`user_access_tokens:${userId}`, token);
       console.log(`Token saved for user ${userId}`);
       return true;
     } catch (error) {
@@ -120,7 +120,7 @@ class RedisService {
         return false;
       }
 
-      const key = `token:${userId}:${token}`;
+      const key = `access_token:${userId}:${token}`;
       const tokenData = await this.client.get(key);
 
       if (!tokenData) {
@@ -132,7 +132,7 @@ class RedisService {
       const expiresAt = new Date(parsedToken.expiresAt);
 
       if (now > expiresAt) {
-        await this.removeToken({ userId, token });
+        await this.removeAccessToken({ userId, token });
         return false;
       }
 
@@ -179,11 +179,11 @@ class RedisService {
         return false;
       }
 
-      const key = `token:${userId}:${token}`;
+      const key = `access_token:${userId}:${token}`;
       await this.client.del(key);
 
       // Xóa khỏi danh sách access tokens của user
-      await this.client.sRem(`user_tokens:${userId}`, token);
+      await this.client.sRem(`user_access_tokens:${userId}`, token);
       console.log(`Token removed for user ${userId}`);
       return true;
     } catch (error) {
@@ -282,7 +282,7 @@ class RedisService {
         return null;
       }
 
-      const key = `token:${userId}:${token}`;
+      const key = `access_token:${userId}:${token}`;
       const tokenData = await this.client.get(key);
 
       if (!tokenData) {
