@@ -11,32 +11,36 @@ const {
   validateEmail,
   validatePhone,
   validatePassword,
-  validateWalletAddress,
   checkUserExists,
   removePasswordFromResponse,
+  validateNewPassword,
 } = require("../middlewares/validateMiddleware");
-const { hashPassword, verifyToken } = require("../middlewares/authMiddleware");
+const {
+  hashPassword,
+  verifyToken,
+  comparePassword,
+} = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post(
-  "/reiger",
+  "/register",
   validateEmail,
   validatePhone,
   validatePassword,
-  validateWalletAddress,
   checkUserExists,
   hashPassword,
   removePasswordFromResponse,
   register
 );
-router.post(
-  "/login",
-  validateEmail,
-  validatePassword,
-  removePasswordFromResponse,
-  login
-);
+router.post("/login", validateEmail, validatePassword, comparePassword, login);
 router.post("/logout", verifyToken, logout);
-router.post("/refresh", verifyToken, refreshToken);
-router.post("/change-password", verifyToken, validatePassword, changePassword);
+router.post("/refreshToken", verifyToken, refreshToken);
+router.post(
+  "/change-password",
+  verifyToken,
+  validateNewPassword,
+  changePassword
+);
 router.post("/forgot-password", validateEmail, forgotPassword);
+
+module.exports = router;

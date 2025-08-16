@@ -47,6 +47,51 @@ const validatePassword = (req, res, next) => {
   next();
 };
 
+const validateNewPassword = (req, res, next) => {
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ error: "Passoword is required" });
+  }
+
+  // Kiểm tra độ dài tối thiểu (>= 8 kí tự)
+  if (newPassword.length < 8) {
+    return res.status(400).json({
+      error: "Password must be at least 8 characters long",
+    });
+  }
+
+  // Kiểm tra có ít nhất 1 chữ hoa
+  if (!/[A-Z]/.test(newPassword)) {
+    return res.status(400).json({
+      error: "Password must contain at least one uppercase letter",
+    });
+  }
+
+  // Kiểm tra có ít nhất 1 chữ thường
+  if (!/[a-z]/.test(newPassword)) {
+    return res.status(400).json({
+      error: "Password must contain at least one lowercase letter",
+    });
+  }
+
+  // Kiểm tra có ít nhất 1 số
+  if (!/\d/.test(newPassword)) {
+    return res.status(400).json({
+      error: "Password must contain at least one number",
+    });
+  }
+
+  // Kiểm tra có ít nhất 1 ký tự đặc biệt
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+    return res.status(400).json({
+      error: "Password must contain at least one special character",
+    });
+  }
+
+  next();
+};
+
 // Hàm để validate email
 const validateEmail = (req, res, next) => {
   const { email } = req.body;
@@ -185,6 +230,7 @@ module.exports = {
   removePasswordFromResponse,
   validateEmail,
   validatePassword,
+  validateNewPassword,
   validatePhone,
   validateWalletAddress,
 };

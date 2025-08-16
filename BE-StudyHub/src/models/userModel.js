@@ -1,6 +1,6 @@
 const User = require("../schemas/User");
 
-const createUser = async (req, res) => {
+const createUser = async (userData) => {
   try {
     const newUser = new User(userData);
     const savedUser = await newUser.save();

@@ -170,7 +170,6 @@ const getCertificateByHash = async (req, res, next) => {
 const getStudentCertificatesByStudent = async (req, res, next) => {
   try {
     const studentAddress = req.params.address;
-    console.log(studentAddress);
 
     if (!studentAddress) {
       return res

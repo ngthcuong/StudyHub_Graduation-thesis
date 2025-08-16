@@ -12,6 +12,7 @@ const register = async (req, res) => {
       {
         userId: savedUser._id,
         email: savedUser.email,
+        fullName: user.fullName,
       },
       config.jwtKey,
       { expiresIn: "24h" }
@@ -32,21 +33,37 @@ const login = async (req, res) => {
   try {
     const user = req.user;
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       {
-        userId: savedUser._id,
-        email: savedUser.email,
+        userId: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
+      config.jwtKey,
+      { expiresIn: "15m" }
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
       },
       config.jwtKey,
       { expiresIn: "24h" }
     );
 
-    res.status(201).json({
-      message: "User registered successfully!",
-      user: user,
-      token: token,
+    res.status(200).json({
+      message: "Login successfully!",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    res.status(500).json({ error: "Failed to login user" });
+  }
 };
 
 const logout = async (req, res) => {
@@ -62,11 +79,15 @@ const logout = async (req, res) => {
 
 const refreshToken = async (req, res) => {
   try {
-    const { userId, email } = req.user; // Từ middleware verifyToken
+    const { userId, email, fullName, role } = req.user; // Từ middleware verifyToken
 
-    const newToken = jwt.sign({ userId, email }, config.jwtKey, {
-      expiresIn: "24h",
-    });
+    const newToken = jwt.sign(
+      { userId, email, fullName, role },
+      config.jwtKey,
+      {
+        expiresIn: "24h",
+      }
+    );
 
     res.status(200).json({
       message: "Token refreshed successfully!",
@@ -88,7 +109,7 @@ const changePassword = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const isCurrentPasswordValid = bcrypt.compare(
+    const isCurrentPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password
     );
