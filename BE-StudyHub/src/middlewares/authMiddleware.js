@@ -61,7 +61,7 @@ const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, config.jwtKey);
 
     // Kiểm tra xem token có trong Redis hay không
-    const isValidToken = await redisService.isValidToken({
+    const isValidToken = await redisService.isValidAccessToken({
       userId: decoded.userId,
       token,
     });
@@ -82,6 +82,31 @@ const verifyToken = async (req, res, next) => {
       return res.status(401).json({ error: "Token expired" });
     }
     res.status(500).json({ error: "Failed to verify token" });
+  }
+};
+
+const verifyRefreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(401).json({ error: "Refresh token required" });
+    }
+
+    const decoded = jwt.verify(refreshToken, config.jwtKey);
+
+    const isValidRefreshToken = await redisService.isValidRefreshToken({
+      userId: decoded.userId,
+      token: refreshToken,
+    });
+
+    if (!isValidRefreshToken) {
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid refresh token" });
   }
 };
 
@@ -109,5 +134,6 @@ module.exports = {
   hashPassword,
   comparePassword,
   verifyToken,
+  verifyRefreshToken,
   requireAdmin,
 };

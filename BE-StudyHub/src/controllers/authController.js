@@ -57,12 +57,12 @@ const login = async (req, res) => {
     );
 
     // Lưu token vào Redis
-    await redisService.saveToken({
+    await redisService.saveAccessToken({
       userId: user._id.toString(),
       token: accessToken,
       expiresIn: 15 * 60, // 15 phút
     });
-    await redisService.saveToken({
+    await redisService.saveRefreshToken({
       userId: user._id.toString(),
       token: refreshToken,
       expiresIn: 24 * 60 * 60, // 24 giờ
@@ -92,6 +92,8 @@ const logout = async (req, res) => {
     const userId = req.user.userId;
 
     if (token) {
+      // await redisService.removeAccessToken({ userId, token });
+      // await redisService.removeRefreshToken({ userId, token });
       await redisService.removeToken({ userId, token });
     }
 
@@ -109,33 +111,34 @@ const refreshToken = async (req, res) => {
   try {
     const { userId, email, fullName, role } = req.user; // Từ middleware verifyToken
     const oldToken = req.headers.authorization?.split(" ")[1];
+    const { refreshToken } = req.body;
 
-    const isValidToken = await redisService.isValidToken({
+    const isValidToken = await redisService.isValidRefreshToken({
       userId,
-      token: oldToken,
+      token: refreshToken,
     });
     if (!isValidToken) {
       return res.status(401).json({ error: "Invalid refresh token" });
     }
 
-    const newToken = jwt.sign(
+    const newAccessToken = jwt.sign(
       { userId, email, fullName, role },
       config.jwtKey,
       {
-        expiresIn: "24h",
+        expiresIn: "15m",
       }
     );
 
-    await redisService.removeToken({ userId, token: oldToken });
-    await redisService.saveToken({
+    await redisService.removeAccessToken({ userId, token: oldToken });
+    await redisService.saveAccessToken({
       userId,
-      token: newToken,
-      expiresIn: 24 * 60 * 60,
+      token: newAccessToken,
+      expiresIn: 15 * 60,
     });
 
     res.status(200).json({
       message: "Token refreshed successfully!",
-      token: newToken,
+      token: newAccessToken,
     });
   } catch (error) {
     console.error("Error refreshing token:", error);
