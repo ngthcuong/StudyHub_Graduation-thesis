@@ -6,6 +6,8 @@ const {
   refreshToken,
   changePassword,
   forgotPassword,
+  logoutAllSessions,
+  getUserSessions,
 } = require("../controllers/authController");
 const {
   validateEmail,
@@ -34,6 +36,8 @@ router.post(
 );
 router.post("/login", validateEmail, validatePassword, comparePassword, login);
 router.post("/logout", verifyToken, logout);
+router.post("/logout-all", verifyToken, logoutAllSessions);
+router.get("/sessions", verifyToken, getUserSessions);
 router.post("/refreshToken", verifyToken, refreshToken);
 router.post(
   "/change-password",

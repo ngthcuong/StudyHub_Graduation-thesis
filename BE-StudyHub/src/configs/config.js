@@ -7,5 +7,4 @@ module.exports = {
   pinataGatewayBase: process.env.PINATA_GATEWAY_BASE,
   jwtKey: process.env.JWT_SECRET,
   redisUrl: process.env.REDIS_URL,
-  redisPassword: process.env.REDIS_PASSWORD,
 };

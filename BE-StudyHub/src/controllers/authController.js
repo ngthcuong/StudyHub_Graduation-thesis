@@ -2,6 +2,7 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../configs/config");
+const redisService = require("../services/redis.service");
 
 const register = async (req, res) => {
   try {
@@ -55,10 +56,29 @@ const login = async (req, res) => {
       { expiresIn: "24h" }
     );
 
+    // Lưu token vào Redis
+    await redisService.saveToken({
+      userId: user._id.toString(),
+      token: accessToken,
+      expiresIn: 15 * 60, // 15 phút
+    });
+    await redisService.saveToken({
+      userId: user._id.toString(),
+      token: refreshToken,
+      expiresIn: 24 * 60 * 60, // 24 giờ
+    });
+
     res.status(200).json({
       message: "Login successfully!",
       accessToken: accessToken,
       refreshToken: refreshToken,
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        walletAddress: user.walletAddress,
+      },
     });
   } catch (error) {
     console.error("Error logging in user:", error);
@@ -68,8 +88,16 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const userId = req.user.userId;
+
+    if (token) {
+      await redisService.removeToken({ userId, token });
+    }
+
     res.status(200).json({
       message: "Logout successful!",
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Error logging out user:", error);
@@ -80,6 +108,15 @@ const logout = async (req, res) => {
 const refreshToken = async (req, res) => {
   try {
     const { userId, email, fullName, role } = req.user; // Từ middleware verifyToken
+    const oldToken = req.headers.authorization?.split(" ")[1];
+
+    const isValidToken = await redisService.isValidToken({
+      userId,
+      token: oldToken,
+    });
+    if (!isValidToken) {
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
 
     const newToken = jwt.sign(
       { userId, email, fullName, role },
@@ -89,6 +126,13 @@ const refreshToken = async (req, res) => {
       }
     );
 
+    await redisService.removeToken({ userId, token: oldToken });
+    await redisService.saveToken({
+      userId,
+      token: newToken,
+      expiresIn: 24 * 60 * 60,
+    });
+
     res.status(200).json({
       message: "Token refreshed successfully!",
       token: newToken,
@@ -96,6 +140,42 @@ const refreshToken = async (req, res) => {
   } catch (error) {
     console.error("Error refreshing token:", error);
     res.status(500).json({ error: "Failed to refresh token" });
+  }
+};
+
+const logoutAllSessions = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    await redisService.removeAllUserTokens(userId);
+
+    res.status(200).json({
+      message: "All sessions logged out successfully!",
+      timestamp: new Date().toISOString(),
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("Error logging out all sessions:", error);
+    res.status(500).json({ error: "Failed to logout all sessions" });
+  }
+};
+
+const getUserSessions = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const activeSessions = await redisService.getUserActiveSessions(userId);
+
+    res.status(200).json({
+      message: "User sessions retrieved successfully",
+      data: {
+        userId: userId,
+        activeSessions: activeSessions,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting user sessions:", error);
+    res.status(500).json({ error: "Failed to get user sessions" });
   }
 };
 
@@ -159,8 +239,10 @@ const forgotPassword = async (req, res) => {
 module.exports = {
   register,
   login,
+  getUserSessions,
   changePassword,
   forgotPassword,
   logout,
+  logoutAllSessions,
   refreshToken,
 };

@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../schemas/User");
 const config = require("../configs/config");
+const redisService = require("../services/redis.service");
 
 // Hàm dùng để mã hóa mật khẩu
 const hashPassword = async (req, res, next) => {
@@ -58,8 +59,19 @@ const verifyToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, config.jwtKey);
-    req.user = decoded;
 
+    // Kiểm tra xem token có trong Redis hay không
+    const isValidToken = await redisService.isValidToken({
+      userId: decoded.userId,
+      token,
+    });
+    if (!isValidToken) {
+      return res
+        .status(401)
+        .json({ error: "Token has been invalidated or expired" });
+    }
+
+    req.user = decoded;
     next();
   } catch (error) {
     console.error("Error verifying token:", error);

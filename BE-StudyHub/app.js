@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const connectToDB = require("./src/configs/database");
+const redisService = require("./src/services/redis.service");
 
 // Routes
 const authRoutes = require("./src/routes/authRoutes");
@@ -36,6 +37,12 @@ app.use("/api/v1/certs", certificateRoutes);
 const startServer = async () => {
   try {
     await connectToDB(); // Connect to MongoDB
+    await redisService.connect(); // Connect to Redis
+
+    // Setup cleanup job (chạy mỗi giờ) để xóa token hết hạn
+    setInterval(() => {
+      redisService.cleanupExpiredTokens();
+    }, 60 * 60 * 1000);
 
     // Define routes
     app.get("/", (req, res) => {
@@ -51,6 +58,15 @@ const startServer = async () => {
     app.use((err, req, res, next) => {
       console.error(err.stack);
       res.status(500).json({ error: "Something went wrong!" });
+    });
+
+    // Graceful shutdown
+    process.on("SIGTERM", async () => {
+      console.log("SIGTERM received, shutting down gracefully");
+      await redisService.disconnect();
+      server.close(() => {
+        console.log("Process terminated");
+      });
     });
 
     // Start server
