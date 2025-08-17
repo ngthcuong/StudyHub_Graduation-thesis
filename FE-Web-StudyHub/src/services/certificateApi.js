@@ -1,11 +1,14 @@
 import axios from "axios";
-import { API_BASE_URL } from "../configs";
+import config from "../configs/config";
 
 export const verifyCertificateByHash = async (hash) => {
   try {
-    const { data } = await axios.get(`${API_BASE_URL}/certificates/verify`, {
-      params: { hash },
-    });
+    const { data } = await axios.get(
+      `${config.baseApiUrl}/certificates/verify`,
+      {
+        params: { hash },
+      }
+    );
     return data;
   } catch (error) {
     if (error.response) {
