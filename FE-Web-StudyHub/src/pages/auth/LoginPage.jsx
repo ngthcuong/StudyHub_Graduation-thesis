@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -21,56 +21,54 @@ import {
   Google,
   FacebookOutlined,
 } from "@mui/icons-material";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import FormField from "../../components/FormField";
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "rememberMe" ? checked : value,
-    }));
+  const formSchema = yup.object({
+    email: yup
+      .string()
+      .required("Email là bắt buộc")
+      .email("Email không hợp lệ"),
+    password: yup
+      .string()
+      .required("Mật khẩu là bắt buộc")
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+      .matches(
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Mật khẩu phải chứa chữ hoa, chữ thường và số"
+      ),
+  });
 
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm({
+    resolver: yupResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onChange",
+  });
+
+  const handleRememberMeChange = () => {
+    setRememberMe(!rememberMe);
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email) {
-      newErrors.email = "Email là bắt buộc";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Mật khẩu là bắt buộc";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      // TODO: Implement login logic here
-      console.log("Login attempt:", formData);
+  const onSubmit = (data) => {
+    try {
+      console.log("Login attempt:", data, rememberMe);
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
     }
   };
 
@@ -100,63 +98,29 @@ const LoginPage = () => {
         </Box>
 
         {/* Form */}
-        <Box component="form" onSubmit={handleSubmit} className="space-y-3">
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-3 flex flex-col gap-4"
+        >
           {/* Email Field */}
-          <TextField
-            fullWidth
+          <FormField
             name="email"
+            control={control}
             label="Email"
             type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            error={!!errors.email}
-            helperText={errors.email}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email className="text-gray-400" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-            variant="outlined"
-            size="medium"
-            sx={{ mb: 2 }}
+            startIcon={<Email className="text-gray-400" />}
           />
 
           {/* Password Field */}
-          <TextField
-            fullWidth
+          <FormField
             name="password"
+            control={control}
             label="Mật khẩu"
             type={showPassword ? "text" : "password"}
-            value={formData.password}
-            onChange={handleInputChange}
-            error={!!errors.password}
-            helperText={errors.password}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock className="text-gray-400" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
-            variant="outlined"
-            size="medium"
-            sx={{ mb: 2 }}
+            startIcon={<Lock className="text-gray-400" />}
+            endIcon={showPassword ? <VisibilityOff /> : <Visibility />}
+            onEndIconClick={() => setShowPassword(!showPassword)}
           />
 
           {/* Remember Me & Forgot Password */}
@@ -165,8 +129,8 @@ const LoginPage = () => {
               control={
                 <Checkbox
                   name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange}
+                  checked={rememberMe}
+                  onChange={handleRememberMeChange}
                   color="primary"
                 />
               }
@@ -186,6 +150,7 @@ const LoginPage = () => {
             fullWidth
             variant="contained"
             size="large"
+            disabled={isSubmitting}
             startIcon={<Login />}
             className="py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             sx={{
@@ -195,7 +160,7 @@ const LoginPage = () => {
               fontWeight: 600,
             }}
           >
-            Đăng nhập
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
         </Box>
 

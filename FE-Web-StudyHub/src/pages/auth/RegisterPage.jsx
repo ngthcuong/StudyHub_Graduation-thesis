@@ -9,11 +9,7 @@ import {
   InputAdornment,
   IconButton,
   Divider,
-  RadioGroup,
-  Radio,
   FormControl,
-  FormLabel,
-  FormControlLabel,
   Grid,
   InputLabel,
   Select,
@@ -31,122 +27,85 @@ import {
   Google,
   FacebookOutlined,
 } from "@mui/icons-material";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import FormField from "../../components/FormField";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    fullName: "",
-    dob: "",
-    gender: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value, checked, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  const formSchema = yup.object({
+    fullName: yup
+      .string()
+      .required("Họ tên là bắt buộc")
+      .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .trim(),
 
-    // Clear error when user starts typing/selecting
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
+    dob: yup
+      .date()
+      .required("Ngày sinh là bắt buộc")
+      .max(new Date(), "Ngày sinh không hợp lệ"),
 
-  const isValidDate = (dateStr) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    if (Number.isNaN(d.getTime())) return false;
-    const today = new Date();
-    return d <= today;
-  };
+    gender: yup
+      .string()
+      .required("Vui lòng chọn giới tính")
+      .oneOf(["male", "female", "other"], "Giới tính không hợp lệ"),
 
-  const validateForm = () => {
-    const newErrors = {};
+    email: yup
+      .string()
+      .required("Email là bắt buộc")
+      .email("Email không hợp lệ"),
 
-    // Họ tên
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Họ tên là bắt buộc";
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = "Họ tên phải có ít nhất 2 ký tự";
-    }
+    phone: yup
+      .string()
+      .required("Số điện thoại là bắt buộc")
+      .matches(/^\d{10,11}$/, "Số điện thoại không hợp lệ"),
 
-    // Ngày sinh
-    if (!formData.dob) {
-      newErrors.dob = "Ngày sinh là bắt buộc";
-    } else if (!isValidDate(formData.dob)) {
-      newErrors.dob = "Ngày sinh không hợp lệ";
-    }
+    password: yup
+      .string()
+      .required("Mật khẩu là bắt buộc")
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+      .matches(
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Mật khẩu phải chứa chữ hoa, chữ thường và số"
+      ),
 
-    // Giới tính
-    if (!formData.gender) {
-      newErrors.gender = "Vui lòng chọn giới tính";
-    }
+    confirmPassword: yup
+      .string()
+      .required("Vui lòng nhập lại mật khẩu")
+      .oneOf([yup.ref("password")], "Mật khẩu không khớp"),
+  });
 
-    // Email
-    if (!formData.email) {
-      newErrors.email = "Email là bắt buộc";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm({
+    resolver: yupResolver(formSchema),
+    defaultValues: {
+      fullName: "",
+      dob: "",
+      gender: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onChange",
+  });
 
-    // Mật khẩu
-    if (!formData.password) {
-      newErrors.password = "Mật khẩu là bắt buộc";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = "Mật khẩu phải chứa chữ hoa, chữ thường và số";
-    }
-
-    // Xác nhận mật khẩu
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Vui lòng nhập lại mật khẩu";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu không khớp";
-    }
-
-    // Số điện thoại
-    if (!formData.phone) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
-    } else if (!/^\d{10,11}$/.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
+  const onSubmit = async (data) => {
     try {
+      console.log("Đăng ký người dùng với thông tin: ", data);
       // TODO: Gọi API đăng ký tại đây
-      console.log("Đăng ký với dữ liệu:", formData);
-
-      // Chuyển đến trang đăng nhập sau khi đăng ký thành công
       navigate("/login", {
         state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
       });
     } catch (error) {
       console.error("Lỗi đăng ký:", error);
-      // Handle error
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -176,7 +135,7 @@ const RegisterPage = () => {
         </Box>
 
         {/* Form */}
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
             {/* Thông tin cá nhân */}
             <Grid size={12}>
@@ -190,74 +149,38 @@ const RegisterPage = () => {
 
             {/* Họ tên */}
             <Grid size={{ xs: 12, md: 12 }}>
-              <TextField
-                fullWidth
-                name="fullName"
-                label="Họ và tên"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                error={!!errors.fullName}
-                helperText={errors.fullName}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person className="text-gray-400" />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                variant="outlined"
+              <FormField
+                name={"fullName"}
+                control={control}
+                label={"Họ và tên"}
+                startIcon={<Person className="text-gray-400" />}
               />
             </Grid>
 
             {/* Ngày sinh */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
+              <FormField
                 name="dob"
+                control={control}
                 label="Ngày sinh"
                 type="date"
-                value={formData.dob}
-                onChange={handleInputChange}
-                error={!!errors.dob}
-                helperText={errors.dob}
-                slotProps={{
-                  inputLabel: { shrink: true },
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarMonth className="text-gray-400" />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                variant="outlined"
+                startIcon={<CalendarMonth className="text-gray-400" />}
               />
             </Grid>
 
             {/* Giới tính */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl error={!!errors.gender} fullWidth>
-                <InputLabel id="gender-label">Gender</InputLabel>
-                <Select
-                  id="gender"
-                  labelId="gender-label"
-                  name="gender"
-                  label="Giới tính"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                >
-                  <MenuItem value="male">Nam</MenuItem>
-                  <MenuItem value="female">Nữ</MenuItem>
-                  <MenuItem value="other">Khác</MenuItem>
-                </Select>
-                {errors.gender && (
-                  <Typography variant="caption" color="error" className="mt-1">
-                    {errors.gender}
-                  </Typography>
-                )}
-              </FormControl>
+              <FormField
+                name="gender"
+                control={control}
+                label="Giới tính"
+                type="select"
+                options={[
+                  { value: "male", label: "Nam" },
+                  { value: "female", label: "Nữ" },
+                  { value: "other", label: "Khác" },
+                ]}
+              />
             </Grid>
 
             {/* Thông tin liên hệ */}
@@ -273,48 +196,22 @@ const RegisterPage = () => {
 
             {/* Email và Số điện thoại */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
+              <FormField
                 name="email"
+                control={control}
                 label="Email"
                 type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                error={!!errors.email}
-                helperText={errors.email}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email className="text-gray-400" />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                variant="outlined"
+                startIcon={<Email className="text-gray-400" />}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
+              <FormField
                 name="phone"
+                control={control}
                 label="Số điện thoại"
                 type="tel"
-                value={formData.phone}
-                onChange={handleInputChange}
-                error={!!errors.phone}
-                helperText={errors.phone}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PhoneIphone className="text-gray-400" />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                variant="outlined"
+                startIcon={<PhoneIphone className="text-gray-400" />}
               />
             </Grid>
 
@@ -331,76 +228,30 @@ const RegisterPage = () => {
 
             {/* Mật khẩu */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
+              <FormField
                 name="password"
+                control={control}
                 label="Mật khẩu"
                 type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handleInputChange}
-                error={!!errors.password}
-                helperText={errors.password}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock className="text-gray-400" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          tabIndex={-1}
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                variant="outlined"
+                startIcon={<Lock className="text-gray-400" />}
+                endIcon={showPassword ? <VisibilityOff /> : <Visibility />}
+                onEndIconClick={() => setShowPassword(!showPassword)}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
+              <FormField
                 name="confirmPassword"
+                control={control}
                 label="Nhập lại mật khẩu"
                 type={showConfirmPassword ? "text" : "password"}
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock className="text-gray-400" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          edge="end"
-                          tabIndex={-1}
-                        >
-                          {showConfirmPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                variant="outlined"
+                startIcon={<Lock className="text-gray-400" />}
+                endIcon={
+                  showConfirmPassword ? <VisibilityOff /> : <Visibility />
+                }
+                onEndIconClick={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
               />
             </Grid>
 
@@ -451,7 +302,7 @@ const RegisterPage = () => {
                   type="submit"
                   variant="contained"
                   size="large"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   startIcon={<PersonAdd />}
                   className="py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 max-w-fit"
                   sx={{
@@ -460,7 +311,7 @@ const RegisterPage = () => {
                     fontSize: 16,
                   }}
                 >
-                  {isLoading ? "Đang xử lý..." : "Đăng ký tài khoản"}
+                  {isSubmitting ? "Đang xử lý..." : "Đăng ký tài khoản"}
                 </Button>
               </Box>
             </Grid>
