@@ -31,6 +31,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
+import authApi from "../../services/authApi";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -101,9 +102,13 @@ const RegisterPage = () => {
     try {
       console.log("Đăng ký người dùng với thông tin: ", data);
       // TODO: Gọi API đăng ký tại đây
-      navigate("/login", {
-        state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
-      });
+      const response = await authApi.register(data);
+      if (response) {
+        console.log("res register ", response);
+        navigate("/login", {
+          state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
+        });
+      }
     } catch (error) {
       console.error("Lỗi đăng ký:", error);
     }

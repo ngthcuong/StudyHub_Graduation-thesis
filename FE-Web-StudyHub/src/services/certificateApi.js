@@ -1,14 +1,11 @@
 import axios from "axios";
 import config from "../configs/config";
 
-export const verifyCertificateByHash = async (hash) => {
+const verifyCertificateByHash = async (hash) => {
   try {
-    const { data } = await axios.get(
-      `${config.baseApiUrl}/certificates/verify`,
-      {
-        params: { hash },
-      }
-    );
+    const { data } = await axios.get(`${config.baseApiUrl}/certificates/`, {
+      params: { hash },
+    });
     return data;
   } catch (error) {
     if (error.response) {
@@ -17,3 +14,5 @@ export const verifyCertificateByHash = async (hash) => {
     throw new Error("Network error");
   }
 };
+
+export { verifyCertificateByHash };

@@ -25,6 +25,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
+import authApi from "../../services/authApi";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -63,10 +64,18 @@ const LoginPage = () => {
     setRememberMe(!rememberMe);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     try {
       console.log("Login attempt:", data, rememberMe);
-      navigate("/");
+      const response = await authApi.login({
+        email: data.email,
+        password: data.password,
+      });
+      console.log(response);
+
+      if (response) {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error);
     }

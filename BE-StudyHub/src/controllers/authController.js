@@ -13,7 +13,7 @@ const register = async (req, res) => {
       {
         userId: savedUser._id,
         email: savedUser.email,
-        fullName: user.fullName,
+        fullName: savedUser.fullName,
       },
       config.jwtKey,
       { expiresIn: "24h" }

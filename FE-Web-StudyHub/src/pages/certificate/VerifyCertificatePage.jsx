@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { TextField, CircularProgress, Chip, Avatar } from "@mui/material";
+import { verifyCertificateByHash } from "../../services/certificateApi";
 // import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 // import ErrorIcon from "@mui/icons-material/Error";
-import { verifyCertificateByHash } from "../services/certificateApi";
 
-const AuthCertificate = () => {
+const VerifyCertificatePage = () => {
   const [hash, setHash] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -54,8 +54,10 @@ const AuthCertificate = () => {
               placeholder="Enter certificate code (e.g., CERT-2024-001)"
               value={hash}
               onChange={(e) => setHash(e.target.value.toUpperCase())}
-              InputProps={{
-                style: { fontSize: 14, background: "#fff" },
+              slotProps={{
+                input: {
+                  style: { fontSize: 14, background: "#fff" },
+                },
               }}
             />
           </div>
@@ -172,4 +174,4 @@ const AuthCertificate = () => {
   );
 };
 
-export default AuthCertificate;
+export default VerifyCertificatePage;
