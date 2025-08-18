@@ -18,6 +18,8 @@ import {
   Email,
   Lock,
   Login,
+  Google,
+  FacebookOutlined,
 } from "@mui/icons-material";
 
 const LoginPage = () => {
@@ -73,10 +75,10 @@ const LoginPage = () => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <Box className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-10 px-4 sm:px-6 lg:px-8">
       <Paper
         elevation={8}
-        className="max-w-md w-full p-8 space-y-6"
+        className="max-w-md w-full p-8 space-y-3"
         sx={{
           borderRadius: 3,
           background: "rgba(255, 255, 255, 0.95)",
@@ -98,7 +100,7 @@ const LoginPage = () => {
         </Box>
 
         {/* Form */}
-        <Box component="form" onSubmit={handleSubmit} className="space-y-6">
+        <Box component="form" onSubmit={handleSubmit} className="space-y-3">
           {/* Email Field */}
           <TextField
             fullWidth
@@ -189,7 +191,7 @@ const LoginPage = () => {
             sx={{
               borderRadius: 2,
               textTransform: "none",
-              fontSize: "1rem",
+              fontSize: 16,
               fontWeight: 600,
             }}
           >
@@ -198,7 +200,7 @@ const LoginPage = () => {
         </Box>
 
         {/* Divider */}
-        <Divider className="my-4">
+        <Divider className="!my-1">
           <Typography variant="body2" color="textSecondary">
             hoặc
           </Typography>
@@ -210,19 +212,15 @@ const LoginPage = () => {
             fullWidth
             variant="outlined"
             size="large"
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 text-gray-700 hover:bg-gray-5"
             sx={{
               borderRadius: 2,
               textTransform: "none",
               borderColor: "#d1d5db",
-              marginBottom: 2,
+              marginY: 2,
             }}
           >
-            <img
-              src="https://www.google.com/favicon.ico"
-              alt="Google"
-              className="w-5 h-5 mr-2"
-            />
+            <Google className="mr-2" />
             Đăng nhập với Google
           </Button>
 
@@ -237,11 +235,7 @@ const LoginPage = () => {
               borderColor: "#d1d5db",
             }}
           >
-            <img
-              src="https://facebook.com/favicon.ico"
-              alt="Facebook"
-              className="w-5 h-5 mr-2"
-            />
+            <FacebookOutlined className="mr-2" />
             Đăng nhập với Facebook
           </Button>
         </Box>
