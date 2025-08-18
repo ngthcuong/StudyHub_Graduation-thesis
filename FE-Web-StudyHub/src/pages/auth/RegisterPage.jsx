@@ -63,15 +63,15 @@ const RegisterPage = () => {
     phone: yup
       .string()
       .required("Số điện thoại là bắt buộc")
-      .matches(/^\d{10,11}$/, "Số điện thoại không hợp lệ"),
+      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
 
     password: yup
       .string()
       .required("Mật khẩu là bắt buộc")
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
       .matches(
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Mật khẩu phải chứa chữ hoa, chữ thường và số"
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
+        "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
       ),
 
     confirmPassword: yup
@@ -100,9 +100,9 @@ const RegisterPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("Đăng ký người dùng với thông tin: ", data);
-      // TODO: Gọi API đăng ký tại đây
-      const response = await authApi.register(data);
+      // eslint-disable-next-line no-unused-vars
+      const { confirmPassword, ...registerData } = data;
+      const response = await authApi.register(registerData);
       if (response) {
         console.log("res register ", response);
         navigate("/login", {
@@ -275,7 +275,7 @@ const RegisterPage = () => {
                   color="textSecondary"
                   component={"li"}
                 >
-                  Ít nhất 6 ký tự
+                  Ít nhất 8 ký tự
                 </Typography>
                 <Typography
                   variant="body2"
@@ -290,6 +290,13 @@ const RegisterPage = () => {
                   component={"li"}
                 >
                   Chứa ít nhất 1 số
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  component={"li"}
+                >
+                  Chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*...)
                 </Typography>
               </Box>
             </Grid>

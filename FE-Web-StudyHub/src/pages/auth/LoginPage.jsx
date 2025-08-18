@@ -40,10 +40,10 @@ const LoginPage = () => {
     password: yup
       .string()
       .required("Mật khẩu là bắt buộc")
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
       .matches(
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Mật khẩu phải chứa chữ hoa, chữ thường và số"
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
+        "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
       ),
   });
 
@@ -78,6 +78,13 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
+
+      // Show specific error message if available
+      if (error.response?.data?.error) {
+        alert(`Lỗi đăng nhập: ${error.response.data.error}`);
+      } else {
+        alert("Đã có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.");
+      }
     }
   };
 

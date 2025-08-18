@@ -15,6 +15,14 @@ const login = async ({ email, password }) => {
     return response;
   } catch (error) {
     console.error("Login failed: ", error);
+
+    // Log more detailed error information
+    if (error.response) {
+      console.error("Error status:", error.response.status);
+      console.error("Error data:", error.response.data);
+    }
+
+    throw error;
   }
 };
 
@@ -33,6 +41,13 @@ const register = async (data) => {
     return response;
   } catch (error) {
     console.error("Register failed: ", error);
+
+    // Log more detailed error information
+    if (error.response) {
+      console.error("Error status:", error.response.status);
+      console.error("Error data:", error.response.data);
+    }
+
     throw error;
   }
 };
