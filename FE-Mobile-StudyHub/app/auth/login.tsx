@@ -101,7 +101,7 @@ export default function LoginScreen() {
 
       {/* Link Sign Up */}
       <View style={styles.footer}>
-        <Text>Don't have an account? </Text>
+        <Text>{"Don't have an account? "}</Text>
         <Link href="/auth/register" style={styles.link}>
           Sign up
         </Link>
