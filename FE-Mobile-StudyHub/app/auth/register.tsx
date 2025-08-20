@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,61 +7,81 @@ import {
   StyleSheet,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Link } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; // ✅ Icon mũi tên
-import { AntDesign } from "@expo/vector-icons"; // ✅ Icon Google
+import * as yup from "yup";
+import { useRouter, Link } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 
-// ✅ Định nghĩa schema validate
+// ✅ schema validation
 const schema = yup.object({
-  name: yup.string().required("Name is required"),
-  email: yup.string().email("Invalid email").required("Email is required"),
+  fullName: yup.string().required("Họ tên là bắt buộc").min(2),
+  email: yup.string().required("Email là bắt buộc").email("Email không hợp lệ"),
+  phone: yup
+    .string()
+    .required("Số điện thoại là bắt buộc")
+    .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "SĐT không hợp lệ"),
   password: yup
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
+    .required("Mật khẩu là bắt buộc")
+    .min(8, "Ít nhất 8 ký tự")
+    .matches(/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/, "Mật khẩu yếu"),
+  confirmPassword: yup
+    .string()
+    .required("Nhập lại mật khẩu")
+    .oneOf([yup.ref("password")], "Mật khẩu không khớp"),
 });
 
-export default function RegisterScreen() {
+export default function Register() {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Dữ liệu đăng ký:", data);
-    // 👉 TODO: gọi API đăng ký từ backend (authService.register)
+  const onSubmit = async (data: any) => {
+    try {
+      console.log("Register data:", data);
+      // gọi API đăng ký ở đây
+      router.push("/auth/login");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Nút quay lại */}
-      <Link href="/auth/login" asChild>
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      </Link>
+      <Text style={styles.title}>Đăng ký tài khoản</Text>
 
-      <Text style={styles.title}>Sign Up</Text>
-
-      {/* Tên */}
+      {/* Họ tên */}
       <Controller
         control={control}
-        name="name"
+        name="fullName"
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={styles.input}
-            placeholder="Name"
+            placeholder="Họ và tên"
             value={value}
             onChangeText={onChange}
           />
         )}
       />
-      {errors.name && <Text style={styles.error}>{errors.name.message}</Text>}
+      {errors.fullName && (
+        <Text style={styles.error}>{errors.fullName.message}</Text>
+      )}
 
       {/* Email */}
       <Controller
@@ -71,7 +92,6 @@ export default function RegisterScreen() {
             style={styles.input}
             placeholder="Email"
             keyboardType="email-address"
-            autoCapitalize="none"
             value={value}
             onChangeText={onChange}
           />
@@ -79,14 +99,31 @@ export default function RegisterScreen() {
       />
       {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
 
+      {/* Số điện thoại */}
+      <Controller
+        control={control}
+        name="phone"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={styles.input}
+            placeholder="Số điện thoại"
+            keyboardType="phone-pad"
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.phone && <Text style={styles.error}>{errors.phone.message}</Text>}
+
       {/* Mật khẩu */}
+      {/* Password */}
       <Controller
         control={control}
         name="password"
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder="Mật khẩu"
             secureTextEntry
             value={value}
             onChangeText={onChange}
@@ -97,21 +134,49 @@ export default function RegisterScreen() {
         <Text style={styles.error}>{errors.password.message}</Text>
       )}
 
-      {/* Nút Đăng ký */}
+      {/* Nhập lại mật khẩu */}
+      <Controller
+        control={control}
+        name="confirmPassword"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập lại mật khẩu"
+            secureTextEntry
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.confirmPassword && (
+        <Text style={styles.error}>{errors.confirmPassword.message}</Text>
+      )}
+
+      {/* Nút đăng ký */}
       <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-        <Text style={styles.buttonText}>Sign up</Text>
+        <Text style={styles.buttonText}>
+          {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+        </Text>
       </TouchableOpacity>
 
-      {/* Nút Đăng ký bằng Google */}
-      <TouchableOpacity style={styles.googleButton}>
-        <AntDesign
-          name="google"
-          size={20}
-          color="black"
-          style={{ marginRight: 8 }}
-        />
-        <Text style={styles.googleText}>Sign up with Google</Text>
+      {/* Social login */}
+      <TouchableOpacity style={styles.socialButton}>
+        <FontAwesome name="google" size={24} color="red" />
+        <Text style={{ marginLeft: 8 }}>Đăng ký với Google</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.socialButton}>
+        <MaterialIcons name="facebook" size={24} color="blue" />
+        <Text style={{ marginLeft: 8 }}>Đăng ký với Facebook</Text>
+      </TouchableOpacity>
+
+      {/* Link sang login */}
+      <Text style={{ marginTop: 16, textAlign: "center" }}>
+        Đã có tài khoản?{" "}
+        <Link href="/auth/login" style={{ color: "blue", fontWeight: "bold" }}>
+          Đăng nhập ngay
+        </Link>
+      </Text>
     </View>
   );
 }
@@ -121,16 +186,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#fff",
-  },
-  backButton: {
-    position: "absolute",
-    top: 50,
-    left: 20,
-    zIndex: 10,
+    backgroundColor: "#f9fafb",
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
@@ -142,34 +201,32 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
   },
-  error: {
-    color: "red",
-    marginBottom: 10,
-  },
   button: {
-    backgroundColor: "#000",
+    backgroundColor: "#007AFF",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 10,
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  googleButton: {
+  buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  error: { color: "red", marginBottom: 5 },
+  passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    padding: 12,
-    marginTop: 15,
-    justifyContent: "center",
+    paddingHorizontal: 10,
+    marginBottom: 10,
   },
-  googleText: {
-    fontSize: 16,
-    fontWeight: "500",
+  socialButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
   },
 });

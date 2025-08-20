@@ -4,25 +4,30 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Link } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; // ✅ Icon mũi tên
-import { AntDesign } from "@expo/vector-icons"; // ✅ Icon Google
+import { Link, useRouter } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
+import authApi from "../services/authApi";
 
-// ✅ Schema validate
 const schema = yup.object({
   email: yup
     .string()
-    .email("Email không hợp lệ")
-    .required("Vui lòng nhập email"),
+    .required("Vui lòng nhập email")
+    .matches(
+      /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+      "Email phải đúng định dạng (ví dụ: ten@gmail.com)"
+    ),
   password: yup
     .string()
-    .min(6, "Mật khẩu ít nhất 6 ký tự")
-    .required("Vui lòng nhập mật khẩu"),
+    .required("Vui lòng nhập mật khẩu")
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+    .matches(/[A-Z]/, "Mật khẩu phải chứa ít nhất 1 chữ hoa")
+    .matches(/[a-z]/, "Mật khẩu phải chứa ít nhất 1 chữ thường")
+    .matches(/[0-9]/, "Mật khẩu phải chứa ít nhất 1 số")
+    .matches(/[@$!%*?&._-]/, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt"),
 });
 
 export default function LoginScreen() {
@@ -34,9 +39,38 @@ export default function LoginScreen() {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Dữ liệu đăng nhập:", data);
-    // 👉 TODO: gọi API login từ backend (authService.login)
+  const router = useRouter(); // 👈 Dùng để điều hướng
+
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await authApi.login({
+        email: data.email,
+        password: data.password,
+      });
+
+      console.log("Login response: ", response.data);
+
+      if (response) {
+        router.push("/main/home");
+      }
+    } catch (error) {
+      // Show specific error message if available
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as any).response === "object" &&
+        (error as any).response !== null &&
+        "data" in (error as any).response &&
+        typeof (error as any).response.data === "object" &&
+        (error as any).response.data !== null &&
+        "error" in (error as any).response.data
+      ) {
+        alert(`Lỗi đăng nhập: ${(error as any).response.data.error}`);
+      } else {
+        alert("Đã có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.");
+      }
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -46,7 +80,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Đăng nhập tài khoản</Text>
 
       {/* Email */}
       <Controller
@@ -85,25 +119,19 @@ export default function LoginScreen() {
 
       {/* Nút Login */}
       <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>Đăng nhập</Text>
       </TouchableOpacity>
 
-      {/* Nút Login bằng Google */}
-      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
-        <AntDesign
-          name="google"
-          size={20}
-          color="black"
-          style={{ marginRight: 8 }}
-        />
-        <Text style={styles.googleText}>Login with Google</Text>
+      <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
+        <FontAwesome name="google" size={24} color="red" />
+        <Text style={{ marginLeft: 8 }}>Đăng nhập với Google</Text>
       </TouchableOpacity>
 
       {/* Link Sign Up */}
       <View style={styles.footer}>
-        <Text>{"Don't have an account? "}</Text>
+        <Text>{"Chưa có tài khoản? "}</Text>
         <Link href="/auth/register" style={styles.link}>
-          Sign up
+          Đăng ký
         </Link>
       </View>
     </View>
@@ -135,7 +163,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: "#000",
+    backgroundColor: "#007AFF",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -146,35 +174,23 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  googleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 15,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  googleIcon: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-  },
-  googleText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#000",
-  },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 15,
   },
   link: {
-    color: "#000",
+    color: "#007AFF",
     fontWeight: "bold",
-    textDecorationLine: "underline",
+  },
+  socialButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
   },
 });
