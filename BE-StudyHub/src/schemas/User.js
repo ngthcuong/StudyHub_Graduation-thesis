@@ -2,12 +2,6 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    // username: {
-    //   type: String,
-    //   require: true,
-    //   unique: true,
-    //   trim: true,
-    // },
     password: {
       type: String,
       require: true,
@@ -34,6 +28,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["student", "teacher", "admin"],
       default: "student",
+    },
+    dob: { type: Date, require: false },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      require: false,
     },
     walletAddress: {
       type: String,
