@@ -14,6 +14,7 @@ import { useRouter, Link } from "expo-router";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import authApi from "../services/authApi";
+import { Alert } from "react-native";
 
 // ✅ schema validation
 const schema = yup.object({
@@ -72,12 +73,37 @@ export default function Register() {
       };
       console.log("Dữ liệu đăng ký:", formattedData);
 
-      // const response = await authApi.register(registerData);
-      // if (response) {
-      //   router.push("/auth/login");
-      // }
+      const response = await authApi.register(formattedData);
+      if (response) {
+        router.push("/auth/login");
+      }
     } catch (error) {
-      console.error("Lỗi đăng ký:", error);
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as any).response === "object" &&
+        (error as any).response !== null &&
+        "data" in (error as any).response
+      ) {
+        console.error("Lỗi đăng ký:", (error as any).response.data);
+
+        Alert.alert(
+          "Đăng ký thất bại",
+          JSON.stringify((error as any).response.data), // 👉 hiện lỗi server trả về
+          [{ text: "OK" }]
+        );
+      } else {
+        console.error("Lỗi đăng ký:", error);
+
+        Alert.alert(
+          "Đăng ký thất bại",
+          error instanceof Error
+            ? error.message
+            : "Có lỗi xảy ra. Vui lòng thử lại!",
+          [{ text: "OK" }]
+        );
+      }
     }
   };
 
@@ -282,7 +308,7 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center", // 👈 cái này sẽ căn giữa theo chiều dọc
+    justifyContent: "center",
     padding: 20,
     backgroundColor: "#f9fafb",
   },
