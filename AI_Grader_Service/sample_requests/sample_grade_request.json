@@ -1,0 +1,75 @@
+{
+  "test_info": {
+    "title": "Sample English Test",
+    "total_questions": 10
+  },
+  "answer_key": [
+    { "id": 1, "answer": "B", "skill": "Grammar", "topic": "Past Simple" },
+    {
+      "id": 2,
+      "answer": "B",
+      "skill": "Grammar",
+      "topic": "First Conditional"
+    },
+    { "id": 3, "answer": "A", "skill": "Grammar", "topic": "Since/For" },
+    { "id": 4, "answer": "A", "skill": "Grammar", "topic": "Passive Voice" },
+    { "id": 5, "answer": "A", "skill": "Vocabulary", "topic": "Business" },
+    { "id": 6, "answer": "B", "skill": "Vocabulary", "topic": "Business" },
+    { "id": 7, "answer": "A", "skill": "Vocabulary", "topic": "Business" },
+    { "id": 8, "answer": "C", "skill": "Reading", "topic": "Comprehension" },
+    { "id": 9, "answer": "B", "skill": "Reading", "topic": "Comprehension" },
+    { "id": 10, "answer": "C", "skill": "Reading", "topic": "Comprehension" }
+  ],
+  "student_answers": {
+    "1": "B",
+    "2": "C",
+    "3": "A",
+    "4": "A",
+    "5": "A",
+    "6": "A",
+    "7": "B",
+    "8": "C",
+    "9": "B",
+    "10": "C"
+  },
+  "use_gemini": true,
+  "profile": {
+    "student_id": "1010",
+    "name": "Nguyễn Văn An",
+    "current_level": "Intermediate",
+    "study_hours_per_week": 12,
+    "learning_goals": "Đạt TOEIC 750 trong vòng 6 tháng",
+    "learning_preferences": ["Từ vựng", "Kỹ năng nghe", "Giao tiếp thực tế"],
+    "study_methods": [
+      "Học qua bài nghe",
+      "Flashcards từ vựng",
+      "Luyện nói với bạn bè hoặc giáo viên"
+    ],
+    "test_history": [
+      {
+        "test_date": "2025-02-01",
+        "level_at_test": "Intermediate",
+        "score": 620,
+        "notes": "Khả năng nghe và từ vựng còn yếu, cần luyện tập nhiều hơn"
+      },
+      {
+        "test_date": "2025-03-15",
+        "level_at_test": "Intermediate",
+        "score": 660,
+        "notes": "Đã cải thiện kỹ năng đọc hiểu, tuy nhiên kỹ năng nghe chưa ổn định"
+      },
+      {
+        "test_date": "2025-05-01",
+        "level_at_test": "Intermediate",
+        "score": 690,
+        "notes": "Tiến bộ rõ rệt về nghe và giao tiếp, bắt đầu tập trung ngữ pháp"
+      },
+      {
+        "test_date": "2025-07-01",
+        "level_at_test": "Upper-Intermediate",
+        "score": 720,
+        "notes": "Gần đạt mục tiêu TOEIC, cần rèn luyện thêm phần nói và viết"
+      }
+    ]
+  }
+}
