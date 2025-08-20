@@ -1,18 +1,28 @@
 import axios, { AxiosResponse } from "axios";
 
-// Định nghĩa kiểu dữ liệu cho login
+// --- Payload khi gửi login ---
 interface LoginPayload {
   email: string;
   password: string;
 }
 
+// --- Payload khi gửi register ---
+interface RegisterPayload {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
+// --- Response từ backend ---
 interface AuthResponse {
-  token: string;
+  message: string;
+  accessToken: string;
+  refreshToken: string;
   user: {
-    id: string;
+    _id: string;
+    fullName: string;
     email: string;
-    name: string;
-    // 👉 bổ sung các field khác mà backend trả về
+    role: string;
   };
 }
 
@@ -21,60 +31,40 @@ const login = async ({
   email,
   password,
 }: LoginPayload): Promise<AxiosResponse<AuthResponse>> => {
-  console.log({ email, password });
   try {
     const response = await axios.post<AuthResponse>(
-      `http://localhost:3000/api/v1/auth/login`,
-      {
-        email,
-        password,
-      }
+      `http://192.168.21.119:3000/api/v1/auth/login`,
+      { email, password }
     );
-
-    console.log(response);
-
+    console.log("res login: ", response.data);
     return response;
   } catch (error: any) {
     console.error("Login failed: ", error);
-
     if (error.response) {
       console.error("Error status:", error.response.status);
       console.error("Error data:", error.response.data);
     }
-
     throw error;
   }
 };
 
-// Định nghĩa kiểu dữ liệu cho register
-interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-  // 👉 bổ sung thêm nếu backend yêu cầu
-}
-
+// Register
 const register = async (
   data: RegisterPayload
 ): Promise<AxiosResponse<AuthResponse>> => {
   try {
-    console.log("data register: ", { data });
-
     const response = await axios.post<AuthResponse>(
-      `http://localhost:3000/api/v1/auth/register`,
+      `http://192.168.21.119:3000/api/v1/auth/register`,
       data
     );
-
-    console.log("res in service: ", response);
+    console.log("res register: ", response.data);
     return response;
   } catch (error: any) {
     console.error("Register failed: ", error);
-
     if (error.response) {
       console.error("Error status:", error.response.status);
       console.error("Error data:", error.response.data);
     }
-
     throw error;
   }
 };

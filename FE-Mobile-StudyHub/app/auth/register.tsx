@@ -5,37 +5,46 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useRouter, Link } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import authApi from "../services/authApi";
 
 // ✅ schema validation
 const schema = yup.object({
-  fullName: yup.string().required("Họ tên là bắt buộc").min(2),
+  fullName: yup.string().required("Họ tên là bắt buộc").min(2).trim(),
   email: yup.string().required("Email là bắt buộc").email("Email không hợp lệ"),
   phone: yup
     .string()
     .required("Số điện thoại là bắt buộc")
     .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "SĐT không hợp lệ"),
+  dob: yup
+    .date()
+    .required("Ngày sinh là bắt buộc")
+    .max(new Date(), "Ngày sinh không hợp lệ"),
+  gender: yup.string().required("Vui lòng chọn giới tính"),
   password: yup
     .string()
     .required("Mật khẩu là bắt buộc")
-    .min(8, "Ít nhất 8 ký tự")
-    .matches(/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/, "Mật khẩu yếu"),
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+    .matches(
+      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
+      "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
+    ),
   confirmPassword: yup
     .string()
-    .required("Nhập lại mật khẩu")
+    .required("Vui lòng nhập lại mật khẩu")
     .oneOf([yup.ref("password")], "Mật khẩu không khớp"),
 });
 
 export default function Register() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const {
     control,
@@ -47,6 +56,8 @@ export default function Register() {
       fullName: "",
       email: "",
       phone: "",
+      dob: new Date(),
+      gender: "",
       password: "",
       confirmPassword: "",
     },
@@ -54,16 +65,27 @@ export default function Register() {
 
   const onSubmit = async (data: any) => {
     try {
-      console.log("Register data:", data);
-      // gọi API đăng ký ở đây
-      router.push("/auth/login");
-    } catch (err) {
-      console.error(err);
+      const { confirmPassword, ...registerData } = data;
+      const formattedData = {
+        ...registerData,
+        dob: new Date(registerData.dob).toISOString().split("T")[0],
+      };
+      console.log("Dữ liệu đăng ký:", formattedData);
+
+      // const response = await authApi.register(registerData);
+      // if (response) {
+      //   router.push("/auth/login");
+      // }
+    } catch (error) {
+      console.error("Lỗi đăng ký:", error);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>Đăng ký tài khoản</Text>
 
       {/* Họ tên */}
@@ -115,8 +137,80 @@ export default function Register() {
       />
       {errors.phone && <Text style={styles.error}>{errors.phone.message}</Text>}
 
+      {/* Ngày sinh */}
+      <Controller
+        control={control}
+        name="dob"
+        render={({ field: { onChange, value } }) => (
+          <>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text>
+                {value
+                  ? typeof value === "string"
+                    ? value
+                    : value instanceof Date
+                    ? value.toISOString().split("T")[0]
+                    : "Chọn ngày sinh"
+                  : "Chọn ngày sinh"}
+              </Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={value ? new Date(value) : new Date()}
+                mode="date"
+                display="spinner"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    const isoDate = selectedDate.toISOString().split("T")[0];
+                    onChange(isoDate);
+                  }
+                }}
+              />
+            )}
+          </>
+        )}
+      />
+      {errors.dob && <Text style={styles.error}>{errors.dob.message}</Text>}
+
+      {/* Giới tính */}
+      <Text style={styles.label}>Giới tính</Text>
+      <View style={styles.genderContainer}>
+        <Controller
+          control={control}
+          name="gender"
+          render={({ field: { onChange, value } }) => (
+            <>
+              {["male", "female"].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={styles.genderOption}
+                  onPress={() => onChange(option)}
+                >
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      value === option && styles.radioSelected,
+                    ]}
+                  />
+                  <Text style={styles.genderLabel}>
+                    {option === "male" ? "Nam" : "Nữ"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
+        />
+      </View>
+      {errors.gender && (
+        <Text style={styles.error}>{errors.gender.message}</Text>
+      )}
+
       {/* Mật khẩu */}
-      {/* Password */}
       <Controller
         control={control}
         name="password"
@@ -160,38 +254,43 @@ export default function Register() {
       </TouchableOpacity>
 
       {/* Social login */}
-      <TouchableOpacity style={styles.socialButton}>
-        <FontAwesome name="google" size={24} color="red" />
-        <Text style={{ marginLeft: 8 }}>Đăng ký với Google</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.socialButton}>
-        <MaterialIcons name="facebook" size={24} color="blue" />
-        <Text style={{ marginLeft: 8 }}>Đăng ký với Facebook</Text>
-      </TouchableOpacity>
+      <View style={styles.socialWrapper}>
+        <TouchableOpacity style={styles.socialButton}>
+          <FontAwesome name="google" size={20} color="red" />
+          <Text style={styles.socialText}>Google</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialButton}>
+          <MaterialIcons name="facebook" size={20} color="blue" />
+          <Text style={styles.socialText}>Facebook</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Link sang login */}
-      <Text style={{ marginTop: 16, textAlign: "center" }}>
+      <Text style={styles.footerText}>
         Đã có tài khoản?{" "}
-        <Link href="/auth/login" style={{ color: "blue", fontWeight: "bold" }}>
-          Đăng nhập ngay
+        <Link
+          href="/auth/login"
+          style={{ color: "#007AFF", fontWeight: "bold" }}
+        >
+          Đăng nhập
         </Link>
       </Text>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "center", // 👈 cái này sẽ căn giữa theo chiều dọc
     padding: 20,
     backgroundColor: "#f9fafb",
   },
+
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 15,
     textAlign: "center",
   },
   input: {
@@ -199,34 +298,65 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 8,
+    fontSize: 15,
   },
+  label: { marginBottom: 6, fontWeight: "500" },
   button: {
     backgroundColor: "#007AFF",
-    padding: 15,
+    padding: 14,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 10,
+    marginVertical: 12,
   },
   buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-  error: { color: "red", marginBottom: 5 },
-  passwordContainer: {
+  error: { color: "red", marginBottom: 5, fontSize: 12 },
+  genderContainer: {
+    flexDirection: "row", // Nam/Nữ nằm ngang
+    marginTop: 5,
+    marginBottom: 10,
+  },
+
+  genderOption: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    marginRight: 20,
+  },
+
+  radioCircle: {
+    height: 18,
+    width: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: "#4f46e5",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 6,
+  },
+
+  radioSelected: {
+    backgroundColor: "#4f46e5",
+  },
+
+  genderLabel: {
+    fontSize: 15,
+    color: "#374151",
+  },
+
+  socialWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 8,
   },
   socialButton: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
+  socialText: { marginLeft: 6, fontSize: 14 },
+  footerText: { marginTop: 16, textAlign: "center", fontSize: 14 },
 });
