@@ -132,6 +132,74 @@ const validatePhone = (req, res, next) => {
   next();
 };
 
+// Hàm để validate họ tên người dùng
+const validateFullName = (req, res, next) => {
+  const { fullName } = req.body;
+
+  if (!fullName) {
+    return res.status(400).json({ error: "Fullname is required" });
+  }
+
+  const nameRegex = /^[A-Za-zÀ-ỹ][A-Za-zÀ-ỹ\s]{0,48}[A-Za-zÀ-ỹ]$/;
+
+  if (!nameRegex.test(fullName)) {
+    return res.status(400).json({
+      error:
+        "Please provide a valid name (2-50 characters, only letters and Vietnamese characters allowed)",
+    });
+  }
+
+  next();
+};
+
+// Hàm để validate ngày sinh của người dùng
+const validateDob = (req, res, next) => {
+  const { dob } = req.body;
+
+  if (!dob) {
+    return res.status(400).json({
+      error: "Day of birth is required",
+    });
+  }
+
+  const dobDate = new Date(dob);
+  if (isNaN(dobDate.getTime())) {
+    return res.status(400).json({
+      error: "Invalid date format",
+    });
+  }
+
+  const now = new Date();
+  if (dobDate > now) {
+    return res.status(400).json({
+      error:
+        "Please provide a valid date of birth (less than or equal to the present)",
+    });
+  }
+
+  next();
+};
+
+// Hmà để validate giới tính của người dùng
+const validdateGender = (req, res, next) => {
+  const { gender } = req.body;
+  const validGenders = ["male", "female", "other"];
+
+  if (!gender) {
+    return res.status(400).json({
+      error: "Gender is required",
+    });
+  }
+
+  if (!validGenders.includes(gender)) {
+    return res.status(400).json({
+      error: "Please provide a valid gender (male, female, other)",
+    });
+  }
+
+  next();
+};
+
 // Hàm để validate địa chỉ ví
 const validateWalletAddress = (req, res, next) => {
   const { walletAddress } = req.body;
@@ -233,4 +301,7 @@ module.exports = {
   validateNewPassword,
   validatePhone,
   validateWalletAddress,
+  validateFullName,
+  validateDob,
+  validdateGender,
 };
