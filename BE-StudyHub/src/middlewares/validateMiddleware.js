@@ -51,7 +51,7 @@ const validateNewPassword = (req, res, next) => {
   const { newPassword } = req.body;
 
   if (!newPassword) {
-    return res.status(400).json({ error: "Passoword is required" });
+    return res.status(400).json({ error: "New passoword is required" });
   }
 
   // Kiểm tra độ dài tối thiểu (>= 8 kí tự)

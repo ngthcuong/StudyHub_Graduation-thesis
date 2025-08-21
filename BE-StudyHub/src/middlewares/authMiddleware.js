@@ -34,12 +34,14 @@ const comparePassword = async (req, res, next) => {
 
     const userFound = await User.findOne({ email }).exec();
     if (!userFound) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ error: "No accounts found with that email." });
     }
 
     const isPasswordValid = await bcrypt.compare(password, userFound.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Password is not correct" });
     }
 
     req.user = userFound;
