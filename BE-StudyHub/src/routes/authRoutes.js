@@ -16,6 +16,9 @@ const {
   checkUserExists,
   removePasswordFromResponse,
   validateNewPassword,
+  validateFullName,
+  validateDob,
+  validdateGender,
 } = require("../middlewares/validateMiddleware");
 const {
   hashPassword,
@@ -30,6 +33,9 @@ router.post(
   validateEmail,
   validatePhone,
   validatePassword,
+  validateFullName,
+  validateDob,
+  validdateGender,
   checkUserExists,
   hashPassword,
   removePasswordFromResponse,
