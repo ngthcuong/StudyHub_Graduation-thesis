@@ -175,7 +175,7 @@ const updateProfile = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const userProfile = user.toObject();
+    const userProfile = updatedUser.toObject();
     delete userProfile.__v;
 
     res.status(200).json({

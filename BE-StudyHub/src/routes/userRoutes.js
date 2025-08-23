@@ -3,6 +3,12 @@ const router = express.Router();
 const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 const {
   removePasswordFromResponse,
+  validateDob,
+  validateFullName,
+  validatePhone,
+  validateWalletAddress,
+  validateGender,
+  checkUserExists,
 } = require("../middlewares/validateMiddleware");
 const {
   getUserProfile,
@@ -16,7 +22,18 @@ const {
 
 router.get("/profile", verifyToken, removePasswordFromResponse, getUserProfile);
 
-router.put("/profile", verifyToken, removePasswordFromResponse, updateProfile);
+router.put(
+  "/profile",
+  verifyToken,
+  validateFullName(false),
+  validatePhone(false),
+  validateDob(false),
+  validateGender(false),
+  validateWalletAddress(false),
+  checkUserExists,
+  removePasswordFromResponse,
+  updateProfile
+);
 
 router.get("/:id", verifyToken, removePasswordFromResponse, getUserById);
 

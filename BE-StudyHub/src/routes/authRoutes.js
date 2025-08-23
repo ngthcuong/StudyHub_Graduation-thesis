@@ -18,7 +18,7 @@ const {
   validateNewPassword,
   validateFullName,
   validateDob,
-  validdateGender,
+  validateGender,
 } = require("../middlewares/validateMiddleware");
 const {
   hashPassword,
@@ -30,18 +30,24 @@ const router = express.Router();
 
 router.post(
   "/register",
-  validateEmail,
-  validatePhone,
-  validatePassword,
-  validateFullName,
-  validateDob,
-  validdateGender,
+  validateEmail(),
+  validatePhone(),
+  validatePassword(),
+  validateFullName(),
+  validateDob(),
+  validateGender(),
   checkUserExists,
   hashPassword,
   removePasswordFromResponse,
   register
 );
-router.post("/login", validateEmail, validatePassword, comparePassword, login);
+router.post(
+  "/login",
+  validateEmail(),
+  validatePassword(),
+  comparePassword,
+  login
+);
 router.post("/logout", verifyToken, logout);
 router.post("/logout-all", verifyToken, logoutAllSessions);
 router.get("/sessions", verifyToken, getUserSessions);
@@ -49,9 +55,9 @@ router.post("/refreshToken", verifyRefreshToken, refreshToken);
 router.post(
   "/change-password",
   verifyToken,
-  validateNewPassword,
+  validateNewPassword(),
   changePassword
 );
-router.post("/forgot-password", validateEmail, forgotPassword);
+router.post("/forgot-password", validateEmail(), forgotPassword);
 
 module.exports = router;
