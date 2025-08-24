@@ -9,16 +9,18 @@ import {
   Paper,
 } from "@mui/material";
 import { Edit, Lock } from "@mui/icons-material";
+import classNames from "classnames";
 
 const UserInfoPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userInfo, setUserInfo] = useState({
-    name: "Nguyễn Văn An",
-    email: "nguyenvanan@email.com",
-    phone: "+84 123 456 789",
-    gender: "Nam",
-    birthDate: "15/03/1990",
-    organization: "Công ty TNHH ABC Technology",
+    fullName: "Nguyen Van A sdaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    email: "nguyenvana12a@example.com",
+    phone: "0123456781",
+    dob: "2024-08-21",
+    gender: "male",
+    walletAddress: "0x...........",
+    organization: "IUH",
   });
 
   const handleEdit = () => {
@@ -63,14 +65,34 @@ const UserInfoPage = () => {
           {/* Thông tin người dùng */}
           <div className="pt-16 pb-8 px-8">
             <div className="mb-6">
-              <Typography variant="h4" className="font-bold text-gray-800 mb-2">
-                {userInfo?.name}
-              </Typography>
-              <Typography variant="body1" className="text-gray-600 mb-4">
+              {/* <Typography variant="h4" className="font-bold text-gray-800 mb-2">
+                {userInfo?.fullName}
+              </Typography> */}
+              {/* <Typography variant="body1" className="text-gray-600 mb-4">
                 {userInfo?.email}
-              </Typography>
+              </Typography> */}
 
-              <div className="flex gap-3">
+              <TextField
+                fullWidth
+                value={userInfo?.fullName}
+                disabled={!isEditing}
+                variant={isEditing ? "outlined" : "standard"}
+                size="medium"
+                className={classNames("max-w-fit", {
+                  "bg-gray-50 ": isEditing,
+                  "": !isEditing,
+                })}
+                slotProps={{
+                  input: {
+                    style: {
+                      fontSize: "18px",
+                      padding: "2px 8px 2px 4px",
+                    },
+                  },
+                }}
+              />
+
+              <div className="flex gap-3 mt-4">
                 <Button
                   variant="contained"
                   startIcon={<Edit />}
@@ -103,26 +125,23 @@ const UserInfoPage = () => {
 
             {/* Form thông tin */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Typography
-                  variant="body2"
-                  className="text-gray-600 mb-2 font-medium"
-                >
+              {/* <div>
+                <Typography variant="body1" className="mb-2">
                   Họ và tên
                 </Typography>
                 <TextField
                   fullWidth
-                  value={userInfo?.name}
+                  value={userInfo?.fullName}
                   disabled={!isEditing}
                   variant="outlined"
                   size="medium"
                   className="bg-gray-50"
                 />
-              </div>
+              </div> */}
 
               <div>
                 <Typography
-                  variant="body2"
+                  variant="body1"
                   className="text-gray-600 mb-2 font-medium"
                 >
                   Email
@@ -139,7 +158,7 @@ const UserInfoPage = () => {
 
               <div>
                 <Typography
-                  variant="body2"
+                  variant="body1"
                   className="text-gray-600 mb-2 font-medium"
                 >
                   Số điện thoại
@@ -156,7 +175,7 @@ const UserInfoPage = () => {
 
               <div>
                 <Typography
-                  variant="body2"
+                  variant="body1"
                   className="text-gray-600 mb-2 font-medium"
                 >
                   Giới tính
@@ -173,14 +192,14 @@ const UserInfoPage = () => {
 
               <div>
                 <Typography
-                  variant="body2"
+                  variant="body1"
                   className="text-gray-600 mb-2 font-medium"
                 >
                   Ngày sinh
                 </Typography>
                 <TextField
                   fullWidth
-                  value={userInfo?.birthDate}
+                  value={userInfo?.dob}
                   disabled={!isEditing}
                   variant="outlined"
                   size="medium"
@@ -190,7 +209,7 @@ const UserInfoPage = () => {
 
               <div>
                 <Typography
-                  variant="body2"
+                  variant="body1"
                   className="text-gray-600 mb-2 font-medium"
                 >
                   Tổ chức
@@ -198,6 +217,23 @@ const UserInfoPage = () => {
                 <TextField
                   fullWidth
                   value={userInfo?.organization}
+                  disabled={!isEditing}
+                  variant="outlined"
+                  size="medium"
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <Typography
+                  variant="body1"
+                  className="text-gray-600 mb-2 font-medium"
+                >
+                  Địa chỉ ví điện tử
+                </Typography>
+                <TextField
+                  fullWidth
+                  value={userInfo?.walletAddress}
                   disabled={!isEditing}
                   variant="outlined"
                   size="medium"
