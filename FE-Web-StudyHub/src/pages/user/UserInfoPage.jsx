@@ -33,14 +33,13 @@ const UserInfoPage = () => {
         <Paper elevation={8} className="overflow-hidden">
           {/* Header với background gradient */}
           <div className="h-32 bg-gradient-to-r from-purple-500 to-blue-500 relative">
-            <div className="absolute -bottom-12 left-8">
+            <div className="absolute -bottom-16 left-8">
               <div className="relative">
                 <Avatar
                   sx={{
                     width: 96,
                     height: 96,
                     bgcolor: "gray",
-                    fontSize: "2rem",
                   }}
                   className="border-4 border-white"
                 >
@@ -48,7 +47,7 @@ const UserInfoPage = () => {
                 </Avatar>
                 <IconButton
                   size="small"
-                  className="absolute bottom-0 right-0 bg-orange-500 hover:bg-orange-600"
+                  className="absolute bottom-8 left-18 bg-orange-500 hover:bg-orange-600"
                   sx={{
                     bgcolor: "#f97316",
                     "&:hover": { bgcolor: "#ea580c" },
@@ -63,7 +62,7 @@ const UserInfoPage = () => {
           </div>
 
           {/* Thông tin người dùng */}
-          <div className="pt-16 pb-8 px-8">
+          <div className="pt-12 pb-6 px-8">
             <div className="mb-6">
               {/* <Typography variant="h4" className="font-bold text-gray-800 mb-2">
                 {userInfo?.fullName}
@@ -86,7 +85,8 @@ const UserInfoPage = () => {
                   input: {
                     style: {
                       fontSize: "18px",
-                      padding: "2px 8px 2px 4px",
+                      padding: "0px 8px 0px 4px",
+                      fontWeight: 600,
                     },
                   },
                 }}
