@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import {
   Avatar,
   Button,
-  TextField,
   IconButton,
   Box,
-  Typography,
   Paper,
   Grid,
-  Divider,
+  CircularProgress,
 } from "@mui/material";
 import {
   AccountBalanceWallet,
@@ -19,8 +17,8 @@ import {
   Lock,
   Person,
   PhoneIphone,
+  Transgender,
 } from "@mui/icons-material";
-import classNames from "classnames";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -28,21 +26,16 @@ import FormField from "../../components/FormField";
 
 const UserInfoPage = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    fullName: "Nguyen Van A sdaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    email: "nguyenvana12a@example.com",
-    phone: "0123456781",
-    dob: "2024-08-21",
-    gender: "male",
-    walletAddress: "0x...........",
-    organization: "IUH",
-  });
 
   const formSchema = yup.object({
     fullName: yup
       .string()
       .required("Họ tên là bắt buộc")
       .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .matches(
+        /^[A-Za-zÀ-ỹ][A-Za-zÀ-ỹ\s]{0,48}[A-Za-zÀ-ỹ]$/,
+        "Họ tên không hợp lệ"
+      )
       .trim(),
 
     dob: yup
@@ -64,6 +57,13 @@ const UserInfoPage = () => {
       .string()
       .required("Số điện thoại là bắt buộc")
       .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
+
+    organization: yup.string().trim(),
+
+    walletAddress: yup
+      .string()
+      .matches(/^0x[a-fA-F0-9]{40}$/, "Địa chỉ ví điện tử không hợp lệ")
+      .trim(),
   });
 
   const {
@@ -83,6 +83,15 @@ const UserInfoPage = () => {
     },
     mode: "onChange",
   });
+
+  const onSubmit = async (data) => {
+    try {
+      console.log(data);
+      // setIsEditing(false);
+    } catch (error) {
+      console.error("Lỗi thay đổi thông tin người dùng: ", error);
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
@@ -122,7 +131,6 @@ const UserInfoPage = () => {
             </div>
           </div>
 
-          {/* Thông tin người dùng */}
           <div className="pt-12 pb-6 px-8">
             <Grid className="mb-6" container spacing={2}>
               <Grid size={12} className="flex gap-3 mt-1">
@@ -157,124 +165,132 @@ const UserInfoPage = () => {
             </Grid>
 
             {/* Form thông tin */}
-            <Grid container spacing={4}>
-              <Grid size={{ xs: 12, md: 12 }}>
-                <FormField
-                  name={"fullName"}
-                  control={control}
-                  label={"Họ và tên"}
-                  disable={!isEditing}
-                  startIcon={<Person className="text-gray-400" />}
-                />
+            <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
+              <Grid container spacing={4}>
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <FormField
+                    name={"fullName"}
+                    control={control}
+                    label={"Họ và tên"}
+                    disable={!isEditing}
+                    startIcon={<Person className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Email và Số điện thoại */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="email"
+                    control={control}
+                    label="Email"
+                    type="email"
+                    disable={!isEditing}
+                    startIcon={<Email className="text-gray-400" />}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="phone"
+                    control={control}
+                    label="Số điện thoại"
+                    type="tel"
+                    disable={!isEditing}
+                    startIcon={<PhoneIphone className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Ngày sinh */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="dob"
+                    control={control}
+                    label="Ngày sinh"
+                    type="date"
+                    disable={!isEditing}
+                    startIcon={<CalendarMonth className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Giới tính */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="gender"
+                    control={control}
+                    label="Giới tính"
+                    type="select"
+                    options={[
+                      { value: "male", label: "Nam" },
+                      { value: "female", label: "Nữ" },
+                      { value: "other", label: "Khác" },
+                    ]}
+                    disable={!isEditing}
+                    startIcon={<Transgender className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Tổ chức */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="organization"
+                    control={control}
+                    label="Tổ chức"
+                    type="text"
+                    disable={!isEditing}
+                    startIcon={<CorporateFare className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Ví điện tử */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="walletAddress"
+                    control={control}
+                    label="Địa chỉ ví điện tử"
+                    type="text"
+                    disable={!isEditing}
+                    startIcon={
+                      <AccountBalanceWallet className="text-gray-400" />
+                    }
+                  />
+                </Grid>
               </Grid>
 
-              {/* Email và Số điện thoại */}
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name="email"
-                  control={control}
-                  label="Email"
-                  type="email"
-                  disable={!isEditing}
-                  startIcon={<Email className="text-gray-400" />}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name="phone"
-                  control={control}
-                  label="Số điện thoại"
-                  type="tel"
-                  disable={!isEditing}
-                  startIcon={<PhoneIphone className="text-gray-400" />}
-                />
-              </Grid>
-
-              {/* Ngày sinh */}
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name="dob"
-                  control={control}
-                  label="Ngày sinh"
-                  type="date"
-                  disable={!isEditing}
-                  startIcon={<CalendarMonth className="text-gray-400" />}
-                />
-              </Grid>
-
-              {/* Giới tính */}
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name="gender"
-                  control={control}
-                  label="Giới tính"
-                  type="select"
-                  options={[
-                    { value: "male", label: "Nam" },
-                    { value: "female", label: "Nữ" },
-                    { value: "other", label: "Khác" },
-                  ]}
-                  disable={!isEditing}
-                />
-              </Grid>
-
-              {/* Tổ chức */}
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name="organization"
-                  control={control}
-                  label="Tổ chức"
-                  type="text"
-                  disable={!isEditing}
-                  startIcon={<CorporateFare className="text-gray-400" />}
-                />
-              </Grid>
-
-              {/* Ví điện tử */}
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name="walletAddress"
-                  control={control}
-                  label="Địa chỉ ví điện tử"
-                  type="text"
-                  disable={!isEditing}
-                  startIcon={<AccountBalanceWallet className="text-gray-400" />}
-                />
-              </Grid>
-            </Grid>
-
-            {/* Nút lưu khi đang chỉnh sửa */}
-            {isEditing && (
-              <div className="flex gap-3 mt-6 justify-end">
-                <Button
-                  variant="outlined"
-                  onClick={() => setIsEditing(false)}
-                  className="normal-case"
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: "none",
-                    fontSize: 16,
-                    fontWeight: 400,
-                  }}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => setIsEditing(false)}
-                  className="py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: "none",
-                    fontSize: 16,
-                    fontWeight: 500,
-                  }}
-                >
-                  Lưu thay đổi
-                </Button>
-              </div>
-            )}
+              {/* Nút lưu khi đang chỉnh sửa */}
+              {isEditing && (
+                <div className="flex gap-3 mt-6 justify-end">
+                  <Button
+                    variant="outlined"
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="normal-case"
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: 16,
+                      fontWeight: 400,
+                    }}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    disabled={isSubmitting}
+                    onClick={() => handleSubmit(onSubmit)}
+                    className="py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: 16,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {isSubmitting ? <CircularProgress size={20} /> : "Lưu"}
+                  </Button>
+                </div>
+              )}
+            </Box>
           </div>
         </Paper>
       </div>

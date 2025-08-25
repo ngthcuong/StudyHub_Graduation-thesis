@@ -39,7 +39,22 @@ const FormField = ({
               disabled={disable}
             >
               <InputLabel>{label}</InputLabel>
-              <Select {...field} label={label} {...props} disabled={disable}>
+              <Select
+                {...field}
+                label={label}
+                {...props}
+                disabled={disable}
+                startAdornment={
+                  startIcon ? (
+                    <InputAdornment
+                      position="start"
+                      sx={{ pointerEvents: "none" }}
+                    >
+                      {startIcon}
+                    </InputAdornment>
+                  ) : undefined
+                }
+              >
                 {options.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
