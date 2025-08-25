@@ -41,6 +41,7 @@ const UserInfoPage = () => {
     dob: yup
       .date()
       .required("Ngày sinh là bắt buộc")
+      .typeError("Ngày sinh không hợp lệ")
       .max(new Date(), "Ngày sinh không hợp lệ"),
 
     gender: yup
@@ -58,7 +59,13 @@ const UserInfoPage = () => {
       .required("Số điện thoại là bắt buộc")
       .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
 
-    organization: yup.string().trim(),
+    organization: yup
+      .string()
+      .matches(
+        /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/,
+        "Họ tên không hợp lệ"
+      )
+      .trim(),
 
     walletAddress: yup
       .string()

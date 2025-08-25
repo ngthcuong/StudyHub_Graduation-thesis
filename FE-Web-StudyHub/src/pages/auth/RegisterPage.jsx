@@ -53,6 +53,7 @@ const RegisterPage = () => {
     dob: yup
       .date()
       .required("Ngày sinh là bắt buộc")
+      .typeError("Ngày sinh không hợp lệ")
       .max(new Date(), "Ngày sinh không hợp lệ"),
 
     gender: yup
