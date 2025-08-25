@@ -23,9 +23,11 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
+import ModalChangePassword from "../../components/ModalChangePassword";
 
 const UserInfoPage = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isShowModal, setIsShowModal] = useState(false);
 
   const formSchema = yup.object({
     fullName: yup
@@ -159,6 +161,7 @@ const UserInfoPage = () => {
                   variant="outlined"
                   startIcon={<Lock />}
                   className="py-3  from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  onClick={() => setIsShowModal(!isShowModal)}
                   sx={{
                     borderRadius: 2,
                     textTransform: "none",
@@ -300,6 +303,13 @@ const UserInfoPage = () => {
             </Box>
           </div>
         </Paper>
+
+        {isShowModal && (
+          <ModalChangePassword
+            open={isShowModal}
+            onClose={() => setIsShowModal(!isShowModal)}
+          />
+        )}
       </div>
     </Box>
   );
