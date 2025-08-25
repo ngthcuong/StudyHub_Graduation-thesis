@@ -20,7 +20,7 @@ const ModalChangePassword = ({ open, onClose }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const formSchema = yup.object({
-    oldPassword: yup.string().required("Vui lòng nhập mật khẩu cũ"),
+    currentPassword: yup.string().required("Vui lòng nhập mật khẩu cũ"),
     newPassword: yup
       .string()
       .required("Mật khẩu mới là bắt buộc")
@@ -43,7 +43,7 @@ const ModalChangePassword = ({ open, onClose }) => {
   } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
-      oldPassword: "",
+      currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
     },
@@ -82,7 +82,7 @@ const ModalChangePassword = ({ open, onClose }) => {
           className="space-y-3 flex flex-col gap-4 mt-2"
         >
           <FormField
-            name="oldPassword"
+            name="currentPassword"
             control={control}
             label="Mật khẩu cũ"
             type="password"
