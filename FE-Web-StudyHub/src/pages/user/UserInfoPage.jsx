@@ -11,7 +11,9 @@ import {
   Divider,
 } from "@mui/material";
 import {
+  AccountBalanceWallet,
   CalendarMonth,
+  CorporateFare,
   Edit,
   Email,
   Lock,
@@ -123,14 +125,6 @@ const UserInfoPage = () => {
           {/* Thông tin người dùng */}
           <div className="pt-12 pb-6 px-8">
             <Grid className="mb-6" container spacing={2}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormField
-                  name={"fullName"}
-                  control={control}
-                  label={"Họ và tên"}
-                  startIcon={<Person className="text-gray-400" />}
-                />
-              </Grid>
               <Grid size={12} className="flex gap-3 mt-1">
                 <Button
                   variant="contained"
@@ -163,7 +157,17 @@ const UserInfoPage = () => {
             </Grid>
 
             {/* Form thông tin */}
-            <Grid container>
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, md: 12 }}>
+                <FormField
+                  name={"fullName"}
+                  control={control}
+                  label={"Họ và tên"}
+                  disable={!isEditing}
+                  startIcon={<Person className="text-gray-400" />}
+                />
+              </Grid>
+
               {/* Email và Số điện thoại */}
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormField
@@ -171,6 +175,7 @@ const UserInfoPage = () => {
                   control={control}
                   label="Email"
                   type="email"
+                  disable={!isEditing}
                   startIcon={<Email className="text-gray-400" />}
                 />
               </Grid>
@@ -181,6 +186,7 @@ const UserInfoPage = () => {
                   control={control}
                   label="Số điện thoại"
                   type="tel"
+                  disable={!isEditing}
                   startIcon={<PhoneIphone className="text-gray-400" />}
                 />
               </Grid>
@@ -192,6 +198,7 @@ const UserInfoPage = () => {
                   control={control}
                   label="Ngày sinh"
                   type="date"
+                  disable={!isEditing}
                   startIcon={<CalendarMonth className="text-gray-400" />}
                 />
               </Grid>
@@ -208,6 +215,7 @@ const UserInfoPage = () => {
                     { value: "female", label: "Nữ" },
                     { value: "other", label: "Khác" },
                   ]}
+                  disable={!isEditing}
                 />
               </Grid>
 
@@ -218,7 +226,8 @@ const UserInfoPage = () => {
                   control={control}
                   label="Tổ chức"
                   type="text"
-                  startIcon={<CalendarMonth className="text-gray-400" />}
+                  disable={!isEditing}
+                  startIcon={<CorporateFare className="text-gray-400" />}
                 />
               </Grid>
 
@@ -229,7 +238,8 @@ const UserInfoPage = () => {
                   control={control}
                   label="Địa chỉ ví điện tử"
                   type="text"
-                  startIcon={<CalendarMonth className="text-gray-400" />}
+                  disable={!isEditing}
+                  startIcon={<AccountBalanceWallet className="text-gray-400" />}
                 />
               </Grid>
             </Grid>

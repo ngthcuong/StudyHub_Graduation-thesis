@@ -19,6 +19,7 @@ const FormField = ({
   startIcon,
   endIcon,
   onEndIconClick,
+  disable = false,
   className = "",
   sx = {},
   ...props
@@ -35,9 +36,10 @@ const FormField = ({
               error={!!fieldState.error}
               className={className}
               sx={sx}
+              disabled={disable}
             >
               <InputLabel>{label}</InputLabel>
-              <Select {...field} label={label} {...props}>
+              <Select {...field} label={label} {...props} disabled={disable}>
                 {options.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
@@ -62,6 +64,7 @@ const FormField = ({
             variant="outlined"
             className={className}
             sx={sx}
+            disabled={disable}
             slotProps={{
               input: {
                 startAdornment: startIcon ? (
@@ -74,11 +77,11 @@ const FormField = ({
                 ) : undefined,
                 endAdornment: endIcon ? (
                   <InputAdornment position="end">
-                    {" "}
                     <IconButton
                       onClick={onEndIconClick}
                       edge="end"
                       tabIndex={-1}
+                      disabled={disable}
                     ></IconButton>
                   </InputAdornment>
                 ) : undefined,
