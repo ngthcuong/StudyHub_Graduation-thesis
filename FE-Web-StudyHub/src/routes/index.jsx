@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
             element: <VerifyCertificatePage />,
           },
           {
-            path: "/user-info",
+            path: "/user",
             element: <UserInfoPage />,
           },
         ],

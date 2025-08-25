@@ -7,9 +7,22 @@ import {
   Box,
   Typography,
   Paper,
+  Grid,
+  Divider,
 } from "@mui/material";
-import { Edit, Lock } from "@mui/icons-material";
+import {
+  CalendarMonth,
+  Edit,
+  Email,
+  Lock,
+  Person,
+  PhoneIphone,
+} from "@mui/icons-material";
 import classNames from "classnames";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import FormField from "../../components/FormField";
 
 const UserInfoPage = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +34,52 @@ const UserInfoPage = () => {
     gender: "male",
     walletAddress: "0x...........",
     organization: "IUH",
+  });
+
+  const formSchema = yup.object({
+    fullName: yup
+      .string()
+      .required("Họ tên là bắt buộc")
+      .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .trim(),
+
+    dob: yup
+      .date()
+      .required("Ngày sinh là bắt buộc")
+      .max(new Date(), "Ngày sinh không hợp lệ"),
+
+    gender: yup
+      .string()
+      .required("Vui lòng chọn giới tính")
+      .oneOf(["male", "female", "other"], "Giới tính không hợp lệ"),
+
+    email: yup
+      .string()
+      .required("Email là bắt buộc")
+      .email("Email không hợp lệ"),
+
+    phone: yup
+      .string()
+      .required("Số điện thoại là bắt buộc")
+      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
+  });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm({
+    resolver: yupResolver(formSchema),
+    defaultValues: {
+      fullName: "",
+      dob: "",
+      gender: "",
+      email: "",
+      phone: "",
+      organization: "",
+      walletAddress: "",
+    },
+    mode: "onChange",
   });
 
   const handleEdit = () => {
@@ -63,36 +122,16 @@ const UserInfoPage = () => {
 
           {/* Thông tin người dùng */}
           <div className="pt-12 pb-6 px-8">
-            <div className="mb-6">
-              {/* <Typography variant="h4" className="font-bold text-gray-800 mb-2">
-                {userInfo?.fullName}
-              </Typography> */}
-              {/* <Typography variant="body1" className="text-gray-600 mb-4">
-                {userInfo?.email}
-              </Typography> */}
-
-              <TextField
-                fullWidth
-                value={userInfo?.fullName}
-                disabled={!isEditing}
-                variant={isEditing ? "outlined" : "standard"}
-                size="medium"
-                className={classNames("max-w-fit", {
-                  "bg-gray-50 ": isEditing,
-                  "": !isEditing,
-                })}
-                slotProps={{
-                  input: {
-                    style: {
-                      fontSize: "18px",
-                      padding: "0px 8px 0px 4px",
-                      fontWeight: 600,
-                    },
-                  },
-                }}
-              />
-
-              <div className="flex gap-3 mt-4">
+            <Grid className="mb-6" container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name={"fullName"}
+                  control={control}
+                  label={"Họ và tên"}
+                  startIcon={<Person className="text-gray-400" />}
+                />
+              </Grid>
+              <Grid size={12} className="flex gap-3 mt-1">
                 <Button
                   variant="contained"
                   startIcon={<Edit />}
@@ -120,127 +159,80 @@ const UserInfoPage = () => {
                 >
                   Đổi mật khẩu
                 </Button>
-              </div>
-            </div>
+              </Grid>
+            </Grid>
 
             {/* Form thông tin */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* <div>
-                <Typography variant="body1" className="mb-2">
-                  Họ và tên
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.fullName}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
+            <Grid container>
+              {/* Email và Số điện thoại */}
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name="email"
+                  control={control}
+                  label="Email"
+                  type="email"
+                  startIcon={<Email className="text-gray-400" />}
                 />
-              </div> */}
+              </Grid>
 
-              <div>
-                <Typography
-                  variant="body1"
-                  className="text-gray-600 mb-2 font-medium"
-                >
-                  Email
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.email}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name="phone"
+                  control={control}
+                  label="Số điện thoại"
+                  type="tel"
+                  startIcon={<PhoneIphone className="text-gray-400" />}
                 />
-              </div>
+              </Grid>
 
-              <div>
-                <Typography
-                  variant="body1"
-                  className="text-gray-600 mb-2 font-medium"
-                >
-                  Số điện thoại
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.phone}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
+              {/* Ngày sinh */}
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name="dob"
+                  control={control}
+                  label="Ngày sinh"
+                  type="date"
+                  startIcon={<CalendarMonth className="text-gray-400" />}
                 />
-              </div>
+              </Grid>
 
-              <div>
-                <Typography
-                  variant="body1"
-                  className="text-gray-600 mb-2 font-medium"
-                >
-                  Giới tính
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.gender}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
+              {/* Giới tính */}
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name="gender"
+                  control={control}
+                  label="Giới tính"
+                  type="select"
+                  options={[
+                    { value: "male", label: "Nam" },
+                    { value: "female", label: "Nữ" },
+                    { value: "other", label: "Khác" },
+                  ]}
                 />
-              </div>
+              </Grid>
 
-              <div>
-                <Typography
-                  variant="body1"
-                  className="text-gray-600 mb-2 font-medium"
-                >
-                  Ngày sinh
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.dob}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
+              {/* Tổ chức */}
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name="organization"
+                  control={control}
+                  label="Tổ chức"
+                  type="text"
+                  startIcon={<CalendarMonth className="text-gray-400" />}
                 />
-              </div>
+              </Grid>
 
-              <div>
-                <Typography
-                  variant="body1"
-                  className="text-gray-600 mb-2 font-medium"
-                >
-                  Tổ chức
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.organization}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
+              {/* Ví điện tử */}
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormField
+                  name="walletAddress"
+                  control={control}
+                  label="Địa chỉ ví điện tử"
+                  type="text"
+                  startIcon={<CalendarMonth className="text-gray-400" />}
                 />
-              </div>
-
-              <div>
-                <Typography
-                  variant="body1"
-                  className="text-gray-600 mb-2 font-medium"
-                >
-                  Địa chỉ ví điện tử
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={userInfo?.walletAddress}
-                  disabled={!isEditing}
-                  variant="outlined"
-                  size="medium"
-                  className="bg-gray-50"
-                />
-              </div>
-            </div>
+              </Grid>
+            </Grid>
 
             {/* Nút lưu khi đang chỉnh sửa */}
             {isEditing && (
