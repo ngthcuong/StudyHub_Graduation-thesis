@@ -26,6 +26,7 @@ import {
   PhoneIphone,
   Google,
   FacebookOutlined,
+  Transgender,
 } from "@mui/icons-material";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -43,11 +44,16 @@ const RegisterPage = () => {
       .string()
       .required("Họ tên là bắt buộc")
       .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .matches(
+        /^[A-Za-zÀ-ỹ][A-Za-zÀ-ỹ\s]{0,48}[A-Za-zÀ-ỹ]$/,
+        "Họ tên không hợp lệ"
+      )
       .trim(),
 
     dob: yup
       .date()
       .required("Ngày sinh là bắt buộc")
+      .typeError("Ngày sinh không hợp lệ")
       .max(new Date(), "Ngày sinh không hợp lệ"),
 
     gender: yup
@@ -185,6 +191,7 @@ const RegisterPage = () => {
                   { value: "female", label: "Nữ" },
                   { value: "other", label: "Khác" },
                 ]}
+                startIcon={<Transgender className="text-gray-400" />}
               />
             </Grid>
 
