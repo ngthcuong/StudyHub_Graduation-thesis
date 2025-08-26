@@ -4,36 +4,44 @@ const answerOptionModel = require("../models/answerOptionModel");
 // Create question (optionally with options array)
 const createQuestion = async (req, res) => {
   try {
-    const { options, ...questionData } = req.body;
-    if (!questionData || !questionData.testId || !questionData.questionText) {
-      return res.status(400).json({ error: "Question data incomplete" });
+    const {
+      testId,
+      questionText,
+      questionType,
+      skill,
+      topic,
+      points,
+      options,
+    } = req.body;
+
+    if (!testId || !questionText || !questionType) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const savedQuestion = await questionModel.createQuestion(questionData);
-
-    // insert options if provided
-    let savedOptions = [];
-    if (Array.isArray(options) && options.length) {
-      savedOptions = await Promise.all(
-        options.map((opt, idx) =>
-          answerOptionModel.createAnswerOption({
-            questionId: savedQuestion._id,
-            label: opt.label,
-            optionText: opt.optionText,
-            isCorrect: !!opt.isCorrect,
-            order: opt.order ?? idx,
-          })
-        )
-      );
+    if (
+      questionType === "mcq" &&
+      (!options || !Array.isArray(options) || options.length === 0)
+    ) {
+      return res.status(400).json({ error: "MCQ must include options" });
     }
+
+    const newQuestion = await questionModel.createQuestion({
+      testId,
+      questionText,
+      questionType,
+      skill,
+      topic,
+      points,
+      options,
+    });
 
     res.status(201).json({
-      message: "Question created",
-      data: { question: savedQuestion, options: savedOptions },
+      message: "Question created successfully",
+      data: newQuestion,
     });
   } catch (error) {
-    console.error("Error creating question:", error);
-    res.status(500).json({ error: "Failed to create question" });
+    console.error("Error creating question:", error.message);
+    res.status(400).json({ error: error.message });
   }
 };
 

@@ -7,12 +7,23 @@ const questionSchema = new mongoose.Schema(
       ref: "Test",
       required: true,
     },
-    questionText: { type: String, required: true },
+
+    questionText: { type: String, required: true }, // nội dung câu hỏi
+
     questionType: {
       type: String,
       enum: ["mcq", "fill_blank", "essay", "speaking"],
       required: true,
     },
+
+    // Chỉ dùng cho MCQ
+    options: [
+      {
+        optionText: { type: String, required: true }, // ví dụ: "A. Paris"
+        isCorrect: { type: Boolean, default: false }, // true nếu là đáp án đúng
+      },
+    ],
+
     audioUrl: { type: String, trim: true }, // listening
     imageUrl: { type: String, trim: true }, // hình minh họa
     points: { type: Number, default: 1 },
