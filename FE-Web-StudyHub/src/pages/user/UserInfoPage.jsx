@@ -65,7 +65,7 @@ const UserInfoPage = () => {
       .string()
       .matches(
         /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/,
-        "Họ tên không hợp lệ"
+        "Tổ chức không hợp lệ"
       )
       .trim(),
 
