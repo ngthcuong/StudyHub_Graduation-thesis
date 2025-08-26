@@ -6,6 +6,7 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
 import HomgePage from "../pages/HomgePage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
+import UserInfoPage from "../pages/user/UserInfoPage";
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ export const router = createBrowserRouter([
           {
             path: "/verify-cert",
             element: <VerifyCertificatePage />,
+          },
+          {
+            path: "/user",
+            element: <UserInfoPage />,
           },
         ],
       },
