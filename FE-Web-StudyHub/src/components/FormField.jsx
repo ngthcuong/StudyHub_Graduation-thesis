@@ -97,7 +97,9 @@ const FormField = ({
                       edge="end"
                       tabIndex={-1}
                       disabled={disable}
-                    ></IconButton>
+                    >
+                      {endIcon}
+                    </IconButton>
                   </InputAdornment>
                 ) : undefined,
               },
