@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const answerOptionSchema = new mongoose.Schema(
   {
     questionId: {

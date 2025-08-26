@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const testAttemptSchema = new mongoose.Schema(
   {
     testId: {
