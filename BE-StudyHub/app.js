@@ -16,6 +16,8 @@ const attemptRoutes = require("./src/routes/attemptRoutes");
 const answerOptionRoutes = require("./src/routes/answerOptionRoutes");
 const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 
+const testResultRoutes = require("./src/routes/testResultRoutes");
+
 require("dotenv").config();
 
 // Create Expresss App and HTTP Server
@@ -44,6 +46,8 @@ app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/attempts", attemptRoutes);
 app.use("/api/v1/options", answerOptionRoutes);
 app.use("/api/v1/answers", userAnswerRoutes);
+
+app.use("/api/v1/test-result", testResultRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {
