@@ -78,6 +78,7 @@ const UserInfoPage = () => {
   const {
     control,
     handleSubmit,
+    clearErrors,
     formState: { isSubmitting },
   } = useForm({
     resolver: yupResolver(formSchema),
@@ -103,6 +104,11 @@ const UserInfoPage = () => {
   };
 
   const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    clearErrors();
     setIsEditing(!isEditing);
   };
 
@@ -272,7 +278,7 @@ const UserInfoPage = () => {
                   <Button
                     variant="outlined"
                     type="button"
-                    onClick={() => setIsEditing(false)}
+                    onClick={handleCancel}
                     className="normal-case"
                     sx={{
                       borderRadius: 2,
