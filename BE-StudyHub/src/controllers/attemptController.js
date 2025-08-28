@@ -1,0 +1,170 @@
+const attemptModel = require("../models/testAttemptModel");
+const userAnswerModel = require("../models/userAnswerModel");
+const questionModel = require("../models/questionModel");
+const answerOptionModel = require("../models/answerOptionModel");
+
+const startAttempt = async (req, res) => {
+  try {
+    const { testId, evaluationModel } = req.body;
+    if (!testId) return res.status(400).json({ error: "testId is required" });
+
+    const attemptData = {
+      testId,
+      userId: req.user && req.user.userId ? req.user.userId : req.body.userId,
+      evaluationModel: evaluationModel || "gemini",
+    };
+
+    const savedAttempt = await attemptModel.createAttempt(attemptData);
+    res.status(201).json({ message: "Attempt started", data: savedAttempt });
+  } catch (error) {
+    console.error("Error starting attempt:", error);
+    res.status(500).json({ error: "Failed to start attempt" });
+  }
+};
+
+// submit: req.body.answers = [ { questionId, selectedOptionId?, answerLetter?, answerText? } ]
+const submitAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const { answers } = req.body;
+
+    if (!attemptId)
+      return res.status(400).json({ error: "attemptId is required" });
+    if (!Array.isArray(answers) || !answers.length)
+      return res.status(400).json({ error: "answers is required" });
+
+    // load questions for validation/points
+    const qIds = answers.map((a) => a.questionId);
+    const questions = await questionModel.findQuestionsByTest(null); // not useful here
+    // Instead fetch specific questions:
+    const questionDocs = await Promise.all(
+      qIds.map((id) => questionModel.findQuestionById(id))
+    );
+    const qMap = new Map(
+      questionDocs.filter(Boolean).map((q) => [q._id.toString(), q])
+    );
+
+    let totalScore = 0;
+    const savedAnswers = [];
+
+    for (const a of answers) {
+      const q = qMap.get(String(a.questionId));
+      if (!q) continue;
+
+      let selectedOption = null;
+      if (a.selectedOptionId) {
+        selectedOption = await answerOptionModel.updateOptionById(
+          a.selectedOptionId,
+          {}
+        ); // this returns doc only if exists, but update with {} is hacky
+        // better: fetch via schema directly
+        // but to keep using models, we can require schema here. Simpler:
+      }
+
+      // Instead of using updateOptionById for read, we fetch directly:
+      if (!selectedOption && a.selectedOptionId) {
+        // direct fetch:
+        const AnswerOption = require("../schemas/AnswerOption");
+        selectedOption = await AnswerOption.findById(a.selectedOptionId).lean();
+      }
+
+      // support answerLetter mapping:
+      if (!selectedOption && a.answerLetter) {
+        const AnswerOption = require("../schemas/AnswerOption");
+        const label = a.answerLetter.toUpperCase();
+        selectedOption = await AnswerOption.findOne({
+          questionId: a.questionId,
+          label,
+        }).lean();
+      }
+
+      let isCorrect = undefined;
+      let score = 0;
+
+      if (q.questionType === "mcq") {
+        if (selectedOption) {
+          isCorrect = !!selectedOption.isCorrect;
+          score = isCorrect ? q.points || 1 : 0;
+        } else {
+          isCorrect = false;
+          score = 0;
+        }
+      } else {
+        // essay/speaking/fill_blank: set undefined or 0; will be graded later (AI/manual)
+        isCorrect = undefined;
+        score = 0;
+      }
+
+      const ua = await userAnswerModel.createUserAnswer({
+        attemptId,
+        questionId: a.questionId,
+        selectedOptionId: selectedOption?._id,
+        answerText: a.answerText,
+        isCorrect,
+        score,
+      });
+
+      totalScore += score;
+      savedAnswers.push(ua);
+    }
+
+    // update attempt
+    const updatedAttempt = await attemptModel.updateAttemptById(attemptId, {
+      score: totalScore,
+      endTime: new Date(),
+    });
+
+    res.status(200).json({
+      message: "Submitted successfully",
+      attempt: updatedAttempt,
+      answers: savedAnswers,
+      summary: { totalScore, answered: savedAnswers.length },
+    });
+  } catch (error) {
+    console.error("Error submitting attempt:", error);
+    res.status(500).json({ error: "Failed to submit attempt" });
+  }
+};
+
+const getAttemptById = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    if (!attemptId)
+      return res.status(400).json({ error: "Attempt ID not found" });
+
+    const attempt = await attemptModel.findAttemptById(attemptId);
+    if (!attempt) return res.status(404).json({ error: "Attempt not found" });
+
+    const answers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    res
+      .status(200)
+      .json({ message: "Attempt retrieved", data: { attempt, answers } });
+  } catch (error) {
+    console.error("Error getting attempt:", error);
+    res.status(500).json({ error: "Failed to get attempt" });
+  }
+};
+
+const getAttemptsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ error: "User ID not found" });
+
+    const attempts = await attemptModel.findAttemptsByUser(userId);
+    res.status(200).json({
+      message: "Attempts retrieved",
+      data: attempts,
+      total: attempts.length,
+    });
+  } catch (error) {
+    console.error("Error getting attempts by user:", error);
+    res.status(500).json({ error: "Failed to get attempts" });
+  }
+};
+
+module.exports = {
+  startAttempt,
+  submitAttempt,
+  getAttemptById,
+  getAttemptsByUser,
+};
