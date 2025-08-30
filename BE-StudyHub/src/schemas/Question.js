@@ -27,6 +27,7 @@ const questionSchema = new mongoose.Schema(
     audioUrl: { type: String, trim: true }, // listening
     imageUrl: { type: String, trim: true }, // hình minh họa
     points: { type: Number, default: 1 },
+    descriptions: { type: String, trim: true }, // mô tả chi tiết cho câu hỏi hình ảnh
 
     skill: {
       type: String,
@@ -39,7 +40,8 @@ const questionSchema = new mongoose.Schema(
         "Writing",
       ],
     },
-    topic: { type: String, trim: true },
+    topic: [{ type: String, trim: true }],
+    tag: [{ type: String, trim: true }],
   },
   { timestamps: true }
 );

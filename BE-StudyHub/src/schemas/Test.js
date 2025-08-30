@@ -22,8 +22,8 @@ const testSchema = new mongoose.Schema(
     },
     level: {
       type: String,
-      enum: ["A1", "A2", "B1", "B2", "C1", "C2"],
       required: true,
+      trim: true,
     },
     durationMin: { type: Number, required: true }, // thời gian làm bài (phút)
     courseId: {
