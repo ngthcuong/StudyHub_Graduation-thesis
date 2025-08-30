@@ -28,6 +28,15 @@ const findQuestionById = async (id) => {
   }
 };
 
+const findQuestionsByIds = async (ids) => {
+  try {
+    return await Question.find({ _id: { $in: ids } }).lean(); // lean() trả về mảng thuần
+  } catch (error) {
+    console.error("Error finding questions by ids:", error);
+    throw new Error("Failed to find questions by ids");
+  }
+};
+
 const findQuestionsByTest = async (testId) => {
   try {
     return await Question.find({ testId }).sort({ createdAt: 1 });
@@ -62,4 +71,5 @@ module.exports = {
   findQuestionsByTest,
   updateQuestionById,
   deleteQuestionById,
+  findQuestionsByIds,
 };

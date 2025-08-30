@@ -12,67 +12,179 @@ const submitAnswer = async (req, res) => {
       answerLetter,
     } = req.body;
 
-    // Validate input
+    // 1. Validate input
     if (!attemptId || !questionId) {
       return res
         .status(400)
         .json({ error: "attemptId and questionId are required" });
     }
 
-    // Lấy question
-    const question = await questionModel.findById(questionId).lean();
+    // 2. Lấy câu hỏi
+    const question = await questionModel.findQuestionById(questionId);
     if (!question) {
       return res.status(404).json({ error: "Question not found" });
     }
 
-    // Tìm option trong question.options
+    // 3. Xác định option được chọn
     let selectedOption = null;
+
+    // Ưu tiên selectedOptionId
     if (selectedOptionId) {
       selectedOption = question.options.find(
         (opt) => opt._id.toString() === selectedOptionId
       );
     }
+
+    // Nếu chưa có, check theo answerLetter (A, B, C, D...)
     if (!selectedOption && answerLetter) {
       selectedOption = question.options.find(
         (opt, idx) =>
           opt.label?.toUpperCase() === answerLetter.toUpperCase() ||
-          String.fromCharCode(65 + idx) === answerLetter.toUpperCase() // A,B,C,D,...
+          String.fromCharCode(65 + idx) === answerLetter.toUpperCase()
       );
     }
 
-    // Tính điểm
-    let isCorrect = undefined;
+    // 4. Chấm điểm
+    let isCorrect = false;
     let score = 0;
 
     if (question.questionType === "mcq") {
       if (selectedOption) {
-        isCorrect = !!selectedOption.isCorrect;
+        isCorrect = selectedOption.isCorrect === true;
         score = isCorrect ? question.points || 1 : 0;
-      } else {
-        isCorrect = false;
-        score = 0;
+      }
+    } else if (question.questionType === "short_answer") {
+      if (answerText) {
+        const correctOption = question.options.find((opt) => opt.isCorrect);
+        if (correctOption) {
+          isCorrect =
+            answerText.trim().toLowerCase() ===
+            correctOption.optionText.trim().toLowerCase();
+          score = isCorrect ? question.points || 1 : 0;
+        }
       }
     } else {
-      // essay, short answer...
+      // essay, writing... chưa tự động chấm
       isCorrect = undefined;
       score = 0;
     }
 
-    // Lưu UserAnswer
+    // 5. Lưu UserAnswer
     const ua = await userAnswerModel.createUserAnswer({
       attemptId,
       questionId,
       selectedOptionId: selectedOption?._id,
-      selectedOptionText: selectedOption?.optionText, // thêm field để tiện debug
+      selectedOptionText: selectedOption?.optionText,
       answerText,
       isCorrect,
       score,
     });
 
-    return res.status(201).json({ message: "Answer saved", data: ua });
+    return res.status(201).json({
+      message: "Answer submitted successfully",
+      data: ua,
+    });
   } catch (error) {
     console.error("Error submitting answer:", error);
     return res.status(500).json({ error: "Failed to submit answer" });
+  }
+};
+
+const submitManyAnswers = async (req, res) => {
+  try {
+    const { answers } = req.body;
+
+    if (!answers || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ error: "Answers array is required" });
+    }
+
+    const results = [];
+
+    for (const ans of answers) {
+      const {
+        attemptId,
+        questionId,
+        selectedOptionId,
+        answerText,
+        answerLetter,
+      } = ans;
+
+      if (!attemptId || !questionId) {
+        return res
+          .status(400)
+          .json({ error: "Each answer must include attemptId and questionId" });
+      }
+
+      // 1. Lấy câu hỏi
+      const question = await questionModel.findQuestionById(questionId);
+      if (!question) {
+        return res
+          .status(404)
+          .json({ error: `Question ${questionId} not found` });
+      }
+
+      // 2. Xác định option được chọn
+      let selectedOption = null;
+
+      if (selectedOptionId) {
+        selectedOption = question.options.find(
+          (opt) => opt._id.toString() === selectedOptionId
+        );
+      }
+
+      if (!selectedOption && answerLetter) {
+        selectedOption = question.options.find(
+          (opt, idx) =>
+            opt.label?.toUpperCase() === answerLetter.toUpperCase() ||
+            String.fromCharCode(65 + idx) === answerLetter.toUpperCase()
+        );
+      }
+
+      // 3. Chấm điểm
+      let isCorrect = false;
+      let score = 0;
+
+      if (question.questionType === "mcq") {
+        if (selectedOption) {
+          isCorrect = selectedOption.isCorrect === true;
+          score = isCorrect ? question.points || 1 : 0;
+        }
+      } else if (question.questionType === "short_answer") {
+        if (answerText) {
+          const correctOption = question.options.find((opt) => opt.isCorrect);
+          if (correctOption) {
+            isCorrect =
+              answerText.trim().toLowerCase() ===
+              correctOption.optionText.trim().toLowerCase();
+            score = isCorrect ? question.points || 1 : 0;
+          }
+        }
+      } else {
+        isCorrect = undefined;
+        score = 0;
+      }
+
+      // 4. Lưu UserAnswer
+      const ua = await userAnswerModel.createUserAnswer({
+        attemptId,
+        questionId,
+        selectedOptionId: selectedOption?._id,
+        selectedOptionText: selectedOption?.optionText,
+        answerText,
+        isCorrect,
+        score,
+      });
+
+      results.push(ua);
+    }
+
+    return res.status(201).json({
+      message: `${results.length} answers submitted successfully`,
+      data: results,
+    });
+  } catch (error) {
+    console.error("Error submitting multiple answers:", error);
+    return res.status(500).json({ error: "Failed to submit multiple answers" });
   }
 };
 
@@ -123,4 +235,5 @@ module.exports = {
   getAnswersByAttempt,
   updateUserAnswer,
   deleteUserAnswer,
+  submitManyAnswers,
 };

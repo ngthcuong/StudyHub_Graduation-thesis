@@ -1,7 +1,7 @@
 const attemptModel = require("../models/testAttemptModel");
 const userAnswerModel = require("../models/userAnswerModel");
 const questionModel = require("../models/questionModel");
-const answerOptionModel = require("../models/answerOptionModel");
+// const answerOptionModel = require("../models/answerOptionModel");
 
 const startAttempt = async (req, res) => {
   try {
@@ -33,16 +33,10 @@ const submitAttempt = async (req, res) => {
     if (!Array.isArray(answers) || !answers.length)
       return res.status(400).json({ error: "answers is required" });
 
-    // load questions for validation/points
+    // Lấy tất cả câu hỏi theo questionId
     const qIds = answers.map((a) => a.questionId);
-    const questions = await questionModel.findQuestionsByTest(null); // not useful here
-    // Instead fetch specific questions:
-    const questionDocs = await Promise.all(
-      qIds.map((id) => questionModel.findQuestionById(id))
-    );
-    const qMap = new Map(
-      questionDocs.filter(Boolean).map((q) => [q._id.toString(), q])
-    );
+    const questionDocs = await questionModel.findQuestionsByIds(qIds);
+    const qMap = new Map(questionDocs.map((q) => [q._id.toString(), q]));
 
     let totalScore = 0;
     const savedAnswers = [];
@@ -51,36 +45,23 @@ const submitAttempt = async (req, res) => {
       const q = qMap.get(String(a.questionId));
       if (!q) continue;
 
+      // tìm option trong mảng question.options
       let selectedOption = null;
       if (a.selectedOptionId) {
-        selectedOption = await answerOptionModel.updateOptionById(
-          a.selectedOptionId,
-          {}
-        ); // this returns doc only if exists, but update with {} is hacky
-        // better: fetch via schema directly
-        // but to keep using models, we can require schema here. Simpler:
+        selectedOption = q.options.find(
+          (opt) => opt._id.toString() === a.selectedOptionId
+        );
       }
-
-      // Instead of using updateOptionById for read, we fetch directly:
-      if (!selectedOption && a.selectedOptionId) {
-        // direct fetch:
-        const AnswerOption = require("../schemas/AnswerOption");
-        selectedOption = await AnswerOption.findById(a.selectedOptionId).lean();
-      }
-
-      // support answerLetter mapping:
       if (!selectedOption && a.answerLetter) {
-        const AnswerOption = require("../schemas/AnswerOption");
-        const label = a.answerLetter.toUpperCase();
-        selectedOption = await AnswerOption.findOne({
-          questionId: a.questionId,
-          label,
-        }).lean();
+        selectedOption = q.options.find(
+          (opt, idx) =>
+            String.fromCharCode(65 + idx) === a.answerLetter.toUpperCase()
+        );
       }
 
+      // Tính điểm
       let isCorrect = undefined;
       let score = 0;
-
       if (q.questionType === "mcq") {
         if (selectedOption) {
           isCorrect = !!selectedOption.isCorrect;
@@ -89,16 +70,13 @@ const submitAttempt = async (req, res) => {
           isCorrect = false;
           score = 0;
         }
-      } else {
-        // essay/speaking/fill_blank: set undefined or 0; will be graded later (AI/manual)
-        isCorrect = undefined;
-        score = 0;
       }
 
       const ua = await userAnswerModel.createUserAnswer({
         attemptId,
         questionId: a.questionId,
         selectedOptionId: selectedOption?._id,
+        selectedOptionText: selectedOption?.optionText,
         answerText: a.answerText,
         isCorrect,
         score,
@@ -108,7 +86,7 @@ const submitAttempt = async (req, res) => {
       savedAnswers.push(ua);
     }
 
-    // update attempt
+    // Cập nhật tổng điểm vào attempt
     const updatedAttempt = await attemptModel.updateAttemptById(attemptId, {
       score: totalScore,
       endTime: new Date(),

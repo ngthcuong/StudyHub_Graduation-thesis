@@ -6,6 +6,13 @@ const userAnswerController = require("../controllers/userAnswerController");
 // Submit single answer
 router.post("/", verifyToken, userAnswerController.submitAnswer);
 
+// Submit multiple answers
+router.post(
+  "/submit-many",
+  verifyToken,
+  userAnswerController.submitManyAnswers
+);
+
 // Get answers for attempt
 router.get(
   "/attempt/:attemptId",
