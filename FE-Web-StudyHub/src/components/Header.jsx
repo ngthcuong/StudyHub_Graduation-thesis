@@ -22,12 +22,21 @@ const Header = () => {
           <a href="#" className="text-gray-700 hover:text-blue-600">
             About us
           </a>
-          <Button variant="outlined" className="rounded-md px-4 py-1 ml-2">
+          <Button
+            variant="outlined"
+            className="!rounded-lg px-4 py-1 ml-2"
+            sx={{
+              textTransform: "none",
+            }}
+          >
             Sign up
           </Button>
           <Button
             variant="contained"
-            className="rounded-md px-4 py-1 bg-black hover:bg-gray-800 ml-2"
+            className="!rounded-lg px-4 py-1 ml-2"
+            sx={{
+              textTransform: "none",
+            }}
           >
             Sign in
           </Button>

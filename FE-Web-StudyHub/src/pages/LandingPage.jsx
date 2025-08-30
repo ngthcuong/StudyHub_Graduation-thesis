@@ -19,6 +19,9 @@ import {
   ArrowBackIos,
 } from "@mui/icons-material";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+import LecturerImage from "../assets/lecture.png";
+import StudentImage from "../assets/student.png";
 
 const testimonials = [
   {
@@ -58,43 +61,58 @@ const LandingPage = () => {
       <section className="py-16">
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
+            {/* Left Side */}
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Typography
                 variant="h2"
                 className="font-bold mb-4"
                 sx={{ fontSize: { xs: "2rem", md: "2.8rem" } }}
               >
-                <span className="text-blue-700">Studying</span> Online is
+                <span className="text-blue-700 font-bold">Studying</span> Online
+                is
                 <br />
                 now much easier
               </Typography>
-              <Typography variant="body1" className="mb-6 text-gray-700">
+              <Typography variant="h6" className="mb-6 text-gray-700 !mt-6">
                 StudyHub is an interesting platform that will teach you in more
                 an interactive way
               </Typography>
-              <Box className="flex gap-4">
+              <Box className="flex gap-4 mt-8">
                 <Button
                   variant="contained"
-                  className="bg-black hover:bg-gray-800 rounded-md px-6 py-2 text-white"
+                  size="large"
+                  className="rounded-md px-6 py-2 text-white "
+                  sx={{
+                    textTransform: "none",
+                  }}
                 >
                   Get started
                 </Button>
-                <Button variant="outlined" className="rounded-md px-6 py-2">
+                <Button
+                  variant="outlined"
+                  size="large"
+                  className="rounded-md px-6 py-2"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                >
                   Learn more
                 </Button>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Box className="relative flex justify-center items-center">
+
+            {/* Right Side */}
+            <Grid item size={{ xs: 12, md: 6 }} className={"w-full"}>
+              <Box className="relative flex items-center">
                 <img
-                  src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=facearea&w=300&q=80"
-                  alt="Student"
+                  src={LecturerImage}
+                  alt="Lecturer"
                   className="rounded-xl w-48 h-56 object-cover shadow-lg absolute left-16 top-12"
                 />
                 <div className="bg-blue-100 rounded-full w-56 h-56 absolute right-0 top-0 -z-10"></div>
                 <img
-                  src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=facearea&w=300&q=80"
-                  alt="Lecturer"
+                  src={StudentImage}
+                  alt="Student"
                   className="rounded-xl w-40 h-48 object-cover shadow-lg absolute right-8 top-0"
                 />
                 <div className="h-64"></div>
@@ -246,6 +264,7 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
+      <Footer />
     </div>
   );
 };
