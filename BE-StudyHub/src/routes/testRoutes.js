@@ -7,10 +7,10 @@ const testController = require("../controllers/testController");
 router.post("/", verifyToken, requireAdmin, testController.createTest);
 
 // Get all tests
-router.get("/", verifyToken, testController.getAllTests);
+router.get("/", testController.getAllTests);
 
 // Get test detail
-router.get("/:testId", verifyToken, testController.getTestById);
+router.get("/:testId", testController.getTestById);
 
 // Update test (admin)
 router.put(

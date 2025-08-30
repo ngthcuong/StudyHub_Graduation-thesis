@@ -10,9 +10,9 @@ router.post("/", verifyToken, attemptController.startAttempt);
 router.post("/:attemptId/submit", verifyToken, attemptController.submitAttempt);
 
 // Get attempt by id
-router.get("/:attemptId", verifyToken, attemptController.getAttemptById);
+router.get("/:attemptId", attemptController.getAttemptById);
 
 // Get attempts by user
-router.get("/user/:userId", verifyToken, attemptController.getAttemptsByUser);
+router.get("/user/:userId", attemptController.getAttemptsByUser);
 
 module.exports = router;

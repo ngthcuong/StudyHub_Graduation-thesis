@@ -12,6 +12,7 @@ const startAttempt = async (req, res) => {
       testId,
       userId: req.user && req.user.userId ? req.user.userId : req.body.userId,
       evaluationModel: evaluationModel || "gemini",
+      feedback: feedback || "",
     };
 
     const savedAttempt = await attemptModel.createAttempt(attemptData);

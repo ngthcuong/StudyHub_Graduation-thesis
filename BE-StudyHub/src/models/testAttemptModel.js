@@ -21,7 +21,7 @@ const findAttemptById = async (id) => {
 
 const findAttemptsByUser = async (userId) => {
   try {
-    return await TestAttempt.find({ userId }).sort({ createdAt: -1 });
+    return await TestAttempt.find({ userId });
   } catch (error) {
     console.error("Error finding attempts by user:", error);
     throw new Error("Failed to find attempts by user");

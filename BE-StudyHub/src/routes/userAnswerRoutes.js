@@ -14,11 +14,10 @@ router.post(
 );
 
 // Get answers for attempt
-router.get(
-  "/attempt/:attemptId",
-  verifyToken,
-  userAnswerController.getAnswersByAttempt
-);
+router.get("/attempt/:attemptId", userAnswerController.getAnswersByAttempt);
+
+// Get answers for user
+// router.get("/user/:userId", userAnswerController.getAnswersByUser);
 
 // Update answer (admin or teacher maybe)
 router.put(

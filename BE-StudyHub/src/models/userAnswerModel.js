@@ -12,9 +12,7 @@ const createUserAnswer = async (answerData) => {
 
 const findAnswersByAttempt = async (attemptId) => {
   try {
-    return await UserAnswer.find({ attemptId }).populate(
-      "questionId selectedOptionId"
-    );
+    return await UserAnswer.find({ attemptId });
   } catch (error) {
     console.error("Error finding answers by attempt:", error);
     throw new Error("Failed to find answers by attempt");
