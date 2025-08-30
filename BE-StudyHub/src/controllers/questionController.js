@@ -45,6 +45,39 @@ const createQuestion = async (req, res) => {
   }
 };
 
+const createManyQuestions = async (req, res) => {
+  try {
+    let { questions } = req.body;
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ error: "Questions array is required" });
+    }
+
+    // Validate nhanh
+    for (let q of questions) {
+      if (!q.testId || !q.questionText || !q.questionType) {
+        return res
+          .status(400)
+          .json({ error: "Missing required fields in some questions" });
+      }
+      if (q.questionType === "mcq" && (!q.options || q.options.length === 0)) {
+        return res.status(400).json({ error: "MCQ must include options" });
+      }
+    }
+
+    // Lưu vào DB (nếu questionModel là mongoose model thì dùng insertMany)
+    const newQuestions = await questionModel.createManyQuestions(questions);
+
+    res.status(201).json({
+      message: `${newQuestions.length} questions created successfully`,
+      data: newQuestions,
+    });
+  } catch (error) {
+    console.error("Error creating questions:", error);
+    res.status(500).json({ error: "Failed to create questions" });
+  }
+};
+
 const getQuestionsByTest = async (req, res) => {
   try {
     const { testId } = req.params;
@@ -100,6 +133,7 @@ const deleteQuestionById = async (req, res) => {
 
 module.exports = {
   createQuestion,
+  createManyQuestions,
   getQuestionsByTest,
   updateQuestionById,
   deleteQuestionById,

@@ -19,7 +19,7 @@ const questionSchema = new mongoose.Schema(
     // Chỉ dùng cho MCQ
     options: [
       {
-        optionText: { type: String, required: true }, // ví dụ: "A. Paris"
+        optionText: { type: String, required: true }, // ví dụ: "Paris"
         isCorrect: { type: Boolean, default: false }, // true nếu là đáp án đúng
       },
     ],

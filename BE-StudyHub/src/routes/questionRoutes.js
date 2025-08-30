@@ -6,6 +6,14 @@ const questionController = require("../controllers/questionController");
 // Create question (admin)
 router.post("/", verifyToken, requireAdmin, questionController.createQuestion);
 
+// ✅ Create multiple questions (admin)
+router.post(
+  "/bulk",
+  verifyToken,
+  requireAdmin,
+  questionController.createManyQuestions
+);
+
 // Get questions by test
 router.get("/test/:testId", verifyToken, questionController.getQuestionsByTest);
 

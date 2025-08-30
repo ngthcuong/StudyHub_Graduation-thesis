@@ -10,6 +10,15 @@ const createQuestion = async (questionData) => {
   }
 };
 
+const createManyQuestions = async (questionsData) => {
+  try {
+    return await Question.insertMany(questionsData);
+  } catch (error) {
+    console.error("Error creating multiple questions:", error);
+    throw new Error("Failed to create multiple questions");
+  }
+};
+
 const findQuestionById = async (id) => {
   try {
     return await Question.findById(id);
@@ -48,6 +57,7 @@ const deleteQuestionById = async (id) => {
 
 module.exports = {
   createQuestion,
+  createManyQuestions,
   findQuestionById,
   findQuestionsByTest,
   updateQuestionById,
