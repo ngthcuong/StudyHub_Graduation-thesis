@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cài đặt môi trường ảo
+venv/
+env/
+ENV/
+.venv/
+
+# Thư mục build / distribution
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Thư mục PyInstaller
+*.manifest
+*.spec
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Log files
+*.log
+
+# Database / cache
+*.sqlite3
+*.db
+*.cache
+
+# Thư mục môi trường conda
+.conda/
+
+# Thư mục OS
+.DS_Store
+Thumbs.db
+
+# API keys, config nhạy cảm
+.env
+.env.*
+config/*.env
+
+# PDF / output render nếu không muốn lưu Git
+output/
+*.pdf
+*.docx
