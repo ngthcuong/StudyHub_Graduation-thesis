@@ -125,33 +125,42 @@ const LandingPage = () => {
       {/* How it works */}
       <section className="py-16 bg-white">
         <Container maxWidth="lg">
-          <Typography variant="h4" className="font-bold text-center mb-8">
+          <Typography variant="h4" className="font-bold text-center !mb-8">
             How it works
           </Typography>
           <Grid container spacing={4} justifyContent="center">
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" className="font-bold text-center mb-2">
+            <Grid item size={{ xs: 12, md: 4 }}>
+              <div className="flex justify-center mb-3">
+                <X />
+              </div>
+              <Typography variant="h6" className="!font-bold text-center !mb-4">
                 1. Find Your Course
               </Typography>
-              <Typography variant="body2" className="text-center text-gray-600">
+              <Typography variant="body1" className="text-center text-gray-600">
                 Browse through our extensive library of courses across various
                 categories.
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" className="font-bold text-center mb-2">
+            <Grid item size={{ xs: 12, md: 4 }}>
+              <div className="flex justify-center mb-3">
+                <X />
+              </div>
+              <Typography variant="h6" className="!font-bold text-center !mb-4">
                 2. Enroll & Pay
               </Typography>
-              <Typography variant="body2" className="text-center text-gray-600">
+              <Typography variant="body1" className="text-center text-gray-600">
                 Choose your preferred course and complete the enrollment process
                 securely.
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" className="font-bold text-center mb-2">
+            <Grid item size={{ xs: 12, md: 4 }}>
+              <div className="flex justify-center mb-3">
+                <X />
+              </div>
+              <Typography variant="h6" className="!font-bold text-center !mb-4">
                 3. Learn & Grow
               </Typography>
-              <Typography variant="body2" className="text-center text-gray-600">
+              <Typography variant="body1" className="text-center text-gray-600">
                 Access course materials, complete assignments, and earn your
                 certificate.
               </Typography>
