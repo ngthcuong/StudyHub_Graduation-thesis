@@ -1,6 +1,6 @@
 const userAnswerModel = require("../models/userAnswerModel");
 const questionModel = require("../models/questionModel");
-const AnswerOption = require("../schemas/AnswerOption");
+// const AnswerOption = require("../schemas/AnswerOption");
 
 const submitAnswer = async (req, res) => {
   try {
@@ -11,26 +11,39 @@ const submitAnswer = async (req, res) => {
       answerText,
       answerLetter,
     } = req.body;
-    if (!attemptId || !questionId)
+
+    // Validate input
+    if (!attemptId || !questionId) {
       return res
         .status(400)
         .json({ error: "attemptId and questionId are required" });
-
-    const question = await questionModel.findQuestionById(questionId);
-    if (!question) return res.status(404).json({ error: "Question not found" });
-
-    let selectedOption = null;
-    if (selectedOptionId)
-      selectedOption = await AnswerOption.findById(selectedOptionId).lean();
-    if (!selectedOption && answerLetter) {
-      selectedOption = await AnswerOption.findOne({
-        questionId,
-        label: answerLetter.toUpperCase(),
-      }).lean();
     }
 
+    // Lấy question
+    const question = await questionModel.findById(questionId).lean();
+    if (!question) {
+      return res.status(404).json({ error: "Question not found" });
+    }
+
+    // Tìm option trong question.options
+    let selectedOption = null;
+    if (selectedOptionId) {
+      selectedOption = question.options.find(
+        (opt) => opt._id.toString() === selectedOptionId
+      );
+    }
+    if (!selectedOption && answerLetter) {
+      selectedOption = question.options.find(
+        (opt, idx) =>
+          opt.label?.toUpperCase() === answerLetter.toUpperCase() ||
+          String.fromCharCode(65 + idx) === answerLetter.toUpperCase() // A,B,C,D,...
+      );
+    }
+
+    // Tính điểm
     let isCorrect = undefined;
     let score = 0;
+
     if (question.questionType === "mcq") {
       if (selectedOption) {
         isCorrect = !!selectedOption.isCorrect;
@@ -40,23 +53,26 @@ const submitAnswer = async (req, res) => {
         score = 0;
       }
     } else {
+      // essay, short answer...
       isCorrect = undefined;
       score = 0;
     }
 
+    // Lưu UserAnswer
     const ua = await userAnswerModel.createUserAnswer({
       attemptId,
       questionId,
       selectedOptionId: selectedOption?._id,
+      selectedOptionText: selectedOption?.optionText, // thêm field để tiện debug
       answerText,
       isCorrect,
       score,
     });
 
-    res.status(201).json({ message: "Answer saved", data: ua });
+    return res.status(201).json({ message: "Answer saved", data: ua });
   } catch (error) {
     console.error("Error submitting answer:", error);
-    res.status(500).json({ error: "Failed to submit answer" });
+    return res.status(500).json({ error: "Failed to submit answer" });
   }
 };
 

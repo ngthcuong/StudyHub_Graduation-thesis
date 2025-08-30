@@ -84,6 +84,7 @@ const getQuestionsByTest = async (req, res) => {
     if (!testId) return res.status(400).json({ error: "Test ID not found" });
 
     const questions = await questionModel.findQuestionsByTest(testId);
+
     res.status(200).json({
       message: "Questions retrieved",
       data: questions,
@@ -92,6 +93,25 @@ const getQuestionsByTest = async (req, res) => {
   } catch (error) {
     console.error("Error getting questions:", error);
     res.status(500).json({ error: "Failed to get questions" });
+  }
+};
+
+const getQuestionById = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    if (!questionId)
+      return res.status(400).json({ error: "Question ID not found" });
+
+    const question = await questionModel.findQuestionById(questionId);
+    if (!question) return res.status(404).json({ error: "Question not found" });
+
+    res.status(200).json({
+      message: "Question retrieved successfully",
+      data: question,
+    });
+  } catch (error) {
+    console.error("Error getting question by ID:", error);
+    res.status(500).json({ error: "Failed to get question" });
   }
 };
 
@@ -137,4 +157,5 @@ module.exports = {
   getQuestionsByTest,
   updateQuestionById,
   deleteQuestionById,
+  getQuestionById,
 };

@@ -15,7 +15,10 @@ router.post(
 );
 
 // Get questions by test
-router.get("/test/:testId", verifyToken, questionController.getQuestionsByTest);
+router.get("/test/:testId", questionController.getQuestionsByTest);
+
+//Get question by ID
+router.get("/:questionId", questionController.getQuestionById);
 
 // Update question
 router.put(
