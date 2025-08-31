@@ -7,16 +7,16 @@ import {
   Grid,
   Card,
   CardContent,
-  TextField,
-  InputAdornment,
   IconButton,
+  CardHeader,
 } from "@mui/material";
 import {
-  LinkedIn,
   X,
-  Language,
   ArrowForwardIos,
   ArrowBackIos,
+  FormatQuote,
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
 } from "@mui/icons-material";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -25,19 +25,43 @@ import StudentImage from "../assets/student.png";
 
 const testimonials = [
   {
-    name: "Jane Doe",
+    name: "Jane Doe 1 ",
     course: "Course name",
     text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
     avatar: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
-    name: "Jane Doe",
+    name: "Jane Doe 2",
     course: "Course name",
     text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
     avatar: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
-    name: "Jane Doe",
+    name: "Jane Doe 3",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    name: "Jane Doe 4",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    name: "Jane Doe 5",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    name: "Jane Doe 6",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    name: "Jane Doe 7",
     course: "Course name",
     text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
     avatar: "https://randomuser.me/api/portraits/women/44.jpg",
@@ -51,7 +75,11 @@ const stats = [
   { value: "15k+", label: "Students Enrolled" },
 ];
 
+import { useState } from "react";
+
 const LandingPage = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   return (
     <div className="bg-white min-h-screen font-sans">
       {/* Header */}
@@ -171,55 +199,80 @@ const LandingPage = () => {
 
       {/* Testimonials */}
       <section className="py-16 bg-gray-50">
+        {/* Tiêu đề và nút chuuyển */}
         <Container maxWidth="lg">
-          <Typography variant="h4" className="font-bold mb-8">
-            What our students say about us
-          </Typography>
-          <Grid container spacing={4}>
-            <Grid item xs={12}>
-              <Box className="flex gap-4 overflow-x-auto">
-                <IconButton>
-                  <ArrowBackIos />
-                </IconButton>
-                {testimonials.map((t, idx) => (
-                  <Card key={idx} className="min-w-[320px] shadow-sm">
-                    <CardContent>
-                      <Typography
-                        variant="body1"
-                        className="mb-4 text-blue-700"
-                      >
-                        “
-                      </Typography>
-                      <Typography variant="body2" className="mb-4">
-                        {t.text}
-                      </Typography>
-                      <Box className="flex items-center gap-2">
-                        <img
-                          src={t.avatar}
-                          alt={t.name}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <Box>
-                          <Typography variant="body2" className="font-bold">
-                            {t.name}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            className="text-gray-500"
-                          >
-                            {t.course}
-                          </Typography>
-                        </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: "row",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h4" className="!font-bold ">
+              What our students say about us
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+              }}
+            >
+              <Button
+                className="!bg-gray-200 !rounded-sm w-16 h-fit"
+                size="small"
+                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 3))}
+                disabled={currentIndex === 0}
+              >
+                <KeyboardArrowLeft />
+              </Button>
+              <Button
+                className="!bg-gray-200 !rounded-sm w-16 h-fit"
+                size="small"
+                onClick={() =>
+                  setCurrentIndex(
+                    Math.min(testimonials.length - 3, currentIndex + 3)
+                  )
+                }
+                disabled={currentIndex >= testimonials.length - 3}
+              >
+                <KeyboardArrowRight />
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Danh sách các đánh giá */}
+          <Box className="grid gap-4 grid-cols-1 sm:grid-cols-3 relative overflow-hidden pb-0.5">
+            {testimonials
+              .slice(currentIndex, currentIndex + 3)
+              .map((t, idx) => (
+                <Card key={idx} className="min-w-[320px] shadow-lg px-2">
+                  <CardContent>
+                    <Typography variant="body1" className="mb-4 text-blue-700">
+                      <FormatQuote />
+                    </Typography>
+                    <Typography variant="body1" className="!mb-3">
+                      {t.text}
+                    </Typography>
+                    <Box className="flex items-center gap-2">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <Box>
+                        <Typography variant="body1" className="!font-semibold">
+                          {t.name}
+                        </Typography>
+                        <Typography variant="body2" className="text-gray-500">
+                          {t.course}
+                        </Typography>
                       </Box>
-                    </CardContent>
-                  </Card>
-                ))}
-                <IconButton>
-                  <ArrowForwardIos />
-                </IconButton>
-              </Box>
-            </Grid>
-          </Grid>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+          </Box>
         </Container>
       </section>
 
