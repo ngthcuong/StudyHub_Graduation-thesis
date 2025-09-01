@@ -314,16 +314,19 @@ const LandingPage = () => {
       <section className="py-12 bg-gradient-to-r from-teal-300 to-blue-200">
         <Container maxWidth="md">
           <Box className="text-center">
-            <Typography variant="h5" className="font-bold mb-2 text-gray-800">
+            <Typography variant="h4" className="!font-bold !mb-2 text-gray-800">
               Ready to Join Our Learning Community?
             </Typography>
-            <Typography variant="body1" className="mb-6 text-gray-700">
+            <Typography variant="body1" className="!mb-4 text-gray-700">
               Start your learning journey today and become part of our success
               stories
             </Typography>
             <Button
               variant="contained"
-              className="bg-white text-blue-700 font-bold px-6 py-2 rounded-md shadow hover:bg-blue-50"
+              sx={{
+                textTransform: "none",
+              }}
+              className="!bg-white !text-gray-700 !font-semibold px-6 py-2 rounded-md shadow hover:bg-blue-50"
             >
               Browse Courses
             </Button>
