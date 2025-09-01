@@ -1,22 +1,13 @@
-import {
-  Facebook,
-  Instagram,
-  Language,
-  LinkedIn,
-  X,
-  YouTube,
-} from "@mui/icons-material";
+import { Facebook, Instagram, LinkedIn, YouTube } from "@mui/icons-material";
 import {
   Box,
   Button,
   Container,
   Grid,
-  IconButton,
   TextField,
   Typography,
 } from "@mui/material";
 import React from "react";
-import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -154,7 +145,7 @@ const Footer = () => {
           </Grid>
         </Grid>
         <Box className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 text-gray-500 text-sm">
-          <span>© 2024 Relume. All rights reserved.</span>
+          <span>© 2024 StudyHub. All rights reserved.</span>
           <Box className="flex gap-4">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>

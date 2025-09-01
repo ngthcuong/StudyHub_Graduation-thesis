@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   Container,
@@ -7,14 +7,10 @@ import {
   Grid,
   Card,
   CardContent,
-  IconButton,
-  CardHeader,
   Rating,
 } from "@mui/material";
 import {
   X,
-  ArrowForwardIos,
-  ArrowBackIos,
   FormatQuote,
   KeyboardArrowLeft,
   KeyboardArrowRight,
@@ -75,8 +71,6 @@ const stats = [
   { value: "96%", label: "Satisfaction Rate" },
   { value: "15k+", label: "Students Enrolled" },
 ];
-
-import { useState } from "react";
 
 const LandingPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -200,7 +194,7 @@ const LandingPage = () => {
 
       {/* Testimonials */}
       <section className="py-16 bg-gray-50">
-        {/* Tiêu đề và nút chuuyển */}
+        {/* Tiêu đề và nút chuyển */}
         <Container maxWidth="lg">
           <Box
             sx={{
