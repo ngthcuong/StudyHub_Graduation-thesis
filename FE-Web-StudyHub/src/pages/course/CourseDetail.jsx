@@ -242,7 +242,7 @@ const CourseDetail = () => {
       {/* Course Introduction Section */}
       <section className="px-6 py-12 bg-gray-50">
         <Container maxWidth="lg">
-          <Typography variant="h4" className="!font-bold text-black mb-8 ">
+          <Typography variant="h4" className="!font-bold text-black !mb-4 ">
             Course Introduction
           </Typography>
 
@@ -279,19 +279,15 @@ const CourseDetail = () => {
             Expected Learning Outcomes
           </Typography>
 
-          <div className="mt-2">
-            <div>
-              <div className="space-y-4">
-                {outcomes.map((skill, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <Typography variant="body1" className="text-gray-700">
-                      {skill}
-                    </Typography>
-                  </div>
-                ))}
+          <div className="grid grid-cols-2 space-y-4 mt-4">
+            {outcomes.map((skill, index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <Typography variant="body1" className="text-gray-700">
+                  {skill}
+                </Typography>
               </div>
-            </div>
+            ))}
           </div>
         </Container>
       </section>
@@ -381,7 +377,7 @@ const CourseDetail = () => {
       {/* Recommended Courses Section */}
       <section className="px-6 py-12 bg-white">
         <Container maxWidth="lg">
-          <div className="flex items-center justify-between !mb-3">
+          <div className="flex items-center justify-between !mb-4">
             <Typography variant="h4" className="!font-bold text-black">
               Recommended for you
             </Typography>
