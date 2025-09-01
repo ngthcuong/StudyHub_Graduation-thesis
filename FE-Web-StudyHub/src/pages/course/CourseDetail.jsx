@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   TextField,
   Button,
@@ -12,6 +12,7 @@ import {
   AccordionDetails,
   Box,
   Avatar,
+  Container,
 } from "@mui/material";
 import {
   Favorite as FavoriteIcon,
@@ -22,6 +23,9 @@ import {
   Person,
   WorkspacePremium,
   AccessTime,
+  FormatQuote,
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
 } from "@mui/icons-material";
 
 const outcomes = [
@@ -37,12 +41,112 @@ const outcomes = [
   "Achieve minimum 40/100 reading questions on real TOEIC test",
 ];
 
+const testimonials = [
+  {
+    name: "Jane Doe 1 ",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+  {
+    name: "Jane Doe 2",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+  {
+    name: "Jane Doe 3",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+  {
+    name: "Jane Doe 4",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+  {
+    name: "Jane Doe 5",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+  {
+    name: "Jane Doe 6",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+  {
+    name: "Jane Doe 7",
+    course: "Course name",
+    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    date: new Date(),
+  },
+];
+
+const courses = [
+  {
+    title: "AWS Certified Solutions Architect",
+    category: "TOEIC",
+    duration: "3 Month",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
+    instructor: "Lina",
+    originalPrice: "$100",
+    discountedPrice: "$80",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    title: "AWS Certified Solutions Architect",
+    category: "TOEIC",
+    duration: "3 Month",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
+    instructor: "Lina",
+    originalPrice: "$100",
+    discountedPrice: "$80",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    title: "AWS Certified Solutions Architect",
+    category: "TOEIC",
+    duration: "3 Month",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
+    instructor: "Lina",
+    originalPrice: "$100",
+    discountedPrice: "$80",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+  {
+    title: "AWS Certified Solutions Architect",
+    category: "TOEIC",
+    duration: "3 Month",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
+    instructor: "Lina",
+    originalPrice: "$100",
+    discountedPrice: "$80",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
+];
 const CourseDetail = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Main Course Detail Section */}
       <main className="px-6 py-8">
-        <div className="max-w-7xl mx-auto">
+        <Container maxWidth="lg">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Course Image */}
             <div className="relative">
@@ -75,7 +179,10 @@ const CourseDetail = () => {
                 $50
               </Typography>
 
-              <Typography variant="body1" className="text-gray-600 !mt-2">
+              <Typography
+                variant="body1"
+                className="text-gray-600 !mt-2 !text-justify"
+              >
                 Master the TOEIC exam with comprehensive preparation covering
                 all sections: Listening, Reading, Speaking, and Writing. Master
                 the TOEIC exam with comprehensive preparation covering all
@@ -124,50 +231,50 @@ const CourseDetail = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </Container>
       </main>
 
       {/* Course Introduction Section */}
-      <section className="px-6 py-12 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <Typography variant="h4" className="font-bold text-black mb-8 ">
+      <section className="px-6 py-12 bg-gray-50">
+        <Container maxWidth="lg">
+          <Typography variant="h4" className="!font-bold text-black mb-8 ">
             Course Introduction
           </Typography>
 
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-8">
-            <Typography variant="h6" className="font-bold text-blue-800 mb-3">
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-8 !text-justify">
+            <Typography
+              variant="h6"
+              className="font-bold text-blue-800 !mb-2.5"
+            >
               TOEIC Foundation - Building a Solid Foundation
             </Typography>
             <Typography
               variant="body1"
-              className="text-gray-700 leading-relaxed mb-4"
+              className="text-gray-700 !mb-2 !text-justify"
             >
               TOEIC Foundation is a course specifically designed for people who
               have lost their English foundation for many years, cannot hear
               basic audio sounds, individual vocabulary words, and understand
               English vocabulary at a minimal level.
             </Typography>
-            <Typography
-              variant="body1"
-              className="text-gray-700 leading-relaxed"
-            >
+            <Typography variant="body1" className="text-gray-700 ">
               The essence of learning any language starts with listening first
               (sounds) rather than reading first. Learning from the basics will
               make learners feel less pressured and build a truly solid
               foundation for the longer journey ahead.
             </Typography>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Expected Learning Outcomes Section */}
-      <section className="px-6 py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <Typography variant="h4" className="font-bold text-black mb-8 ">
+      <section className="px-6 py-12 bg-white">
+        <Container maxWidth="lg">
+          <Typography variant="h4" className="!font-bold text-black">
             Expected Learning Outcomes
           </Typography>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="mt-2">
             <div>
               <div className="space-y-4">
                 {outcomes.map((skill, index) => (
@@ -181,115 +288,124 @@ const CourseDetail = () => {
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Latest Reviews Section */}
-      <section className="px-6 py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <Typography variant="h4" className="font-bold text-black mb-8 ">
-            Latest Reviews
-          </Typography>
+      <section className="py-12 bg-gray-50">
+        {/* Tiêu đề và nút chuyển */}
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexDirection: "row",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h4" className="!font-bold ">
+              Last reviews
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+              }}
+            >
+              <Button
+                className="!bg-gray-200 !rounded-sm w-16 h-fit"
+                size="small"
+                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 3))}
+                disabled={currentIndex === 0}
+              >
+                <KeyboardArrowLeft />
+              </Button>
+              <Button
+                className="!bg-gray-200 !rounded-sm w-16 h-fit"
+                size="small"
+                onClick={() =>
+                  setCurrentIndex(
+                    Math.min(testimonials.length - 3, currentIndex + 3)
+                  )
+                }
+                disabled={currentIndex >= testimonials.length - 3}
+              >
+                <KeyboardArrowRight />
+              </Button>
+            </Box>
+          </Box>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((index) => (
-              <Card key={index} className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <Rating value={0} readOnly className="mb-3" />
-                  <Typography
-                    variant="h6"
-                    className="font-bold text-black mb-2"
-                  >
-                    Review title
-                  </Typography>
-                  <Typography variant="body2" className="text-black mb-4">
-                    Review body
-                  </Typography>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-10 h-10">
-                      <Person />
-                    </Avatar>
-                    <div>
-                      <Typography
-                        variant="body2"
-                        className="font-medium text-black"
-                      >
-                        Reviewer name
-                      </Typography>
-                      <Typography variant="caption" className="text-black">
-                        Date
-                      </Typography>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+          {/* Danh sách các đánh giá */}
+          <Box className="grid gap-4 grid-cols-1 sm:grid-cols-3 relative overflow-hidden pb-0.5">
+            {testimonials
+              .slice(currentIndex, currentIndex + 3)
+              .map((t, idx) => (
+                <Card
+                  key={idx}
+                  className="min-w-[320px] shadow-lg px-2 !rounded-xl"
+                >
+                  <CardContent>
+                    <Typography variant="body1" className="mb-4 text-blue-700">
+                      <FormatQuote />
+                    </Typography>
+                    <Typography variant="body1" className="!mb-3">
+                      {t.text}
+                    </Typography>
+                    <Box className="flex items-center gap-2">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <Box>
+                        <Typography variant="body1" className="!font-semibold">
+                          {t.name}
+                        </Typography>
+                        <Typography variant="body2" className="text-gray-500">
+                          {t.date?.toLocaleDateString("vn-VN")}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+          </Box>
+        </Container>
       </section>
 
       {/* Recommended Courses Section */}
       <section className="px-6 py-12 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <Typography variant="h4" className="font-bold text-black">
+        <Container maxWidth="lg">
+          <div className="flex items-center justify-between !mb-3">
+            <Typography variant="h4" className="!font-bold text-black">
               Recommended for you
             </Typography>
             <Button
               variant="text"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              size="large"
+              className="text-blue-600 hover:text-blue-800 !font-medium"
+              sx={{
+                textTransform: "none",
+              }}
             >
               See more
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                title: "AWS Certified Solutions Architect",
-                category: "Design",
-                duration: "3 Month",
-                description:
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-                instructor: "Lina",
-                originalPrice: "$100",
-                discountedPrice: "$80",
-                image: "💻",
-              },
-              {
-                title: "AWS Certified Solutions Architect",
-                category: "Design",
-                duration: "3 Month",
-                description:
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-                instructor: "Lina",
-                originalPrice: "$100",
-                discountedPrice: "$80",
-                image: "💻",
-              },
-              {
-                title: "AWS Certified Solutions Architect",
-                category: "Design",
-                duration: "3 Month",
-                description:
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-                instructor: "Lina",
-                originalPrice: "$100",
-                discountedPrice: "$80",
-                image: "💻",
-              },
-            ].map((course, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
+            {courses.map((course, index) => (
               <Card
                 key={index}
-                className="bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+                className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
               >
                 {/* Course Image */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
                   <div className="">
-                    <div className="text-6xl mb-2">{course.image}</div>
-                    <div className="text-xs text-gray-500">
-                      Laptop with video conference
-                    </div>
+                    <img
+                      src={course.avatar}
+                      alt={course.title}
+                      className="w-10 h-10 rounded-full"
+                    />
                   </div>
                 </div>
 
@@ -306,7 +422,7 @@ const CourseDetail = () => {
                       </Typography>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-gray-500">⏰</span>
+                      <AccessTime />
                       <Typography variant="body2" className="text-gray-600">
                         {course.duration}
                       </Typography>
@@ -315,22 +431,19 @@ const CourseDetail = () => {
 
                   {/* Course Title */}
                   <Typography
-                    variant="h6"
-                    className="font-bold text-black mb-2 leading-tight"
+                    variant="subtitle1"
+                    className="!font-black text-black !mb-1 "
                   >
                     {course.title}
                   </Typography>
 
                   {/* Course Description */}
-                  <Typography
-                    variant="body2"
-                    className="text-gray-600 mb-4 leading-relaxed"
-                  >
+                  <Typography variant="body2" className="text-gray-600 ">
                     {course.description}
                   </Typography>
 
                   {/* Instructor and Pricing */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center space-x-2">
                       <Avatar className="w-6 h-6 bg-gray-300 text-gray-600 text-xs">
                         L
@@ -342,16 +455,16 @@ const CourseDetail = () => {
                         {course.instructor}
                       </Typography>
                     </div>
-                    <div className="text-right">
+                    <div className="flex items-center gap-3 text-right">
                       <Typography
-                        variant="body2"
-                        className="text-gray-400 line-through text-sm"
+                        variant="body1"
+                        className="text-gray-600 line-through text-sm"
                       >
                         {course.originalPrice}
                       </Typography>
                       <Typography
                         variant="h6"
-                        className="font-bold text-teal-600"
+                        className="!font-bold text-teal-600"
                       >
                         {course.discountedPrice}
                       </Typography>
@@ -361,7 +474,7 @@ const CourseDetail = () => {
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     </div>
   );
