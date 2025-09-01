@@ -7,6 +7,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import HomgePage from "../pages/HomgePage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import UserInfoPage from "../pages/user/UserInfoPage";
+import CourseDetail from "../pages/course/CourseDetail";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
           {
             path: "/user",
             element: <UserInfoPage />,
+          },
+          {
+            path: "/course",
+            element: <CourseDetail />,
           },
         ],
       },
