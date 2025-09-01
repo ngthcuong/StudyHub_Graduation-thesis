@@ -13,19 +13,19 @@ import {
   Box,
   Avatar,
   Container,
+  Alert,
 } from "@mui/material";
 import {
-  Favorite as FavoriteIcon,
-  Image as ImageIcon,
-  LockClock,
+  Favorite,
+  Image,
   Book,
-  Celebration,
   Person,
   WorkspacePremium,
   AccessTime,
   FormatQuote,
   KeyboardArrowLeft,
   KeyboardArrowRight,
+  FavoriteBorder,
 } from "@mui/icons-material";
 
 const outcomes = [
@@ -142,6 +142,10 @@ const courses = [
 const CourseDetail = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const handleAddToFavorites = () => {
+    alert("add to favorites");
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Main Course Detail Section */}
@@ -151,7 +155,7 @@ const CourseDetail = () => {
             {/* Left Column - Course Image */}
             <div className="relative">
               <div className="bg-gray-200 rounded-lg h-96 flex items-center justify-center relative">
-                <ImageIcon className="text-gray-600 text-6xl" />
+                <Image className="text-gray-600 !text-6xl" />
               </div>
             </div>
 
@@ -164,8 +168,9 @@ const CourseDetail = () => {
                 <IconButton
                   className="!text-gray-400 hover:!text-red-500"
                   size="medium"
+                  onClick={handleAddToFavorites}
                 >
-                  <FavoriteIcon />
+                  <FavoriteBorder />
                 </IconButton>
               </div>
 
@@ -342,7 +347,7 @@ const CourseDetail = () => {
               .map((t, idx) => (
                 <Card
                   key={idx}
-                  className="min-w-[320px] shadow-lg px-2 !rounded-xl"
+                  className="min-w-[320px] shadow-lg px-2 !rounded-xl hover:!shadow-2xl"
                 >
                   <CardContent>
                     <Typography variant="body1" className="mb-4 text-blue-700">
