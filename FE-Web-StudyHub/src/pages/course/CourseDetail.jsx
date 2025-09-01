@@ -14,12 +14,15 @@ import {
   Avatar,
 } from "@mui/material";
 import {
-  Person as PersonIcon,
   Favorite as FavoriteIcon,
   Image as ImageIcon,
+  LockClock,
+  Book,
+  Celebration,
+  Person,
+  WorkspacePremium,
+  AccessTime,
 } from "@mui/icons-material";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -49,14 +52,14 @@ const CourseDetail = () => {
             </div>
 
             {/* Right Column - Course Information */}
-            <div className="space-y-6">
+            <div className="space-y-3">
               <div className="flex items-start justify-between">
-                <Typography variant="h3" className="font-bold text-black">
+                <Typography variant="h4" className="!font-bold text-black">
                   TOEIC Foundation
                 </Typography>
                 <IconButton
-                  className="text-gray-400 hover:text-red-500"
-                  size="small"
+                  className="!text-gray-400 hover:!text-red-500"
+                  size="medium"
                 >
                   <FavoriteIcon />
                 </IconButton>
@@ -68,50 +71,41 @@ const CourseDetail = () => {
                 </Typography>
               </div>
 
-              <Typography variant="h2" className="font-bold text-black">
+              <Typography variant="h3" className="!font-bold text-black">
                 $50
               </Typography>
 
-              <Typography
-                variant="body1"
-                className="text-gray-600 leading-relaxed"
-              >
+              <Typography variant="body1" className="text-gray-600 !mt-2">
                 Master the TOEIC exam with comprehensive preparation covering
-                all sections: Listening, Reading, Speaking, and Writing.
+                all sections: Listening, Reading, Speaking, and Writing. Master
+                the TOEIC exam with comprehensive preparation covering all
+                sections: Listening, Reading, Speaking, and Writing.
               </Typography>
 
-              <div className="space-y-3">
+              <div className="space-y-1.5 mt-2">
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">⏰</span>
-                  </div>
+                  <AccessTime />
                   <Typography variant="body2" className="text-gray-600">
-                    Duration: 12 hours
+                    12 hours
                   </Typography>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">📚</span>
-                  </div>
+                  <Book />
                   <Typography variant="body2" className="text-gray-600">
                     48 lessons
                   </Typography>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">📜</span>
-                  </div>
+                  <WorkspacePremium />
                   <Typography variant="body2" className="text-gray-600">
                     Certificate included
                   </Typography>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">👨‍🏫</span>
-                  </div>
+                  <Person />
                   <Typography variant="body2" className="text-gray-600">
                     Teacher Name
                   </Typography>
@@ -121,6 +115,9 @@ const CourseDetail = () => {
               <Button
                 variant="contained"
                 className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3"
+                sx={{
+                  textTransform: "none",
+                }}
                 size="large"
               >
                 Buy now
@@ -210,7 +207,7 @@ const CourseDetail = () => {
                   </Typography>
                   <div className="flex items-center space-x-3">
                     <Avatar className="w-10 h-10">
-                      <PersonIcon />
+                      <Person />
                     </Avatar>
                     <div>
                       <Typography
