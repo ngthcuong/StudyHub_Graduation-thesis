@@ -9,6 +9,7 @@ import {
   CardContent,
   IconButton,
   CardHeader,
+  Rating,
 } from "@mui/material";
 import {
   X,
@@ -69,7 +70,7 @@ const testimonials = [
 ];
 
 const stats = [
-  { value: "4.8", label: "Average Rating", icon: "⭐" },
+  { value: "4.8", label: "Average Rating", icon: true },
   { value: "2,847", label: "Total Reviews" },
   { value: "96%", label: "Satisfaction Rate" },
   { value: "15k+", label: "Students Enrolled" },
@@ -86,7 +87,7 @@ const LandingPage = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-16">
+      <section className="py-16 bg-gray-50">
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             {/* Left Side */}
@@ -153,7 +154,7 @@ const LandingPage = () => {
       {/* How it works */}
       <section className="py-16 bg-white">
         <Container maxWidth="lg">
-          <Typography variant="h4" className="font-bold text-center !mb-8">
+          <Typography variant="h4" className="!font-bold text-center !mb-8">
             How it works
           </Typography>
           <Grid container spacing={4} justifyContent="center">
@@ -279,22 +280,27 @@ const LandingPage = () => {
       {/* Statistics */}
       <section className="py-10 bg-white">
         <Container maxWidth="lg">
-          <Typography variant="h5" className="font-bold mb-6 text-center">
+          <Typography variant="h4" className="!font-bold !mb-6 text-center">
             Course Review Statistics
           </Typography>
           <Grid container spacing={4} justifyContent="center">
             {stats.map((stat, idx) => (
-              <Grid item xs={12} md={3} key={idx}>
-                <Card className="shadow-sm text-center py-6">
+              <Grid item size={{ xs: 12, md: 3 }} key={idx}>
+                <Card className="shadow-sm text-center h-full">
                   <CardContent>
-                    <Typography variant="h4" className="font-bold mb-2">
+                    <Typography variant="h5" className="!font-semibold mb-2">
                       {stat.value}
                     </Typography>
                     <Typography variant="body2" className="text-gray-600">
                       {stat.label}
                     </Typography>
                     {stat.icon && (
-                      <Typography className="mt-2">{stat.icon}</Typography>
+                      <Rating
+                        name="half-rating"
+                        value={4.5}
+                        readOnly
+                        precision={0.5}
+                      />
                     )}
                   </CardContent>
                 </Card>
