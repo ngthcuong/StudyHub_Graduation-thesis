@@ -1,4 +1,11 @@
-import { Language, LinkedIn, X } from "@mui/icons-material";
+import {
+  Facebook,
+  Instagram,
+  Language,
+  LinkedIn,
+  X,
+  YouTube,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -9,17 +16,25 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
     <footer className="bg-white border-t border-gray-200 pt-10 pb-4">
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={3}>
-            <Typography variant="h5" className="font-bold mb-2">
+        <Grid
+          container
+          spacing={10}
+          sx={{
+            padding: "0 10px",
+          }}
+        >
+          <Grid item size={{ xs: 12, md: 6 }}>
+            {/* TODO: Thay bằng logic được thiết kế */}
+            <Typography variant="h5" className="font-bold !mb-2">
               Logo
             </Typography>
-            <Typography variant="body2" className="mb-4 text-gray-600">
+            <Typography variant="body2" className="!mb-4 text-gray-600">
               Join our newsletter to stay up to date on features and releases.
             </Typography>
             <Box className="flex gap-2">
@@ -27,9 +42,15 @@ const Footer = () => {
                 size="small"
                 placeholder="Enter your email"
                 variant="outlined"
-                className="bg-white"
+                className="bg-white w-full"
               />
-              <Button variant="outlined" className="rounded-md">
+              <Button
+                variant="outlined"
+                className="rounded-md"
+                sx={{
+                  textTransform: "none",
+                }}
+              >
                 Subscribe
               </Button>
             </Box>
@@ -41,8 +62,8 @@ const Footer = () => {
               and provide consent to receive updates from our company.
             </Typography>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <Typography variant="h6" className="font-bold mb-2">
+          <Grid item size={{ xs: 12, md: 2 }}>
+            <Typography variant="subtitle1" className="!font-bold mb-2">
               Curriculum
             </Typography>
             <ul className="text-gray-600 space-y-1">
@@ -52,19 +73,10 @@ const Footer = () => {
               <li>
                 <a href="#">TOEIC</a>
               </li>
-              <li>
-                <a href="#">HSK</a>
-              </li>
-              <li>
-                <a href="#">English communication</a>
-              </li>
-              <li>
-                <a href="#">Link Fire</a>
-              </li>
             </ul>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <Typography variant="h6" className="font-bold mb-2">
+          <Grid item size={{ xs: 12, md: 2 }}>
+            <Typography variant="subtitle1" className="!font-bold mb-2">
               About us
             </Typography>
             <ul className="text-gray-600 space-y-1">
@@ -85,35 +97,60 @@ const Footer = () => {
               </li>
             </ul>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <Typography variant="h6" className="font-bold mb-2">
+          <Grid item size={{ xs: 12, md: 2 }}>
+            <Typography variant="subtitle1" className="!font-bold mb-2">
               Follow Us
             </Typography>
-            <Box className="flex gap-2">
-              <IconButton>
-                <Language />
-              </IconButton>
-              <IconButton>
-                <X />
-              </IconButton>
-              <IconButton>
-                <LinkedIn />
-              </IconButton>
+            <Box className="flex flex-col items-start">
+              <Button
+                startIcon={<Facebook />}
+                sx={{
+                  textTransform: "none",
+                  color: "gray",
+                  "&:hover": {
+                    // color: "blue",
+                  },
+                }}
+              >
+                Facebook
+              </Button>
+              <Button
+                startIcon={<Instagram />}
+                sx={{
+                  textTransform: "none",
+                  color: "gray",
+                  "&:hover": {
+                    // color: "blue",
+                  },
+                }}
+              >
+                Instagram
+              </Button>
+              <Button
+                startIcon={<LinkedIn />}
+                sx={{
+                  textTransform: "none",
+                  color: "gray",
+                  "&:hover": {
+                    // color: "blue",
+                  },
+                }}
+              >
+                LinkedIn
+              </Button>
+              <Button
+                startIcon={<YouTube />}
+                sx={{
+                  textTransform: "none",
+                  color: "gray",
+                  "&:hover": {
+                    // color: "blue",
+                  },
+                }}
+              >
+                YouTube
+              </Button>
             </Box>
-            <ul className="text-gray-600 space-y-1 mt-2">
-              <li>
-                <a href="#">Facebook</a>
-              </li>
-              <li>
-                <a href="#">Instagram</a>
-              </li>
-              <li>
-                <a href="#">LinkedIn</a>
-              </li>
-              <li>
-                <a href="#">YouTube</a>
-              </li>
-            </ul>
           </Grid>
         </Grid>
         <Box className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 text-gray-500 text-sm">
