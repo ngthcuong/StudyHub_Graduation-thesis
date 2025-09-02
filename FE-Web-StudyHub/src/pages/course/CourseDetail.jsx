@@ -285,7 +285,7 @@ const CourseDetail = () => {
             Expected Learning Outcomes
           </Typography>
 
-          <div className="grid grid-cols-2 space-y-4 mt-4 ">
+          <div className="grid grid-cols-2 gap-y-4 mt-4 ">
             {outcomes.map((skill, index) => (
               <div key={index} className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
