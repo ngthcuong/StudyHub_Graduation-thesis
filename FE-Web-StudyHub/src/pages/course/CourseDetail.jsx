@@ -27,6 +27,9 @@ import {
   KeyboardArrowRight,
   FavoriteBorder,
 } from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import SnackBar from "../../components/Snackbar";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -140,10 +143,13 @@ const courses = [
   },
 ];
 const CourseDetail = () => {
+  const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleAddToFavorites = () => {
-    alert("add to favorites");
+    dispatch(openSnackbar({ message: "Add to favorites" }));
   };
 
   return (
@@ -477,6 +483,8 @@ const CourseDetail = () => {
           </div>
         </Container>
       </section>
+
+      <SnackBar isOpen={isOpen} message={message} severity={severity} />
     </div>
   );
 };
