@@ -279,7 +279,7 @@ const CourseDetail = () => {
             Expected Learning Outcomes
           </Typography>
 
-          <div className="grid grid-cols-2 space-y-4 mt-4">
+          <div className="grid grid-cols-2 space-y-4 mt-4 ">
             {outcomes.map((skill, index) => (
               <div key={index} className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -363,7 +363,7 @@ const CourseDetail = () => {
                           {t.name}
                         </Typography>
                         <Typography variant="body2" className="text-gray-500">
-                          {t.date?.toLocaleDateString("vn-VN")}
+                          {t.date?.toLocaleDateString("vi-VN")}
                         </Typography>
                       </Box>
                     </Box>
@@ -403,7 +403,7 @@ const CourseDetail = () => {
                 <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
                   <div className="">
                     <img
-                      src={course.avatar}
+                      src={course.image}
                       alt={course.title}
                       className="w-10 h-10 rounded-full"
                     />
