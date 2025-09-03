@@ -49,6 +49,21 @@ const userSchema = new mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       ref: "Certificate",
     },
+    currentLevel: {
+      type: String,
+      enum: [
+        "Beginner",
+        "Elementary",
+        "Pre-Intermediate",
+        "Intermediate",
+        "Upper-Intermediate",
+        "Advanced",
+      ],
+    },
+    studyHoursPerWeek: { type: Number, min: 0 },
+    learningGoals: { type: String, trim: true },
+    learningPreferences: { type: [String], trim: true }, // vd: ["Vocabulary", "Listening"]
+    studyMethods: { type: [String], trim: true }, // vd: ["Flashcards", "Listening practice"]
   },
   { timestamps: true }
 );
