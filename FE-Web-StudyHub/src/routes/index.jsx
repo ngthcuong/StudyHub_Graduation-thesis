@@ -8,6 +8,7 @@ import HomePage from "../pages/HomePage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
+import CourseDetail from "../pages/course/CourseDetail";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
           {
             path: "/user",
             element: <UserInfoPage />,
+          },
+          {
+            path: "/course",
+            element: <CourseDetail />,
           },
         ],
       },
