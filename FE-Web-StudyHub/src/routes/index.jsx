@@ -9,6 +9,7 @@ import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
+import TestInformation from "../pages/test/TestInformation";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
           {
             path: "/course",
             element: <CourseDetail />,
+          },
+          {
+            path: "/test",
+            element: <TestInformation />,
           },
         ],
       },
