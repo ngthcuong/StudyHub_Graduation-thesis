@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 
 export default function Index() {
-  const isLoggedIn = false; // sau này sẽ check token từ AsyncStorage
+  const isLoggedIn = true; // sau này sẽ check token từ AsyncStorage
 
   if (isLoggedIn) {
     // nếu đã login thì vào home
