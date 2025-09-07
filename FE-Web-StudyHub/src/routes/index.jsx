@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "../layouts/RootLayout";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import AuthLayout from "../layouts/AuthLayout";
