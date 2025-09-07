@@ -9,10 +9,12 @@ import {
   Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
 
 const UserProfile: React.FC = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false); // ✅ modal đổi mật khẩu
 
   // state để chỉnh sửa form
   const [formData, setFormData] = useState({
@@ -23,14 +25,38 @@ const UserProfile: React.FC = () => {
     dob: "15/03/1990",
   });
 
+  const [passwordData, setPasswordData] = useState({
+    current: "",
+    newPass: "",
+    confirm: "",
+  });
+
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
 
   const handleSave = () => {
-    // TODO: call API update profile
     console.log("Thông tin mới:", formData);
     setModalVisible(false);
+  };
+
+  const handleChangePassword = () => {
+    if (
+      !passwordData.current ||
+      !passwordData.newPass ||
+      !passwordData.confirm
+    ) {
+      alert("Vui lòng nhập đầy đủ thông tin");
+      return;
+    }
+    if (passwordData.newPass !== passwordData.confirm) {
+      alert("Mật khẩu xác nhận không khớp");
+      return;
+    }
+    // TODO: call API đổi mật khẩu
+    console.log("Đổi mật khẩu:", passwordData);
+    setPasswordModalVisible(false);
+    setPasswordData({ current: "", newPass: "", confirm: "" });
   };
 
   return (
@@ -43,7 +69,7 @@ const UserProfile: React.FC = () => {
             style={styles.backBtn}
             onPress={() => router.back()}
           >
-            <Text style={styles.backText}>←</Text>
+            <FontAwesome name="arrow-left" size={24} style={styles.backText} />
           </TouchableOpacity>
 
           <View style={styles.avatarWrapper}>
@@ -73,7 +99,10 @@ const UserProfile: React.FC = () => {
               <Text style={styles.primaryBtnText}>Cập nhật</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryBtn}>
+            <TouchableOpacity
+              style={styles.secondaryBtn}
+              onPress={() => setPasswordModalVisible(true)} // ✅ mở modal đổi mật khẩu
+            >
               <Text style={styles.secondaryBtnText}>Đổi mật khẩu</Text>
             </TouchableOpacity>
           </View>
@@ -99,7 +128,8 @@ const UserProfile: React.FC = () => {
           </View>
         </View>
       </ScrollView>
-      {/* Modal chỉnh sửa */}
+
+      {/* Modal cập nhật thông tin */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -178,13 +208,73 @@ const UserProfile: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      {/* ✅ Modal đổi mật khẩu */}
+      <Modal
+        visible={passwordModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setPasswordModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
+
+            <TextInput
+              style={styles.input}
+              secureTextEntry
+              placeholder="Mật khẩu hiện tại"
+              value={passwordData.current}
+              onChangeText={(val) =>
+                setPasswordData({ ...passwordData, current: val })
+              }
+            />
+
+            <TextInput
+              style={styles.input}
+              secureTextEntry
+              placeholder="Mật khẩu mới"
+              value={passwordData.newPass}
+              onChangeText={(val) =>
+                setPasswordData({ ...passwordData, newPass: val })
+              }
+            />
+
+            <TextInput
+              style={styles.input}
+              secureTextEntry
+              placeholder="Xác nhận mật khẩu mới"
+              value={passwordData.confirm}
+              onChangeText={(val) =>
+                setPasswordData({ ...passwordData, confirm: val })
+              }
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.secondaryBtn}
+                onPress={() => setPasswordModalVisible(false)}
+              >
+                <Text style={styles.secondaryBtnText}>Hủy</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.primaryBtn}
+                onPress={handleChangePassword}
+              >
+                <Text style={styles.primaryBtnText}>Đổi</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // ... giữ nguyên phần style ở code trước
   container: { flex: 1, backgroundColor: "#f9fafb" },
-
   header: {
     backgroundColor: "#2563eb",
     height: 160,
@@ -194,7 +284,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-
   backBtn: {
     position: "absolute",
     top: 40,
@@ -204,7 +293,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
   },
   backText: { fontSize: 18, color: "white", fontWeight: "600" },
-
   avatarWrapper: { position: "absolute", bottom: -40 },
   avatar: {
     width: 100,
@@ -229,13 +317,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   editIcon: { fontSize: 14 },
-
   content: { padding: 20, marginTop: 60 },
-
   userInfo: { alignItems: "center", marginBottom: 20 },
   name: { fontSize: 22, fontWeight: "700", color: "#111827" },
   email: { fontSize: 14, color: "#6b7280" },
-
   buttonRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -259,7 +344,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   secondaryBtnText: { color: "#374151", fontWeight: "600" },
-
   form: { marginTop: 10 },
   formGroup: { marginBottom: 16 },
   label: { fontWeight: "600", color: "#374151", marginBottom: 6 },
@@ -274,8 +358,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
   },
-
-  // Modal
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -301,8 +383,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 20,
   },
-
-  // radio
   radioGroup: { flexDirection: "row", gap: 20, marginVertical: 10 },
   radioItem: { flexDirection: "row", alignItems: "center" },
   radioCircle: {

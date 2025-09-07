@@ -8,49 +8,13 @@ import {
   ScrollView,
 } from "react-native";
 
-import NotificationBell from "../../components/NotificationBell";
+import Header from "../../components/Header";
 
 const LogoApp = () => {
-  const router = useRouter();
-
-  const [showDropdown, setShowDropdown] = useState(false);
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.logoText}>LogoApp</Text>
-        <View style={styles.headerRight}>
-          <NotificationBell count={3} />
-
-          {/* Avatar + Dropdown */}
-          <View style={{ position: "relative" }}>
-            <TouchableOpacity
-              style={[styles.iconBtn, styles.avatar]}
-              onPress={() => setShowDropdown(!showDropdown)}
-            >
-              <Text style={styles.avatarText}>A</Text>
-            </TouchableOpacity>
-
-            {showDropdown && (
-              <View style={styles.dropdown}>
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => router.push("../profile/profiles")}
-                >
-                  <Text>👤 Hồ sơ</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.dropdownItem}>
-                  <Text>⚙️ Cài đặt</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.dropdownItem}>
-                  <Text>🚪 Đăng xuất</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
+      <Header />
 
       {/* Lời chào */}
       <View style={styles.greeting}>
@@ -139,6 +103,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 16,
   },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
   iconBtn: {
     paddingHorizontal: 8,
     justifyContent: "center",
