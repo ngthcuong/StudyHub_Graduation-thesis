@@ -12,6 +12,7 @@ import CourseDetail from "../pages/course/CourseDetail";
 import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
+import TestLayout from "../layouts/TestLayout";
 
 export const router = createBrowserRouter([
   {
@@ -41,27 +42,22 @@ export const router = createBrowserRouter([
             element: <CourseDetail />,
           },
           {
-            // path: "/test/:id",
-            path: "/test/1",
-            element: <TestInformation />,
-            // children: [
-            //   {
-            //     index: true,
-            //     path: "/start-test",
-            //     element: <TestMultipleChoice />,
-            //     // element: <Navigate to={"start-test"} replace />,
-            //   },
-            // ],
-          },
-          {
-            index: true,
-            path: "/start-test",
-            element: <TestMultipleChoice />,
-          },
-          {
-            index: true,
-            path: "/result",
-            element: <TestResult />,
+            path: "/test/:id",
+            element: <TestLayout />,
+            children: [
+              {
+                index: true,
+                element: <TestInformation />,
+              },
+              {
+                path: "/attempt",
+                element: <TestMultipleChoice />,
+              },
+              {
+                path: "/result",
+                element: <TestResult />,
+              },
+            ],
           },
         ],
       },
