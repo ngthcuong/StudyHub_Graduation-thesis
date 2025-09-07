@@ -10,6 +10,7 @@ import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
 import TestInformation from "../pages/test/TestInformation";
+import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
           {
             path: "/test",
             element: <TestInformation />,
+          },
+          {
+            path: "/start-test",
+            element: <TestMultipleChoice />,
           },
         ],
       },

@@ -189,7 +189,7 @@ const TestInformation = () => {
                 textTransform: "none",
                 mt: 1,
               }}
-              onClick={navigate("/test")}
+              onClick={() => navigate("/start-test")}
             >
               Start test
             </Button>
