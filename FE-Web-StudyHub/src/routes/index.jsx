@@ -9,6 +9,10 @@ import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
+import TestInformation from "../pages/test/TestInformation";
+import TestMultipleChoice from "../pages/test/TestMultipleChoice";
+import TestResult from "../pages/test/TestResult";
+import TestLayout from "../layouts/TestLayout";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +40,24 @@ export const router = createBrowserRouter([
           {
             path: "/course",
             element: <CourseDetail />,
+          },
+          {
+            path: "/test/:id",
+            element: <TestLayout />,
+            children: [
+              {
+                index: true,
+                element: <TestInformation />,
+              },
+              {
+                path: "attempt",
+                element: <TestMultipleChoice />,
+              },
+              {
+                path: "result",
+                element: <TestResult />,
+              },
+            ],
           },
         ],
       },
