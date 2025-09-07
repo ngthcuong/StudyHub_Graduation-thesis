@@ -14,6 +14,7 @@ import {
   Stack,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import { useNavigate } from "react-router-dom";
 
 // Mock Data
 const questions = [
@@ -64,6 +65,7 @@ const testName = "Test 01: Present Perfect Tense";
 const testDuration = 15 * 60;
 
 const TestMultipleChoice = () => {
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState(Array(totalQuestions).fill(null));
   const [timeLeft, setTimeLeft] = useState(testDuration);
@@ -214,6 +216,7 @@ const TestMultipleChoice = () => {
                     sx={{
                       textTransform: "none",
                     }}
+                    onClick={() => navigate("/result")}
                   >
                     Submit Exercise
                   </Button>

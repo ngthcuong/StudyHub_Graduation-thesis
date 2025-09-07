@@ -50,11 +50,11 @@ export const router = createBrowserRouter([
                 element: <TestInformation />,
               },
               {
-                path: "/attempt",
+                path: "attempt",
                 element: <TestMultipleChoice />,
               },
               {
-                path: "/result",
+                path: "result",
                 element: <TestResult />,
               },
             ],
