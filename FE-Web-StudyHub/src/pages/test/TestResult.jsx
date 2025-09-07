@@ -27,76 +27,86 @@ const resultStats = {
 
 const correctAnswers = [
   {
-    question: "Who wrote Romeo and Juliet?",
-    answer: "William Shakespeare",
-    time: 23,
-  },
-  {
-    question: "In which year did World War II end?",
-    answer: "1945",
-    time: 18,
-  },
-  {
-    question: "What is the capital of France?",
-    answer: "Paris",
-    time: 12,
-  },
-  {
-    question: "Who painted the Mona Lisa?",
-    answer: "Leonardo da Vinci",
-    time: 31,
-  },
-  {
-    question: "What is the largest planet in our solar system?",
-    answer: "Jupiter",
-    time: 25,
-  },
-  {
-    question: "Which element has the chemical symbol O?",
-    answer: "Oxygen",
+    question: "What is the past tense of 'go'?",
+    answer: "went",
     time: 15,
+    type: "Grammar, Past Tense",
   },
   {
-    question: "Who wrote Pride and Prejudice?",
-    answer: "Jane Austen",
-    time: 28,
+    question: "Choose the correct article: ___ umbrella",
+    answer: "an",
+    time: 12,
+    type: "Grammar, Articles",
   },
   {
-    question: "What is the smallest country in the world?",
-    answer: "Vatican City",
+    question: "What is the opposite of 'expensive'?",
+    answer: "cheap",
+    time: 18,
+    type: "Vocabulary, Antonyms",
+  },
+  {
+    question: "Which word means 'to make something better'?",
+    answer: "improve",
+    time: 20,
+    type: "Vocabulary, Meaning",
+  },
+  {
+    question: "Complete the sentence: She ___ to school every day.",
+    answer: "goes",
     time: 22,
+    type: "Grammar, Present Simple",
+  },
+  {
+    question: "What is the plural form of 'child'?",
+    answer: "children",
+    time: 14,
+    type: "Grammar, Plurals",
+  },
+  {
+    question: "Choose the correct preposition: I'm afraid ___ spiders.",
+    answer: "of",
+    time: 19,
+    type: "Grammar, Prepositions",
+  },
+  {
+    question: "What is the comparative form of 'good'?",
+    answer: "better",
+    time: 16,
+    type: "Grammar, Comparatives",
   },
 ];
 
 const incorrectAnswers = [
   {
-    question: "Which planet is closest to the Sun?",
-    yourAnswer: "Venus",
-    correctAnswer: "Mercury",
-    time: 35,
+    question: "What is the past participle of 'eat'?",
+    yourAnswer: "ate",
+    correctAnswer: "eaten",
+    time: 25,
+    type: "Grammar, Past Participle",
   },
   {
-    question: "Who composed The Four Seasons?",
-    yourAnswer: "Mozart",
-    correctAnswer: "Antonio Vivaldi",
-    time: 42,
+    question: "Choose the correct conditional: If it rains, I ___ at home.",
+    yourAnswer: "will stayed",
+    correctAnswer: "will stay",
+    time: 30,
+    type: "Grammar, Conditionals",
   },
 ];
 
 const recommendations = [
   {
-    title: "English Literature Fundamentals",
-    desc: "Strengthen your knowledge of classic authors and their works",
+    title: "English Grammar Basics",
+    desc: "Master fundamental grammar rules including tenses and articles",
     difficulty: "Beginner",
     duration: "2 hours",
-    topics: ["Shakespeare", "Classic Authors", "Literary Works"],
+    topics: ["Tenses", "Articles", "Prepositions"],
   },
   {
-    title: "World History Timeline",
-    desc: "Master important dates and events in world history",
+    title: "Essential English Vocabulary",
+    desc: "Build your vocabulary with commonly used words and phrases",
     difficulty: "Intermediate",
     duration: "3 hours",
-    topics: ["World War II", "Historical Events", "Timeline Analysis"],
+    topics: ["Common Words", "Phrasal Verbs", "Collocations"],
   },
 ];
 
@@ -216,12 +226,19 @@ const TestResult = () => {
                             variant="caption"
                             color="#22c55e"
                             fontWeight={700}
-                            sx={{
-                              textTransform: "uppercase",
-                            }}
+                            sx={{ textTransform: "uppercase" }}
                           >
                             Correct
                           </Typography>
+                          {item.type.split(",").map((type, index) => (
+                            <Chip
+                              key={index}
+                              label={type.trim()}
+                              color="info"
+                              size="small"
+                              sx={{ ml: 1 }}
+                            />
+                          ))}
                         </Stack>
                         <Typography
                           variant="body1"
@@ -270,6 +287,12 @@ const TestResult = () => {
                           >
                             INCORRECT
                           </Typography>
+                          <Chip
+                            label={item.type}
+                            color="info"
+                            size="small"
+                            sx={{ ml: 1 }}
+                          />
                         </Stack>
                         <Typography
                           variant="body1"
