@@ -6,6 +6,10 @@ const certificateSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
+    certCode: {
+      type: String,
+      require: true,
+    },
     issuer: {
       type: String,
       require: true,
