@@ -160,6 +160,55 @@ const getCertificateByHash = async (req, res, next) => {
 };
 
 /**
+ * Lấy thông tin chứng chỉ on-chain theo certCode.
+ * Ghi chú: dữ liệu có kiểu BigInt (vd issuedDate) sẽ được chuyển sang string bằng toPlain.
+ * @param {import('express').Request} req - params: { certCode }
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
+const getCertificateByCode = async (req, res, next) => {
+  try {
+    const certCode = req.params.code;
+    if (!certCode) {
+      return res.status(400).json({ error: "Missing certificate code" });
+    }
+
+    // Tìm chứng chỉ trong DB
+    const certificate = await certificateModel.findCertificateByCertCode(
+      certCode
+    );
+
+    console.log(certificate.certHash);
+
+    if (
+      !certificate.certHash ||
+      certificate.certHash.length !== 66 ||
+      !certificate.certHash.startsWith("0x")
+    ) {
+      return res.status(400).json({ error: "Invalid certificate hash format" });
+    }
+
+    if (!certificate) {
+      return res.status(404).json({ error: "Certificate not found" });
+    }
+
+    // Lấy thông tin chứng chỉ từ blockchain
+    const cert = await readByHash(certificate.certHash);
+    const structuredCert = structureCertificateData(cert);
+
+    return res.json({
+      certificate: structuredCert,
+      metadata: certificate,
+      raw: toPlain(cert),
+    });
+  } catch (error) {
+    console.error("Can not find certificate by code: ", error);
+    next(error);
+  }
+};
+
+/**
  * Lấy danh sách chứng chỉ của một sinh viên theo địa chỉ ví on-chain.
  * Trả về { total, list } trong đó BigInt đã được chuyển sang string (toPlain).
  * @param {import('express').Request} req - params: { address }
@@ -229,6 +278,7 @@ module.exports = {
   createCertificate,
   issueCertificate,
   getCertificateByHash,
+  getCertificateByCode,
   getStudentCertificatesByStudent,
   searchCertificates,
 };
