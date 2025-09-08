@@ -8,30 +8,25 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-const AssessmentScreen = () => {
+const AssessmentScreen = (props) => {
+  const { title, description, quantity, time, allowed, type } = props;
   const navigation = useNavigation();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.title}>JavaScript Fundamentals Assessment</Text>
+        <Text style={styles.title}>{title}</Text>
         <View style={styles.blueLine} />
 
         <Text style={styles.subTitle}>Test Overview</Text>
-        <Text style={styles.description}>
-          This comprehensive test covers core JavaScript concepts including
-          variables, functions, objects, arrays, DOM manipulation, and
-          asynchronous programming. You will be tested on syntax, best
-          practices, and problem-solving skills essential for modern web
-          development.
-        </Text>
+        <Text style={styles.description}>{description}</Text>
 
         <View style={styles.infoGrid}>
           <View style={styles.infoBlock}>
             <Text style={styles.infoIcon}>📄</Text>
             <View>
               <Text style={styles.infoLabel}>QUESTIONS</Text>
-              <Text style={styles.infoValue}>25</Text>
+              <Text style={styles.infoValue}>{quantity}</Text>
             </View>
           </View>
 
@@ -39,7 +34,7 @@ const AssessmentScreen = () => {
             <Text style={styles.infoIcon}>⏱️</Text>
             <View>
               <Text style={styles.infoLabel}>DURATION</Text>
-              <Text style={styles.infoValue}>45 min</Text>
+              <Text style={styles.infoValue}>{time} min</Text>
             </View>
           </View>
 
@@ -47,7 +42,7 @@ const AssessmentScreen = () => {
             <Text style={styles.infoIcon}>🔃</Text>
             <View>
               <Text style={styles.infoLabel}>ALLOWED</Text>
-              <Text style={styles.infoValue}>2</Text>
+              <Text style={styles.infoValue}>{allowed}</Text>
             </View>
           </View>
 
@@ -55,7 +50,7 @@ const AssessmentScreen = () => {
             <Text style={styles.infoIcon}>📋</Text>
             <View>
               <Text style={styles.infoLabel}>TEST TYPE</Text>
-              <Text style={styles.infoValue}>Multiple Choice</Text>
+              <Text style={styles.infoValue}>{type}</Text>
             </View>
           </View>
         </View>

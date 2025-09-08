@@ -8,6 +8,11 @@ const testSchema = new mongoose.Schema(
       trim: true,
     },
     description: { type: String, trim: true },
+    topic: {
+      type: String,
+      required: true,
+      trim: true,
+    }, // chủ điểm bài kiểm tra
     skill: {
       type: String,
       enum: [
@@ -34,6 +39,19 @@ const testSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     }, // teacher/admin
+    numQuestions: { type: Number, default: 10 }, // số lượng câu hỏi
+    difficulty: {
+      type: String,
+      enum: ["easy", "medium", "hard"],
+      default: "medium",
+    },
+    questionTypes: [
+      {
+        type: String,
+        enum: ["multiple_choice", "fill_in_blank", "rearrange", "essay"],
+        required: true,
+      },
+    ], // các loại câu hỏi
   },
   { timestamps: true }
 );

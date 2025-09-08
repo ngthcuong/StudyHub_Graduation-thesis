@@ -47,7 +47,7 @@ const HomeScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.mainBtn}
-          onPress={() => navigation.navigate("TestResults" as never)}
+          onPress={() => navigation.navigate("AssessmentList" as never)}
         >
           <Text style={styles.mainBtnText}>📝 Kiểm tra nhanh</Text>
         </TouchableOpacity>

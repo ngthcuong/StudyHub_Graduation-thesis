@@ -17,6 +17,7 @@ const answerOptionRoutes = require("./src/routes/answerOptionRoutes");
 const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 
 const testResultRoutes = require("./src/routes/testResultRoutes");
+const generateTestRoutes = require("./src/routes/generateTestRoutes");
 
 require("dotenv").config();
 
@@ -48,6 +49,7 @@ app.use("/api/v1/options", answerOptionRoutes);
 app.use("/api/v1/answers", userAnswerRoutes);
 
 app.use("/api/v1/test-result", testResultRoutes);
+app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chung
 
 // Connect to MongoDB and start server
 const startServer = async () => {

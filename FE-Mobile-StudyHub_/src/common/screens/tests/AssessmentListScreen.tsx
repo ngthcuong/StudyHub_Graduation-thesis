@@ -3,16 +3,40 @@ import { ScrollView, View, Text, StyleSheet } from "react-native";
 import AssessmentScreen from "./AssessmentScreen";
 
 const assessmentsData = [
-  { id: 1, title: "Grammar Test", questions: 10 },
-  { id: 2, title: "Listening Test", questions: 8 },
-  { id: 3, title: "Vocabulary Test", questions: 12 },
-  { id: 4, title: "Speaking Test", questions: 5 },
+  {
+    id: 1,
+    title: "Grammar Test",
+    description: "Test your grammar skills",
+    questions: 10,
+    time: "30",
+    allowed: 2,
+    type: "Multiple Choice",
+  },
+  {
+    id: 2,
+    title: "Listening Test",
+    description: "Test your listening skills",
+    questions: 8,
+    time: "30",
+    allowed: 2,
+    type: "Multiple Choice",
+  },
 ];
 
 const AssessmentListScreen = () => {
   return (
     <ScrollView style={styles.container}>
-      <AssessmentScreen />
+      {assessmentsData.map((assessment) => (
+        <AssessmentScreen
+          key={assessment.id}
+          title={assessment.title}
+          description={`This is the description for ${assessment.title}`}
+          quantity={assessment.questions}
+          time={assessment.time}
+          allowed={assessment.allowed}
+          type={assessment.type}
+        />
+      ))}
     </ScrollView>
   );
 };

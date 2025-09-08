@@ -60,7 +60,7 @@ const createManyQuestions = async (req, res) => {
           .status(400)
           .json({ error: "Missing required fields in some questions" });
       }
-      if (q.questionType === "mcq" && (!q.options || q.options.length === 0)) {
+      if (q.questionType && (!q.options || q.options.length === 0)) {
         return res.status(400).json({ error: "MCQ must include options" });
       }
     }
