@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { TextField, CircularProgress, Chip, Avatar } from "@mui/material";
-import { verifyCertificateByHash } from "../../services/certificateApi";
+import { verifyCertificateByCode } from "../../services/certificateApi";
 // import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 // import ErrorIcon from "@mui/icons-material/Error";
 
 const VerifyCertificatePage = () => {
-  const [hash, setHash] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
@@ -14,13 +14,15 @@ const VerifyCertificatePage = () => {
     e.preventDefault();
     setError("");
     setResult(null);
-    if (!hash.trim()) {
+    if (!code.trim()) {
       setError("Vui lòng nhập mã chứng chỉ");
       return;
     }
     try {
       setLoading(true);
-      const data = await verifyCertificateByHash(hash.trim());
+      const data = await verifyCertificateByCode(code.trim());
+      console.log(result);
+
       setResult(data);
     } catch (err) {
       setError(err.message);
@@ -51,9 +53,9 @@ const VerifyCertificatePage = () => {
             <TextField
               fullWidth
               size="medium"
-              placeholder="Enter certificate code (e.g., CERT-2024-001)"
-              value={hash}
-              onChange={(e) => setHash(e.target.value.toUpperCase())}
+              placeholder="Enter certificate code (e.g., CERT-250908-628UZJ)"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
               slotProps={{
                 input: {
                   style: { fontSize: 14, background: "#fff" },
@@ -86,7 +88,7 @@ const VerifyCertificatePage = () => {
 
         {!loading && result && (
           <div className="mt-10">
-            {result.valid ? (
+            {result ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   {/* <CheckCircleIcon className="text-emerald-500" /> */}
@@ -100,33 +102,31 @@ const VerifyCertificatePage = () => {
                       Certificate Code
                     </p>
                     <p className="font-mono text-slate-900 bg-slate-100 rounded-md px-2 py-1 text-xs break-all">
-                      {cert?.code || hash}
+                      {cert?.code || code}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Issued To</p>
-                    <p className="text-slate-900">
-                      {cert?.studentName || cert?.student?.fullName}
-                    </p>
+                    <p className="text-slate-900">{cert?.student?.name}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Course</p>
-                    <p className="text-slate-900">
-                      {cert?.courseTitle || cert?.course?.title}
-                    </p>
+                    <p className="text-slate-900">{cert?.course?.name}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Issued Date</p>
                     <p className="text-slate-900">
-                      {cert?.issuedDate
-                        ? new Date(cert.issuedDate).toLocaleDateString()
-                        : "--"}
+                      {cert?.issueDate?.formatted
+                        ? new Date(cert.issueDate.formatted).toLocaleString(
+                            "vi-VN"
+                          )
+                        : ""}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Hash</p>
                     <p className="font-mono text-[11px] leading-relaxed text-slate-900 bg-slate-100 rounded-md px-2 py-1 break-all">
-                      {cert?.hash}
+                      {cert?.certHash}
                     </p>
                   </div>
                   <div className="space-y-2">
