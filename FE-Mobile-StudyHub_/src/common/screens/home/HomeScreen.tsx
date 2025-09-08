@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   View,
@@ -7,10 +6,13 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import Header from "../../components/Header";
 
-const LogoApp = () => {
+const HomeScreen = () => {
+  const navigation = useNavigation();
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
@@ -43,7 +45,10 @@ const LogoApp = () => {
         <TouchableOpacity style={styles.mainBtn}>
           <Text style={styles.mainBtnText}>💬 Hội thoại thực hành</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.mainBtn}>
+        <TouchableOpacity
+          style={styles.mainBtn}
+          onPress={() => navigation.navigate("AssessmentList" as never)}
+        >
           <Text style={styles.mainBtnText}>📝 Kiểm tra nhanh</Text>
         </TouchableOpacity>
       </View>
@@ -243,4 +248,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LogoApp;
+export default HomeScreen;
