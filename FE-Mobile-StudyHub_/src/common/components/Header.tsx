@@ -1,29 +1,30 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import NotificationBell from "./NotificationBell";
+import NotificationBell from "../components/NotificationBell";
 import { useNavigation } from "@react-navigation/native";
-import { DrawerNavigationProp } from "@react-navigation/drawer";
 
-type DrawerNav = DrawerNavigationProp<Record<string, object | undefined>>;
+import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const router = useRouter();
+  const navigation = useNavigation();
 
-  const navigation = useNavigation<DrawerNav>();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout(); // Xóa AsyncStorage và set isLoggedIn = false
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }], // Chuyển về màn hình Login
+    });
+  };
 
   return (
     <View style={styles.header}>
       {/* Left: icon bars + logo */}
       <View style={styles.headerLeft}>
-        <FontAwesome
-          name="bars"
-          size={28}
-          color="white"
-          onPress={() => navigation.openDrawer()}
-        />
+        <FontAwesome name="bars" size={28} color="white" />
         <Text style={styles.logoText}>{"StudyHub"}</Text>
       </View>
 
@@ -44,14 +45,17 @@ const Header = () => {
             <View style={styles.dropdown}>
               <TouchableOpacity
                 style={styles.dropdownItem}
-                onPress={() => router.push("../profile/profiles")}
+                onPress={() => navigation.navigate("Profile")}
               >
                 <Text>👤 Hồ sơ</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.dropdownItem}>
                 <Text>⚙️ Cài đặt</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.dropdownItem}>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={handleLogout}
+              >
                 <Text>🚪 Đăng xuất</Text>
               </TouchableOpacity>
             </View>
