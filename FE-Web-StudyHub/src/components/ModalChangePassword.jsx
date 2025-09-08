@@ -92,7 +92,7 @@ const ModalChangePassword = ({ open, onClose }) => {
             name="newPassword"
             control={control}
             label="Mật khẩu mới"
-            type="password"
+            ttype={showPassword ? "text" : "password"}
             startIcon={<Lock className="text-gray-400" />}
             endIcon={showPassword ? <VisibilityOff /> : <Visibility />}
             onEndIconClick={() => setShowPassword(!showPassword)}
@@ -101,7 +101,7 @@ const ModalChangePassword = ({ open, onClose }) => {
             name="confirmNewPassword"
             control={control}
             label="Nhập lại mật khẩu mới"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             startIcon={<Lock className="text-gray-400" />}
             endIcon={showConfirmPassword ? <VisibilityOff /> : <Visibility />}
             onEndIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
