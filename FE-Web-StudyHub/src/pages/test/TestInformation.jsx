@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -14,25 +14,42 @@ import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { InfoOutline } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { generateTestQuestions } from "../../services/testApi";
 
 const testInfo = {
   name: "Middle Test",
   description:
-    "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quo maiores excepturi animi praesentium veritatis fugit perferendis, labore illo consequatur possimus cupiditate qui dolores tempore, incidunt nemo harum? Reprehenderit, velit similique?",
+    "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
   questionCount: 30,
+  topic:
+    "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
   duration: 60,
   maxAttempts: 3,
   attempts: 1,
-  types: [
-    "Multiple Choice",
-    "Fill in the blank",
-    "Multiple Choice",
-    "Fill in the blank",
-  ],
+  types: ["Multiple Choice", "Fill in the blank"],
 };
 
 const TestInformation = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleStartTest = async () => {
+    try {
+      setIsLoading(true);
+      console.log("generate test");
+      const testQuestions = await generateTestQuestions();
+      console.log(testQuestions.data.data.data);
+      if (testQuestions) {
+        navigate(`/test/${testQuestions.data.data.data[0]?.testId}/attempt`, {
+          state: { questions: testQuestions.data.data.data },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Box className="flex justify-center items-center py-10 bg-gray-50">
@@ -189,9 +206,9 @@ const TestInformation = () => {
                 textTransform: "none",
                 mt: 1,
               }}
-              onClick={() => navigate("/attempt")}
+              onClick={() => handleStartTest()}
             >
-              Start test
+              {isLoading ? "Loading ..." : " Start test"}
             </Button>
           </Box>
         </CardContent>
