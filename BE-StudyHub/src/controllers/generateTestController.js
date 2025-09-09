@@ -16,7 +16,7 @@ const generateTestController = async (req, res) => {
     }
 
     // Call AI service
-    const response = await axios.post("http://localhost:8000/generate-test", {
+    const response = await axios.post("http://localhost:8001/generate-test", {
       topic,
       question_types,
       num_questions,

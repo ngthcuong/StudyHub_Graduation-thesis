@@ -12,7 +12,7 @@ const startAttempt = async (req, res) => {
       testId,
       userId: req.user && req.user.userId ? req.user.userId : req.body.userId,
       evaluationModel: evaluationModel || "gemini",
-      feedback: feedback || "",
+      feedback: "",
     };
 
     const savedAttempt = await attemptModel.createAttempt(attemptData);
@@ -141,9 +141,28 @@ const getAttemptsByUser = async (req, res) => {
   }
 };
 
+const getAttemptByTest = async (req, res) => {
+  try {
+    const { testId } = req.params;
+    if (!testId) return res.status(400).json({ error: "testId is required" });
+
+    // Nếu muốn lấy attempt của user hiện tại
+    const userId = req.user?.userId;
+
+    const attempt = await attemptModel.findAttemptByTestId(testId, userId);
+    if (!attempt) return res.status(404).json({ error: "Attempt not found" });
+
+    res.status(200).json({ message: "Attempt retrieved", data: attempt });
+  } catch (error) {
+    console.error("Error getting attempt by testId:", error);
+    res.status(500).json({ error: "Failed to get attempt" });
+  }
+};
+
 module.exports = {
   startAttempt,
   submitAttempt,
   getAttemptById,
   getAttemptsByUser,
+  getAttemptByTest,
 };

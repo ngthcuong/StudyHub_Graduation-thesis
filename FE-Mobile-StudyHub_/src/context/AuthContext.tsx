@@ -8,9 +8,23 @@ import React, {
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+type User = {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+};
+
+type AuthData = {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+};
+
 type AuthContextType = {
+  authData: AuthData | null;
   isLoggedIn: boolean;
-  login: () => Promise<void>;
+  login: (data: AuthData) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
 };
@@ -18,44 +32,50 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authData, setAuthData] = useState<AuthData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Kiểm tra trạng thái đăng nhập khi app khởi động
+  // Lấy thông tin từ AsyncStorage khi app khởi động
   useEffect(() => {
-    const checkLogin = async () => {
+    const loadStorage = async () => {
       try {
-        const value = await AsyncStorage.getItem("@isLoggedIn");
-        if (value === "true") setIsLoggedIn(true);
+        const storedAuth = await AsyncStorage.getItem("@auth");
+        if (storedAuth) {
+          setAuthData(JSON.parse(storedAuth));
+        }
       } catch (e) {
-        console.log(e);
+        console.log("Load storage error:", e);
       } finally {
         setLoading(false);
       }
     };
-    checkLogin();
+    loadStorage();
   }, []);
 
-  const login = async () => {
-    try {
-      await AsyncStorage.setItem("@isLoggedIn", "true");
-      setIsLoggedIn(true);
-    } catch (e) {
-      console.log(e);
-    }
+  const login = async (data: AuthData) => {
+    await AsyncStorage.setItem("@auth", JSON.stringify(data));
+    setAuthData(data);
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem("@isLoggedIn");
-      setIsLoggedIn(false);
+      await AsyncStorage.removeItem("@auth"); // Xóa dữ liệu lưu token/user
+      setAuthData(null); // Xóa state authData
     } catch (e) {
-      console.log(e);
+      console.log("Logout error:", e);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        authData,
+        isLoggedIn: !!authData,
+        login,
+        logout,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

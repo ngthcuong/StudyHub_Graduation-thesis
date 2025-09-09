@@ -45,6 +45,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: any) => {
     try {
+      // Gọi API login
       const response = await authApi.login({
         email: data.email,
         password: data.password,
@@ -52,25 +53,21 @@ export default function LoginScreen() {
 
       console.log("Login response: ", response.data);
 
-      // if (response) {
-      //   navigation.replace("Home");
-      // }
+      // Lấy đúng thông tin trả về từ API
+      const authData = {
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+        user: response.data.user,
+      };
 
-      await login(); // ✅ chuyển isLoggedIn sang true
-    } catch (error) {
-      // Show specific error message if available
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error &&
-        typeof (error as any).response === "object" &&
-        (error as any).response !== null &&
-        "data" in (error as any).response &&
-        typeof (error as any).response.data === "object" &&
-        (error as any).response.data !== null &&
-        "error" in (error as any).response.data
-      ) {
-        alert(`Lỗi đăng nhập: ${(error as any).response.data.error}`);
+      // Lưu thông tin login vào AuthContext và AsyncStorage
+      await login(authData);
+
+      // ❌ Không cần navigation.replace("Home")
+      // RootNavigator sẽ tự điều hướng sang Home khi isLoggedIn = true
+    } catch (error: any) {
+      if (error?.response?.data?.error) {
+        alert(`Lỗi đăng nhập: ${error.response.data.error}`);
       } else {
         alert("Đã có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.");
       }

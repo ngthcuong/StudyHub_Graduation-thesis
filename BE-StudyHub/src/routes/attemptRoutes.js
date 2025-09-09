@@ -15,4 +15,7 @@ router.get("/:attemptId", attemptController.getAttemptById);
 // Get attempts by user
 router.get("/user/:userId", attemptController.getAttemptsByUser);
 
+// GET /attempts/test/:testId
+router.get("/test/:testId", attemptController.getAttemptByTest);
+
 module.exports = router;
