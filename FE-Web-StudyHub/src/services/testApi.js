@@ -55,26 +55,56 @@ const generateTestQuestions = async () => {
   }
 };
 
-const createAttempt = async () => {
-  const attempt = {
-    testId: "68b31228c76248a2f3324515",
-    userId: "68a2eb7da4178e9ee70a34c2",
-    evaluationModel: "gemini",
-  };
-
+const createAttempt = async ({ testId, userId }) => {
   try {
-    const res = await axios.post(`${config.baseApiUrl}/attempts`, attempt);
-    console.log(res);
+    const res = await axios.post(
+      `${config.baseApiUrl}/attempts`,
+      {
+        testId,
+        userId,
+      }
+      // {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // }
+    );
     return res;
   } catch (error) {
     console.log(error);
   }
 };
 
-const submitTest = async () => {
+const submitTest = async ({ answers, attemptId }) => {
   try {
-    const res = await axios.post(`${config.baseApiUrl}/test-result/submit`);
-    console.log(res);
+    const res = await axios.post(
+      `${config.baseApiUrl}/attempts/${attemptId}/submit`,
+      { answers }
+      // {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //     "Content-Type": "application/json",
+      //   },
+      // }
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getTestResult = async ({ testId, attemptId }) => {
+  try {
+    const res = await axios.post(
+      `${config.baseApiUrl}/test-result/submit`,
+      { testId, attemptId }
+      // {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //     "Content-Type": "application/json",
+      //   },
+      // }
+    );
     return res;
   } catch (error) {
     console.log(error);
@@ -87,4 +117,5 @@ export {
   generateTestQuestions,
   createAttempt,
   submitTest,
+  getTestResult,
 };
