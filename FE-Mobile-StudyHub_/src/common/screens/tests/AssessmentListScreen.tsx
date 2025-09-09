@@ -1,40 +1,76 @@
-import React from "react";
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import AssessmentScreen from "./AssessmentScreen";
+import testApi from "../../../api/testApi";
 
-const assessmentsData = [
-  {
-    id: 1,
-    title: "Grammar Test",
-    description: "Test your grammar skills",
-    questions: 10,
-    time: "30",
-    allowed: 2,
-    type: "Multiple Choice",
-  },
-  {
-    id: 2,
-    title: "Listening Test",
-    description: "Test your listening skills",
-    questions: 8,
-    time: "30",
-    allowed: 2,
-    type: "Multiple Choice",
-  },
-];
+interface Assessment {
+  _id: string;
+  title: string;
+  description: string;
+  numQuestions: number;
+  durationMin: number;
+  skill: string;
+  questionTypes?: string[];
+}
 
 const AssessmentListScreen = () => {
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await testApi.getAllTests();
+        setAssessments(res.data.data); // ✅ lấy mảng tests từ field data
+      } catch (err: any) {
+        console.error("Failed to fetch assessments:", err);
+        setError("Could not load assessments");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text>Loading assessments...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "red" }}>{error}</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
-      {assessmentsData.map((assessment) => (
+      {assessments.map((assessment) => (
         <AssessmentScreen
-          key={assessment.id}
+          key={assessment._id}
+          testId={assessment._id}
           title={assessment.title}
-          description={`This is the description for ${assessment.title}`}
-          quantity={assessment.questions}
-          time={assessment.time}
-          allowed={assessment.allowed}
-          type={assessment.type}
+          description={assessment.description}
+          quantity={assessment.numQuestions}
+          time={assessment.durationMin.toString()}
+          allowed={2} // ✅ tạm set cứng vì backend chưa có field allowed
+          type={assessment.skill}
+          questionTypes={assessment.questionTypes}
         />
       ))}
     </ScrollView>
@@ -43,6 +79,7 @@ const AssessmentListScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 
 export default AssessmentListScreen;

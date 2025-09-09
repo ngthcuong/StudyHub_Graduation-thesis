@@ -13,10 +13,10 @@ const Header = () => {
   const { logout } = useAuth();
 
   const handleLogout = async () => {
-    await logout(); // Xóa AsyncStorage và set isLoggedIn = false
+    await logout(); // xóa dữ liệu login
     navigation.reset({
       index: 0,
-      routes: [{ name: "Login" }], // Chuyển về màn hình Login
+      routes: [{ name: "Login" }], // reset stack về Login
     });
   };
 

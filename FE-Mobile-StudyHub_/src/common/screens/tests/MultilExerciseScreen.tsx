@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,20 +6,83 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { useRoute } from "@react-navigation/native";
+import questionApi from "../../../api/questionApi";
+
+type RouteParams = {
+  testId: string;
+  title: string;
+  description: string;
+  quantity: number;
+  time: number;
+  allowed: boolean;
+  type: string;
+  questionTypes: any; // Nếu có type cụ thể thì thay thế
+};
 
 export default function MultilExerciseScreen() {
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(1);
-  const totalQuestions = 8;
+  const route = useRoute<{ params: RouteParams }>();
+  const { testId, title, description, quantity, time } = route.params;
 
-  const options = ["has been", "have been", "was", "were"];
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0); // index bắt đầu từ 0
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  const handleNext = () => {
-    if (currentQuestion < totalQuestions) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
+  // Gọi API lấy câu hỏi
+  const fetchQuestions = async () => {
+    try {
+      const res = await questionApi.getQuestionsByTest(testId);
+      console.log("Questions:", res.data);
+      setQuestions(res.data.data);
+    } catch (error: any) {
+      console.error("Error fetching questions:", error.message);
     }
   };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  // thay đổi kiểu lưu
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+
+  // chọn đáp án
+  // thay vì lưu optionText → lưu option._id
+  const handleSelectOption = (qIndex: number, optionId: string) => {
+    setAnswers({ ...answers, [qIndex]: optionId });
+  };
+
+  // đánh dấu câu completed khi bấm Next
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  if (questions.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading questions...</Text>
+      </View>
+    );
+  }
+
+  const handleSubmit = () => {
+    const formattedAnswers = Object.keys(answers).map((qIndex) => {
+      const question = questions[parseInt(qIndex)];
+      return {
+        questionId: question._id, // id câu hỏi
+        selectedOptionId: answers[parseInt(qIndex)], // id của option đã chọn
+      };
+    });
+
+    const payload = { answers: formattedAnswers };
+
+    console.log("Submit payload:", JSON.stringify(payload, null, 2));
+    // testResultApi.submit(payload) nếu bạn muốn gửi lên server
+  };
+
+  const question = questions[currentQuestion];
 
   return (
     <ScrollView style={styles.container}>
@@ -30,11 +93,11 @@ export default function MultilExerciseScreen() {
           <View style={styles.headerRight}>
             <View style={styles.timer}>
               <Text style={styles.timerIcon}>⏱️</Text>
-              <Text>3:55</Text>
+              <Text>{time} min</Text>
             </View>
             <View style={styles.exerciseBadge}>
               <Text style={styles.exerciseText}>
-                Exercise {currentQuestion} of {totalQuestions}
+                Exercise {currentQuestion + 1} of {questions.length}
               </Text>
             </View>
           </View>
@@ -42,34 +105,33 @@ export default function MultilExerciseScreen() {
 
         {/* Test title */}
         <View style={styles.testTitle}>
-          <Text style={styles.testTitleText}>
-            Test 01: Present Perfect Tense
-          </Text>
+          <Text style={styles.testTitleText}>{title}</Text>
         </View>
 
         {/* Question & Options */}
         <View style={styles.questionCard}>
           <Text style={styles.questionText}>
-            {currentQuestion}. She _____ to Paris three times this year.
+            {currentQuestion + 1}. {question.questionText}
           </Text>
 
-          {options.map((option, index) => (
+          {question.options?.map((option: any, index: number) => (
             <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedOption(option)}
+              key={option._id || index}
+              onPress={() => handleSelectOption(currentQuestion, option._id)}
               style={[
                 styles.optionButton,
-                selectedOption === option && styles.optionSelected,
+                answers[currentQuestion] === option._id &&
+                  styles.optionSelected,
               ]}
             >
               <Text
                 style={
-                  selectedOption === option
+                  answers[currentQuestion] === option._id
                     ? styles.optionTextSelected
                     : styles.optionText
                 }
               >
-                {option}
+                {option.optionText}
               </Text>
             </TouchableOpacity>
           ))}
@@ -84,10 +146,14 @@ export default function MultilExerciseScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              disabled={!selectedOption}
+              disabled={Object.keys(answers).length === 0}
+              onPress={handleSubmit}
               style={[
                 styles.button,
-                { backgroundColor: selectedOption ? "#22c55e" : "#9ca3af" },
+                {
+                  backgroundColor:
+                    Object.keys(answers).length > 0 ? "#22c55e" : "#9ca3af",
+                },
               ]}
             >
               <Text style={styles.buttonText}>Submit Exercise</Text>
@@ -100,29 +166,29 @@ export default function MultilExerciseScreen() {
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>Questions</Text>
             <Text style={styles.progressSubTitle}>
-              {currentQuestion} / {totalQuestions} completed
+              {currentQuestion + 1} / {questions.length} completed
             </Text>
           </View>
 
           <View style={styles.questionDots}>
-            {Array.from({ length: totalQuestions }, (_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor:
-                      i + 1 < currentQuestion
-                        ? "#10b981"
-                        : i + 1 === currentQuestion
-                        ? "#3b82f6"
-                        : "#e5e7eb",
-                  },
-                ]}
-              >
-                <Text style={styles.dotText}>{i + 1}</Text>
-              </View>
-            ))}
+            {questions.map((_, i) => {
+              let bgColor = "#e5e7eb"; // default = not answered
+              if (i === currentQuestion) {
+                bgColor = "#3b82f6"; // current
+              } else if (answers[i]) {
+                bgColor = "#10b981"; // completed
+              }
+
+              return (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => setCurrentQuestion(i)}
+                  style={[styles.dot, { backgroundColor: bgColor }]}
+                >
+                  <Text style={styles.dotText}>{i + 1}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* Progress Bar */}
@@ -131,76 +197,26 @@ export default function MultilExerciseScreen() {
               <View
                 style={[
                   styles.progressBarFill,
-                  { width: `${(currentQuestion / totalQuestions) * 100}%` },
+                  {
+                    width: `${
+                      (Object.keys(answers).length / questions.length) * 100
+                    }%`,
+                  },
                 ]}
               />
             </View>
             <View style={styles.progressLabels}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginVertical: 4,
-                }}
-              >
-                {/* Circle */}
-                <View
-                  style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: "#10b981", // xanh lá
-                    marginRight: 6,
-                  }}
-                />
-                {/* Label */}
-                <Text style={{ fontSize: 12, color: "#111827" }}>
-                  Completed
-                </Text>
+              <View style={styles.labelRow}>
+                <View style={[styles.circle, { backgroundColor: "#10b981" }]} />
+                <Text style={styles.labelText}>Completed</Text>
               </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginVertical: 4,
-                }}
-              >
-                {/* Circle */}
-                <View
-                  style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: "#3b82f6", // xanh dương
-                    marginRight: 6,
-                  }}
-                />
-                {/* Label */}
-                <Text style={{ fontSize: 12, color: "#111827" }}>Current</Text>
+              <View style={styles.labelRow}>
+                <View style={[styles.circle, { backgroundColor: "#3b82f6" }]} />
+                <Text style={styles.labelText}>Current</Text>
               </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginVertical: 4,
-                }}
-              >
-                {/* Circle */}
-                <View
-                  style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: "#e5e7eb", // xám
-                    marginRight: 6,
-                  }}
-                />
-                {/* Label */}
-                <Text style={{ fontSize: 12, color: "#111827" }}>
-                  Not answered
-                </Text>
+              <View style={styles.labelRow}>
+                <View style={[styles.circle, { backgroundColor: "#e5e7eb" }]} />
+                <Text style={styles.labelText}>Not answered</Text>
               </View>
             </View>
           </View>
@@ -211,11 +227,7 @@ export default function MultilExerciseScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-    padding: 16,
-  },
+  container: { flex: 1, backgroundColor: "#f9fafb", padding: 16 },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -227,16 +239,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#111827",
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
+  title: { fontSize: 20, fontWeight: "600", color: "#111827" },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
   timer: {
     flexDirection: "row",
     alignItems: "center",
@@ -245,32 +249,21 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 4,
   },
-  timerIcon: {
-    color: "#6b7280",
-    marginRight: 4,
-  },
+  timerIcon: { color: "#6b7280", marginRight: 4 },
   exerciseBadge: {
     backgroundColor: "#dbeafe",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 999,
   },
-  exerciseText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#1d4ed8",
-  },
+  exerciseText: { fontSize: 12, fontWeight: "600", color: "#1d4ed8" },
   testTitle: {
     backgroundColor: "#f3f4f6",
     borderRadius: 8,
     padding: 12,
     marginVertical: 12,
   },
-  testTitleText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#1f2937",
-  },
+  testTitleText: { fontSize: 14, fontWeight: "500", color: "#1f2937" },
   questionCard: {
     backgroundColor: "#fff",
     borderRadius: 8,
@@ -292,48 +285,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 8,
   },
-  optionSelected: {
-    backgroundColor: "#3b82f6",
-    borderColor: "#3b82f6",
-  },
-  optionText: {
-    color: "#111827",
-  },
-  optionTextSelected: {
-    color: "#fff",
-  },
+  optionSelected: { backgroundColor: "#3b82f6", borderColor: "#3b82f6" },
+  optionText: { color: "#111827" },
+  optionTextSelected: { color: "#fff" },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 12,
   },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  progressCard: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-  },
+  button: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  buttonText: { color: "#fff", fontWeight: "600" },
+  progressCard: { backgroundColor: "#fff", borderRadius: 8, padding: 16 },
   progressHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  progressTitle: {
-    fontWeight: "600",
-    color: "#111827",
-  },
-  progressSubTitle: {
-    color: "#6b7280",
-    fontSize: 12,
-  },
+  progressTitle: { fontWeight: "600", color: "#111827" },
+  progressSubTitle: { color: "#6b7280", fontSize: 12 },
   questionDots: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -348,13 +317,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  dotText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  progressBarWrapper: {
-    marginTop: 8,
-  },
+  dotText: { color: "#fff", fontWeight: "600" },
+  progressBarWrapper: { marginTop: 8 },
   progressBarBackground: {
     width: "100%",
     height: 12,
@@ -362,17 +326,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     overflow: "hidden",
   },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: "#10b981",
-  },
+  progressBarFill: { height: "100%", backgroundColor: "#10b981" },
   progressLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 4,
   },
-  label: {
-    fontSize: 10,
-    color: "#6b7280",
-  },
+  labelRow: { flexDirection: "row", alignItems: "center", marginVertical: 4 },
+  circle: { width: 12, height: 12, borderRadius: 6, marginRight: 6 },
+  labelText: { fontSize: 12, color: "#111827" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

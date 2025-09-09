@@ -7,10 +7,70 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import PropTypes from "prop-types";
+import { useAuth } from "../../../context/AuthContext";
+import attemptApi from "../../../api/attemptApi";
 
 const AssessmentScreen = (props) => {
-  const { title, description, quantity, time, allowed, type } = props;
+  const {
+    testId,
+    title,
+    description,
+    quantity,
+    time,
+    allowed,
+    type,
+    questionTypes,
+  } = props;
   const navigation = useNavigation();
+
+  const { authData } = useAuth();
+  const { user } = authData;
+  console.log("Starting attempt for user:", user);
+
+  const handleStartTest = async () => {
+    const token = authData?.accessToken;
+    if (!token) {
+      alert("Bạn chưa đăng nhập hoặc token không hợp lệ");
+      return;
+    }
+
+    try {
+      const payload = {
+        testId,
+        userId: user._id,
+        evaluationModel: "gemini",
+      };
+
+      const response = await attemptApi.startAttempt(payload, token);
+      const attemptId = response.data.data._id;
+      alert(`Attempt started with id: ${attemptId}`);
+
+      // 2️⃣ Xác định màn hình đích dựa vào loại câu hỏi
+      let targetScreen = "FillExercise";
+      if (questionTypes[0] === "multiple_choice") {
+        targetScreen = "MultilExercise";
+      }
+
+      // 3️⃣ Điều hướng sang màn hình phù hợp, truyền params
+      navigation.navigate(targetScreen, {
+        testId,
+        attemptId,
+        title,
+        description,
+        quantity,
+        time,
+        allowed,
+        type,
+      });
+    } catch (error: any) {
+      console.error(
+        "Error starting attempt:",
+        error.response?.data || error.message
+      );
+      alert("Failed to start attempt");
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -64,15 +124,23 @@ const AssessmentScreen = (props) => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("FillExercise" as never)}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleStartTest}>
           <Text style={styles.buttonText}>Start Test</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
+};
+
+// ✅ Khai báo PropTypes
+AssessmentScreen.propTypes = {
+  testId: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  quantity: PropTypes.number.isRequired,
+  time: PropTypes.string.isRequired,
+  allowed: PropTypes.number.isRequired,
+  type: PropTypes.string.isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -176,4 +244,5 @@ const styles = StyleSheet.create({
   },
 });
 
+// ✅ Export 1 lần duy nhất
 export default AssessmentScreen;
