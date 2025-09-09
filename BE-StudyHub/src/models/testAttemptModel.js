@@ -37,9 +37,18 @@ const updateAttemptById = async (id, updateData) => {
   }
 };
 
+const findAttemptByTestId = async (testId, userId) => {
+  const query = { testId };
+  if (userId) query.userId = userId;
+
+  // Lấy attempt mới nhất
+  return await TestAttempt.findOne(query).sort({ createdAt: -1 });
+};
+
 module.exports = {
   createAttempt,
   findAttemptById,
   findAttemptsByUser,
   updateAttemptById,
+  findAttemptByTestId,
 };
