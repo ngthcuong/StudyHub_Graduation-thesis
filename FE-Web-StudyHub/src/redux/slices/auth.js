@@ -24,7 +24,7 @@ export const authSlice = createSlice({
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
     },
-    getUserFromStorage: (state) => {
+    saveUserInfor: (state) => {
       const user = localStorage.getItem("user");
       const accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
@@ -38,5 +38,5 @@ export const authSlice = createSlice({
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, saveUserInfor } = authSlice.actions;
 export default authSlice.reducer;

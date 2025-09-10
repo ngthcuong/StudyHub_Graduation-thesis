@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Button,
@@ -19,13 +19,18 @@ import {
   PhoneIphone,
   Transgender,
 } from "@mui/icons-material";
+import { useDispatch } from "react-redux";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
 import ModalChangePassword from "../../components/ModalChangePassword";
+import userApi from "../../services/userApi";
+import { openSnackbar } from "../../redux/slices/snackbar";
 
 const UserInfoPage = () => {
+  const dispatch = useDispatch();
+
   const [isEditing, setIsEditing] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
 
@@ -78,6 +83,7 @@ const UserInfoPage = () => {
   const {
     control,
     handleSubmit,
+    reset,
     clearErrors,
     formState: { isSubmitting },
   } = useForm({
@@ -93,6 +99,38 @@ const UserInfoPage = () => {
     },
     mode: "onChange",
   });
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userData = await userApi.getUserInfor();
+        if (userData) {
+          // Cập nhật giá trị mặc định cho form
+          reset({
+            fullName: userData.fullName || "",
+            email: userData.email || "",
+            phone: userData.phone || "",
+            dob: userData.dob
+              ? new Date(userData.dob).toISOString().split("T")[0]
+              : "",
+            gender: userData.gender || "",
+            organization: userData.organization || "",
+            walletAddress: userData.walletAddress || "",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        dispatch(
+          openSnackbar({
+            message: "Can not get user information",
+            severity: "error",
+          })
+        );
+      }
+    };
+
+    fetchUserProfile();
+  }, [reset, dispatch]);
 
   const onSubmit = async (data) => {
     try {
