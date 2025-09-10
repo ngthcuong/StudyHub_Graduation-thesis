@@ -12,6 +12,7 @@ import {
   Chip,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const mockCourses = [
   {
@@ -113,6 +114,8 @@ const mockCourses = [
 ];
 
 const CourseList = () => {
+  const navigate = useNavigate();
+
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -149,7 +152,13 @@ const CourseList = () => {
         {/* Course Grid */}
         <Grid container spacing={3}>
           {pagedCourses.map((course) => (
-            <Grid item xs={12} sm={6} md={4} key={course.id}>
+            <Grid
+              xs={12}
+              sm={6}
+              md={4}
+              key={course.id}
+              onClick={() => navigate(`/course/${course.id}`)}
+            >
               <Card className="h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer">
                 <CardMedia
                   component="img"

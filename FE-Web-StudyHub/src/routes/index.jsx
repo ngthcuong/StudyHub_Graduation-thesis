@@ -43,10 +43,10 @@ export const router = createBrowserRouter([
             path: "/course",
             element: <CourseList />,
           },
-          // {
-          //   path: "/course",
-          //   element: <CourseDetail />,
-          // },
+          {
+            path: "/course/:id",
+            element: <CourseDetail />,
+          },
           {
             path: "/test",
             element: <TestList />,
