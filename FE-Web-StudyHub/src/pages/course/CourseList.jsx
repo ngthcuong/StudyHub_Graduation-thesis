@@ -2,10 +2,6 @@ import React, { useState } from "react";
 import {
   Box,
   Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
   Pagination,
   TextField,
   InputAdornment,
@@ -13,6 +9,7 @@ import {
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import CourseCard from "../../components/CourseCard";
 
 const mockCourses = [
   {
@@ -151,62 +148,11 @@ const CourseList = () => {
 
         {/* Course Grid */}
         <Grid container spacing={3}>
-          {pagedCourses.map((course) => (
-            <Grid
-              xs={12}
-              sm={6}
-              md={4}
-              key={course.id}
-              onClick={() => navigate(`/course/${course.id}`)}
-            >
-              <Card className="h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer">
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={course.thumbnailUrl}
-                  alt={course.title}
-                  className="bg-gray-200"
-                />
-                <CardContent className="flex-1 p-4">
-                  {/* Type Badge */}
-                  <Box className="mb-2">
-                    <Chip
-                      label={course.type}
-                      size="small"
-                      color={course.type === "TOEIC" ? "primary" : "secondary"}
-                      variant="filled"
-                    />
-                  </Box>
-
-                  {/* Course Title */}
-                  <Typography
-                    variant="subtitle1"
-                    className="font-medium mb-2 line-clamp-2"
-                  >
-                    {course.title}
-                  </Typography>
-
-                  {/* Skills */}
-                  <Box className="mb-3">
-                    <Box className="flex flex-wrap gap-1">
-                      {course.skills.map((skill, index) => (
-                        <Chip
-                          key={index}
-                          label={skill}
-                          size="small"
-                          variant="outlined"
-                          className="text-xs"
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-
-                  {/* Price */}
-                  <Typography variant="h6" className="font-bold text-gray-900">
-                    {course.cost === 0 ? "Free" : `$${course.cost}`}
-                  </Typography>
-                </CardContent>
-              </Card>
+          {pagedCourses.map((course, index) => (
+            <Grid size={{ xs: 12, md: 3 }} key={course.id}>
+              <div onClick={() => navigate(`/course/${course.id}`)}>
+                <CourseCard course={course} index={index} />
+              </div>
             </Grid>
           ))}
         </Grid>
