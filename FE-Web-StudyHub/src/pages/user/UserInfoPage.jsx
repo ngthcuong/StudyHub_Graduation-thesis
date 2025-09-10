@@ -19,7 +19,7 @@ import {
   PhoneIphone,
   Transgender,
 } from "@mui/icons-material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -27,9 +27,11 @@ import FormField from "../../components/FormField";
 import ModalChangePassword from "../../components/ModalChangePassword";
 import userApi from "../../services/userApi";
 import { openSnackbar } from "../../redux/slices/snackbar";
+import SnackBar from "../../components/Snackbar";
 
 const UserInfoPage = () => {
   const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
@@ -107,32 +109,31 @@ const UserInfoPage = () => {
     mode: "onChange",
   });
 
+  const updateLocalStorage = (data) => {
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    localStorage.setItem("user", JSON.stringify({ ...currentUser, ...data }));
+  };
+
+  const formatUserData = (userData) => ({
+    fullName: userData.fullName || "",
+    email: userData.email || "",
+    phone: userData.phone || "",
+    dob: userData.dob ? new Date(userData.dob).toISOString().split("T")[0] : "",
+    gender: userData.gender || "",
+    organization: userData.organization || "",
+    walletAddress: userData.walletAddress || "",
+  });
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const userData = await userApi.getUserInfor();
         if (userData) {
-          // Cập nhật giá trị mặc định cho form
-          reset({
-            fullName: userData.fullName || "",
-            email: userData.email || "",
-            phone: userData.phone || "",
-            dob: userData.dob
-              ? new Date(userData.dob).toISOString().split("T")[0]
-              : "",
-            gender: userData.gender || "",
-            organization: userData.organization || "",
-            walletAddress: userData.walletAddress || "",
-          });
+          const formattedData = formatUserData(userData);
+          reset(formattedData);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
-        dispatch(
-          openSnackbar({
-            message: "Can not get user information",
-            severity: "error",
-          })
-        );
       }
     };
 
@@ -142,38 +143,29 @@ const UserInfoPage = () => {
   const onSubmit = async (data) => {
     try {
       const response = await userApi.updateUserInfor(data);
+      if (!response) return;
 
-      if (response) {
-        // Cập nhật thông tin user trong localStorage
-        const currentUser = JSON.parse(localStorage.getItem("user"));
-        const updatedUser = { ...currentUser, ...data };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+      // Cập nhật localStorage và hiển thị thông báo thành công
+      updateLocalStorage(data);
+      dispatch(
+        openSnackbar({
+          message: response.message,
+          severity: "success",
+        })
+      );
 
-        dispatch(
-          openSnackbar({
-            message: "Update user information successfully",
-            severity: "success",
-          })
-        );
-
-        // Cập nhật thông tin user trong form
-        // Cập nhật thông tin hiển thị trên màn hình từ response API
-        const updatedData = {
-          fullName: response.fullName || "",
-          email: response.email || "",
-          phone: response.phone || "",
-          dob: response.dob
-            ? new Date(response.dob).toISOString().split("T")[0]
-            : "",
-          gender: response.gender || "",
-          organization: response.organization || "",
-          walletAddress: response.walletAddress || "",
-        };
-        reset(updatedData);
-        setIsEditing(false);
-      }
+      // Cập nhật form với dữ liệu mới
+      const updatedData = formatUserData(response.data);
+      reset(updatedData);
+      setIsEditing(false);
     } catch (error) {
       console.error("Lỗi thay đổi thông tin người dùng: ", error);
+      dispatch(
+        openSnackbar({
+          message: "Cannot update user information",
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -390,6 +382,8 @@ const UserInfoPage = () => {
             onClose={() => setIsShowModal(!isShowModal)}
           />
         )}
+
+        <SnackBar isOpen={isOpen} message={message} severity={severity} />
       </div>
     </Box>
   );
