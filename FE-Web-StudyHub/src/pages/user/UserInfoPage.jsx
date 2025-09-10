@@ -68,16 +68,23 @@ const UserInfoPage = () => {
 
     organization: yup
       .string()
-      .matches(
-        /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/,
-        "Tổ chức không hợp lệ"
-      )
-      .trim(),
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("organization-format", "Tổ chức không hợp lệ", (value) => {
+        if (!value) return true;
+        return /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/.test(
+          value.trim()
+        );
+      }),
 
     walletAddress: yup
       .string()
-      .matches(/^0x[a-fA-F0-9]{40}$/, "Địa chỉ ví điện tử không hợp lệ")
-      .trim(),
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("wallet-format", "Địa chỉ ví điện tử không hợp lệ", (value) => {
+        if (!value) return true;
+        return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
+      }),
   });
 
   const {
@@ -134,8 +141,37 @@ const UserInfoPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log(data);
-      // setIsEditing(false);
+      const response = await userApi.updateUserInfor(data);
+
+      if (response) {
+        // Cập nhật thông tin user trong localStorage
+        const currentUser = JSON.parse(localStorage.getItem("user"));
+        const updatedUser = { ...currentUser, ...data };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        dispatch(
+          openSnackbar({
+            message: "Update user information successfully",
+            severity: "success",
+          })
+        );
+
+        // Cập nhật thông tin user trong form
+        // Cập nhật thông tin hiển thị trên màn hình từ response API
+        const updatedData = {
+          fullName: response.fullName || "",
+          email: response.email || "",
+          phone: response.phone || "",
+          dob: response.dob
+            ? new Date(response.dob).toISOString().split("T")[0]
+            : "",
+          gender: response.gender || "",
+          organization: response.organization || "",
+          walletAddress: response.walletAddress || "",
+        };
+        reset(updatedData);
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error("Lỗi thay đổi thông tin người dùng: ", error);
     }

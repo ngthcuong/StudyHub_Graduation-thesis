@@ -140,7 +140,7 @@ const updateUserById = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const userProfile = user.toObject();
+    const userProfile = updatedUser.toObject();
     delete userProfile.password;
     delete userProfile.__v;
 
@@ -158,6 +158,7 @@ const updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId; // Từ middleware verifyToken
     const updateData = req.body;
+
     if (!userId) {
       return res.status(404).json({ error: "User Id not found" });
     }
@@ -177,9 +178,10 @@ const updateProfile = async (req, res) => {
 
     const userProfile = updatedUser.toObject();
     delete userProfile.__v;
+    delete userProfile.password;
 
     res.status(200).json({
-      message: "User profile retrieved successfully",
+      message: "User profile updated successfully",
       data: userProfile,
     });
   } catch (error) {

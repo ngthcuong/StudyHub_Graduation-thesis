@@ -7,12 +7,11 @@ const getUserInfor = async () => {
   try {
     const response = await axios.get(`${config.baseApiUrl}/users/profile`, {
       headers: {
-        Authorization: `Bear ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
     if (response.status === 200) {
-      console.log(response.data);
       return response.data.data;
     } else {
       return null;
@@ -32,9 +31,23 @@ const getUserInfor = async () => {
 
 const updateUserInfor = async (data) => {
   try {
-    console.log(data);
+    const response = await axios.put(
+      `${config.baseApiUrl}/users/profile`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (response.status === 200) {
+      return response.data.data;
+    } else {
+      return null;
+    }
   } catch (error) {
-    console.error("Register failed: ", error);
+    console.error("Update user information failed: ", error);
 
     // Log more detailed error information
     if (error.response) {
