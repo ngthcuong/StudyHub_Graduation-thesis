@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Button,
@@ -19,13 +19,20 @@ import {
   PhoneIphone,
   Transgender,
 } from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
 import ModalChangePassword from "../../components/ModalChangePassword";
+import userApi from "../../services/userApi";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import SnackBar from "../../components/Snackbar";
 
 const UserInfoPage = () => {
+  const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+
   const [isEditing, setIsEditing] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
 
@@ -63,21 +70,29 @@ const UserInfoPage = () => {
 
     organization: yup
       .string()
-      .matches(
-        /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/,
-        "Tổ chức không hợp lệ"
-      )
-      .trim(),
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("organization-format", "Tổ chức không hợp lệ", (value) => {
+        if (!value) return true;
+        return /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/.test(
+          value.trim()
+        );
+      }),
 
     walletAddress: yup
       .string()
-      .matches(/^0x[a-fA-F0-9]{40}$/, "Địa chỉ ví điện tử không hợp lệ")
-      .trim(),
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("wallet-format", "Địa chỉ ví điện tử không hợp lệ", (value) => {
+        if (!value) return true;
+        return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
+      }),
   });
 
   const {
     control,
     handleSubmit,
+    reset,
     clearErrors,
     formState: { isSubmitting },
   } = useForm({
@@ -94,12 +109,63 @@ const UserInfoPage = () => {
     mode: "onChange",
   });
 
+  const updateLocalStorage = (data) => {
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    localStorage.setItem("user", JSON.stringify({ ...currentUser, ...data }));
+  };
+
+  const formatUserData = (userData) => ({
+    fullName: userData.fullName || "",
+    email: userData.email || "",
+    phone: userData.phone || "",
+    dob: userData.dob ? new Date(userData.dob).toISOString().split("T")[0] : "",
+    gender: userData.gender || "",
+    organization: userData.organization || "",
+    walletAddress: userData.walletAddress || "",
+  });
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userData = await userApi.getUserInfor();
+        if (userData) {
+          const formattedData = formatUserData(userData);
+          reset(formattedData);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [reset, dispatch]);
+
   const onSubmit = async (data) => {
     try {
-      console.log(data);
-      // setIsEditing(false);
+      const response = await userApi.updateUserInfor(data);
+      if (!response) return;
+
+      // Cập nhật localStorage và hiển thị thông báo thành công
+      updateLocalStorage(data);
+      dispatch(
+        openSnackbar({
+          message: response.message,
+          severity: "success",
+        })
+      );
+
+      // Cập nhật form với dữ liệu mới
+      const updatedData = formatUserData(response.data);
+      reset(updatedData);
+      setIsEditing(false);
     } catch (error) {
       console.error("Lỗi thay đổi thông tin người dùng: ", error);
+      dispatch(
+        openSnackbar({
+          message: "Cannot update user information",
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -316,6 +382,8 @@ const UserInfoPage = () => {
             onClose={() => setIsShowModal(!isShowModal)}
           />
         )}
+
+        <SnackBar isOpen={isOpen} message={message} severity={severity} />
       </div>
     </Box>
   );

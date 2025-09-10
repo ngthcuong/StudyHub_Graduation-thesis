@@ -13,35 +13,34 @@ import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { InfoOutline } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { generateTestQuestions } from "../../services/testApi";
-
-const testInfo = {
-  name: "Middle Test",
-  description:
-    "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
-  questionCount: 30,
-  topic:
-    "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
-  duration: 60,
-  maxAttempts: 3,
-  attempts: 1,
-  types: ["Multiple Choice", "Fill in the blank"],
-};
+import { useLocation, useNavigate } from "react-router-dom";
+import { createAttempt, generateTestQuestions } from "../../services/testApi";
 
 const TestInformation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
+  const { testInfor } = location.state || {};
 
   const handleStartTest = async () => {
+    const userId = "68c01f071fe11e25c650cf3f";
     try {
       setIsLoading(true);
-      console.log("generate test");
       const testQuestions = await generateTestQuestions();
-      console.log(testQuestions.data.data.data);
+      const attempt = await createAttempt({
+        testId: testInfor.id,
+        userId: userId,
+      });
+
       if (testQuestions) {
-        navigate(`/test/${testQuestions.data.data.data[0]?.testId}/attempt`, {
-          state: { questions: testQuestions.data.data.data },
+        navigate(`/test/${testInfor.id}/attempt`, {
+          state: {
+            questions: testQuestions.data.data.data,
+            testTitle: testInfor.title,
+            testDuration: testInfor.durationMin,
+            testId: testInfor.id,
+            attemptId: attempt?.data.data._id,
+          },
         });
       }
     } catch (error) {
@@ -65,7 +64,7 @@ const TestInformation = () => {
             color="#111827"
             gutterBottom
           >
-            {testInfo.name}
+            {testInfor?.title}
           </Typography>
           <Divider
             sx={{
@@ -88,7 +87,7 @@ const TestInformation = () => {
             color="#6b7280"
             sx={{ mb: 2, textAlign: "justify" }}
           >
-            {testInfo.description}
+            {testInfor.description}
           </Typography>
 
           {/* Các thông tin khác: số câu hỏi, thời gian, số lần làm lại, loại câu hỏi */}
@@ -113,7 +112,7 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfo.questionCount}
+                  {testInfor.numQuestions}
                 </Typography>
               </Box>
             </Grid>
@@ -137,7 +136,7 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfo.duration}{" "}
+                  {testInfor.durationMin}{" "}
                   <span className="text-base font-normal">minutes</span>
                 </Typography>
               </Box>
@@ -162,7 +161,7 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfo.attempts} / {testInfo.maxAttempts}
+                  {testInfor?.attemptCount || 0} / {testInfor?.retakeCount || 0}
                 </Typography>
               </Box>
             </Grid>
@@ -181,7 +180,7 @@ const TestInformation = () => {
                   </Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={600} color="#111827">
-                  {testInfo.types.join(", ")}
+                  {testInfor.questionTypes.join(", ")}
                 </Typography>
               </Box>
             </Grid>

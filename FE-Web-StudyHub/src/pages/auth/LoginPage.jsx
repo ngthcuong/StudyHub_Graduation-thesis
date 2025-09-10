@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  TextField,
   Button,
   Checkbox,
   FormControlLabel,
   Typography,
   Box,
   Paper,
-  InputAdornment,
-  IconButton,
   Divider,
 } from "@mui/material";
 import {
@@ -24,11 +21,15 @@ import {
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import FormField from "../../components/FormField";
 import authApi from "../../services/authApi";
+import { login } from "../../redux/slices/auth";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -74,7 +75,8 @@ const LoginPage = () => {
       console.log(response);
 
       if (response) {
-        navigate("/");
+        dispatch(login(response.data));
+        navigate("/home");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -106,10 +108,10 @@ const LoginPage = () => {
             component="h1"
             className="font-bold text-gray-900"
           >
-            Đăng nhập
+            Sign in
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Chào mừng bạn quay trở lại với StudyHub!
+            Welcome back to StudyHub!
           </Typography>
         </Box>
 
@@ -132,7 +134,7 @@ const LoginPage = () => {
           <FormField
             name="password"
             control={control}
-            label="Mật khẩu"
+            label="Password"
             type={showPassword ? "text" : "password"}
             startIcon={<Lock className="text-gray-400" />}
             endIcon={showPassword ? <VisibilityOff /> : <Visibility />}
@@ -150,13 +152,13 @@ const LoginPage = () => {
                   color="primary"
                 />
               }
-              label="Ghi nhớ đăng nhập"
+              label="Remember me"
             />
             <Link
               to="/forgot-password"
               className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
             >
-              Quên mật khẩu?
+              Forgot password?
             </Link>
           </Box>
 
@@ -183,7 +185,7 @@ const LoginPage = () => {
         {/* Divider */}
         <Divider className="!my-1">
           <Typography variant="body2" color="textSecondary">
-            hoặc
+            or
           </Typography>
         </Divider>
 
@@ -202,7 +204,7 @@ const LoginPage = () => {
             }}
           >
             <Google className="mr-2" />
-            Đăng nhập với Google
+            Sign in with Google
           </Button>
 
           <Button
@@ -217,19 +219,19 @@ const LoginPage = () => {
             }}
           >
             <FacebookOutlined className="mr-2" />
-            Đăng nhập với Facebook
+            Sign in with Facebook
           </Button>
         </Box>
 
         {/* Register Link */}
         <Box className="text-center">
           <Typography variant="body2" color="textSecondary">
-            Chưa có tài khoản?{" "}
+            You don't have an account yet?{" "}
             <Link
               to="/register"
               className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
             >
-              Đăng ký ngay
+              Sign up
             </Link>
           </Typography>
         </Box>

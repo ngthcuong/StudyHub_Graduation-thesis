@@ -14,8 +14,15 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import FormField from "./FormField";
 import { useState } from "react";
+import authApi from "../services/authApi";
+import { useDispatch, useSelector } from "react-redux";
+import { openSnackbar } from "../redux/slices/snackbar";
+import Snackbar from "../components/Snackbar";
 
 const ModalChangePassword = ({ open, onClose }) => {
+  const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -51,11 +58,28 @@ const ModalChangePassword = ({ open, onClose }) => {
 
   const onSubmit = async (data) => {
     try {
-      console.log(data);
-      reset();
-      onClose();
+      const response = await authApi.changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      if (response) {
+        console.log(response);
+        dispatch(openSnackbar({ message: response }));
+        reset();
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+      }
     } catch (error) {
       console.error("Error changing password:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to change password";
+      dispatch(
+        openSnackbar({
+          message: errorMessage,
+          severity: "error",
+        })
+      );
     }
   };
 
@@ -68,8 +92,8 @@ const ModalChangePassword = ({ open, onClose }) => {
       className="rounded-lg"
     >
       <DialogTitle className="flex justify-between items-center bg-blue-50">
-        <Typography variant="h6" className="font-bold text-blue-700">
-          Thay đổi mật khẩu
+        <Typography variant="inherit" className="font-bold text-blue-700">
+          Change password
         </Typography>
         <IconButton onClick={onClose} size="small">
           <Close />
@@ -84,15 +108,15 @@ const ModalChangePassword = ({ open, onClose }) => {
           <FormField
             name="currentPassword"
             control={control}
-            label="Mật khẩu cũ"
+            label="Old password"
             type="password"
             startIcon={<Lock className="text-gray-400" />}
           />
           <FormField
             name="newPassword"
             control={control}
-            label="Mật khẩu mới"
-            ttype={showPassword ? "text" : "password"}
+            label="New password"
+            type={showPassword ? "text" : "password"}
             startIcon={<Lock className="text-gray-400" />}
             endIcon={showPassword ? <VisibilityOff /> : <Visibility />}
             onEndIconClick={() => setShowPassword(!showPassword)}
@@ -100,7 +124,7 @@ const ModalChangePassword = ({ open, onClose }) => {
           <FormField
             name="confirmNewPassword"
             control={control}
-            label="Nhập lại mật khẩu mới"
+            label="Confirm new password"
             type={showConfirmPassword ? "text" : "password"}
             startIcon={<Lock className="text-gray-400" />}
             endIcon={showConfirmPassword ? <VisibilityOff /> : <Visibility />}
@@ -112,35 +136,35 @@ const ModalChangePassword = ({ open, onClose }) => {
               variant="body2"
               className="font-semibold mb-2 text-blue-700"
             >
-              Yêu cầu mật khẩu:
+              Password Require:
             </Typography>
             <Typography
               variant="body2"
               component="li"
               className="text-gray-600"
             >
-              Ít nhất 8 ký tự
+              At least 8 characters
             </Typography>
             <Typography
               variant="body2"
               component="li"
               className="text-gray-600"
             >
-              Chứa chữ hoa và chữ thường
+              Contains uppercase and lowercase letters
             </Typography>
             <Typography
               variant="body2"
               component="li"
               className="text-gray-600"
             >
-              Chứa ít nhất 1 số
+              Contains at least 1 number
             </Typography>
             <Typography
               variant="body2"
               component="li"
               className="text-gray-600"
             >
-              Chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*...)
+              Contains at least 1 special character (!@#$%^&*...)
             </Typography>
           </Box>
           <DialogActions className="mt-4">
@@ -148,20 +172,27 @@ const ModalChangePassword = ({ open, onClose }) => {
               onClick={onClose}
               variant="outlined"
               className="text-blue-600 border-blue-600 hover:bg-blue-50"
+              sx={{
+                textTransform: "none",
+              }}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={isSubmitting}
               className="bg-blue-600 hover:bg-blue-700 text-white"
+              sx={{
+                textTransform: "none",
+              }}
             >
-              Xác nhận
+              Confirm
             </Button>
           </DialogActions>
         </Box>
       </DialogContent>
+      <Snackbar isOpen={isOpen} message={message} severity={severity} />
     </Dialog>
   );
 };

@@ -222,12 +222,12 @@ const CourseDetail = () => {
                   </Typography>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                {/* <div className="flex items-center space-x-3">
                   <Person />
                   <Typography variant="body2" className="text-gray-600">
                     Teacher Name
                   </Typography>
-                </div>
+                </div> */}
               </div>
 
               <Button

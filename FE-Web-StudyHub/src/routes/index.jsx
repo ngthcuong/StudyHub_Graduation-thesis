@@ -13,6 +13,7 @@ import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
 import TestLayout from "../layouts/TestLayout";
+import TestList from "../pages/test/TestList";
 
 export const router = createBrowserRouter([
   {
@@ -34,12 +35,16 @@ export const router = createBrowserRouter([
             element: <HomePage />,
           },
           {
-            path: "/user",
+            path: "/profile",
             element: <UserInfoPage />,
           },
           {
             path: "/course",
             element: <CourseDetail />,
+          },
+          {
+            path: "/test",
+            element: <TestList />,
           },
           {
             path: "/test/:id",

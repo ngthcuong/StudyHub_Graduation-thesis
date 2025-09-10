@@ -286,10 +286,14 @@ const validateWalletAddress = (isRequired = true) => {
 const checkUserExists = async (req, res, next) => {
   try {
     const { email, phone, walletAddress } = req.body;
+    const userId = req.user.userId;
 
     // Kiểm tra email đã tồn tại
     if (email) {
-      const existingUserByEmail = await user.findOne({ email });
+      const existingUserByEmail = await user.findOne({
+        email,
+        _id: { $ne: userId },
+      });
       if (existingUserByEmail) {
         return res
           .status(400)
@@ -299,7 +303,10 @@ const checkUserExists = async (req, res, next) => {
 
     // Kiểm tra phone đã tồn tại
     if (phone) {
-      const existingUserByPhone = await user.findOne({ phone });
+      const existingUserByPhone = await user.findOne({
+        phone,
+        _id: { $ne: userId },
+      });
       if (existingUserByPhone) {
         return res
           .status(400)

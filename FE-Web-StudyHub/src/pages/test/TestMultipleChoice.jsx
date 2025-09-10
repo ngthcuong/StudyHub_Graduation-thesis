@@ -12,60 +12,24 @@ import {
   LinearProgress,
   Chip,
   Stack,
+  CircularProgress,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import { useNavigate } from "react-router-dom";
-
-// Mock Data
-const questions = [
-  {
-    question: "She ____ to Paris three times this year.",
-    options: ["has been", "have been", "was", "were"],
-  },
-  {
-    question: "They ____ their homework before dinner.",
-    options: ["finish", "have finished", "finishes", "finished"],
-  },
-  {
-    question: "I ____ him since last year.",
-    options: ["didn't see", "haven't seen", "don't see", "wasn't seeing"],
-  },
-  {
-    question: "We ____ in this city for ten years.",
-    options: ["lived", "have lived", "live", "are living"],
-  },
-  {
-    question: "____ you ever ____ sushi?",
-    options: ["Did / eat", "Have / eaten", "Do / eat", "Are / eating"],
-  },
-  {
-    question: "He ____ his keys, so he can't open the door.",
-    options: ["lost", "has lost", "loses", "is losing"],
-  },
-  {
-    question: "They ____ to the new house yet.",
-    options: ["didn't move", "haven't moved", "don't move", "aren't moving"],
-  },
-  {
-    question: "We ____ our project already.",
-    options: ["finish", "have finished", "finished", "are finishing"],
-  },
-  {
-    question: "We ____ our project already.",
-    options: ["finish", "have finished", "finished", "are finishing"],
-  },
-  {
-    question: "We ____ our project already.",
-    options: ["finish", "have finished", "finished", "are finishing"],
-  },
-];
-
-const totalQuestions = questions.length;
-const testName = "Test 01: Present Perfect Tense";
-const testDuration = 15 * 60;
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import { getTestResult, submitTest } from "../../services/testApi";
 
 const TestMultipleChoice = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  const { questions, testTitle, testDuration, testId, attemptId } =
+    location.state || [];
+  const totalQuestions = questions.length;
+
+  const [isLoading, setIsLoading] = useState(false);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState(Array(totalQuestions).fill(null));
   const [timeLeft, setTimeLeft] = useState(testDuration);
@@ -76,13 +40,28 @@ const TestMultipleChoice = () => {
   // Đếm ngược thời gian
   useEffect(() => {
     if (timeLeft <= 0) return;
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        // Convert minutes to seconds for calculation
+        const timeInSeconds = prevTime * 60;
+        const newTimeInSeconds = timeInSeconds - 1;
+        // Convert back to minutes
+        return newTimeInSeconds / 60;
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft]);
 
   const handleChange = (e) => {
     const newAnswers = [...answers];
-    newAnswers[current] = e.target.value;
+    const selectedOptionText = e.target.value;
+
+    // Tìm option object để lấy _id
+    const selectedOption = questions[current].options.find(
+      (opt) => opt.optionText === selectedOptionText
+    );
+
+    newAnswers[current] = selectedOption?._id || null;
     setAnswers(newAnswers);
   };
 
@@ -92,8 +71,70 @@ const TestMultipleChoice = () => {
   const handleJump = (idx) => setCurrent(idx);
 
   // Định dạng thời gian mm:ss
-  const formatTime = (s) =>
-    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  const formatTime = (m) =>
+    `${Math.floor(m)}:${((m % 1) * 60).toFixed(0).toString().padStart(2, "0")}`;
+
+  // const handleSubmit = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const res = await submitTest({ answers, attemptId });
+  //     console.log(res);
+  //     // if (res) {
+  //     //   navigate(`/test/${attemptId}/result`, {
+  //     //     state: {
+  //     //       result: res,
+  //     //     },
+  //     //   });
+  //     // }
+  //   } catch (error) {
+  //     console.log(error);
+  //     dispatch(
+  //       openSnackbar({
+  //         severity: "error",
+  //         message: "Can not submit! Please try again!",
+  //       })
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const formattedAnswers = answers
+        .map((selectedOptionId, index) => ({
+          questionId: questions[index]._id,
+          selectedOptionId: selectedOptionId,
+        }))
+        .filter((answer) => answer.selectedOptionId !== null);
+
+      const res = await submitTest({
+        answers: formattedAnswers,
+        attemptId,
+      });
+      console.log("submit :", res);
+
+      const testResult = await getTestResult({ testId, attemptId });
+      console.log("test result :", testResult);
+
+      if (testResult.status === 200) {
+        navigate(`/test/${testId}/result`, {
+          state: { testResult: testResult.data },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      dispatch(
+        openSnackbar({
+          severity: "error",
+          message: "Can not submit! Please try again!",
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Box className="min-h-screen bg-gray-50 py-8 px-2">
@@ -127,7 +168,7 @@ const TestMultipleChoice = () => {
         {/* Tên bài kiểm tra */}
         <Box className="bg-white rounded-xl shadow p-4 mb-6 flex justify-between">
           <Typography variant="h6" fontWeight={700} color="#22223b">
-            {testName}
+            {testTitle}
           </Typography>
           <Chip
             icon={<AccessTimeOutlinedIcon />}
@@ -151,28 +192,38 @@ const TestMultipleChoice = () => {
                   color="#22223b"
                   sx={{ mb: 2 }}
                 >
-                  {current + 1}. {questions[current].question}
+                  {current + 1}. {questions[current].questionText}
                 </Typography>
                 {/* Đáp án */}
                 <RadioGroup
-                  value={answers[current] || ""}
+                  value={
+                    answers[current]
+                      ? questions[current].options.find(
+                          (opt) => opt._id === answers[current]
+                        )?.optionText || ""
+                      : ""
+                  }
                   onChange={handleChange}
                 >
                   {questions[current].options.map((opt, idx) => (
                     <Box
-                      key={idx}
+                      key={opt._id || idx}
                       className="mb-3 border rounded-lg px-4 py-2 flex items-center hover:border-blue-400 transition"
                       sx={{
                         borderColor:
-                          answers[current] === opt ? "#2563eb" : "#e5e7eb",
+                          answers[current] === opt._id ? "#2563eb" : "#e5e7eb",
                         background:
-                          answers[current] === opt ? "#f0f7ff" : "#fff",
+                          answers[current] === opt._id ? "#f0f7ff" : "#fff",
                       }}
                     >
                       <FormControlLabel
-                        value={opt}
+                        value={opt.optionText}
                         control={<Radio color="primary" />}
-                        label={<Typography fontWeight={500}>{opt}</Typography>}
+                        label={
+                          <Typography fontWeight={500}>
+                            {opt.optionText}
+                          </Typography>
+                        }
                         className="w-full"
                       />
                     </Box>
@@ -216,9 +267,13 @@ const TestMultipleChoice = () => {
                     sx={{
                       textTransform: "none",
                     }}
-                    onClick={() => navigate("/result")}
+                    onClick={() => handleSubmit()}
                   >
-                    Submit Exercise
+                    {isLoading ? (
+                      <CircularProgress size={18} color="white" />
+                    ) : (
+                      " Submit Exercise"
+                    )}
                   </Button>
                 </Box>
               </CardContent>
@@ -316,11 +371,8 @@ const TestMultipleChoice = () => {
                         borderRadius: "50%",
                         p: 0,
                         boxShadow: "none",
-                        "&:hover": { background: "#22c55e" },
                       }}
-                    >
-                      {" "}
-                    </Button>
+                    ></Button>
                     <Typography variant="caption" color="#22c55e">
                       Completed
                     </Typography>
@@ -337,11 +389,8 @@ const TestMultipleChoice = () => {
                         borderRadius: "50%",
                         p: 0,
                         boxShadow: "none",
-                        "&:hover": { background: "#2563eb" },
                       }}
-                    >
-                      {" "}
-                    </Button>
+                    ></Button>
                     <Typography variant="caption" color="#2563eb">
                       Current
                     </Typography>
@@ -359,11 +408,8 @@ const TestMultipleChoice = () => {
                         p: 0,
                         boxShadow: "none",
                         border: "1px solid #cbd5e1",
-                        "&:hover": { background: "#e5e7eb" },
                       }}
-                    >
-                      {" "}
-                    </Button>
+                    ></Button>
                     <Typography variant="caption" color="#64748b">
                       Not answered
                     </Typography>
