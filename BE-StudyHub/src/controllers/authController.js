@@ -204,10 +204,12 @@ const changePassword = async (req, res) => {
     const updatedUser = await userModel.updateUserById(userId, {
       password: hashedNewPassword,
     });
+    delete updatedUser.password;
+    delete updatedUser.__v;
 
     res.status(200).json({
       message: "Password changed successfully!",
-      user: updatedUser,
+      // user: updatedUser,
     });
   } catch (error) {
     console.error("Error changing password:", error);
