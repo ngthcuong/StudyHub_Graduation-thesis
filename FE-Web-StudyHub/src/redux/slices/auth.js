@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { snackbarSlice } from "./snackbar";
 
 export const authSlice = createSlice({
   name: "auth",
@@ -23,10 +22,21 @@ export const authSlice = createSlice({
       state.refreshToken = "";
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
-      localStorage.setremoveItemItem("refreshToken");
+      localStorage.removeItem("refreshToken");
+    },
+    getUserFromStorage: (state) => {
+      const user = localStorage.getItem("user");
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      if (user && accessToken) {
+        state.user = JSON.parse(user);
+        state.accessToken = accessToken;
+        state.refreshToken = refreshToken;
+      }
     },
   },
 });
 
-export const { login } = snackbarSlice.actions;
-export default snackbarSlice.reducer;
+export const { login, logout } = authSlice.actions;
+export default authSlice.reducer;
