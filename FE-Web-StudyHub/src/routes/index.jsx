@@ -14,6 +14,7 @@ import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
 import TestLayout from "../layouts/TestLayout";
 import TestList from "../pages/test/TestList";
+import CourseList from "../pages/course/CourseList";
 
 export const router = createBrowserRouter([
   {
@@ -40,8 +41,12 @@ export const router = createBrowserRouter([
           },
           {
             path: "/course",
-            element: <CourseDetail />,
+            element: <CourseList />,
           },
+          // {
+          //   path: "/course",
+          //   element: <CourseDetail />,
+          // },
           {
             path: "/test",
             element: <TestList />,
