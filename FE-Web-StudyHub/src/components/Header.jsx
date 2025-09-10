@@ -24,12 +24,11 @@ const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [user, setUser] = useState(useSelector((state) => state.auth.user));
+  const user = useSelector((state) => state.auth.user);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleLogout = () => {
     dispatch(logout());
-    setUser(null);
     navigate("/");
   };
 

@@ -1,8 +1,6 @@
 import axios from "axios";
 import config from "../configs/config";
 
-const accessToken = localStorage.getItem("accessToken");
-
 const login = async ({ email, password }) => {
   try {
     console.log({ email, password });
@@ -56,6 +54,7 @@ const register = async (data) => {
 
 const changePassword = async ({ currentPassword, newPassword }) => {
   try {
+    const accessToken = localStorage.getItem("accessToken");
     const response = await axios.post(
       `${config.baseApiUrl}/auth/change-password`,
       { currentPassword, newPassword },

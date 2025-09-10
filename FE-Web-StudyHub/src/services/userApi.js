@@ -1,10 +1,9 @@
 import axios from "axios";
 import config from "../configs/config";
 
-const accessToken = localStorage.getItem("accessToken");
-
 const getUserInfor = async () => {
   try {
+    const accessToken = localStorage.getItem("accessToken");
     const response = await axios.get(`${config.baseApiUrl}/users/profile`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -31,6 +30,7 @@ const getUserInfor = async () => {
 
 const updateUserInfor = async (data) => {
   try {
+    const accessToken = localStorage.getItem("accessToken");
     const response = await axios.put(
       `${config.baseApiUrl}/users/profile`,
       data,
