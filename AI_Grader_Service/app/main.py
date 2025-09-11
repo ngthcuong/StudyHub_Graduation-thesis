@@ -39,6 +39,8 @@ async def grade_endpoint(req: GradeRequest):
             if isinstance(gemini_resp, dict):
                 recommendations = gemini_resp.get("recommendations")
                 personalized_plan = gemini_resp.get("personalized_plan")
+                if isinstance(recommendations, str):
+                    recommendations = [recommendations]
 
         resp = GradeResponse(
             total_score=total_correct,
