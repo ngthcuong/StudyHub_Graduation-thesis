@@ -1,7 +1,11 @@
 import React from "react";
+import Sidebar from "../components/Sidebar";
 
-const HomgePage = () => {
-  return <div>Hompe page</div>;
-};
-
-export default HomgePage;
+export default function HomePage() {
+  return (
+    <div className=" ">
+      {/* Sidebar */}
+      <Sidebar />
+    </div>
+  );
+}

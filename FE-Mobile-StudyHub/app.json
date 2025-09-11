@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "FE-Mobile-StudyHub_",
-    "slug": "FE-Mobile-StudyHub_",
+    "name": "FE-Mobile-StudyHub",
+    "slug": "FE-Mobile-StudyHub",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
