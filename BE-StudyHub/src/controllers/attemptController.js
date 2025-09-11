@@ -63,7 +63,7 @@ const submitAttempt = async (req, res) => {
       // Tính điểm
       let isCorrect = undefined;
       let score = 0;
-      if (q.questionType === "mcq") {
+      if (q.questionType === "multiple_choice") {
         if (selectedOption) {
           isCorrect = !!selectedOption.isCorrect;
           score = isCorrect ? q.points || 1 : 0;
