@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 const ProtectedLayout = () => {
   return (
     <div className="h-screen bg-[#F8F7FA]">
-      <Header />
+      {/* <Header /> */}
       <div>
         <Outlet />
       </div>
