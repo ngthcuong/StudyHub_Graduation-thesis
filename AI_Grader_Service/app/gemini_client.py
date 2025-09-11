@@ -11,7 +11,7 @@ def call_gemini_analysis(payload: Dict[str, Any]) -> Dict[str, Any]:
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY not set in environment; cannot call Gemini")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCY7V89Cxm3p867XhcAUx8W5NreJD4PVOw"
     headers = {"Content-Type": "application/json"}
 
     body = {
