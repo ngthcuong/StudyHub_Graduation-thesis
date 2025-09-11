@@ -10,7 +10,7 @@ const ProtectedLayout = () => {
       <div>
         <Outlet />
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

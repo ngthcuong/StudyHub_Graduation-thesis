@@ -55,7 +55,7 @@ export default function Courses() {
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden transition-transform transform hover:-translate-y-1"
+              className="bg-white rounded-xl shadow-md overflow-hidden transition-transform transform hover:-translate-y-1 cursor-pointer"
             >
               <img
                 src={lesson.image}

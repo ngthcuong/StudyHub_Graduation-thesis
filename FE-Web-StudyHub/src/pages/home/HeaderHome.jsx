@@ -1,6 +1,53 @@
+import { useState, useRef, useEffect } from "react";
+import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { Badge, IconButton } from "@mui/material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+
 export default function HeaderHome() {
+  const [isOpenAvatar, setIsOpenAvatar] = useState(false);
+  const [isOpenNoti, setIsOpenNoti] = useState(false);
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: "course", text: "New lesson available in English Grammar" },
+    { id: 2, type: "system", text: "System maintenance scheduled tomorrow" },
+    { id: 3, type: "course", text: "You have an upcoming test on Friday" },
+  ]);
+
+  const avatarRef = useRef(null);
+  const notiRef = useRef(null);
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        avatarRef.current &&
+        !avatarRef.current.contains(event.target) &&
+        notiRef.current &&
+        !notiRef.current.contains(event.target)
+      ) {
+        setIsOpenAvatar(false);
+        setIsOpenNoti(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Hàm mở thông báo
+  const handleOpenNotifications = () => {
+    setIsOpenNoti(!isOpenNoti);
+    setIsOpenAvatar(false);
+
+    // Khi click chuông → reset thông báo
+    if (notifications.length > 0) {
+      setNotifications([]);
+    }
+  };
+
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md mb-6 flex items-center justify-between">
+    <div className="bg-white p-4 rounded-xl shadow-md mb-6 flex items-center justify-between relative">
       {/* Bên trái */}
       <div>
         <h2 className="text-2xl font-semibold">Welcome back, Sarah!</h2>
@@ -12,32 +59,86 @@ export default function HeaderHome() {
       {/* Bên phải */}
       <div className="flex items-center space-x-4">
         {/* Nút chuông */}
-        <button className="relative p-2 rounded-full hover:bg-gray-100">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6 text-gray-600"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.311 6.022c1.74.68 3.574 1.131 5.454 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-            />
-          </svg>
+        <div className="relative" ref={notiRef}>
+          <IconButton color="inherit" onClick={handleOpenNotifications}>
+            <Badge badgeContent={notifications.length} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
 
-          {/* Chấm đỏ thông báo */}
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
+          {isOpenNoti && (
+            <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+              <h3 className="px-4 py-2 text-sm font-semibold text-gray-700 border-b">
+                Notifications
+              </h3>
+
+              {notifications.length === 0 ? (
+                <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                  No new notifications 🎉
+                </div>
+              ) : (
+                <div className="max-h-60 overflow-y-auto">
+                  {notifications.map((noti) => (
+                    <div
+                      key={noti.id}
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <span
+                        className={`mr-2 px-2 py-0.5 rounded text-xs ${
+                          noti.type === "course"
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
+                        {noti.type === "course" ? "Course" : "System"}
+                      </span>
+                      {noti.text}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Avatar */}
-        <img
-          src="https://via.placeholder.com/40"
-          alt="Avatar"
-          className="w-10 h-10 rounded-full border border-gray-300"
-        />
+        <div className="relative" ref={avatarRef}>
+          <img
+            src="https://fastly.picsum.photos/id/50/4608/3072.jpg?hmac=E6WgCk6MBOyuRjW4bypT6y-tFXyWQfC_LjIBYPUspxE"
+            alt="Avatar"
+            className="w-10 h-10 rounded-full border border-gray-300 cursor-pointer"
+            onClick={() => {
+              setIsOpenAvatar(!isOpenAvatar);
+              setIsOpenNoti(false);
+            }}
+          />
+
+          {isOpenAvatar && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+              <a
+                href="#profile"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >
+                <PersonIcon className="inline mr-2" />
+                Personal Info
+              </a>
+              <a
+                href="#settings"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >
+                <SettingsIcon className="inline mr-2" />
+                Settings
+              </a>
+              <button
+                className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                onClick={() => alert("Logged out")}
+              >
+                <LogoutIcon className="inline mr-2" />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
