@@ -107,7 +107,7 @@ export const authApi = rootApi.injectEndpoints({
     // RefreshToken
     refreshToken: builder.mutation({
       query: (refreshToken) => ({
-        url: "/auth/refresh",
+        url: "/auth/refreshToken",
         method: "POST",
         body: { refreshToken },
       }),

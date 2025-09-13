@@ -10,6 +10,8 @@ const submitAnswers = async (req, res) => {
   try {
     const { testId, attemptId } = req.body;
 
+    console.log(testId, attemptId);
+
     // --- Lấy thông tin test ---
     const testDetail = await testModel.findTestById(testId);
     const questionsByTest = await questionModel.findQuestionsByTest(testId);

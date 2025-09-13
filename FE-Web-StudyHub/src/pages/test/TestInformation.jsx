@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -7,6 +7,7 @@ import {
   Box,
   Grid,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
@@ -14,39 +15,54 @@ import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { InfoOutline } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { createAttempt, generateTestQuestions } from "../../services/testApi";
+import {
+  useCreateAttemptMutation,
+  useGenerateTestQuestionsMutation,
+} from "../../services/testApi";
+import { useSelector } from "react-redux";
 
 const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
   const { testInfor } = location.state || {};
 
+  const user = useSelector((state) => state.auth.user);
+
+  const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
+    useGenerateTestQuestionsMutation();
+  const [createAttempt, { isLoading: isLoadingAttempt }] =
+    useCreateAttemptMutation();
+
   const handleStartTest = async () => {
-    const userId = "68c01f071fe11e25c650cf3f";
     try {
-      setIsLoading(true);
-      const testQuestions = await generateTestQuestions();
+      const testData = {
+        testId: testInfor._id,
+        topic: testInfor.topic,
+        num_questions: testInfor.numQuestions,
+        difficulty: testInfor.difficulty,
+        question_types: testInfor.questionTypes,
+      };
+
+      const testQuestions = await generateTestQuestions(testData);
+
       const attempt = await createAttempt({
-        testId: testInfor.id,
-        userId: userId,
+        testId: testInfor._id,
+        userId: user._id,
       });
 
-      if (testQuestions) {
-        navigate(`/test/${testInfor.id}/attempt`, {
+      if (testQuestions && attempt) {
+        navigate(`/test/${testInfor._id}/attempt`, {
           state: {
             questions: testQuestions.data.data.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
-            testId: testInfor.id,
+            testId: testInfor._id,
             attemptId: attempt?.data.data._id,
           },
         });
       }
     } catch (error) {
       console.log(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -92,7 +108,7 @@ const TestInformation = () => {
 
           {/* Các thông tin khác: số câu hỏi, thời gian, số lần làm lại, loại câu hỏi */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <DescriptionOutlinedIcon />
@@ -116,7 +132,7 @@ const TestInformation = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <AccessTimeOutlinedIcon />
@@ -141,7 +157,7 @@ const TestInformation = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-green-600">
                   <ReplayOutlinedIcon />
@@ -161,11 +177,11 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor?.attemptCount || 0} / {testInfor?.retakeCount || 0}
+                  {testInfor?.attemptCount || 0} / {testInfor?.attemptMax || 0}
                 </Typography>
               </Box>
             </Grid>
-            <Grid item size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <AssignmentOutlinedIcon />
@@ -199,6 +215,7 @@ const TestInformation = () => {
               variant="contained"
               color="primary"
               size="medium"
+              disabled={isLoadingAttempt || isLoadingTestQuestion}
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
                 fontSize: 18,
@@ -207,7 +224,11 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoading ? "Loading ..." : " Start test"}
+              {isLoadingTestQuestion || isLoadingAttempt ? (
+                <CircularProgress size={24} color="white" />
+              ) : (
+                "Start test"
+              )}
             </Button>
           </Box>
         </CardContent>

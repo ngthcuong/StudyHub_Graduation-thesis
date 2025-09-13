@@ -120,6 +120,9 @@ const TestResult = () => {
   const [tab, setTab] = useState(0);
   const avgTime = Math.round(resultStats.time / resultStats.total);
 
+  const { testResult } = location.state || {};
+  console.log(testResult);
+
   return (
     <Box className="min-h-screen bg-gray-50 py-8 px-2">
       <Box className="max-w-5xl mx-auto">
