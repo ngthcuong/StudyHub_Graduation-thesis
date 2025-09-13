@@ -20,7 +20,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  blacklist: ["certificate", "snackbar", "auth"],
+  blacklist: ["certificate", "snackbar"],
 };
 
 const persistedReducer = persistReducer(

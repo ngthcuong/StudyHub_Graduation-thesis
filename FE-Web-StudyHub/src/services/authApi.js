@@ -1,5 +1,6 @@
 import axios from "axios";
 import config from "../configs/config";
+import { rootApi } from "./rootApi";
 
 const login = async ({ email, password }) => {
   try {
@@ -83,4 +84,40 @@ const changePassword = async ({ currentPassword, newPassword }) => {
   }
 };
 
+export const authApi = rootApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Đăng nhập
+    login: builder.mutation({
+      query: ({ email, password }) => ({
+        url: "/atuh/login",
+        method: "POST",
+        body: { email, password },
+      }),
+      async onQueryStarted(args, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(login(data));
+        } catch (error) {
+          console.error("Login failed: ", error);
+        }
+      },
+    }),
+
+    // RefreshToken
+    refreshToken: builder.mutation({
+      query: (refreshToken) => ({
+        url: "/auth/refresh",
+        metho: "POST",
+        body: { refreshToken },
+      }),
+    }),
+
+    // Lấy thông tin người dùng
+    getUserInfo: builder.query({
+      query: () => "/user/profile",
+    }),
+  }),
+});
+
 export default { login, register, changePassword };
+export const { useLoginMutation, useRefreshTokenMutation } = authApi;
