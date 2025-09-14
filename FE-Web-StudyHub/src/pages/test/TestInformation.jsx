@@ -44,6 +44,7 @@ const TestInformation = () => {
       };
 
       const testQuestions = await generateTestQuestions(testData);
+      console.log(testQuestions);
 
       const attempt = await createAttempt({
         testId: testInfor._id,

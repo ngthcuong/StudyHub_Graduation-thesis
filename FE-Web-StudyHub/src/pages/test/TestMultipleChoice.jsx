@@ -81,14 +81,12 @@ const TestMultipleChoice = () => {
 
   const handleSubmit = async () => {
     try {
-      const formattedAnswers =
-        answers ||
-        [{}]
-          .map((selectedOptionId, index) => ({
-            questionId: questions[index]._id,
-            selectedOptionId: selectedOptionId,
-          }))
-          .filter((answer) => answer.selectedOptionId !== null);
+      const formattedAnswers = answers
+        .map((selectedOptionId, index) => ({
+          questionId: questions[index]._id,
+          selectedOptionId: selectedOptionId,
+        }))
+        .filter((answer) => answer.selectedOptionId !== null);
 
       console.log(formattedAnswers);
       const res = await submitTest({
