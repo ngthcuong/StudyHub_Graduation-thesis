@@ -20,6 +20,7 @@ import { useDispatch } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import {
   useGetTestResultMutation,
+  useSaveAnswersMutation,
   useSubmitTestMutation,
 } from "../../services/testApi";
 
@@ -42,6 +43,8 @@ const TestMultipleChoice = () => {
   const [submitTest, { isLoading: isLoadingSubmit }] = useSubmitTestMutation();
   const [getTestResult, { isLoading: isLoadingGetResult }] =
     useGetTestResultMutation();
+  const [saveAnswers, { isLoading: isLoadingSaveAnswers }] =
+    useSaveAnswersMutation();
 
   // Đếm ngược thời gian
   useEffect(() => {
@@ -81,25 +84,35 @@ const TestMultipleChoice = () => {
 
   const handleSubmit = async () => {
     try {
-      const formattedAnswers = answers
-        .map((selectedOptionId, index) => ({
-          questionId: questions[index]._id,
-          selectedOptionId: selectedOptionId,
-        }))
-        .filter((answer) => answer.selectedOptionId !== null);
+      const formattedAnswers = answers.map((selectedOptionId, index) => ({
+        attemptId: attemptId,
+        questionId: questions[index]._id,
+        selectedOptionId: selectedOptionId,
+      }));
 
-      console.log(formattedAnswers);
-      const res = await submitTest({
+      const testSubmit = await submitTest({
         answers: formattedAnswers,
         attemptId,
       });
-      console.log("submit :", res);
-      const testResult = await getTestResult({ testId, attemptId });
-      console.log("test result :", testResult);
-      if (testResult) {
-        navigate(`/test/${testId}/result`, {
-          state: { testResult: testResult.data },
-        });
+
+      const res = await saveAnswers(formattedAnswers);
+      console.log("res: ", res);
+
+      if (testSubmit) {
+        const testResult = await getTestResult({ testId, attemptId });
+
+        if (testResult.data) {
+          navigate(`/test/${testId}/result`, {
+            state: { resultData: testResult.data },
+          });
+        }
+      } else {
+        dispatch(
+          openSnackbar({
+            severity: "error",
+            message: "Submit failed! Please try again!",
+          })
+        );
       }
     } catch (error) {
       console.log(error);
@@ -132,7 +145,7 @@ const TestMultipleChoice = () => {
         </Box>
         <Grid container spacing={3}>
           {/* Câu hỏi và đáp án */}
-          <Grid item size={{ xs: 12, md: 8.5 }}>
+          <Grid size={{ xs: 12, md: 8.5 }}>
             <Card className="rounded-xl shadow">
               <CardContent>
                 {/* Câu hỏi */}
@@ -217,9 +230,15 @@ const TestMultipleChoice = () => {
                       textTransform: "none",
                     }}
                     onClick={() => handleSubmit()}
-                    disabled={isLoadingGetResult || isLoadingSubmit}
+                    disabled={
+                      isLoadingGetResult ||
+                      isLoadingSubmit ||
+                      isLoadingSaveAnswers
+                    }
                   >
-                    {isLoadingSubmit || isLoadingGetResult ? (
+                    {isLoadingSubmit ||
+                    isLoadingGetResult ||
+                    isLoadingSaveAnswers ? (
                       <CircularProgress size={18} color="white" />
                     ) : (
                       " Submit Exercise"
@@ -230,7 +249,7 @@ const TestMultipleChoice = () => {
             </Card>
           </Grid>
           {/* Ma trận câu hỏi và tiến độ */}
-          <Grid item size={{ xs: 12, md: 3.5 }}>
+          <Grid size={{ xs: 12, md: 3.5 }}>
             <Card className="rounded-xl shadow mb-4">
               <CardContent>
                 {/* Tiêu đề và Số lượng câu hỏi đã hoàn thành */}

@@ -120,8 +120,18 @@ const TestResult = () => {
   const [tab, setTab] = useState(0);
   const avgTime = Math.round(resultStats.time / resultStats.total);
 
-  const { testResult } = location.state || {};
-  console.log(testResult);
+  const { resultData } = location.state || {};
+  console.log("Location state:", location.state, resultData);
+
+  // const {
+  //   total_score,
+  //   total_questions,
+  //   per_question,
+  //   skill_summary,
+  //   weak_topics,
+  //   recommendations,
+  //   personalized_plan,
+  // } = resultData.data;
 
   return (
     <Box className="min-h-screen bg-gray-50 py-8 px-2">
@@ -255,6 +265,10 @@ const TestResult = () => {
                           <span className="text-green-700 font-semibold">
                             {item.answer}
                           </span>
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          EXPLAIN:{" "}
+                          <span className="font-medium">{item.explain}</span>
                         </Typography>
                       </CardContent>
                     </Card>

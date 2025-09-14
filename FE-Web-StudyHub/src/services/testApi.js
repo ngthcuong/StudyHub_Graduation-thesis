@@ -48,6 +48,15 @@ export const testApi = rootApi.injectEndpoints({
       }),
     }),
 
+    // Lưu câu trả lời
+    saveAnswers: builder.mutation({
+      query: (answers) => ({
+        url: "/answers/submit-many",
+        method: "POST",
+        body: { answers },
+      }),
+    }),
+
     // Submit test
     submitTest: builder.mutation({
       query: ({ answers, attemptId }) => ({
@@ -75,6 +84,7 @@ export const {
   useGetTestByTestIdQuery,
   useGenerateTestQuestionsMutation,
   useCreateAttemptMutation,
+  useSaveAnswersMutation,
   useSubmitTestMutation,
   useGetTestResultMutation,
 } = testApi;

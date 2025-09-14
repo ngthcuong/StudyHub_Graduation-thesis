@@ -28,18 +28,20 @@ const submitAnswers = async (req, res) => {
 
     // --- Lấy câu trả lời của học sinh ---
     const userAnswers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    console.log("userAnswers: ", userAnswers);
+
     const questionMap = new Map(
       questionsByTest.map((q, index) => [q._id.toString(), index + 1]) // map questionId -> số thứ tự
     );
 
     const studentAnswers = {};
     userAnswers.forEach((ans) => {
-      const questionNumber = questionMap.get(ans.questionId.toString());
+      const questionNumber = questionMap.get(ans.questionId?.toString());
       if (questionNumber !== undefined) {
         const selectedOption = questionsByTest
-          .find((q) => q._id.toString() === ans.questionId.toString())
+          .find((q) => q._id.toString() === ans.questionId?.toString())
           .options.find(
-            (opt) => opt._id.toString() === ans.selectedOptionId.toString()
+            (opt) => opt._id.toString() === ans.selectedOptionId?.toString()
           );
         if (selectedOption)
           studentAnswers[questionNumber] = selectedOption.optionText;
