@@ -15,7 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import {
@@ -28,8 +28,9 @@ const TestMultipleChoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { id: testId } = useParams();
 
-  const { questions, testTitle, testDuration, testId, attemptId } =
+  const { questions, testTitle, testDuration, attemptId } =
     location.state || [];
   const numQuestions = questions?.length;
 
@@ -95,15 +96,14 @@ const TestMultipleChoice = () => {
         attemptId,
       });
 
-      const res = await saveAnswers(formattedAnswers);
-      console.log("res: ", res);
+      await saveAnswers(formattedAnswers);
 
       if (testSubmit) {
         const testResult = await getTestResult({ testId, attemptId });
 
         if (testResult.data) {
           navigate(`/test/${testId}/result`, {
-            state: { resultData: testResult.data },
+            state: { resultData: testResult.data.data },
           });
         }
       } else {

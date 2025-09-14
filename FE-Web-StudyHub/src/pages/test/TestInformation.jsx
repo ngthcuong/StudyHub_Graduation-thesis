@@ -18,6 +18,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   useCreateAttemptMutation,
   useGenerateTestQuestionsMutation,
+  // useGetTestByTestIdQuery,
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
 
@@ -25,9 +26,12 @@ const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { testInfor } = location.state || {};
+  // const { id: testId } = useParams();
 
   const user = useSelector((state) => state.auth.user);
 
+  // const [getTestById, { isLoading: isLoadingGetTest }] =
+  //   useGetTestByTestIdQuery();
   const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
     useGenerateTestQuestionsMutation();
   const [createAttempt, { isLoading: isLoadingAttempt }] =
@@ -44,6 +48,7 @@ const TestInformation = () => {
       };
 
       const testQuestions = await generateTestQuestions(testData);
+      // const testQuestions = await getTestById(testId);
 
       const attempt = await createAttempt({
         testId: testInfor._id,
