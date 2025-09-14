@@ -43,8 +43,6 @@ const TestMultipleChoice = () => {
   const [getTestResult, { isLoading: isLoadingGetResult }] =
     useGetTestResultMutation();
 
-  console.log("answers: ", answers);
-
   // Đếm ngược thời gian
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -83,12 +81,16 @@ const TestMultipleChoice = () => {
 
   const handleSubmit = async () => {
     try {
-      const formattedAnswers = answers
-        .map((selectedOptionId, index) => ({
-          questionId: questions[index]._id,
-          selectedOptionId: selectedOptionId,
-        }))
-        .filter((answer) => answer.selectedOptionId !== null);
+      const formattedAnswers =
+        answers ||
+        [{}]
+          .map((selectedOptionId, index) => ({
+            questionId: questions[index]._id,
+            selectedOptionId: selectedOptionId,
+          }))
+          .filter((answer) => answer.selectedOptionId !== null);
+
+      console.log(formattedAnswers);
       const res = await submitTest({
         answers: formattedAnswers,
         attemptId,
