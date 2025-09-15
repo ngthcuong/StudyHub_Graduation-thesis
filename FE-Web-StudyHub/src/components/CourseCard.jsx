@@ -55,7 +55,7 @@ const CourseCard = ({ course }) => {
             variant="body1"
             className="text-gray-600 line-through text-sm"
           >
-            {course.originalPrice}
+            ${course.originalPrice}
           </Typography>
           <Typography variant="h6" className="!font-bold text-teal-600">
             ${course.cost}

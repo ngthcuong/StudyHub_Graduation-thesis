@@ -10,6 +10,8 @@ import Courses from "../pages/home/Courses";
 import Exercises from "../pages/home/Exercises";
 import Achievements from "../pages/home/Achievements";
 import Settings from "../pages/home/Settings";
+import CourseList from "../pages/course/CourseList";
+import TestList from "../pages/test/TestList";
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -19,9 +21,9 @@ export default function Sidebar() {
       case "dashboard":
         return <Dashboard />;
       case "courses":
-        return <Courses />;
+        return <CourseList />;
       case "exercises":
-        return <Exercises />;
+        return <TestList />;
       case "achievements":
         return <Achievements />;
       case "settings":

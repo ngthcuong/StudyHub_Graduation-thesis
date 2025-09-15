@@ -5,13 +5,14 @@ import StreamIcon from "@mui/icons-material/Stream";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import HeaderHome from "./HeaderHome";
 import DailyLessonsChart from "../../components/DailyLessonsChart";
+import Header from "../../components/Header";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("lessons");
   return (
     <div className="flex-1">
       {/* Welcome Card */}
-      <HeaderHome />
+      <Header />
 
       {/* Overview Cards */}
       <div className="bg-white p-6 rounded-xl shadow-md  mx-auto">
