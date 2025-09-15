@@ -31,6 +31,16 @@ const findCertificateByCertHash = async (certHash) => {
   }
 };
 
+const findCertificateByCertCode = async (certCode) => {
+  try {
+    const certificate = await Certificate.findOne({ certCode });
+    return certificate;
+  } catch (error) {
+    console.error("Error finding certificate by cert code:", error);
+    throw new Error("Failed to find certificate by cert code");
+  }
+};
+
 const getCertificateByLearnerId = async (learnerId) => {
   try {
     const certificates = await Certificate.find({ learnerId });
@@ -45,5 +55,6 @@ module.exports = {
   createCertificate,
   findCertificateById,
   findCertificateByCertHash,
+  findCertificateByCertCode,
   getCertificateByLearnerId,
 };

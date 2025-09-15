@@ -5,6 +5,7 @@ const {
   issueCertificate,
   searchCertificates,
   getStudentCertificatesByStudent,
+  getCertificateByCode,
 } = require("../controllers/certificateController");
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.post("/", createCertificate);
 router.get("/search", searchCertificates);
 router.post("/issue", issueCertificate);
 router.get("/student/:address", getStudentCertificatesByStudent);
-router.get("/:hash", getCertificateByHash);
+router.get("/hash/:hash", getCertificateByHash);
+router.get("/code/:code", getCertificateByCode);
 
 module.exports = router;

@@ -13,24 +13,27 @@ import storage from "redux-persist/lib/storage"; // localStorage
 import { setupListeners } from "@reduxjs/toolkit/query";
 
 import certificateReducer from "./slices/certificate";
+import snackbarReducer from "./slices/snackbar";
+import authReducer from "./slices/auth";
 
-// persist config cho slice certificate
 const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  blacklist: ["certificate"],
+  blacklist: ["certificate", "snackbar", "auth"],
 };
 
-const persistedCertificateReducer = persistReducer(
+const persistedReducer = persistReducer(
   persistConfig,
-  combineReducers({ certificate: certificateReducer })
+  combineReducers({
+    certificate: certificateReducer,
+    snackbar: snackbarReducer,
+    auth: authReducer,
+  })
 );
 
 export const store = configureStore({
-  reducer: {
-    certificate: persistedCertificateReducer,
-  },
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

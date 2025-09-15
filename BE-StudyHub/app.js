@@ -10,6 +10,15 @@ const courseRoutes = require("./src/routes/courseRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const certificateRoutes = require("./src/routes/certificateRoutes");
 
+const testRoutes = require("./src/routes/testRoutes");
+const questionRoutes = require("./src/routes/questionRoutes");
+const attemptRoutes = require("./src/routes/attemptRoutes");
+const answerOptionRoutes = require("./src/routes/answerOptionRoutes");
+const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
+
+const testResultRoutes = require("./src/routes/testResultRoutes");
+const generateTestRoutes = require("./src/routes/generateTestRoutes");
+
 require("dotenv").config();
 
 // Create Expresss App and HTTP Server
@@ -32,6 +41,15 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/certs", certificateRoutes);
+
+app.use("/api/v1/tests", testRoutes);
+app.use("/api/v1/questions", questionRoutes);
+app.use("/api/v1/attempts", attemptRoutes);
+app.use("/api/v1/options", answerOptionRoutes);
+app.use("/api/v1/answers", userAnswerRoutes);
+
+app.use("/api/v1/test-result", testResultRoutes);
+app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chung
 
 // Connect to MongoDB and start server
 const startServer = async () => {
