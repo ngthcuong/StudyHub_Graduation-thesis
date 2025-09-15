@@ -11,40 +11,14 @@ import {
   InputAdornment,
   List,
   ListItem,
+  CircularProgress,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-
-const mockData = [
-  {
-    id: "68bed08f2623c6062be404dc",
-    title: "TOEIC Grammar Practice",
-    description:
-      "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
-    topic:
-      "Present Simple, Present Continuous, Present Perfect, and Past Simple",
-    skill: "grammar",
-    level: "B1",
-    durationMin: 30,
-    createdBy: {
-      $oid: "68a2e78da4178e9ee70a34a1",
-    },
-    numQuestions: 10,
-    difficulty: "medium",
-    type: "test",
-    questionTypes: ["multiple_choice"],
-    createdAt: {
-      $date: "2025-09-08T12:48:15.612Z",
-    },
-    updatedAt: {
-      $date: "2025-09-08T12:48:15.612Z",
-    },
-    __v: 0,
-  },
-];
+import { useGetAllTestQuery } from "../../services/testApi";
 
 const typeOptions = ["All Types", "Test", "Assignment"];
 const statusOptions = ["All Status", "Completed", "Not Completed"];
@@ -52,15 +26,19 @@ const difficultyOptions = ["All Levels", "Easy", "Medium", "Hard"];
 
 const TestList = () => {
   const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [type, setType] = useState("All Types");
   const [status, setStatus] = useState("All Status");
   const [difficulty, setDifficulty] = useState("All Levels");
   const [showFilter, setShowFilter] = useState(false);
 
+  const { data: tests, isLoading, error } = useGetAllTestQuery();
+
   // Lọc dữ liệu
   const filtered = useMemo(() => {
-    return mockData.filter((item) => {
+    if (!tests?.data) return [];
+    return tests?.data.filter((item) => {
       const matchTitle = item.title
         .toLowerCase()
         .includes(search.toLowerCase());
@@ -73,7 +51,7 @@ const TestList = () => {
         difficulty === "All Levels" || item.difficulty === difficulty;
       return matchTitle && matchType && matchStatus && matchDifficulty;
     });
-  }, [search, type, status, difficulty]);
+  }, [search, type, status, difficulty, tests?.data]);
 
   const handleClearAll = () => {
     setSearch("");
@@ -81,6 +59,15 @@ const TestList = () => {
     setStatus("All Status");
     setDifficulty("All Levels");
   };
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  // TODO: Cập nhật UI hiển thị thông báo lỗi
+  if (error) {
+    return <div>Thong bao loi</div>;
+  }
 
   return (
     <Box className="min-h-screen bg-gray-50 py-8 px-2">
@@ -145,7 +132,7 @@ const TestList = () => {
               color="#64748b"
               sx={{ minWidth: 100, textAlign: "center" }}
             >
-              {filtered.length} of {mockData.length} items
+              {filtered.length} of {tests?.total || 0} items
             </Typography>
           </Stack>
 
@@ -211,20 +198,6 @@ const TestList = () => {
                   ))}
                 </Select>
               </Box>
-              {/* Button */}
-              {/* <Button
-                className="h-full"
-                variant="contained"
-                color="primary"
-                sx={{
-                  minWidth: 140,
-                  textTransform: "none",
-                  fontWeight: 600,
-                }}
-                onClick={() => setShowFilter(false)}
-              >
-                Apply Filters
-              </Button> */}
             </Stack>
           )}
         </Box>
@@ -233,15 +206,15 @@ const TestList = () => {
         <List className="rounded-xl">
           {filtered.map((item) => (
             <ListItem
-              key={item.id}
+              key={item._id}
               className="flex items-center justify-between !py-4  border rounded-xl mb-5 !shadow-md !bg-white cursor-pointer"
-              onClick={() =>
-                navigate(`/test/${item.id}`, {
+              onClick={() => {
+                navigate(`/test/${item._id}`, {
                   state: {
                     testInfor: item,
                   },
-                })
-              }
+                });
+              }}
             >
               <Stack
                 direction="row"

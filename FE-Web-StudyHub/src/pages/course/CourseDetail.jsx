@@ -30,6 +30,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
+import CourseCard from "../../components/CourseCard";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -98,48 +99,68 @@ const testimonials = [
 
 const courses = [
   {
-    title: "AWS Certified Solutions Architect",
-    category: "TOEIC",
-    duration: "3 Month",
+    id: "674a1b2c3d4e5f6789012345",
+    title: "IELTS Foundation Course",
+    thumbnailUrl:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=250&fit=crop",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-    instructor: "Lina",
-    originalPrice: "$100",
-    discountedPrice: "$80",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
+      "Master IELTS fundamentals with comprehensive reading, writing, listening, and speaking practice. Perfect for beginners aiming for band 6.0+",
+    cost: 299,
+    type: "IELTS",
+    lessonNumber: 24,
+    skills: ["Reading", "Writing", "Listening", "Speaking"],
+    score: 6.5,
+    durationHours: 40,
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date("2024-03-10"),
   },
   {
-    title: "AWS Certified Solutions Architect",
-    category: "TOEIC",
-    duration: "3 Month",
+    id: "674a1b2c3d4e5f6789012346",
+    title: "TOEIC Master Program",
+    thumbnailUrl:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-    instructor: "Lina",
-    originalPrice: "$100",
-    discountedPrice: "$80",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
+      "Comprehensive TOEIC preparation focusing on business English skills. Target score: 750-900 points with proven strategies",
+    cost: 399,
+    type: "TOEIC",
+    lessonNumber: 32,
+    skills: ["Business English", "Listening", "Reading", "Grammar"],
+    score: 750,
+    durationHours: 60,
+    createdAt: new Date("2024-02-01"),
+    updatedAt: new Date("2024-03-15"),
   },
   {
-    title: "AWS Certified Solutions Architect",
-    category: "TOEIC",
-    duration: "3 Month",
+    id: "674a1b2c3d4e5f6789012347",
+    title: "IELTS Academic Writing",
+    thumbnailUrl:
+      "https://images.unsplash.com/photo-1528716321680-815a8cdb8cbe?w=400&h=250&fit=crop",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-    instructor: "Lina",
-    originalPrice: "$100",
-    discountedPrice: "$80",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
+      "Intensive IELTS Academic Writing course focusing on Task 1 and Task 2. Achieve band 7.0+ with expert guidance",
+    cost: 0,
+    type: "IELTS",
+    lessonNumber: 15,
+    skills: ["Academic Writing", "Task 1", "Task 2", "Grammar"],
+    score: 7.0,
+    durationHours: 25,
+    createdAt: new Date("2024-01-20"),
+    updatedAt: new Date("2024-02-28"),
   },
   {
-    title: "AWS Certified Solutions Architect",
-    category: "TOEIC",
-    duration: "3 Month",
+    id: "674a1b2c3d4e5f6789012348",
+    title: "TOEIC Listening Intensive",
+    thumbnailUrl:
+      "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=400&h=250&fit=crop",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
-    instructor: "Lina",
-    originalPrice: "$100",
-    discountedPrice: "$80",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
+      "Boost your TOEIC Listening score with advanced techniques and practice tests. Target 400+ points in Listening section",
+    cost: 199,
+    type: "TOEIC",
+    lessonNumber: 20,
+    skills: ["Listening", "Audio Comprehension", "Note Taking", "Strategy"],
+    score: 650,
+    durationHours: 30,
+    createdAt: new Date("2024-03-01"),
+    updatedAt: new Date("2024-03-20"),
   },
 ];
 const CourseDetail = () => {
@@ -400,85 +421,8 @@ const CourseDetail = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
-            {courses.map((course, index) => (
-              <Card
-                key={index}
-                className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
-              >
-                {/* Course Image */}
-                <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                  <div className="">
-                    <img
-                      src={course.image}
-                      alt={course.title}
-                      className="w-10 h-10 rounded-full"
-                    />
-                  </div>
-                </div>
-
-                <CardContent className="p-6">
-                  {/* Category and Duration */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-                      <Typography
-                        variant="body2"
-                        className="text-gray-600 font-medium"
-                      >
-                        {course.category}
-                      </Typography>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <AccessTime />
-                      <Typography variant="body2" className="text-gray-600">
-                        {course.duration}
-                      </Typography>
-                    </div>
-                  </div>
-
-                  {/* Course Title */}
-                  <Typography
-                    variant="subtitle1"
-                    className="!font-black text-black !mb-1 "
-                  >
-                    {course.title}
-                  </Typography>
-
-                  {/* Course Description */}
-                  <Typography variant="body2" className="text-gray-600 ">
-                    {course.description}
-                  </Typography>
-
-                  {/* Instructor and Pricing */}
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-6 h-6 bg-gray-300 text-gray-600 text-xs">
-                        L
-                      </Avatar>
-                      <Typography
-                        variant="body2"
-                        className="text-gray-700 font-medium"
-                      >
-                        {course.instructor}
-                      </Typography>
-                    </div>
-                    <div className="flex items-center gap-3 text-right">
-                      <Typography
-                        variant="body1"
-                        className="text-gray-600 line-through text-sm"
-                      >
-                        {course.originalPrice}
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        className="!font-bold text-teal-600"
-                      >
-                        {course.discountedPrice}
-                      </Typography>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {courses.map((course) => (
+              <CourseCard course={course} />
             ))}
           </div>
         </Container>
