@@ -49,21 +49,35 @@ const TestInformation = () => {
         question_types: testInfor.questionTypes,
       };
 
-      console.log(testQuestions);
-
-      if (!testQuestions) {
-        testQuestions = await generateTestQuestions(testData);
-      }
-
       const attempt = await createAttempt({
         testId: testInfor._id,
         userId: user._id,
       });
 
-      if (testQuestions && attempt) {
+      console.log("testQuestion: ", testQuestions);
+
+      if (!attempt) {
+        return;
+      }
+
+      if (testQuestions.data.length === 0) {
+        console.log("tao test");
+        testQuestions = await generateTestQuestions(testData);
+        console.log("test duoc ta0:", testQuestions);
+
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data?.data?.data || testQuestions?.data,
+            questions: testQuestions?.data?.data?.data,
+            testTitle: testInfor.title,
+            testDuration: testInfor.durationMin,
+            testId: testInfor._id,
+            attemptId: attempt?.data.data._id,
+          },
+        });
+      } else {
+        navigate(`/test/${testInfor._id}/attempt`, {
+          state: {
+            questions: testQuestions?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
@@ -71,6 +85,18 @@ const TestInformation = () => {
           },
         });
       }
+
+      // if (testQuestions && attempt) {
+      //   navigate(`/test/${testInfor._id}/attempt`, {
+      //     state: {
+      //       questions: testQuestions?.data?.data?.data || testQuestions?.data,
+      //       testTitle: testInfor.title,
+      //       testDuration: testInfor.durationMin,
+      //       testId: testInfor._id,
+      //       attemptId: attempt?.data.data._id,
+      //     },
+      //   });
+      // }
     } catch (error) {
       console.log(error);
     }
