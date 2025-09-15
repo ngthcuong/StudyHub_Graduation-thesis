@@ -21,7 +21,16 @@ export const testApi = rootApi.injectEndpoints({
 
     // Lấy test theo ID
     getTestByTestId: builder.query({
-      query: (testId) => `/tests/${testId}`,
+      query: (testId) => ({
+        url: `/tests/${testId}`,
+      }),
+    }),
+
+    // Lấy questions theo testId
+    getQuestionsByTestId: builder.query({
+      query: (testId) => ({
+        url: `/questions/test/${testId}`,
+      }),
     }),
 
     // Tạo câu hỏi test
@@ -82,6 +91,7 @@ export const {
   useCreateTestMutation,
   useGetAllTestQuery,
   useGetTestByTestIdQuery,
+  useGetQuestionsByTestIdQuery,
   useGenerateTestQuestionsMutation,
   useCreateAttemptMutation,
   useSaveAnswersMutation,

@@ -14,11 +14,11 @@ import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { InfoOutline } from "@mui/icons-material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useCreateAttemptMutation,
   useGenerateTestQuestionsMutation,
-  // useGetTestByTestIdQuery,
+  useGetQuestionsByTestIdQuery,
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
 
@@ -26,14 +26,16 @@ const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { testInfor } = location.state || {};
-  // const { id: testId } = useParams();
+  const { id: testId } = useParams();
 
   const user = useSelector((state) => state.auth.user);
 
-  // const [getTestById, { isLoading: isLoadingGetTest }] =
-  //   useGetTestByTestIdQuery();
+  let { data: testQuestions, isLoading: isLoadingGetTest } =
+    useGetQuestionsByTestIdQuery(testId);
+
   const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
     useGenerateTestQuestionsMutation();
+
   const [createAttempt, { isLoading: isLoadingAttempt }] =
     useCreateAttemptMutation();
 
@@ -47,8 +49,11 @@ const TestInformation = () => {
         question_types: testInfor.questionTypes,
       };
 
-      const testQuestions = await generateTestQuestions(testData);
-      // const testQuestions = await getTestById(testId);
+      console.log(testQuestions);
+
+      if (!testQuestions) {
+        testQuestions = await generateTestQuestions(testData);
+      }
 
       const attempt = await createAttempt({
         testId: testInfor._id,
@@ -58,7 +63,7 @@ const TestInformation = () => {
       if (testQuestions && attempt) {
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions.data.data.data,
+            questions: testQuestions?.data?.data?.data || testQuestions?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
@@ -220,7 +225,9 @@ const TestInformation = () => {
               variant="contained"
               color="primary"
               size="medium"
-              disabled={isLoadingAttempt || isLoadingTestQuestion}
+              disabled={
+                isLoadingAttempt || isLoadingTestQuestion || isLoadingGetTest
+              }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
                 fontSize: 18,
@@ -229,7 +236,7 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoadingTestQuestion || isLoadingAttempt ? (
+              {isLoadingTestQuestion || isLoadingAttempt || isLoadingGetTest ? (
                 <CircularProgress size={24} color="white" />
               ) : (
                 "Start test"
