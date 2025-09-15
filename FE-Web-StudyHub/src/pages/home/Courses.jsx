@@ -1,5 +1,6 @@
 import HeaderHome from "./HeaderHome";
 import { LinearProgress } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function Courses() {
   const lessons = [
@@ -47,6 +48,8 @@ export default function Courses() {
     },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <>
       <HeaderHome />
@@ -55,6 +58,7 @@ export default function Courses() {
           {lessons.map((lesson) => (
             <div
               key={lesson.id}
+              onClick={() => navigate(`/course/${lesson.id}`)}
               className="bg-white rounded-xl shadow-md overflow-hidden transition-transform transform hover:-translate-y-1 cursor-pointer"
             >
               <img

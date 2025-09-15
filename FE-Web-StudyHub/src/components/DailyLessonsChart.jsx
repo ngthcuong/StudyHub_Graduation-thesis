@@ -27,7 +27,7 @@ export default function DailyLessonsChart() {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="day"
-              label={{ value: "Day", position: "insideBottom", dy: 10 }}
+              label={{ value: "", position: "insideBottom", dy: 10 }}
             />
             <YAxis allowDecimals={false} />
             <Tooltip />
