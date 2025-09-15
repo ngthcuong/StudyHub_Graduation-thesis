@@ -21,14 +21,18 @@ import {
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
 import FormField from "../../components/FormField";
-import authApi from "../../services/authApi";
-import { login } from "../../redux/slices/auth";
+import { useLoginMutation } from "../../services/authApi";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import { useDispatch, useSelector } from "react-redux";
+import SnackBar from "../../components/Snackbar";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { isOpen, message } = useSelector((state) => state.snackbar);
+
+  const [loginUser, { isLoading }] = useLoginMutation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -48,11 +52,7 @@ const LoginPage = () => {
       ),
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
       email: "",
@@ -67,31 +67,29 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("Login attempt:", data, rememberMe);
-      const response = await authApi.login({
+      const response = await loginUser({
         email: data.email,
         password: data.password,
-      });
-      console.log(response);
+      }).unwrap(); // .unwrap() để lấy data hoặc throw error
 
       if (response) {
-        dispatch(login(response.data));
+        dispatch(openSnackbar({ message: response.message }));
         navigate("/home");
+      } else {
+        dispatch(
+          openSnackbar({ severity: "error", message: response.message })
+        );
       }
     } catch (error) {
       console.error("Login error:", error);
-
-      // Show specific error message if available
-      if (error.response?.data?.error) {
-        alert(`Lỗi đăng nhập: ${error.response.data.error}`);
-      } else {
-        alert("Đã có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.");
-      }
+      dispatch(openSnackbar({ severity: "error", message: error.data?.error }));
     }
   };
 
   return (
     <Box className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-10 px-4 sm:px-6 lg:px-8">
+      <SnackBar isOpen={isOpen} message={message} />
+
       <Paper
         elevation={8}
         className="max-w-md w-full p-8 space-y-3"
@@ -168,7 +166,7 @@ const LoginPage = () => {
             fullWidth
             variant="contained"
             size="large"
-            disabled={isSubmitting}
+            disabled={isLoading}
             startIcon={<Login />}
             className="py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             sx={{
@@ -178,7 +176,7 @@ const LoginPage = () => {
               fontWeight: 600,
             }}
           >
-            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
         </Box>
 

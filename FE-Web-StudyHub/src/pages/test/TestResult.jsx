@@ -11,104 +11,26 @@ import {
   Divider,
   Stack,
   Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  LinearProgress,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-
-// Dữ liệu mẫu
-const resultStats = {
-  score: 80,
-  correct: 8,
-  incorrect: 2,
-  total: 10,
-  time: 272, // giây
-};
-
-const correctAnswers = [
-  {
-    question: "What is the past tense of 'go'?",
-    answer: "went",
-    time: 15,
-    type: "Grammar, Past Tense",
-  },
-  {
-    question: "Choose the correct article: ___ umbrella",
-    answer: "an",
-    time: 12,
-    type: "Grammar, Articles",
-  },
-  {
-    question: "What is the opposite of 'expensive'?",
-    answer: "cheap",
-    time: 18,
-    type: "Vocabulary, Antonyms",
-  },
-  {
-    question: "Which word means 'to make something better'?",
-    answer: "improve",
-    time: 20,
-    type: "Vocabulary, Meaning",
-  },
-  {
-    question: "Complete the sentence: She ___ to school every day.",
-    answer: "goes",
-    time: 22,
-    type: "Grammar, Present Simple",
-  },
-  {
-    question: "What is the plural form of 'child'?",
-    answer: "children",
-    time: 14,
-    type: "Grammar, Plurals",
-  },
-  {
-    question: "Choose the correct preposition: I'm afraid ___ spiders.",
-    answer: "of",
-    time: 19,
-    type: "Grammar, Prepositions",
-  },
-  {
-    question: "What is the comparative form of 'good'?",
-    answer: "better",
-    time: 16,
-    type: "Grammar, Comparatives",
-  },
-];
-
-const incorrectAnswers = [
-  {
-    question: "What is the past participle of 'eat'?",
-    yourAnswer: "ate",
-    correctAnswer: "eaten",
-    time: 25,
-    type: "Grammar, Past Participle",
-  },
-  {
-    question: "Choose the correct conditional: If it rains, I ___ at home.",
-    yourAnswer: "will stayed",
-    correctAnswer: "will stay",
-    time: 30,
-    type: "Grammar, Conditionals",
-  },
-];
-
-const recommendations = [
-  {
-    title: "English Grammar Basics",
-    desc: "Master fundamental grammar rules including tenses and articles",
-    difficulty: "Beginner",
-    duration: "2 hours",
-    topics: ["Tenses", "Articles", "Prepositions"],
-  },
-  {
-    title: "Essential English Vocabulary",
-    desc: "Build your vocabulary with commonly used words and phrases",
-    difficulty: "Intermediate",
-    duration: "3 hours",
-    topics: ["Common Words", "Phrasal Verbs", "Collocations"],
-  },
-];
+import BookIcon from "@mui/icons-material/Book";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+import { useLocation } from "react-router-dom";
 
 function formatTime(s) {
   const m = Math.floor(s / 60);
@@ -117,8 +39,72 @@ function formatTime(s) {
 }
 
 const TestResult = () => {
+  const location = useLocation();
+  const { resultData } = location.state || {};
   const [tab, setTab] = useState(0);
-  const avgTime = Math.round(resultStats.time / resultStats.total);
+
+  console.log("Location state:", resultData);
+
+  // Destructuring với giá trị mặc định để tránh undefined
+  const {
+    total_score = 0,
+    total_questions = 0,
+    per_question = [],
+    skill_summary = [],
+    weak_topics = [],
+    recommendations = [],
+    personalized_plan = {
+      overall_goal: "No goal specified",
+      progress_speed: "Not determined",
+      weekly_goals: [],
+      study_methods: [],
+      notes: null,
+    },
+  } = resultData;
+
+  // Tính toán stats với safe checks
+  const correctCount = per_question.filter(
+    (q) => q && q.correct === true
+  ).length;
+  const incorrectCount = total_questions - correctCount;
+  const scorePercent =
+    total_questions > 0 ? Math.round((total_score / total_questions) * 100) : 0;
+
+  const resultStats = {
+    score: scorePercent,
+    correct: correctCount,
+    incorrect: incorrectCount,
+    total: total_questions,
+    time: 300, // GIẢ LẬP 5 PHÚT - SAU NÀY SẼ THAY LẠI
+  };
+
+  // Tạo correctAnswers từ per_question với safe checks
+  const correctAnswers = per_question
+    .filter((q) => q && q.correct === true)
+    .map((q) => ({
+      question: `Question ${q.id || "N/A"}`,
+      answer: q.expected_answer || "No answer",
+      time: 0,
+      type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
+      explain: q.explain || "No explanation",
+    }));
+
+  // Tạo incorrectAnswers từ per_question với safe checks
+  const incorrectAnswers = per_question
+    .filter((q) => q && q.correct === false)
+    .map((q) => ({
+      question: `Question ${q.id || "N/A"}`,
+      yourAnswer: q.user_answer || "No answer",
+      correctAnswer: q.expected_answer || "No answer",
+      time: 0,
+      type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
+      explain: q.explain || "No explanation",
+    }));
+
+  const avgTime =
+    resultStats.total > 0
+      ? Math.round(resultStats.time / resultStats.total)
+      : 0;
 
   return (
     <Box className="min-h-screen bg-gray-50 py-8 px-2">
@@ -129,6 +115,7 @@ const TestResult = () => {
         <Typography variant="subtitle1" color="#64748b" sx={{ mb: 4 }}>
           Here's how you performed on your recent test
         </Typography>
+
         {/* Thông tin tổng quan */}
         <Box className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card className="rounded-xl shadow border-t-4 border-green-400">
@@ -185,6 +172,72 @@ const TestResult = () => {
           </Card>
         </Box>
 
+        {/* Skill Summary */}
+        {skill_summary.length > 0 && (
+          <Card className="rounded-xl shadow mb-6">
+            <CardContent>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                Skill Performance
+              </Typography>
+              {skill_summary.map((skill, idx) => (
+                <Box key={idx} sx={{ mb: 2 }}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Typography variant="body1" fontWeight={600}>
+                      {skill.skill || "Unknown Skill"}
+                    </Typography>
+                    <Typography variant="body2" color="#64748b">
+                      {skill.correct || 0}/{skill.total || 0} (
+                      {skill.accuracy || 0}%)
+                    </Typography>
+                  </Stack>
+                  <LinearProgress
+                    variant="determinate"
+                    value={skill.accuracy || 0}
+                    sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                    color={
+                      (skill.accuracy || 0) >= 70
+                        ? "success"
+                        : (skill.accuracy || 0) >= 40
+                        ? "warning"
+                        : "error"
+                    }
+                  />
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Weak Topics */}
+        {weak_topics.length > 0 && (
+          <Card className="rounded-xl shadow mb-6">
+            <CardContent>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                Areas for Improvement
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ flexWrap: "wrap", gap: 1 }}
+              >
+                {weak_topics.map((topic, idx) => (
+                  <Chip
+                    key={idx}
+                    label={topic}
+                    color="warning"
+                    variant="outlined"
+                    size="small"
+                  />
+                ))}
+              </Stack>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Tabs */}
         <Card className="rounded-xl shadow mb-6">
           <Tabs
@@ -197,10 +250,7 @@ const TestResult = () => {
           >
             <Tab label="Correct Answers" sx={{ textTransform: "none" }} />
             <Tab label="Incorrect Answers" sx={{ textTransform: "none" }} />
-            <Tab
-              label="Learning Recommendations"
-              sx={{ textTransform: "none" }}
-            />
+            <Tab label="Learning Plan" sx={{ textTransform: "none" }} />
           </Tabs>
           <Divider />
           <CardContent>
@@ -213,52 +263,69 @@ const TestResult = () => {
                   Great job on these questions! You demonstrated strong
                   knowledge in these areas.
                 </Typography>
-                <Stack spacing={2}>
-                  {correctAnswers.map((item, idx) => (
-                    <Card
-                      key={idx}
-                      className="border-l-4 border-green-400 bg-green-50"
-                    >
-                      <CardContent>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <CheckCircleIcon color="success" fontSize="small" />
-                          <Typography
-                            variant="caption"
-                            color="#22c55e"
-                            fontWeight={700}
-                            sx={{ textTransform: "uppercase" }}
+                {correctAnswers.length > 0 ? (
+                  <Stack spacing={2}>
+                    {correctAnswers.map((item, idx) => (
+                      <Card
+                        key={idx}
+                        className="border-l-4 border-green-400 bg-green-50"
+                      >
+                        <CardContent>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={1}
                           >
-                            Correct
-                          </Typography>
-                          {item.type.split(",").map((type, index) => (
+                            <CheckCircleIcon color="success" fontSize="small" />
+                            <Typography
+                              variant="caption"
+                              color="#22c55e"
+                              fontWeight={700}
+                              sx={{ textTransform: "uppercase" }}
+                            >
+                              Correct
+                            </Typography>
                             <Chip
-                              key={index}
-                              label={type.trim()}
+                              label={item.type}
                               color="info"
                               size="small"
                               sx={{ ml: 1 }}
                             />
-                          ))}
-                        </Stack>
-                        <Typography
-                          variant="body1"
-                          fontWeight={600}
-                          sx={{ mt: 1 }}
-                        >
-                          {item.question}
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          YOUR ANSWER:{" "}
-                          <span className="text-green-700 font-semibold">
-                            {item.answer}
-                          </span>
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Stack>
+                          </Stack>
+                          <Typography
+                            variant="body1"
+                            fontWeight={600}
+                            sx={{ mt: 1 }}
+                          >
+                            {item.question}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            YOUR ANSWER:{" "}
+                            <span className="text-green-700 font-semibold">
+                              {item.answer}
+                            </span>
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            EXPLAIN:{" "}
+                            <span className="font-medium">{item.explain}</span>
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    color="#64748b"
+                    textAlign="center"
+                    sx={{ py: 4 }}
+                  >
+                    No correct answers in this test. Keep practicing!
+                  </Typography>
+                )}
               </Box>
             )}
+
             {tab === 1 && (
               <Box>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
@@ -268,138 +335,295 @@ const TestResult = () => {
                   These questions need some attention. Review the correct
                   answers to improve your understanding.
                 </Typography>
-                <Stack spacing={2}>
-                  {incorrectAnswers.map((item, idx) => (
-                    <Card
-                      key={idx}
-                      className="border-l-4 border-red-300 bg-red-50"
-                    >
-                      <CardContent>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <CancelIcon
-                            sx={{ color: "#ef4444" }}
-                            fontSize="small"
-                          />
-                          <Typography
-                            variant="caption"
-                            color="#ef4444"
-                            fontWeight={700}
+                {incorrectAnswers.length > 0 ? (
+                  <Stack spacing={2}>
+                    {incorrectAnswers.map((item, idx) => (
+                      <Card
+                        key={idx}
+                        className="border-l-4 border-red-300 bg-red-50"
+                      >
+                        <CardContent>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={1}
                           >
-                            INCORRECT
+                            <CancelIcon
+                              sx={{ color: "#ef4444" }}
+                              fontSize="small"
+                            />
+                            <Typography
+                              variant="caption"
+                              color="#ef4444"
+                              fontWeight={700}
+                            >
+                              INCORRECT
+                            </Typography>
+                            <Chip
+                              label={item.type}
+                              color="info"
+                              size="small"
+                              sx={{ ml: 1 }}
+                            />
+                          </Stack>
+                          <Typography
+                            variant="body1"
+                            fontWeight={600}
+                            sx={{ mt: 1 }}
+                          >
+                            {item.question}
                           </Typography>
-                          <Chip
-                            label={item.type}
-                            color="info"
-                            size="small"
-                            sx={{ ml: 1 }}
-                          />
-                        </Stack>
-                        <Typography
-                          variant="body1"
-                          fontWeight={600}
-                          sx={{ mt: 1 }}
-                        >
-                          {item.question}
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          YOUR ANSWER:{" "}
-                          <span className="text-red-700 font-semibold">
-                            {item.yourAnswer}
-                          </span>
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          CORRECT ANSWER:{" "}
-                          <span className="text-green-700 font-semibold">
-                            {item.correctAnswer}
-                          </span>
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Stack>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            YOUR ANSWER:{" "}
+                            <span className="text-red-700 font-semibold">
+                              {item.yourAnswer}
+                            </span>
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            CORRECT ANSWER:{" "}
+                            <span className="text-green-700 font-semibold">
+                              {item.correctAnswer}
+                            </span>
+                          </Typography>
+                          <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            EXPLAIN:{" "}
+                            <span className="font-medium">{item.explain}</span>
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    color="#64748b"
+                    textAlign="center"
+                    sx={{ py: 4 }}
+                  >
+                    All questions were answered correctly!
+                  </Typography>
+                )}
               </Box>
             )}
+
             {tab === 2 && (
               <Box>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-                  Recommended Learning Content
+                  Personalized Learning Plan
                 </Typography>
-                <Typography variant="body2" color="#64748b" sx={{ mb: 3 }}>
-                  Based on your test results, we recommend focusing on these
-                  areas to improve your knowledge:
-                </Typography>
-                <Grid container spacing={2}>
-                  {recommendations.map((rec, idx) => (
-                    <Grid item xs={12} md={6} key={idx}>
-                      <Card className="bg-white border shadow-sm">
-                        <CardContent>
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight={700}
-                            sx={{ mb: 1 }}
-                          >
-                            {rec.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="#64748b"
-                            sx={{ mb: 1 }}
-                          >
-                            {rec.desc}
-                          </Typography>
-                          <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                            <Chip
-                              label={rec.difficulty}
-                              color={
-                                rec.difficulty === "Beginner"
-                                  ? "primary"
-                                  : "warning"
-                              }
-                              size="small"
-                            />
-                            <Chip
-                              label={`Duration: ${rec.duration}`}
-                              color="default"
-                              size="small"
-                            />
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            sx={{ mb: 2, flexWrap: "wrap" }}
-                          >
-                            {rec.topics.map((topic, i) => (
+
+                {/* Overall Goal */}
+                <Card className="mb-4 bg-blue-50 border border-blue-200">
+                  <CardContent>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <TrendingUpIcon color="primary" />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700}>
+                          Overall Goal
+                        </Typography>
+                        <Typography variant="body2" color="#64748b">
+                          {personalized_plan.overall_goal}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
+
+                {/* Progress Speed */}
+                <Card className="mb-4 bg-green-50 border border-green-200">
+                  <CardContent>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <ScheduleIcon color="success" />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700}>
+                          Progress Speed
+                        </Typography>
+                        <Typography variant="body2" color="#64748b">
+                          {personalized_plan.progress_speed}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
+
+                {/* General Recommendations */}
+                {recommendations.length > 0 && (
+                  <Card className="mb-4">
+                    <CardContent>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        sx={{ mb: 2 }}
+                      >
+                        General Recommendations
+                      </Typography>
+                      <List>
+                        {recommendations.map((rec, idx) => (
+                          <ListItem key={idx}>
+                            <ListItemIcon>
+                              <BookIcon color="primary" />
+                            </ListItemIcon>
+                            <ListItemText primary={rec} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Weekly Study Plan */}
+                {personalized_plan.weekly_goals &&
+                  personalized_plan.weekly_goals.length > 0 && (
+                    <>
+                      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                        Weekly Study Plan (
+                        {personalized_plan.weekly_goals.length} weeks)
+                      </Typography>
+
+                      {personalized_plan.weekly_goals.map((week, idx) => (
+                        <Accordion key={idx} sx={{ mb: 2 }}>
+                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={2}
+                            >
                               <Chip
-                                key={i}
-                                label={topic}
-                                variant="outlined"
-                                color="info"
+                                label={`Week ${week.week || idx + 1}`}
+                                color="primary"
                                 size="small"
                               />
-                            ))}
-                          </Stack>
+                              <Typography variant="subtitle1" fontWeight={600}>
+                                {week.topic || "No topic specified"}
+                              </Typography>
+                              <Chip
+                                label={`${week.hours || 0}h`}
+                                color="secondary"
+                                size="small"
+                              />
+                            </Stack>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            {/* Activities */}
+                            {week.activities && week.activities.length > 0 && (
+                              <Box sx={{ mb: 3 }}>
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={600}
+                                  sx={{ mb: 1 }}
+                                >
+                                  Activities:
+                                </Typography>
+                                <List dense>
+                                  {week.activities.map((activity, actIdx) => (
+                                    <ListItem key={actIdx}>
+                                      <ListItemIcon>
+                                        <AssignmentIcon
+                                          fontSize="small"
+                                          color="action"
+                                        />
+                                      </ListItemIcon>
+                                      <ListItemText primary={activity} />
+                                    </ListItem>
+                                  ))}
+                                </List>
+                              </Box>
+                            )}
 
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            sx={{
-                              textTransform: "none",
-                            }}
-                          >
-                            Start Learning
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
+                            {/* Materials */}
+                            {week.materials && week.materials.length > 0 && (
+                              <Box>
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={600}
+                                  sx={{ mb: 1 }}
+                                >
+                                  Recommended Materials:
+                                </Typography>
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  sx={{ flexWrap: "wrap", gap: 1 }}
+                                >
+                                  {week.materials.map((material, matIdx) => (
+                                    <Chip
+                                      key={matIdx}
+                                      label={material}
+                                      variant="outlined"
+                                      size="small"
+                                      icon={<VideoLibraryIcon />}
+                                    />
+                                  ))}
+                                </Stack>
+                              </Box>
+                            )}
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                    </>
+                  )}
+
+                {/* Study Methods */}
+                {personalized_plan.study_methods &&
+                  personalized_plan.study_methods.length > 0 && (
+                    <Card className="mt-4">
+                      <CardContent>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight={700}
+                          sx={{ mb: 2 }}
+                        >
+                          Recommended Study Methods
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {personalized_plan.study_methods.map(
+                            (method, idx) => (
+                              <Grid item xs={12} sm={6} key={idx}>
+                                <Card variant="outlined" className="h-full">
+                                  <CardContent>
+                                    <Stack
+                                      direction="row"
+                                      alignItems="center"
+                                      spacing={1}
+                                    >
+                                      <PlayCircleOutlineIcon color="primary" />
+                                      <Typography variant="body2">
+                                        {method}
+                                      </Typography>
+                                    </Stack>
+                                  </CardContent>
+                                </Card>
+                              </Grid>
+                            )
+                          )}
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                {/* Notes */}
+                {personalized_plan.notes && (
+                  <Card className="mt-4 bg-yellow-50 border border-yellow-200">
+                    <CardContent>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        sx={{ mb: 1 }}
+                      >
+                        Important Notes
+                      </Typography>
+                      <Typography variant="body2" color="#64748b">
+                        {personalized_plan.notes}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                )}
               </Box>
             )}
           </CardContent>
         </Card>
 
-        {/* Nút điều hướng */}
+        {/* Action Buttons */}
         <Box className="flex justify-center gap-4 mt-6">
           <Button
             variant="contained"
@@ -420,7 +644,7 @@ const TestResult = () => {
             color="success"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
           >
-            Continue Learning
+            Start Learning Plan
           </Button>
         </Box>
       </Box>

@@ -15,27 +15,37 @@ import {
   CircularProgress,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
-import { getTestResult, submitTest } from "../../services/testApi";
+import {
+  useGetTestResultMutation,
+  useSaveAnswersMutation,
+  useSubmitTestMutation,
+} from "../../services/testApi";
 
 const TestMultipleChoice = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { id: testId } = useParams();
 
-  const { questions, testTitle, testDuration, testId, attemptId } =
+  const { questions, testTitle, testDuration, attemptId } =
     location.state || [];
-  const totalQuestions = questions.length;
+  const numQuestions = questions?.length;
 
-  const [isLoading, setIsLoading] = useState(false);
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState(Array(totalQuestions).fill(null));
+  const [answers, setAnswers] = useState(Array(numQuestions).fill(null));
   const [timeLeft, setTimeLeft] = useState(testDuration);
 
   const completedCount = answers.filter((a) => a !== null).length;
-  const percent = Math.round((completedCount / totalQuestions) * 100);
+  const percent = Math.round((completedCount / numQuestions || 0) * 100);
+
+  const [submitTest, { isLoading: isLoadingSubmit }] = useSubmitTestMutation();
+  const [getTestResult, { isLoading: isLoadingGetResult }] =
+    useGetTestResultMutation();
+  const [saveAnswers, { isLoading: isLoadingSaveAnswers }] =
+    useSaveAnswersMutation();
 
   // Đếm ngược thời gian
   useEffect(() => {
@@ -65,8 +75,7 @@ const TestMultipleChoice = () => {
     setAnswers(newAnswers);
   };
 
-  const handleNext = () =>
-    setCurrent((c) => Math.min(c + 1, totalQuestions - 1));
+  const handleNext = () => setCurrent((c) => Math.min(c + 1, numQuestions - 1));
   const handleBack = () => setCurrent((c) => Math.max(c - 1, 0));
   const handleJump = (idx) => setCurrent(idx);
 
@@ -74,54 +83,36 @@ const TestMultipleChoice = () => {
   const formatTime = (m) =>
     `${Math.floor(m)}:${((m % 1) * 60).toFixed(0).toString().padStart(2, "0")}`;
 
-  // const handleSubmit = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const res = await submitTest({ answers, attemptId });
-  //     console.log(res);
-  //     // if (res) {
-  //     //   navigate(`/test/${attemptId}/result`, {
-  //     //     state: {
-  //     //       result: res,
-  //     //     },
-  //     //   });
-  //     // }
-  //   } catch (error) {
-  //     console.log(error);
-  //     dispatch(
-  //       openSnackbar({
-  //         severity: "error",
-  //         message: "Can not submit! Please try again!",
-  //       })
-  //     );
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const handleSubmit = async () => {
-    setIsLoading(true);
     try {
-      const formattedAnswers = answers
-        .map((selectedOptionId, index) => ({
-          questionId: questions[index]._id,
-          selectedOptionId: selectedOptionId,
-        }))
-        .filter((answer) => answer.selectedOptionId !== null);
+      const formattedAnswers = answers.map((selectedOptionId, index) => ({
+        attemptId: attemptId,
+        questionId: questions[index]._id,
+        selectedOptionId: selectedOptionId,
+      }));
 
-      const res = await submitTest({
+      const testSubmit = await submitTest({
         answers: formattedAnswers,
         attemptId,
       });
-      console.log("submit :", res);
 
-      const testResult = await getTestResult({ testId, attemptId });
-      console.log("test result :", testResult);
+      await saveAnswers(formattedAnswers);
 
-      if (testResult.status === 200) {
-        navigate(`/test/${testId}/result`, {
-          state: { testResult: testResult.data },
-        });
+      if (testSubmit) {
+        const testResult = await getTestResult({ testId, attemptId });
+
+        if (testResult.data) {
+          navigate(`/test/${testId}/result`, {
+            state: { resultData: testResult.data.data },
+          });
+        }
+      } else {
+        dispatch(
+          openSnackbar({
+            severity: "error",
+            message: "Submit failed! Please try again!",
+          })
+        );
       }
     } catch (error) {
       console.log(error);
@@ -131,40 +122,12 @@ const TestMultipleChoice = () => {
           message: "Can not submit! Please try again!",
         })
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <Box className="min-h-screen bg-gray-50 py-8 px-2">
       <Box className="max-w-6xl mx-auto">
-        {/* Header */}
-        {/* <Box className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-          <Typography variant="h5" fontWeight={700} color="#1e293b">
-            StudyHub
-          </Typography>
-          <Box className="flex items-center gap-2">
-            <Chip
-              icon={<AccessTimeOutlinedIcon />}
-              label={formatTime(timeLeft)}
-              color="primary"
-              className="font-semibold flex items-center"
-              sx={{
-                fontSize: 16,
-              }}
-            />
-            <Chip
-              label={`Exercise ${current + 1} of ${totalQuestions}`}
-              color="primary"
-              variant="outlined"
-              className="flex items-center"
-              sx={{
-                fontSize: 16,
-              }}
-            />
-          </Box>
-        </Box> */}
         {/* Tên bài kiểm tra */}
         <Box className="bg-white rounded-xl shadow p-4 mb-6 flex justify-between">
           <Typography variant="h6" fontWeight={700} color="#22223b">
@@ -182,7 +145,7 @@ const TestMultipleChoice = () => {
         </Box>
         <Grid container spacing={3}>
           {/* Câu hỏi và đáp án */}
-          <Grid item size={{ xs: 12, md: 8.5 }}>
+          <Grid size={{ xs: 12, md: 8.5 }}>
             <Card className="rounded-xl shadow">
               <CardContent>
                 {/* Câu hỏi */}
@@ -251,7 +214,7 @@ const TestMultipleChoice = () => {
                       variant="contained"
                       color="primary"
                       onClick={handleNext}
-                      disabled={current === totalQuestions - 1}
+                      disabled={current === numQuestions - 1}
                       sx={{
                         textTransform: "none",
                       }}
@@ -263,13 +226,19 @@ const TestMultipleChoice = () => {
                   <Button
                     variant="contained"
                     color="success"
-                    //   disabled={completedCount < totalQuestions}
                     sx={{
                       textTransform: "none",
                     }}
                     onClick={() => handleSubmit()}
+                    disabled={
+                      isLoadingGetResult ||
+                      isLoadingSubmit ||
+                      isLoadingSaveAnswers
+                    }
                   >
-                    {isLoading ? (
+                    {isLoadingSubmit ||
+                    isLoadingGetResult ||
+                    isLoadingSaveAnswers ? (
                       <CircularProgress size={18} color="white" />
                     ) : (
                       " Submit Exercise"
@@ -280,7 +249,7 @@ const TestMultipleChoice = () => {
             </Card>
           </Grid>
           {/* Ma trận câu hỏi và tiến độ */}
-          <Grid item size={{ xs: 12, md: 3.5 }}>
+          <Grid size={{ xs: 12, md: 3.5 }}>
             <Card className="rounded-xl shadow mb-4">
               <CardContent>
                 {/* Tiêu đề và Số lượng câu hỏi đã hoàn thành */}
@@ -292,16 +261,16 @@ const TestMultipleChoice = () => {
                 >
                   Questions
                   <span className="ml-2 text-gray-500 text-sm font-normal">
-                    {completedCount} / {totalQuestions} completed
+                    {completedCount} / {numQuestions} completed
                   </span>
                 </Typography>
 
                 {/* Ma trận các câu hỏi */}
                 <Box className="grid grid-cols-5 gap-2 mb-3">
                   {questions.map((q, idx) => {
-                    let color = "#e5e7eb"; // default
-                    if (answers[idx] !== null) color = "#22c55e"; // xanh lá completed
-                    if (idx === current) color = "#2563eb"; // xanh dương current
+                    let color = "#e5e7eb"; // default: chưa làm
+                    if (answers[idx] !== null) color = "#22c55e"; // completed
+                    if (idx === current) color = "#2563eb"; // current
                     return (
                       <Button
                         key={idx}

@@ -16,6 +16,8 @@ import TestLayout from "../layouts/TestLayout";
 import TestList from "../pages/test/TestList";
 import Lesson from "../pages/course/Lesson";
 import LessonDetail from "../pages/course/LessonDetail";
+import CourseList from "../pages/course/CourseList";
+
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +44,10 @@ export const router = createBrowserRouter([
           },
           {
             path: "/course",
+            element: <CourseList />,
+          },
+          {
+            path: "/course/:id",
             element: <CourseDetail />,
           },
 
