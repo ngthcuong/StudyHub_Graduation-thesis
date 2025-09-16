@@ -286,7 +286,7 @@ const validateWalletAddress = (isRequired = true) => {
 const checkUserExists = async (req, res, next) => {
   try {
     const { email, phone, walletAddress } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
 
     // Kiểm tra email đã tồn tại
     if (email) {
