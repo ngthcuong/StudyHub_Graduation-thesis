@@ -50,15 +50,8 @@ const userSchema = new mongoose.Schema(
       ref: "Certificate",
     },
     currentLevel: {
-      type: String,
-      enum: [
-        "Beginner",
-        "Elementary",
-        "Pre-Intermediate",
-        "Intermediate",
-        "Upper-Intermediate",
-        "Advanced",
-      ],
+      TOEIC: { type: String },
+      IELTS: { type: String },
     },
     studyHoursPerWeek: { type: Number, min: 0 },
     learningGoals: { type: String, trim: true },

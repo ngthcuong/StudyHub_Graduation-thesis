@@ -47,6 +47,25 @@ const getAllTests = async (req, res) => {
   }
 };
 
+const getTestsByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    if (!courseId)
+      return res.status(400).json({ error: "Course ID not found" });
+
+    const tests = await testModel.getTestsByCourseId(courseId);
+    if (!tests || tests.length === 0)
+      return res.status(404).json({ error: "No tests found for this course" });
+
+    res
+      .status(200)
+      .json({ message: "Tests retrieved successfully", data: tests });
+  } catch (error) {
+    console.error("Error getting tests by courseId:", error);
+    res.status(500).json({ error: "Failed to get tests by courseId" });
+  }
+};
+
 const updateTestById = async (req, res) => {
   try {
     const { testId } = req.params;
@@ -90,4 +109,5 @@ module.exports = {
   getAllTests,
   updateTestById,
   deleteTestById,
+  getTestsByCourseId,
 };

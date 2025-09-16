@@ -12,6 +12,9 @@ router.get("/", testController.getAllTests);
 // Get test detail
 router.get("/:testId", testController.getTestById);
 
+// Lấy tất cả tests của 1 course
+router.get("/course/:courseId", testController.getTestsByCourseId);
+
 // Update test (admin)
 router.put(
   "/:testId",
