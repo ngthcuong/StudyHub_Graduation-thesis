@@ -138,7 +138,7 @@ const refreshToken = async (req, res) => {
 
     res.status(200).json({
       message: "Token refreshed successfully!",
-      token: newAccessToken,
+      accessToken: newAccessToken,
     });
   } catch (error) {
     console.error("Error refreshing token:", error);

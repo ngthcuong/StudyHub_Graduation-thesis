@@ -54,17 +54,12 @@ const TestInformation = () => {
         userId: user._id,
       });
 
-      console.log("testQuestion: ", testQuestions);
-
       if (!attempt) {
         return;
       }
 
       if (testQuestions.data.length === 0) {
-        console.log("tao test");
         testQuestions = await generateTestQuestions(testData);
-        console.log("test duoc ta0:", testQuestions);
-
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
             questions: testQuestions?.data?.data?.data,
@@ -85,18 +80,6 @@ const TestInformation = () => {
           },
         });
       }
-
-      // if (testQuestions && attempt) {
-      //   navigate(`/test/${testInfor._id}/attempt`, {
-      //     state: {
-      //       questions: testQuestions?.data?.data?.data || testQuestions?.data,
-      //       testTitle: testInfor.title,
-      //       testDuration: testInfor.durationMin,
-      //       testId: testInfor._id,
-      //       attemptId: attempt?.data.data._id,
-      //     },
-      //   });
-      // }
     } catch (error) {
       console.log(error);
     }

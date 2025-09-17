@@ -10,6 +10,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: testInfo,
       }),
+      invalidatesTags: ["Test"],
     }),
 
     // Lấy toàn bộ bài test
@@ -17,6 +18,7 @@ export const testApi = rootApi.injectEndpoints({
       query: () => ({
         url: "/tests",
       }),
+      providesTags: ["Test"],
     }),
 
     // Lấy test theo ID
@@ -24,6 +26,7 @@ export const testApi = rootApi.injectEndpoints({
       query: (testId) => ({
         url: `/tests/${testId}`,
       }),
+      providesTags: ["Test"],
     }),
 
     // Lấy questions theo testId
@@ -31,6 +34,7 @@ export const testApi = rootApi.injectEndpoints({
       query: (testId) => ({
         url: `/questions/test/${testId}`,
       }),
+      providesTags: ["Question"],
     }),
 
     // Tạo câu hỏi test
@@ -46,6 +50,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { testId, topic, num_questions, difficulty, question_types },
       }),
+      invalidatesTags: ["Question"],
     }),
 
     // Tạo attempt
@@ -55,6 +60,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { testId, userId },
       }),
+      invalidatesTags: ["Test"],
     }),
 
     // Lưu câu trả lời
@@ -64,6 +70,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { answers },
       }),
+      invalidatesTags: ["Attempt"],
     }),
 
     // Submit test
@@ -73,6 +80,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { answers },
       }),
+      invalidatesTags: ["Attempt"],
     }),
 
     // Lấy kết quả test
@@ -82,6 +90,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { testId, attemptId },
       }),
+      // invalidatesTags: ["Test"],
     }),
   }),
 });
