@@ -29,7 +29,13 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     );
     if (refreshResult.data) {
       // Lưu accessToken vào state
-      api.dispatch(login(refreshResult.data));
+      const state = api.getState().auth;
+      api.dispatch(
+        login({
+          ...state,
+          accessToken: refreshResult.data.accessToken,
+        })
+      );
       //   Retry request với accessToken mới
       result = await baseQuery(args, api, extraOptions);
     } else {
