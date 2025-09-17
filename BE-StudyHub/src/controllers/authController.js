@@ -60,7 +60,7 @@ const login = async (req, res) => {
     await redisService.saveAccessToken({
       userId: user._id.toString(),
       token: accessToken,
-      expiresIn: 1 * 60, // 15 phút
+      expiresIn: 15 * 60, // 15 phút
     });
     await redisService.saveRefreshToken({
       userId: user._id.toString(),
