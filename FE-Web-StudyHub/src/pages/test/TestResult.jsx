@@ -636,6 +636,8 @@ const TestResult = () => {
             variant="outlined"
             color="inherit"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
+            LinkComponent={"a"}
+            href="/home"
           >
             View All Tests
           </Button>
