@@ -90,7 +90,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { testId, attemptId },
       }),
-      invalidatesTags: ["Test"],
+      // invalidatesTags: ["Test"],
     }),
   }),
 });
