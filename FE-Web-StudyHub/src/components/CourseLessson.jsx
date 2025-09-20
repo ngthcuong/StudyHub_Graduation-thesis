@@ -80,15 +80,20 @@ const CourseLessson = () => {
       {/* Left Sidebar - Course Navigation */}
       <div className="w-80 flex-shrink-0 border-r overflow-y-auto border-gray-300">
         <div className="p-4">
-          <div className="flex items-center h-12 mb-4">
-            <HomeIcon className="text-gray-700 mr-2" />
-            <Typography className="!text-xl !font-bold">
-              {lessons.title}
-            </Typography>
+          <div className="flex items-center h-12 mb-4 font-light text-xl">
+            <HomeIcon
+              className="text-gray-700 mr-2"
+              sx={{
+                fontSize: 32,
+              }}
+            />
           </div>
 
           <div className="mb-4">
-            <div className="flex justify-between mb-1">
+            <Typography className="!text-xl !font-bold">
+              {lessons.title}
+            </Typography>
+            <div className="flex justify-between mb-1 mt-2">
               <span className="text-sm font-medium">
                 {lessons.remainingLessons} lessons left
               </span>
