@@ -12,6 +12,7 @@ import Achievements from "../pages/home/Achievements";
 import Settings from "../pages/home/Settings";
 import CourseList from "../pages/course/CourseList";
 import TestList from "../pages/test/TestList";
+import Header from "./Header";
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -109,7 +110,10 @@ export default function Sidebar() {
       </div>
 
       {/* Nội dung hiển thị */}
-      <div className="ml-64 flex-1 p-6">{renderContent()}</div>
+      <div className="ml-64 flex-1 px-6 py-2">
+        <Header />
+        {renderContent()}
+      </div>
     </div>
   );
 }

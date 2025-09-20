@@ -12,7 +12,6 @@ export default function Dashboard() {
   return (
     <div className="flex-1">
       {/* Welcome Card */}
-      <Header />
 
       {/* Overview Cards */}
       <div className="bg-white p-6 rounded-xl shadow-md  mx-auto">

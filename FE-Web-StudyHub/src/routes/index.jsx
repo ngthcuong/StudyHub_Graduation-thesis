@@ -17,7 +17,7 @@ import TestList from "../pages/test/TestList";
 import Lesson from "../pages/course/Lesson";
 import LessonDetail from "../pages/course/LessonDetail";
 import CourseList from "../pages/course/CourseList";
-
+import CourseLessson from "../components/CourseLessson";
 
 export const router = createBrowserRouter([
   {
@@ -46,18 +46,18 @@ export const router = createBrowserRouter([
             path: "/course",
             element: <CourseList />,
           },
-          {
-            path: "/course/:id",
-            element: <CourseDetail />,
-          },
+          // {
+          //   path: "/course/:id",
+          //   element: <CourseDetail />,
+          // },
 
           {
-            path: "/course/:id",
-            element: <Lesson />,
+            path: "/course/",
+            element: <LessonDetail />,
           },
           {
             path: "/lesson/:id",
-            element: <LessonDetail />,
+            element: <CourseLessson />,
           },
           {
             path: "/test",

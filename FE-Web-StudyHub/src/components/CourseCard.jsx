@@ -1,8 +1,14 @@
 import { AccessTime } from "@mui/icons-material";
-import { Card, CardContent, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  LinearProgress,
+  Typography,
+} from "@mui/material";
 import React from "react";
 
-const CourseCard = ({ course }) => {
+const CourseCard = ({ course, variant = "market" }) => {
   return (
     <Card
       key={course.id}
@@ -45,22 +51,52 @@ const CourseCard = ({ course }) => {
         </Typography>
 
         {/* Course Description */}
-        <Typography variant="body2" className="text-gray-600 ">
+        {/* <Typography variant="body2" className="text-gray-600 ">
           {course.description}
-        </Typography>
+        </Typography> */}
+
+        {/* Progress with label */}
+        {variant === "owned" && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <LinearProgress
+              variant="determinate"
+              value={10}
+              sx={{
+                height: 8,
+                borderRadius: 5,
+                flex: 1,
+                background: "#e0e7ef",
+                "& .MuiLinearProgress-bar": { background: "#22c55e" },
+              }}
+            />
+            <Typography variant="body2" fontWeight={600}>
+              {10}%
+            </Typography>
+          </Box>
+        )}
 
         {/* Instructor and Pricing */}
-        <div className="flex items-center gap-2 justify-end mt-2">
-          <Typography
-            variant="body1"
-            className="text-gray-600 line-through text-sm"
-          >
-            ${course.originalPrice}
-          </Typography>
-          <Typography variant="h6" className="!font-bold text-teal-600">
-            ${course.cost}
-          </Typography>
-        </div>
+        {variant === "market" && (
+          <div className="flex items-center gap-2 justify-end mt-2">
+            {/* <Typography
+              variant="body1"
+              className="text-gray-600 line-through text-sm"
+            >
+              ${course.originalPrice}
+            </Typography> */}
+            <Typography variant="h6" className="!font-bold text-teal-600">
+              ${course.cost}
+            </Typography>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
