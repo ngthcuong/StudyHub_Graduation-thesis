@@ -6,13 +6,14 @@ import {
   TextField,
   InputAdornment,
   Chip,
+  Button,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../components/CourseCard";
 import { mockCourses } from "../../mock/mockCourse";
 
-const CourseList = () => {
+const CourseList = ({ variant = "market" }) => {
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
@@ -26,7 +27,7 @@ const CourseList = () => {
   );
 
   return (
-    <Box className="min-h-screen bg-gray-50 py-8 px-4">
+    <Box className="min-h-fit bg-white py-8 px-6">
       <Box className="max-w-7xl mx-auto">
         {/* Search and Filter Bar */}
         <Box className="flex gap-4 mb-6 flex-wrap">
@@ -48,11 +49,19 @@ const CourseList = () => {
           />
         </Box>
 
+        {variant === "market" && <Button>Find more</Button>}
+
         {/* Course Grid */}
         <Grid container spacing={3}>
           {pagedCourses.map((course, index) => (
             <Grid size={{ xs: 12, md: 3 }} key={course.id}>
-              <div onClick={() => navigate(`/course/${course.id}`)}>
+              <div
+                onClick={() => {
+                  if (variant === "owned")
+                    navigate(`/course/${course.id}/lesson/${course.id}`);
+                  else navigate(`/course/${course.id}`);
+                }}
+              >
                 <CourseCard course={course} index={index} variant="owned" />
               </div>
             </Grid>

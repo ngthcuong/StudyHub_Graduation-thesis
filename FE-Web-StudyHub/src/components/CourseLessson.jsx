@@ -35,8 +35,11 @@ import {
   BookmarkBorder,
 } from "@mui/icons-material";
 import { lessons } from "../mock/mockLession";
+import { useNavigate } from "react-router-dom";
 
 const CourseLessson = () => {
+  const navigate = useNavigate();
+
   const [currentLessonId, setCurrentLessonId] = useState("1-1");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -82,10 +85,11 @@ const CourseLessson = () => {
         <div className="p-4">
           <div className="flex items-center h-12 mb-4 font-light text-xl">
             <HomeIcon
-              className="text-gray-700 mr-2"
+              className="text-gray-700 mr-2 cursor-pointer"
               sx={{
                 fontSize: 32,
               }}
+              onClick={() => navigate("/home")}
             />
           </div>
 

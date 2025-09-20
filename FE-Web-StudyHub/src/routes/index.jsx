@@ -14,8 +14,6 @@ import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
 import TestLayout from "../layouts/TestLayout";
 import TestList from "../pages/test/TestList";
-import Lesson from "../pages/course/Lesson";
-import LessonDetail from "../pages/course/LessonDetail";
 import CourseList from "../pages/course/CourseList";
 import CourseLessson from "../components/CourseLessson";
 
@@ -44,21 +42,23 @@ export const router = createBrowserRouter([
           },
           {
             path: "/course",
-            element: <CourseList />,
+            element: <CourseList variant="market" />,
           },
-          // {
-          //   path: "/course/:id",
-          //   element: <CourseDetail />,
-          // },
 
           {
-            path: "/course/",
-            element: <LessonDetail />,
+            path: "/course",
+            children: [
+              {
+                path: ":id",
+                element: <CourseDetail />,
+              },
+              {
+                path: ":id/lesson/:id",
+                element: <CourseLessson />,
+              },
+            ],
           },
-          {
-            path: "/lesson/:id",
-            element: <CourseLessson />,
-          },
+
           {
             path: "/test",
             element: <TestList />,

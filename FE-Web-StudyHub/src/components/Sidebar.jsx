@@ -22,7 +22,7 @@ export default function Sidebar() {
       case "dashboard":
         return <Dashboard />;
       case "courses":
-        return <CourseList />;
+        return <CourseList variant="owned" />;
       case "exercises":
         return <TestList />;
       case "achievements":
