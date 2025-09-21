@@ -49,7 +49,9 @@ const CourseList = ({ variant = "market" }) => {
           />
         </Box>
 
-        {variant === "market" && <Button>Find more</Button>}
+        {variant !== "market" && (
+          <Button onClick={() => navigate("/course")}>Find more</Button>
+        )}
 
         {/* Course Grid */}
         <Grid container spacing={3}>
