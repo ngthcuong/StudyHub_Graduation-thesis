@@ -67,7 +67,6 @@ const ModalChangePassword = ({ open, onClose }) => {
             severity: "error",
           })
         );
-        reset();
       } else {
         dispatch(
           openSnackbar({

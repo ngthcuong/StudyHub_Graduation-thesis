@@ -25,7 +25,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
 import ModalChangePassword from "../../components/ModalChangePassword";
-import userApi, { useGetUserInfoQuery } from "../../services/userApi";
+import {
+  useGetUserInfoQuery,
+  useUpdateUserInfoMutation,
+} from "../../services/userApi";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
 
@@ -38,6 +41,8 @@ const UserInfoPage = () => {
 
   const { data } = useGetUserInfoQuery();
   const userData = data?.data;
+
+  const [updateUserInfo, { isLoading }] = useUpdateUserInfoMutation();
 
   const formSchema = yup.object({
     fullName: yup
@@ -92,13 +97,7 @@ const UserInfoPage = () => {
       }),
   });
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    clearErrors,
-    formState: { isSubmitting },
-  } = useForm({
+  const { control, handleSubmit, reset, clearErrors } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -112,16 +111,13 @@ const UserInfoPage = () => {
     mode: "onChange",
   });
 
-  const updateLocalStorage = (data) => {
-    const currentUser = JSON.parse(localStorage.getItem("user"));
-    localStorage.setItem("user", JSON.stringify({ ...currentUser, ...data }));
-  };
-
   const formatUserData = (userData) => ({
     fullName: userData.fullName || "",
     email: userData.email || "",
     phone: userData.phone || "",
-    dob: userData.dob ? new Date(userData.dob).toISOString().split("T")[0] : "",
+    dob: userData.dob
+      ? new Date(userData.dob).toISOString().slice(0, 10) // "yyyy-MM-dd"
+      : "",
     gender: userData.gender || "",
     organization: userData.organization || "",
     walletAddress: userData.walletAddress || "",
@@ -136,20 +132,22 @@ const UserInfoPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await userApi.updateUserInfor(data);
+      const payload = {
+        ...data,
+        dob: data.dob,
+      };
+      const response = await updateUserInfo(payload);
       if (!response) return;
 
-      // Cập nhật localStorage và hiển thị thông báo thành công
-      updateLocalStorage(data);
       dispatch(
         openSnackbar({
-          message: response.message,
+          message: response.data.message,
           severity: "success",
         })
       );
 
       // Cập nhật form với dữ liệu mới
-      const updatedData = formatUserData(response.data);
+      const updatedData = formatUserData(response.data.data);
       reset(updatedData);
       setIsEditing(false);
     } catch (error) {
@@ -352,7 +350,7 @@ const UserInfoPage = () => {
                   <Button
                     variant="contained"
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                     // onClick={() => handleSubmit(onSubmit)}
                     className="py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                     sx={{
@@ -362,7 +360,7 @@ const UserInfoPage = () => {
                       fontWeight: 500,
                     }}
                   >
-                    {isSubmitting ? <CircularProgress size={20} /> : "Lưu"}
+                    {isLoading ? <CircularProgress size={20} /> : "Lưu"}
                   </Button>
                 </div>
               )}
