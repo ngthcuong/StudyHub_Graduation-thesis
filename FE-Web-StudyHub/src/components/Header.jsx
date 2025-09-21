@@ -84,7 +84,7 @@ const Header = () => {
                 >
                   <MenuItem
                     onClick={() => {
-                      navigate("/profile");
+                      navigate("/home");
                       setAnchorEl(null);
                     }}
                   >
@@ -92,7 +92,7 @@ const Header = () => {
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
-                      navigate("/dashboard");
+                      navigate("/home");
                       setAnchorEl(null);
                     }}
                   >
@@ -100,7 +100,7 @@ const Header = () => {
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
-                      navigate("/settings");
+                      navigate("/home");
                       setAnchorEl(null);
                     }}
                   >

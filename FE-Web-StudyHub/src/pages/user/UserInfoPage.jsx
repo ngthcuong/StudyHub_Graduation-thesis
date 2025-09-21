@@ -25,7 +25,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
 import ModalChangePassword from "../../components/ModalChangePassword";
-import userApi from "../../services/userApi";
+import userApi, { useGetUserInfoQuery } from "../../services/userApi";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
 
@@ -35,6 +35,9 @@ const UserInfoPage = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
+
+  const { data } = useGetUserInfoQuery();
+  const userData = data?.data;
 
   const formSchema = yup.object({
     fullName: yup
@@ -125,20 +128,11 @@ const UserInfoPage = () => {
   });
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const userData = await userApi.getUserInfor();
-        if (userData) {
-          const formattedData = formatUserData(userData);
-          reset(formattedData);
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, [reset, dispatch]);
+    if (userData) {
+      const formattedData = formatUserData(userData);
+      reset(formattedData);
+    }
+  }, [userData, reset]);
 
   const onSubmit = async (data) => {
     try {

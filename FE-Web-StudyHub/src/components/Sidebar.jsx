@@ -13,6 +13,8 @@ import Settings from "../pages/home/Settings";
 import CourseList from "../pages/course/CourseList";
 import TestList from "../pages/test/TestList";
 import Header from "./Header";
+import UserInfoPage from "../pages/user/UserInfoPage";
+import { Person } from "@mui/icons-material";
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -27,6 +29,8 @@ export default function Sidebar() {
         return <TestList />;
       case "achievements":
         return <Achievements />;
+      case "profile":
+        return <UserInfoPage />;
       case "settings":
         return <Settings />;
       default:
@@ -93,6 +97,18 @@ export default function Sidebar() {
           >
             <EmojiEventsIcon className="w-4 h-4 mr-2" />
             Achievements
+          </button>
+
+          <button
+            onClick={() => setActiveTab("profile")}
+            className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
+              activeTab === "profile"
+                ? "bg-blue-500 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <Person className="w-4 h-4 mr-2" />
+            Profile
           </button>
 
           <button
