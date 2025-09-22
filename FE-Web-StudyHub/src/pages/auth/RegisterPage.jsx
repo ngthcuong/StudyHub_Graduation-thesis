@@ -32,10 +32,17 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
-import authApi from "../../services/authApi";
+import { useRegisterMutation } from "../../services/authApi";
+import { useDispatch, useSelector } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import SnackBar from "../../components/Snackbar";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -86,11 +93,7 @@ const RegisterPage = () => {
       .oneOf([yup.ref("password")], "Mật khẩu không khớp"),
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -104,16 +107,25 @@ const RegisterPage = () => {
     mode: "onChange",
   });
 
+  const [register, { isLoading }] = useRegisterMutation();
+
   const onSubmit = async (data) => {
     try {
       // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...registerData } = data;
-      const response = await authApi.register(registerData);
-      if (response) {
-        console.log("res register ", response);
+      const response = await register(registerData);
+      console.log("res register ", response);
+      if (!response.error) {
         navigate("/login", {
           state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
         });
+      } else {
+        dispatch(
+          openSnackbar({
+            severity: "error",
+            message: response?.error?.data?.error,
+          })
+        );
       }
     } catch (error) {
       console.error("Lỗi đăng ký:", error);
@@ -321,7 +333,7 @@ const RegisterPage = () => {
                   type="submit"
                   variant="contained"
                   size="large"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                   startIcon={<PersonAdd />}
                   className="py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 max-w-fit"
                   sx={{
@@ -330,7 +342,7 @@ const RegisterPage = () => {
                     fontSize: 16,
                   }}
                 >
-                  {isSubmitting ? "Đang xử lý..." : "Đăng ký tài khoản"}
+                  {isLoading ? "Đang xử lý..." : "Đăng ký tài khoản"}
                 </Button>
               </Box>
             </Grid>
@@ -397,6 +409,7 @@ const RegisterPage = () => {
           </Typography>
         </Box>
       </Paper>
+      <SnackBar isOpen={isOpen} message={message} severity={severity} />
     </Box>
   );
 };

@@ -48,7 +48,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const rootApi = createApi({
   reducerPath: "rootApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Test", "User", "Question", "Attempt"],
+  tagTypes: ["Test", "User", "Question", "Attempt", "User"],
   keepUnusedDataFor: 20, // instead of default 60s (default)
   endpoints: () => ({}),
 });

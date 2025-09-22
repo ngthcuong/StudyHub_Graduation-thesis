@@ -31,6 +31,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
 import CourseCard from "../../components/CourseCard";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -164,6 +165,8 @@ const courses = [
   },
 ];
 const CourseDetail = () => {
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
@@ -258,6 +261,7 @@ const CourseDetail = () => {
                   textTransform: "none",
                 }}
                 size="large"
+                onClick={() => navigate("/home")}
               >
                 Buy now
               </Button>
@@ -414,6 +418,9 @@ const CourseDetail = () => {
               className="text-blue-600 hover:text-blue-800 !font-medium"
               sx={{
                 textTransform: "none",
+              }}
+              onClick={() => {
+                navigate("/course");
               }}
             >
               See more
