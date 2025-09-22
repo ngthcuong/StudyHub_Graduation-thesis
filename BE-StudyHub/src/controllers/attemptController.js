@@ -1,16 +1,16 @@
 const attemptModel = require("../models/testAttemptModel");
 const userAnswerModel = require("../models/userAnswerModel");
 const questionModel = require("../models/questionModel");
-// const answerOptionModel = require("../models/answerOptionModel");
 
 const startAttempt = async (req, res) => {
   try {
-    const { testId, evaluationModel } = req.body;
-    if (!testId) return res.status(400).json({ error: "testId is required" });
+    const { testPoolId, evaluationModel } = req.body;
+    if (!testPoolId)
+      return res.status(400).json({ error: "testPoolId is required" });
 
     const attemptData = {
-      testId,
-      userId: req.user && req.user.userId ? req.user.userId : req.body.userId,
+      testPoolId,
+      userId: req.user?.userId || req.body.userId,
       evaluationModel: evaluationModel || "gemini",
       feedback: "",
     };
@@ -23,7 +23,6 @@ const startAttempt = async (req, res) => {
   }
 };
 
-// submit: req.body.answers = [ { questionId, selectedOptionId?, answerLetter?, answerText? } ]
 const submitAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
@@ -34,7 +33,7 @@ const submitAttempt = async (req, res) => {
     if (!Array.isArray(answers) || !answers.length)
       return res.status(400).json({ error: "answers is required" });
 
-    // Lấy tất cả câu hỏi theo questionId
+    // Lấy câu hỏi theo ID
     const qIds = answers.map((a) => a.questionId);
     const questionDocs = await questionModel.findQuestionsByIds(qIds);
     const qMap = new Map(questionDocs.map((q) => [q._id.toString(), q]));
@@ -46,7 +45,6 @@ const submitAttempt = async (req, res) => {
       const q = qMap.get(String(a.questionId));
       if (!q) continue;
 
-      // tìm option trong mảng question.options
       let selectedOption = null;
       if (a.selectedOptionId) {
         selectedOption = q.options.find(
@@ -60,7 +58,6 @@ const submitAttempt = async (req, res) => {
         );
       }
 
-      // Tính điểm
       let isCorrect = undefined;
       let score = 0;
       if (q.questionType === "multiple_choice") {
@@ -87,7 +84,6 @@ const submitAttempt = async (req, res) => {
       savedAnswers.push(ua);
     }
 
-    // Cập nhật tổng điểm vào attempt
     const updatedAttempt = await attemptModel.updateAttemptById(attemptId, {
       score: totalScore,
       endTime: new Date(),
@@ -115,9 +111,10 @@ const getAttemptById = async (req, res) => {
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
 
     const answers = await userAnswerModel.findAnswersByAttempt(attemptId);
-    res
-      .status(200)
-      .json({ message: "Attempt retrieved", data: { attempt, answers } });
+    res.status(200).json({
+      message: "Attempt retrieved",
+      data: { attempt, answers },
+    });
   } catch (error) {
     console.error("Error getting attempt:", error);
     res.status(500).json({ error: "Failed to get attempt" });
@@ -146,7 +143,6 @@ const getAttemptByTest = async (req, res) => {
     const { testId } = req.params;
     if (!testId) return res.status(400).json({ error: "testId is required" });
 
-    // Nếu muốn lấy attempt của user hiện tại
     const userId = req.user?.userId;
 
     const attempt = await attemptModel.findAttemptByTestId(testId, userId);
