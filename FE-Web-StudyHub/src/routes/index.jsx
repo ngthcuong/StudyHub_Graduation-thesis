@@ -16,6 +16,10 @@ import TestLayout from "../layouts/TestLayout";
 import TestList from "../pages/test/TestList";
 import CourseList from "../pages/course/CourseList";
 import CourseLessson from "../components/CourseLessson";
+import HomeLayout from "../layouts/HomeLayout";
+import Dashboard from "../pages/home/Dashboard";
+import Achievements from "../pages/home/Achievements";
+import Settings from "../pages/home/Settings";
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +38,34 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/home",
-            element: <HomePage />,
+            element: <HomeLayout />,
+            children: [
+              {
+                path: "dashboard",
+                index: true,
+                element: <Dashboard />,
+              },
+              {
+                path: "courses",
+                element: <CourseList variant="owned" />,
+              },
+              {
+                path: "exercises",
+                element: <TestList />,
+              },
+              {
+                path: "achievements",
+                element: <Achievements />,
+              },
+              {
+                path: "profile",
+                element: <UserInfoPage />,
+              },
+              {
+                path: "settings",
+                element: <Settings />,
+              },
+            ],
           },
           {
             path: "/profile",
