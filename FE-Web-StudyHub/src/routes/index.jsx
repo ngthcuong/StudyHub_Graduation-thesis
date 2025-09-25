@@ -4,7 +4,6 @@ import ProtectedLayout from "../layouts/ProtectedLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
-import HomePage from "../pages/HomePage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
