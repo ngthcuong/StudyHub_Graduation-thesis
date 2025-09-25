@@ -20,11 +20,36 @@ const AssessmentListScreen = ({ navigation }) => {
     loadTests();
   }, []);
 
+  // Chuyển đổi từ object backend sang object giống fake data
+  const mapTestFromApi = (apiTest) => {
+    return {
+      id: apiTest._id,
+      title: apiTest.title,
+      description: apiTest.description,
+      duration: apiTest.durationMin,
+      totalQuestions: apiTest.numQuestions,
+      passingScore: 80, // backend chưa có, bạn gán mặc định
+      difficulty:
+        apiTest.difficulty === "medium" ? "Intermediate" : apiTest.difficulty,
+      category: "TOEIC", // backend chưa có, bạn set tạm
+      attempts: 0, // backend chưa có
+      maxAttempts: 3, // backend chưa có
+      lastScore: null,
+      bestScore: null,
+      isCompleted: false,
+      isAvailable: true,
+      createdAt: apiTest.createdAt,
+      questions: [], // backend chưa trả về trong getTests, cần gọi getTestQuestions sau
+    };
+  };
+
   const loadTests = async () => {
     try {
       setLoading(true);
       // Sử dụng mock data thay vì API call
-      setTests(mockTests);
+      const response = await testApi.getTests();
+      const mappedTests = response.data.map(mapTestFromApi);
+      setTests(mappedTests);
     } catch (error) {
       console.error("Error loading tests:", error);
     } finally {

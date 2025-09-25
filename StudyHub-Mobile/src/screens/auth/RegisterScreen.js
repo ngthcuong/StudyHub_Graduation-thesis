@@ -45,8 +45,15 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+    // Regex kiểm tra: ít nhất 6 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+    if (!passwordRegex.test(password)) {
+      Alert.alert(
+        "Error",
+        "Password must be at least 6 characters, include uppercase, lowercase, number and special character"
+      );
       return;
     }
 
@@ -59,7 +66,7 @@ const RegisterScreen = ({ navigation }) => {
           password,
         })
       ).unwrap();
-      // Navigation will be handled by AppNavigator based on auth state
+      // Navigation sẽ được AppNavigator xử lý dựa vào auth state
     } catch (error) {
       Alert.alert("Registration Failed", error);
     }

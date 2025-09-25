@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   View,
   Text,
@@ -19,6 +20,8 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [attemptId, setAttemptId] = useState(null);
 
+  const user = useSelector((state) => state.auth.user);
+
   useEffect(() => {
     startTest();
   }, []);
@@ -27,7 +30,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
     if (timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && questions.length > 0) {
+    } else if (timeLeft === 0 && questions.data?.length > 0) {
       handleSubmitTest();
     }
   }, [timeLeft]);
@@ -37,12 +40,17 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       setLoading(true);
       const [questionsResponse, attemptResponse] = await Promise.all([
         testApi.getTestQuestions(testId),
-        testApi.startTestAttempt(testId),
+        testApi.startTestAttempt(testId, user?._id),
       ]);
 
-      setQuestions(questionsResponse.data || []);
-      setAttemptId(attemptResponse.data?.id);
-      setTimeLeft(questionsResponse.data?.[0]?.test?.duration * 60 || 3600); // Convert minutes to seconds
+      setQuestions(questionsResponse || []);
+      setAttemptId(attemptResponse?.data?._id);
+
+      // ⚠️ API questions không có durationMin => gọi getTestById
+      const testResponse = await testApi.getTestById(testId);
+      const duration = testResponse?.data?.durationMin || 60;
+
+      setTimeLeft(duration * 60);
     } catch (error) {
       console.error("Error starting test:", error);
       Alert.alert("Error", "Failed to start test");
@@ -59,7 +67,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < questions.data?.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       handleSubmitTest();
@@ -74,13 +82,16 @@ const MultilExerciseScreen = ({ navigation, route }) => {
 
   const handleSubmitTest = async () => {
     try {
-      // Submit all answers
-      for (const [questionId, answerId] of Object.entries(answers)) {
-        await testApi.submitTestAnswer(attemptId, questionId, answerId);
-      }
+      // Build mảng answers từ state answers
+      const answersPayload = Object.entries(answers).map(
+        ([questionId, answerId]) => ({
+          questionId,
+          selectedOptionId: answerId, // đổi key theo backend
+        })
+      );
 
-      // Submit the attempt
-      await testApi.submitTestAttempt(attemptId);
+      // Gửi 1 request duy nhất
+      await testApi.submitTestAttempt(attemptId, answersPayload);
 
       navigation.navigate("TestResults", { attemptId });
     } catch (error) {
@@ -106,7 +117,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
     );
   }
 
-  if (questions.length === 0) {
+  if (questions.data?.length === 0) {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle" size={64} color="#EF4444" />
@@ -115,8 +126,8 @@ const MultilExerciseScreen = ({ navigation, route }) => {
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const selectedAnswer = answers[currentQuestion.id];
+  const currentQuestion = questions.data?.[currentQuestionIndex];
+  const selectedAnswer = answers[currentQuestion?._id];
 
   return (
     <View style={styles.container}>
@@ -124,7 +135,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.questionCounter}>
-            Question {currentQuestionIndex + 1} of {questions.length}
+            Question {currentQuestionIndex + 1} of {questions?.data.length}
           </Text>
         </View>
         <View style={styles.headerRight}>
@@ -140,7 +151,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
             styles.progressBar,
             {
               width: `${
-                ((currentQuestionIndex + 1) / questions.length) * 100
+                ((currentQuestionIndex + 1) / questions.data?.length) * 100
               }%`,
             },
           ]}
@@ -150,38 +161,42 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       <ScrollView style={styles.content}>
         {/* Question */}
         <View style={styles.questionSection}>
-          <Text style={styles.questionText}>{currentQuestion.question}</Text>
+          <Text style={styles.questionText}>
+            {currentQuestion?.questionText}
+          </Text>
         </View>
 
         {/* Answer Options */}
         <View style={styles.answersSection}>
-          {currentQuestion.answerOptions?.map((option) => (
+          {currentQuestion?.options?.map((option) => (
             <TouchableOpacity
-              key={option.id}
+              key={option._id}
               style={[
                 styles.answerOption,
-                selectedAnswer === option.id && styles.selectedAnswer,
+                selectedAnswer === option._id && styles.selectedAnswer,
               ]}
-              onPress={() => handleAnswerSelect(currentQuestion.id, option.id)}
+              onPress={() =>
+                handleAnswerSelect(currentQuestion._id, option._id)
+              }
             >
               <View style={styles.answerContent}>
                 <View
                   style={[
                     styles.radioButton,
-                    selectedAnswer === option.id && styles.selectedRadio,
+                    selectedAnswer === option._id && styles.selectedRadio,
                   ]}
                 >
-                  {selectedAnswer === option.id && (
+                  {selectedAnswer === option._id && (
                     <View style={styles.radioInner} />
                   )}
                 </View>
                 <Text
                   style={[
                     styles.answerText,
-                    selectedAnswer === option.id && styles.selectedAnswerText,
+                    selectedAnswer === option._id && styles.selectedAnswerText,
                   ]}
                 >
-                  {option.text}
+                  {option?.optionText}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -213,7 +228,9 @@ const MultilExerciseScreen = ({ navigation, route }) => {
           disabled={!selectedAnswer}
         >
           <Text style={styles.primaryButtonText}>
-            {currentQuestionIndex === questions.length - 1 ? "Submit" : "Next"}
+            {currentQuestionIndex === questions.data?.length - 1
+              ? "Submit"
+              : "Next"}
           </Text>
           <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>

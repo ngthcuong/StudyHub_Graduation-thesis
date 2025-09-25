@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 import { loginUser, clearError } from "../../store/slices/authSlice";
 
 const LoginScreen = ({ navigation }) => {
@@ -28,27 +29,24 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
-    // Tạm thời bỏ qua logic đăng nhập thực tế
-    // Chỉ cần nhập email và password để vào màn hình chính
     try {
-      // Giả lập đăng nhập thành công bằng cách set credentials
-      dispatch({
-        type: "auth/setCredentials",
-        payload: {
-          user: {
-            id: "1",
-            name: "Test User",
-            email: email,
-            role: "student",
-          },
-          accessToken: "fake-access-token",
-          refreshToken: "fake-refresh-token",
-        },
-      });
+      const resultAction = await dispatch(loginUser({ email, password }));
 
-      // Navigation sẽ được xử lý bởi AppNavigator dựa trên auth state
-    } catch (error) {
-      Alert.alert("Login Failed", error);
+      if (loginUser.fulfilled.match(resultAction)) {
+        const data = resultAction.payload;
+
+        console.log("User info:", data.user);
+
+        // navigation.replace("Home");
+      } else {
+        Alert.alert(
+          "Login Failed",
+          resultAction.payload?.message || "Something went wrong"
+        );
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      Alert.alert("Login Error", err.message || "Unexpected error");
     }
   };
 
@@ -125,17 +123,22 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[
               styles.loginButton,
               isLoading && styles.loginButtonDisabled,
             ]}
             onPress={handleLogin}
-            disabled={isLoading}
+            disabled={false}
           >
             <Text style={styles.loginButtonText}>
-              {isLoading ? "Signing In..." : "Sign In"}
-            </Text>
+              {/* {isLoading ? "Signing In..." : "Sign In"/} */}
+          {/* Sign In */}
+          {/* </Text> */}
+          {/* </TouchableOpacity> */}
+
+          <TouchableOpacity style={[styles.loginButton]} onPress={handleLogin}>
+            <Text style={styles.loginButtonText}>Sign In</Text>
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>

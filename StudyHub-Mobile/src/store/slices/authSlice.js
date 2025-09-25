@@ -7,7 +7,7 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const response = await authApi.login({ email, password });
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
@@ -19,7 +19,7 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await authApi.register(userData);
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Registration failed"
@@ -33,7 +33,7 @@ export const refreshToken = createAsyncThunk(
   async (refreshTokenValue, { rejectWithValue }) => {
     try {
       const response = await authApi.refreshToken(refreshTokenValue);
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Token refresh failed"
@@ -50,7 +50,7 @@ export const changePassword = createAsyncThunk(
         currentPassword,
         newPassword,
       });
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Password change failed"
@@ -83,9 +83,9 @@ const authSlice = createSlice({
       state.error = null;
     },
     setCredentials: (state, action) => {
-      const { user, token, refreshTokenValue } = action.payload;
+      const { user, accessToken, refreshTokenValue } = action.payload;
       state.user = user;
-      state.token = token;
+      state.token = accessToken;
       state.refreshTokenValue = refreshTokenValue;
       state.isAuthenticated = true;
     },
@@ -100,7 +100,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.token = action.payload.accessToken;
         state.refreshTokenValue = action.payload.refreshToken;
         state.isAuthenticated = true;
         state.error = null;
@@ -118,7 +118,7 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.token = action.payload.accessToken;
         state.refreshTokenValue = action.payload.refreshToken;
         state.isAuthenticated = true;
         state.error = null;
@@ -134,7 +134,7 @@ const authSlice = createSlice({
       })
       .addCase(refreshToken.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.token = action.payload.token;
+        state.token = action.payload.accessToken;
         state.refreshTokenValue = action.payload.refreshToken;
         state.error = null;
       })

@@ -7,7 +7,7 @@ const attemptController = require("../controllers/attemptController");
 router.post("/", verifyToken, attemptController.startAttempt);
 
 // Submit attempt (by attemptId)
-router.post("/:attemptId/submit", verifyToken, attemptController.submitAttempt);
+router.post("/:attemptId/submit", attemptController.submitAttempt);
 
 // Get attempt by id
 router.get("/:attemptId", attemptController.getAttemptById);
