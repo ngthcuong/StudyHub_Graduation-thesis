@@ -13,7 +13,6 @@ const certificateRoutes = require("./src/routes/certificateRoutes");
 const testRoutes = require("./src/routes/testRoutes");
 const questionRoutes = require("./src/routes/questionRoutes");
 const attemptRoutes = require("./src/routes/attemptRoutes");
-const answerOptionRoutes = require("./src/routes/answerOptionRoutes");
 const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 
 const testResultRoutes = require("./src/routes/testResultRoutes");
@@ -45,7 +44,6 @@ app.use("/api/v1/certs", certificateRoutes);
 app.use("/api/v1/tests", testRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/attempts", attemptRoutes);
-app.use("/api/v1/options", answerOptionRoutes);
 app.use("/api/v1/answers", userAnswerRoutes);
 
 app.use("/api/v1/test-result", testResultRoutes);

@@ -1,5 +1,4 @@
 const questionModel = require("../models/questionModel");
-const answerOptionModel = require("../models/answerOptionModel");
 
 // Create question (optionally with options array)
 const createQuestion = async (req, res) => {
