@@ -18,6 +18,8 @@ const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 const testResultRoutes = require("./src/routes/testResultRoutes");
 const generateTestRoutes = require("./src/routes/generateTestRoutes");
 
+const testPoolRoutes = require("./src/routes/testPoolRoutes");
+
 require("dotenv").config();
 
 // Create Expresss App and HTTP Server
@@ -48,6 +50,7 @@ app.use("/api/v1/answers", userAnswerRoutes);
 
 app.use("/api/v1/test-result", testResultRoutes);
 app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chung
+app.use("/api/v1/test-pools", testPoolRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {

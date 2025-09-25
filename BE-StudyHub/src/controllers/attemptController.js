@@ -84,9 +84,11 @@ const submitAttempt = async (req, res) => {
       savedAnswers.push(ua);
     }
 
+    const attemptDoc = await attemptModel.findAttemptById(attemptId);
     const updatedAttempt = await attemptModel.updateAttemptById(attemptId, {
       score: totalScore,
       endTime: new Date(),
+      attemptNumber: (attemptDoc.attemptNumber || 0) + 1,
     });
 
     res.status(200).json({

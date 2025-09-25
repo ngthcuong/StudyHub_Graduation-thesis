@@ -4,8 +4,14 @@ const questionModel = require("../models/questionModel");
 
 const generateTestController = async (req, res) => {
   try {
-    const { topic, question_types, num_questions, difficulty, testId } =
-      req.body;
+    const {
+      testId,
+      exam_type,
+      topic,
+      question_types,
+      num_questions,
+      score_range,
+    } = req.body;
 
     // Validate input
     if (!topic || !Array.isArray(question_types) || num_questions <= 0) {
@@ -20,7 +26,8 @@ const generateTestController = async (req, res) => {
       topic,
       question_types,
       num_questions,
-      difficulty,
+      exam_type,
+      score_range,
     });
 
     // Lấy mảng câu hỏi thực sự

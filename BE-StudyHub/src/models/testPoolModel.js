@@ -12,7 +12,10 @@ const createTestPool = async (poolData) => {
 
 const findTestPoolById = async (id) => {
   try {
-    return await TestPool.findById(id).populate("createdBy", "fullName email");
+    return await TestPool.findById(id).populate(
+      "createdBy",
+      "fullName email role currentLevel"
+    );
   } catch (error) {
     console.error("Error finding test pool:", error);
     throw new Error("Failed to find test pool");
@@ -46,10 +49,46 @@ const deleteTestPoolById = async (id) => {
   }
 };
 
+const getTestPoolsByLevel = async (level) => {
+  try {
+    return await TestPool.find({ level, status: "active" })
+      .sort({ createdAt: -1 })
+      .populate("createdBy", "fullName email role currentLevel");
+  } catch (error) {
+    console.error("Error getting test pools by level:", error);
+    throw new Error("Failed to get test pools by level");
+  }
+};
+
+const getPoolsByBaseTestId = async (testId) => {
+  try {
+    return await TestPool.find({ baseTestId: testId })
+      .populate("createdBy", "fullName email role currentLevel")
+      .sort({ createdAt: -1 });
+  } catch (error) {
+    console.error("Error getting pools by baseTestId:", error);
+    throw new Error("Failed to get pools by baseTestId");
+  }
+};
+
+const getTestPoolsByCreator = async (creatorId) => {
+  try {
+    return await TestPool.find({ createdBy: creatorId })
+      .populate("createdBy", "fullName email role currentLevel")
+      .sort({ createdAt: -1 });
+  } catch (error) {
+    console.error("Error getting test pools by creator:", error);
+    throw new Error("Failed to get test pools by creator");
+  }
+};
+
 module.exports = {
   createTestPool,
   findTestPoolById,
   getAllTestPools,
   updateTestPoolById,
   deleteTestPoolById,
+  getTestPoolsByLevel,
+  getPoolsByBaseTestId,
+  getTestPoolsByCreator,
 };

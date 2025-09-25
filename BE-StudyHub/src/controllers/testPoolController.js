@@ -67,10 +67,68 @@ const deleteTestPoolById = async (req, res) => {
   }
 };
 
+const getTestPoolsByLevel = async (req, res) => {
+  try {
+    const { level } = req.params;
+    const pools = await testPoolModel.getTestPoolsByLevel(level);
+    if (!pools || pools.length === 0) {
+      return res.status(404).json({ error: "No pools found for this level" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Pools retrieved", data: pools, total: pools.length });
+  } catch (error) {
+    console.error("Error getting pools by level:", error);
+    res.status(500).json({ error: "Failed to get test pools by level" });
+  }
+};
+
+const getPoolsByBaseTestId = async (req, res) => {
+  try {
+    const { testId } = req.params;
+    const pools = await testPoolModel.getPoolsByBaseTestId(testId);
+    if (!pools || pools.length === 0) {
+      return res.status(404).json({ error: "No pools found for this testId" });
+    }
+    res.status(200).json({
+      message: "Pools retrieved by testId",
+      data: pools,
+      total: pools.length,
+    });
+  } catch (error) {
+    console.error("Error getting pools by testId:", error);
+    res.status(500).json({ error: "Failed to get pools by testId" });
+  }
+};
+
+const getTestPoolsByCreator = async (req, res) => {
+  try {
+    const { creatorId } = req.params;
+    const pools = await testPoolModel.getTestPoolsByCreator(creatorId);
+
+    if (!pools || pools.length === 0) {
+      return res.status(404).json({ error: "No pools found for this creator" });
+    }
+
+    res.status(200).json({
+      message: "Test pools retrieved by creator",
+      data: pools,
+      total: pools.length,
+    });
+  } catch (error) {
+    console.error("Error getting pools by creator:", error);
+    res.status(500).json({ error: "Failed to get pools by creator" });
+  }
+};
+
 module.exports = {
   createTestPool,
   getTestPoolById,
   getAllTestPools,
   updateTestPoolById,
   deleteTestPoolById,
+  getTestPoolsByLevel,
+  getPoolsByBaseTestId,
+  getTestPoolsByCreator,
 };

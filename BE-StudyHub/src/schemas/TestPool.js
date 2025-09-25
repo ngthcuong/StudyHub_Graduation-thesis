@@ -7,7 +7,7 @@ const testPoolSchema = new mongoose.Schema(
       ref: "Test",
       required: true,
     },
-    level: { type: String, required: true }, // Nơi mà userB dùng đề thực hiện có có đúng level ko
+    level: { type: String, required: true }, // Nơi mà userB dùng đề thực hiện lấy đúng level không
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     usageCount: { type: Number, default: 0 }, // bao nhiêu user đã làm
     maxReuse: { type: Number, default: 10 }, // tối đa bao nhiêu user reuse
