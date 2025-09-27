@@ -14,25 +14,6 @@ export default function HomeLayout() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
 
-  //   const renderContent = () => {
-  //     switch (activeTab) {
-  //       case "dashboard":
-  //         return <Dashboard />;
-  //       case "courses":
-  //         return <CourseList variant="owned" />;
-  //       case "exercises":
-  //         return <TestList />;
-  //       case "achievements":
-  //         return <Achievements />;
-  //       case "profile":
-  //         return <UserInfoPage />;
-  //       case "settings":
-  //         return <Settings />;
-  //       default:
-  //         return <Dashboard />;
-  //     }
-  //   };
-
   return (
     <div className="flex ">
       {/* Sidebar */}
@@ -93,17 +74,17 @@ export default function HomeLayout() {
 
           <button
             onClick={() => {
-              setActiveTab("achievements");
-              navigate("/home/achievements");
+              setActiveTab("certificates");
+              navigate("/home/certificates");
             }}
             className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
-              activeTab === "achievements"
+              activeTab === "certificates"
                 ? "bg-blue-500 text-white"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
           >
             <EmojiEventsIcon className="w-4 h-4 mr-2" />
-            Achievements
+            Certificates
           </button>
 
           <button

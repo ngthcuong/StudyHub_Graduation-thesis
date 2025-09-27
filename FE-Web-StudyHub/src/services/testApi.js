@@ -13,6 +13,24 @@ export const testApi = rootApi.injectEndpoints({
       invalidatesTags: ["Test"],
     }),
 
+    // Tạo test pool
+    createTestPool: builder.mutation({
+      query: (testPoolInfo) => ({
+        url: "/test-pools",
+        method: "POST",
+        body: testPoolInfo,
+      }),
+      invalidatesTags: ["TestPool"],
+    }),
+
+    // Lấy test pool theo creator Id
+    getTestPoolsByCreatorId: builder.mutation({
+      query: (creatorId) => ({
+        url: `/test-pools/creator/${creatorId}`,
+      }),
+      providesTags: ["TestPool"],
+    }),
+
     // Lấy toàn bộ bài test
     getAllTest: builder.query({
       query: () => ({
@@ -98,6 +116,8 @@ export const testApi = rootApi.injectEndpoints({
 // Export hooks
 export const {
   useCreateTestMutation,
+  useCreateTestPoolMutation,
+  useGetTestPoolsByCreatorIdMutation,
   useGetAllTestQuery,
   useGetTestByTestIdQuery,
   useGetQuestionsByTestIdQuery,

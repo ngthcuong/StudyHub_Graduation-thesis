@@ -17,8 +17,10 @@ import { InfoOutline } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useCreateAttemptMutation,
+  useCreateTestPoolMutation,
   useGenerateTestQuestionsMutation,
   useGetQuestionsByTestIdQuery,
+  useGetTestPoolsByCreatorIdMutation,
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
 
@@ -32,6 +34,12 @@ const TestInformation = () => {
 
   let { data: testQuestions, isLoading: isLoadingGetTest } =
     useGetQuestionsByTestIdQuery(testId);
+
+  const { data: testPools, isLoading: isLoadingTestPool } =
+    useGetTestPoolsByCreatorIdMutation(user.id);
+
+  const [createTestPool, { isLoading: isLoadingCreateTestPool }] =
+    useCreateTestPoolMutation();
 
   const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
     useGenerateTestQuestionsMutation();
@@ -47,18 +55,30 @@ const TestInformation = () => {
         num_questions: testInfor.numQuestions,
         difficulty: testInfor.difficulty,
         question_types: testInfor.questionTypes,
+        exam_type: "TOEIC",
+        score_range: "405-600",
       };
 
+      let testPool;
+      if (!testPools) {
+        testPool = await createTestPool({
+          baseTestId: testId,
+          level: "TOEIC 550-650",
+          createdBy: user.id,
+          expiresAt: "2025-12-31T23:59:59.000Z",
+        });
+      }
+
       const attempt = await createAttempt({
-        testId: testInfor._id,
-        userId: user._id,
+        testPoolId: testPool.data._id,
+        evaluationModel: "gemini",
       });
 
       if (!attempt) {
         return;
       }
 
-      if (testQuestions.data.length === 0) {
+      if (testQuestions.data.length === 0 && testPools) {
         testQuestions = await generateTestQuestions(testData);
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
@@ -235,7 +255,11 @@ const TestInformation = () => {
               color="primary"
               size="medium"
               disabled={
-                isLoadingAttempt || isLoadingTestQuestion || isLoadingGetTest
+                isLoadingAttempt ||
+                isLoadingTestQuestion ||
+                isLoadingGetTest ||
+                isLoadingTestPool ||
+                isLoadingCreateTestPool
               }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
@@ -245,7 +269,11 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoadingTestQuestion || isLoadingAttempt || isLoadingGetTest ? (
+              {isLoadingTestQuestion ||
+              isLoadingAttempt ||
+              isLoadingGetTest ||
+              isLoadingTestPool ||
+              isLoadingCreateTestPool ? (
                 <CircularProgress size={24} color="white" />
               ) : (
                 "Start test"

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import CertificateDetailModal from "../../components/CertificateDetailModal";
+import { useGetCertificateByWalletAddressQuery } from "../../services/certificateApi";
+import { useSelector } from "react-redux";
 import {
   Box,
   Button,
@@ -36,64 +38,39 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 
-// Mock data for certificates
-const mockCertificates = [
-  {
-    id: "CERT001",
-    courseName: "English Grammar Mastery",
-    issueDate: new Date(2025, 3, 15),
-    status: "verified",
-  },
-  {
-    id: "CERT002",
-    courseName: "TOEIC Speaking Skills",
-    issueDate: new Date(2025, 5, 22),
-    status: "pending",
-  },
-  {
-    id: "CERT003",
-    courseName: "Business English",
-    issueDate: new Date(2025, 6, 10),
-    status: "verified",
-  },
-  {
-    id: "CERT004",
-    courseName: "IELTS Writing",
-    issueDate: new Date(2025, 7, 5),
-    status: "verified",
-  },
-  {
-    id: "CERT005",
-    courseName: "Academic Vocabulary",
-    issueDate: new Date(2025, 8, 18),
-    status: "pending",
-  },
-  {
-    id: "CERT006",
-    courseName: "Conversational English",
-    issueDate: new Date(2025, 8, 25),
-    status: "verified",
-  },
-];
-
 const statusOptions = ["All", "Pending", "Active", "Rejected"];
 
 export default function Certificate() {
-  const [certificates, setCertificates] = useState([]);
   const [filteredCertificates, setFilteredCertificates] = useState([]);
-  const [loading, setLoading] = useState(true);
+
   const [searchKeyword, setSearchKeyword] = useState("");
   const [status, setStatus] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openDialog, setOpenDialog] = useState(false);
+
   const [certificateToDelete, setCertificateToDelete] = useState(null);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [openDetailModal, setOpenDetailModal] = useState(false);
 
   const [showFilter, setShowFilter] = useState(false);
+
+  const user = useSelector((state) => state.auth.user);
+  const walletAddress = user?.walletAddress;
+
+  const {
+    data: apiCertificates,
+    isLoading,
+    error,
+    refetch,
+  } = useGetCertificateByWalletAddressQuery(walletAddress);
+
+  const certificates = useMemo(() => {
+    return apiCertificates?.certificates || [];
+  }, [apiCertificates]);
 
   const handleClearAll = () => {
     setSearchKeyword("");
@@ -102,54 +79,67 @@ export default function Certificate() {
     setEndDate(null);
   };
 
-  // Load certificates data
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setCertificates(mockCertificates);
-      setFilteredCertificates(mockCertificates);
-      setLoading(false);
-    }, 1000);
-  }, []);
+  const filterCertificates = useCallback(() => {
+    // Ensure certificates is always an array
+    if (!Array.isArray(certificates)) {
+      setFilteredCertificates([]);
+      return;
+    }
 
-  // Handle filtering when filter criteria change
-  useEffect(() => {
-    filterCertificates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKeyword, startDate, endDate, certificates]); // Apply all filters
-  const filterCertificates = () => {
     let filtered = [...certificates];
+    console.log("filter: ", filtered);
 
     // Filter by keyword (certificate ID or course name)
     if (searchKeyword) {
       filtered = filtered.filter(
         (cert) =>
-          cert.id.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          cert.courseName.toLowerCase().includes(searchKeyword.toLowerCase())
+          cert?.certCode?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          cert?.courseName?.toLowerCase().includes(searchKeyword.toLowerCase())
       );
+    }
+
+    // Filter by status
+    if (status && status !== "All") {
+      filtered = filtered.filter((cert) => {
+        const certStatus = cert.status || cert.verified;
+        if (status === "Pending")
+          return certStatus === "pending" || certStatus === false;
+        if (status === "Active")
+          return certStatus === "verified" || certStatus === true;
+        if (status === "Rejected") return certStatus === "rejected";
+        return true;
+      });
     }
 
     // Filter by date range
     if (startDate && endDate) {
       filtered = filtered.filter((cert) => {
-        const issueDate = new Date(cert.issueDate);
+        const issueDate = new Date(cert.issueDate || cert.createdAt);
         return issueDate >= startDate && issueDate <= endDate;
       });
     } else if (startDate) {
       filtered = filtered.filter((cert) => {
-        const issueDate = new Date(cert.issueDate);
+        const issueDate = new Date(cert.issueDate || cert.createdAt);
         return issueDate >= startDate;
       });
     } else if (endDate) {
       filtered = filtered.filter((cert) => {
-        const issueDate = new Date(cert.issueDate);
+        const issueDate = new Date(cert.issueDate || cert.createdAt);
         return issueDate <= endDate;
       });
     }
 
     setFilteredCertificates(filtered);
     setPage(0);
-  };
+  }, [certificates, searchKeyword, status, startDate, endDate]);
+
+  // Handle filtering when filter criteria change
+  useEffect(() => {
+    // Only filter if certificates is available and valid
+    if (certificates && Array.isArray(certificates)) {
+      filterCertificates();
+    }
+  }, [certificates, filterCertificates]);
 
   // Pagination handlers
   const handleChangePage = (event, newPage) => {
@@ -182,12 +172,8 @@ export default function Certificate() {
   };
 
   const handleDeleteCertificate = () => {
-    const updatedCertificates = certificates.filter(
-      (cert) => cert.id !== certificateToDelete.id
-    );
-    setCertificates(updatedCertificates);
     setOpenDialog(false);
-    // Here you would typically call an API to delete the certificate
+    refetch();
   };
 
   // View certificate details
@@ -260,7 +246,7 @@ export default function Certificate() {
               color="#64748b"
               sx={{ minWidth: 100, textAlign: "center" }}
             >
-              {filteredCertificates.length} of {certificates?.total || 0} items
+              {filteredCertificates.length} of {certificates.length} items
             </Typography>
           </Stack>
 
@@ -362,10 +348,19 @@ export default function Certificate() {
         </Box>
 
         {/* Certificates Table */}
-        {loading ? (
+        {isLoading ? (
           <Box className="my-8 text-center">
             <LinearProgress className="mb-4" />
             <Typography>Loading certificates...</Typography>
+          </Box>
+        ) : error ? (
+          <Box className="text-center py-8 bg-red-50 rounded-lg">
+            <Typography variant="h6" className="text-red-500 mb-2">
+              Error loading certificates
+            </Typography>
+            <Typography variant="body2" className="text-red-400">
+              {error?.data?.message || "Failed to load certificates"}
+            </Typography>
           </Box>
         ) : (
           <>
@@ -375,7 +370,7 @@ export default function Certificate() {
                   <TableHead className="bg-blue-50">
                     <TableRow>
                       <TableCell className="font-bold text-blue-800">
-                        Certificate ID
+                        Certificate Code
                       </TableCell>
                       <TableCell className="font-bold text-blue-800">
                         Course Name
@@ -398,22 +393,26 @@ export default function Certificate() {
                         page * rowsPerPage + rowsPerPage
                       )
                       .map((certificate) => (
-                        <TableRow key={certificate.id} hover>
+                        <TableRow key={certificate._id || certificate.id} hover>
                           <TableCell className="font-medium">
-                            {certificate.id}
+                            {certificate.code || certificate.id}
                           </TableCell>
-                          <TableCell>{certificate.courseName}</TableCell>
                           <TableCell>
-                            {formatDate(certificate.issueDate)}
+                            {certificate.course?.name || certificate.courseName}
+                          </TableCell>
+                          <TableCell>
+                            {formatDate(certificate.issueDate.formatted)}
                           </TableCell>
                           <TableCell>
                             <Chip
                               label={
+                                certificate.verified === true ||
                                 certificate.status === "verified"
                                   ? "Verified"
                                   : "Pending"
                               }
                               color={
+                                certificate.verified === true ||
                                 certificate.status === "verified"
                                   ? "success"
                                   : "warning"

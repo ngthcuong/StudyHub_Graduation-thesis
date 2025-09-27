@@ -1,28 +1,38 @@
-import axios from "axios";
-import config from "../configs/config";
+import { rootApi } from "./rootApi";
 
-const verifyCertificateByHash = async (hash) => {
-  try {
-    const { data } = await axios.get(`${config.baseApiUrl}/certs/hash/${hash}`);
-    return data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(error.response.data?.message || "Certificate not found");
-    }
-    throw new Error("Network error");
-  }
-};
+export const certificateApi = rootApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Xác minh chứng chỉ bằng hash
+    verifyCertificateByHash: builder.query({
+      query: (hash) => `/certs/hash/${hash}`,
+    }),
 
-const verifyCertificateByCode = async (code) => {
-  try {
-    const { data } = await axios.get(`${config.baseApiUrl}/certs/code/${code}`);
-    return data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(error.response.data?.message || "Certificate not found");
-    }
-    throw new Error("Network error");
-  }
-};
+    // Xác minh chứng chỉ bằng mã chứng chỉ
+    verifyCertificateByCode: builder.query({
+      query: (code) => `/certs/code/${code}`,
+    }),
 
-export { verifyCertificateByHash, verifyCertificateByCode };
+    // Lấy danh sách chứng chỉ của một địa chỉ
+    getCertificateByWalletAddress: builder.query({
+      query: (walletAddress) => `/certs/student/${walletAddress}`,
+    }),
+
+    // Pháy hành chứng chỉ cho người học
+    issueCertificate: builder.mutation({
+      query: (certifateData) => ({
+        url: "/issue",
+        method: "POST",
+        body: certifateData,
+      }),
+    }),
+  }),
+});
+
+export const {
+  useVerifyCertificateByHashQuery,
+  useVerifyCertificateByCodeQuery,
+  useGetCertificateByWalletAddressQuery,
+  useIssueCertificateMutation,
+} = certificateApi;
+
+export default certificateApi;

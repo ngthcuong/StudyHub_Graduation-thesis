@@ -1,37 +1,36 @@
 import React, { useState } from "react";
 import { TextField, CircularProgress, Chip, Avatar } from "@mui/material";
-import { verifyCertificateByCode } from "../../services/certificateApi";
-// import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-// import ErrorIcon from "@mui/icons-material/Error";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import { useVerifyCertificateByCodeQuery } from "../../services/certificateApi";
 
 const VerifyCertificatePage = () => {
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState(null);
+
+  const [
+    verifyCertificate,
+    { data: result, isLoading, error: apiError, isSuccess, isError },
+  ] = useVerifyCertificateByCodeQuery();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setResult(null);
+
     if (!code.trim()) {
       setError("Vui lòng nhập mã chứng chỉ");
       return;
     }
-    try {
-      setLoading(true);
-      const data = await verifyCertificateByCode(code.trim());
-      console.log(result);
 
-      setResult(data);
+    try {
+      await verifyCertificate(code.trim()).unwrap();
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      // Error được handle tự động bởi RTK Query
+      console.error("Verification failed:", err);
     }
   };
 
-  const cert = result?.certificate;
+  const cert = result?.data?.certificate || result?.certificate;
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-start justify-center py-16 px-4">
@@ -64,18 +63,18 @@ const VerifyCertificatePage = () => {
             />
           </div>
 
-          {error && (
+          {(error || isError) && (
             <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-              {error}
+              {error || apiError?.data?.message || "Verification failed"}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isLoading}
             className="w-full h-12 inline-flex items-center justify-center rounded-md bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white font-medium text-sm transition-colors"
           >
-            {loading ? (
+            {isLoading ? (
               <span className="inline-flex items-center gap-2">
                 <CircularProgress size={18} sx={{ color: "#fff" }} />
                 Verifying...
@@ -86,12 +85,12 @@ const VerifyCertificatePage = () => {
           </button>
         </form>
 
-        {!loading && result && (
+        {!isLoading && isSuccess && result && (
           <div className="mt-10">
-            {result ? (
+            {cert ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  {/* <CheckCircleIcon className="text-emerald-500" /> */}
+                  <CheckCircleIcon className="text-emerald-500" />
                   <h2 className="text-xl font-semibold text-slate-800">
                     Certificate Valid
                   </h2>
@@ -107,26 +106,30 @@ const VerifyCertificatePage = () => {
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Issued To</p>
-                    <p className="text-slate-900">{cert?.student?.name}</p>
+                    <p className="text-slate-900">
+                      {cert?.student?.name || cert?.studentName}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Course</p>
-                    <p className="text-slate-900">{cert?.course?.name}</p>
+                    <p className="text-slate-900">
+                      {cert?.course?.name || cert?.courseName}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Issued Date</p>
                     <p className="text-slate-900">
-                      {cert?.issueDate?.formatted
-                        ? new Date(cert.issueDate.formatted).toLocaleString(
-                            "vi-VN"
-                          )
+                      {cert?.issueDate
+                        ? new Date(cert.issueDate).toLocaleDateString("vi-VN")
+                        : cert?.createdAt
+                        ? new Date(cert.createdAt).toLocaleDateString("vi-VN")
                         : ""}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-slate-600">Hash</p>
                     <p className="font-mono text-[11px] leading-relaxed text-slate-900 bg-slate-100 rounded-md px-2 py-1 break-all">
-                      {cert?.certHash}
+                      {cert?.certHash || cert?.hash}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -138,10 +141,10 @@ const VerifyCertificatePage = () => {
                         label="Authentic"
                         avatar={
                           <Avatar sx={{ bgcolor: "transparent" }}>
-                            {/* <CheckCircleIcon
+                            <CheckCircleIcon
                               className="text-emerald-500"
                               fontSize="small"
-                            /> */}
+                            />
                           </Avatar>
                         }
                         variant="outlined"
@@ -152,7 +155,7 @@ const VerifyCertificatePage = () => {
               </div>
             ) : (
               <div className="flex items-center gap-3 text-red-600 mt-6">
-                {/* <ErrorIcon /> */}
+                <ErrorIcon />
                 <p className="font-medium">
                   Certificate is invalid or revoked.
                 </p>
