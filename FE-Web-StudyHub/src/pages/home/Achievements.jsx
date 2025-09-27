@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import HeaderHome from "./HeaderHome";
+import CertificateDetailModal from "../../components/CertificateDetailModal";
 import {
   Box,
   Button,
@@ -94,6 +95,8 @@ export default function Achievements() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openDialog, setOpenDialog] = useState(false);
   const [certificateToDelete, setCertificateToDelete] = useState(null);
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
 
   const [showFilter, setShowFilter] = useState(false);
 
@@ -194,9 +197,13 @@ export default function Achievements() {
 
   // View certificate details
   const handleViewDetails = (certificate) => {
-    // Navigate to certificate details page or open a modal
-    console.log("View certificate details:", certificate);
-    // Implementation would depend on your app's navigation/routing
+    setSelectedCertificate(certificate);
+    setOpenDetailModal(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setOpenDetailModal(false);
+    setSelectedCertificate(null);
   };
 
   // Add new certificate
@@ -497,6 +504,13 @@ export default function Achievements() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Certificate Detail Modal */}
+      <CertificateDetailModal
+        open={openDetailModal}
+        onClose={handleCloseDetailModal}
+        certificate={selectedCertificate}
+      />
     </div>
   );
 }
