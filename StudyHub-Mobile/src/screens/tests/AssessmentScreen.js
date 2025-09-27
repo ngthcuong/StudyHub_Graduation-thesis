@@ -81,14 +81,16 @@ const AssessmentScreen = ({ navigation, route }) => {
         <View style={styles.infoItem}>
           <Ionicons name="time-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Duration:</Text>
-          <Text style={styles.infoValue}>{test.duration || "N/A"} minutes</Text>
+          <Text style={styles.infoValue}>
+            {test.durationMin || "N/A"} minutes
+          </Text>
         </View>
 
         <View style={styles.infoItem}>
           <Ionicons name="help-circle-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Questions:</Text>
           <Text style={styles.infoValue}>
-            {test.questionsCount || 0} questions
+            {test.numQuestions || 0} questions
           </Text>
         </View>
 

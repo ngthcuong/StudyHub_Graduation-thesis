@@ -15,13 +15,17 @@ export const testApi = {
 
   // Get test questions
   getTestQuestions: async (testId) => {
-    const response = await api.get(`/tests/${testId}/questions`);
+    const response = await api.get(`/questions/test/${testId}`);
     return response.data;
   },
 
   // Start test attempt
-  startTestAttempt: async (testId) => {
-    const response = await api.post(`/tests/${testId}/attempts`);
+  startTestAttempt: async (testId, userId) => {
+    const response = await api.post(`/attempts`, {
+      testId,
+      userId,
+      evaluationModel: "gemini",
+    });
     return response.data;
   },
 
@@ -35,14 +39,16 @@ export const testApi = {
   },
 
   // Submit test attempt
-  submitTestAttempt: async (attemptId) => {
-    const response = await api.post(`/attempts/${attemptId}/submit`);
+  submitTestAttempt: async (attemptId, answersPayload) => {
+    const response = await api.post(`/attempts/${attemptId}/submit`, {
+      answers: answersPayload,
+    });
     return response.data;
   },
 
   // Get test results
   getTestResults: async (attemptId) => {
-    const response = await api.get(`/attempts/${attemptId}/results`);
+    const response = await api.get(`/attempts/${attemptId}`);
     return response.data;
   },
 

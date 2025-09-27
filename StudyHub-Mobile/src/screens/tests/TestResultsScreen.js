@@ -57,9 +57,32 @@ const TestResultsScreen = ({ navigation, route }) => {
     );
   }
 
-  const isPassed = results.score >= results.passingScore;
+  const isPassed = results.attempt.score >= results.passingScore;
   const scoreColor = isPassed ? "#10B981" : "#EF4444";
   const scoreIcon = isPassed ? "checkmark-circle" : "close-circle";
+
+  const correctAnswers = results.answers.filter((a) => a.isCorrect).length;
+  const totalQuestions = results.answers.length;
+
+  // Tính thời gian làm bài
+  const startTime = "2025-09-25T09:11:34.856Z";
+  const endTime = "2025-09-25T09:12:04.420Z";
+
+  // Chuyển sang Date
+  const start = new Date(results.attempt.startTime);
+  const end = new Date(results.attempt.endTime);
+
+  // Tính chênh lệch mili-giây
+  const diffMs = end - start;
+
+  // Đổi sang phút, giây
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  console.log("Chênh lệch (giây):", diffSeconds);
+  console.log("Chênh lệch (phút):", diffMinutes);
+  console.log("Chênh lệch (giờ):", diffHours);
 
   return (
     <ScrollView style={styles.container}>
@@ -82,11 +105,10 @@ const TestResultsScreen = ({ navigation, route }) => {
       <View style={styles.scoreCard}>
         <Text style={styles.scoreLabel}>Your Score</Text>
         <Text style={[styles.scoreValue, { color: scoreColor }]}>
-          {results.score}%
+          {results.attempt.score}
         </Text>
         <Text style={styles.scoreDetails}>
-          {results.correctAnswers} out of {results.totalQuestions} questions
-          correct
+          {correctAnswers} out of {totalQuestions} questions correct
         </Text>
       </View>
 
@@ -97,13 +119,15 @@ const TestResultsScreen = ({ navigation, route }) => {
         <View style={styles.detailItem}>
           <Ionicons name="clipboard" size={20} color="#6B7280" />
           <Text style={styles.detailLabel}>Test:</Text>
-          <Text style={styles.detailValue}>{results.testTitle}</Text>
+          <Text style={styles.detailValue}>{results.attempt.testId.title}</Text>
         </View>
 
         <View style={styles.detailItem}>
           <Ionicons name="time" size={20} color="#6B7280" />
           <Text style={styles.detailLabel}>Time Taken:</Text>
-          <Text style={styles.detailValue}>{results.timeTaken} minutes</Text>
+          <Text style={styles.detailValue}>
+            {` ${diffMinutes}:${diffSeconds}`}
+          </Text>
         </View>
 
         <View style={styles.detailItem}>
@@ -130,7 +154,7 @@ const TestResultsScreen = ({ navigation, route }) => {
             <Ionicons name="checkmark-circle" size={20} color="#10B981" />
             <Text style={styles.breakdownLabel}>Correct Answers</Text>
           </View>
-          <Text style={styles.breakdownValue}>{results.correctAnswers}</Text>
+          <Text style={styles.breakdownValue}>{correctAnswers}</Text>
         </View>
 
         <View style={styles.breakdownItem}>
@@ -139,7 +163,7 @@ const TestResultsScreen = ({ navigation, route }) => {
             <Text style={styles.breakdownLabel}>Incorrect Answers</Text>
           </View>
           <Text style={styles.breakdownValue}>
-            {results.totalQuestions - results.correctAnswers}
+            {totalQuestions - correctAnswers}
           </Text>
         </View>
 
@@ -148,7 +172,7 @@ const TestResultsScreen = ({ navigation, route }) => {
             <Ionicons name="help-circle" size={20} color="#6B7280" />
             <Text style={styles.breakdownLabel}>Total Questions</Text>
           </View>
-          <Text style={styles.breakdownValue}>{results.totalQuestions}</Text>
+          <Text style={styles.breakdownValue}>{totalQuestions}</Text>
         </View>
       </View>
 
@@ -279,7 +303,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6B7280",
     marginLeft: 12,
-    flex: 1,
   },
   detailValue: {
     fontSize: 16,
