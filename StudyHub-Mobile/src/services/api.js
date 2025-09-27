@@ -3,10 +3,11 @@ import { store } from "../store/store";
 import { refreshToken, logout } from "../store/slices/authSlice";
 
 // Base API configuration
-const API_BASE_URL = "http://localhost:5000/api"; // Update this with your backend URL
+const API_BASE_URL_HOME = "http://192.168.9.31:3000/api/v1"; // Update this with your backend URL
+const API_BASE_URL_SCHOOL = "http://172.20.92.250:3000/api/v1"; // Update this with your backend URL
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL_SCHOOL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

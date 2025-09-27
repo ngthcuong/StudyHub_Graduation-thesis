@@ -29,6 +29,15 @@ const getAllTests = async (filter = {}) => {
   }
 };
 
+const getTestsByCourseId = async (courseId) => {
+  try {
+    return await Test.find({ courseId }).sort({ createdAt: -1 });
+  } catch (error) {
+    console.error("Error getting tests by courseId:", error);
+    throw new Error("Failed to get tests by courseId");
+  }
+};
+
 const updateTestById = async (id, updateData) => {
   try {
     return await Test.findByIdAndUpdate(id, updateData, { new: true });
@@ -53,4 +62,5 @@ module.exports = {
   getAllTests,
   updateTestById,
   deleteTestById,
+  getTestsByCourseId,
 };

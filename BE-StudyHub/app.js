@@ -13,11 +13,12 @@ const certificateRoutes = require("./src/routes/certificateRoutes");
 const testRoutes = require("./src/routes/testRoutes");
 const questionRoutes = require("./src/routes/questionRoutes");
 const attemptRoutes = require("./src/routes/attemptRoutes");
-const answerOptionRoutes = require("./src/routes/answerOptionRoutes");
 const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 
 const testResultRoutes = require("./src/routes/testResultRoutes");
 const generateTestRoutes = require("./src/routes/generateTestRoutes");
+
+const testPoolRoutes = require("./src/routes/testPoolRoutes");
 
 require("dotenv").config();
 
@@ -45,11 +46,11 @@ app.use("/api/v1/certs", certificateRoutes);
 app.use("/api/v1/tests", testRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/attempts", attemptRoutes);
-app.use("/api/v1/options", answerOptionRoutes);
 app.use("/api/v1/answers", userAnswerRoutes);
 
 app.use("/api/v1/test-result", testResultRoutes);
 app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chung
+app.use("/api/v1/test-pools", testPoolRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {
