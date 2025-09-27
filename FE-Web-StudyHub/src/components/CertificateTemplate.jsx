@@ -10,7 +10,7 @@ import VerifiedIcon from "@mui/icons-material/Verified";
     }
   - onDownload: function
 */
-const Certificate = ({ data = {} }) => {
+const CertificateTemplate = ({ data = {} }) => {
   const {
     code = "EEC-2024-001",
     studentName = "Sarah Johnson",
@@ -109,4 +109,4 @@ const Certificate = ({ data = {} }) => {
   );
 };
 
-export default Certificate;
+export default CertificateTemplate;

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import HeaderHome from "./HeaderHome";
 import CertificateDetailModal from "../../components/CertificateDetailModal";
 import {
   Box,
@@ -7,8 +6,6 @@ import {
   TextField,
   MenuItem,
   Select,
-  FormControl,
-  InputLabel,
   Table,
   TableBody,
   TableCell,
@@ -37,8 +34,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 
 // Mock data for certificates
@@ -83,7 +78,7 @@ const mockCertificates = [
 
 const statusOptions = ["All", "Pending", "Active", "Rejected"];
 
-export default function Achievements() {
+export default function Certificate() {
   const [certificates, setCertificates] = useState([]);
   const [filteredCertificates, setFilteredCertificates] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -17,8 +17,8 @@ import CourseList from "../pages/course/CourseList";
 import CourseLessson from "../components/CourseLessson";
 import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
-import Achievements from "../pages/home/Achievements";
 import Settings from "../pages/home/Settings";
+import Certificate from "../pages/home/Certificates";
 
 export const router = createBrowserRouter([
   {
@@ -53,8 +53,8 @@ export const router = createBrowserRouter([
                 element: <TestList />,
               },
               {
-                path: "achievements",
-                element: <Achievements />,
+                path: "certificates",
+                element: <Certificate />,
               },
               {
                 path: "profile",
