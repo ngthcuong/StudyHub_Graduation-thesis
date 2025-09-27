@@ -12,7 +12,7 @@ const createAttempt = async (attemptData) => {
 
 const findAttemptById = async (id) => {
   try {
-    return await TestAttempt.findById(id).populate("testId userId");
+    return await TestAttempt.findById(id).populate("generatedTestId userId");
   } catch (error) {
     console.error("Error finding attempt by id:", error);
     throw new Error("Failed to find attempt by id");
@@ -21,7 +21,7 @@ const findAttemptById = async (id) => {
 
 const findAttemptsByUser = async (userId) => {
   try {
-    return await TestAttempt.find({ userId });
+    return await TestAttempt.find({ userId }).populate("generatedTestId");
   } catch (error) {
     console.error("Error finding attempts by user:", error);
     throw new Error("Failed to find attempts by user");
@@ -37,12 +37,13 @@ const updateAttemptById = async (id, updateData) => {
   }
 };
 
-const findAttemptByTestId = async (testId, userId) => {
-  const query = { testId };
+const findAttemptByTestId = async (generatedTestId, userId) => {
+  const query = { generatedTestId };
   if (userId) query.userId = userId;
 
-  // Lấy attempt mới nhất
-  return await TestAttempt.findOne(query).sort({ createdAt: -1 });
+  return await TestAttempt.findOne(query)
+    .sort({ createdAt: -1 })
+    .populate("generatedTestId userId");
 };
 
 module.exports = {
