@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const TestPool = require("../schemas/TestPool");
+const TestAttempt = require("../schemas/TestAttempt");
 
 const createTestPool = async (poolData) => {
   try {
@@ -82,6 +84,33 @@ const getTestPoolsByCreator = async (creatorId) => {
   }
 };
 
+const findTestPool = async (filter) => {
+  try {
+    if (filter.baseTestId && typeof filter.baseTestId === "string") {
+      filter.baseTestId = new mongoose.Types.ObjectId(filter.baseTestId);
+    }
+
+    return await TestPool.findOne(filter).populate(
+      "createdBy",
+      "fullName email role currentLevel"
+    );
+  } catch (error) {
+    console.error("Error finding test pool:", error);
+    throw new Error("Failed to find test pool");
+  }
+};
+
+const findAttemptByUserAndPool = async (userId, testPoolId) => {
+  try {
+    return await TestAttempt.findOne({ userId, testPoolId }).populate(
+      "generatedTestId userId"
+    );
+  } catch (error) {
+    console.error("Error finding attempt by user and pool:", error);
+    throw new Error("Failed to find attempt by user and pool");
+  }
+};
+
 module.exports = {
   createTestPool,
   findTestPoolById,
@@ -91,4 +120,6 @@ module.exports = {
   getTestPoolsByLevel,
   getPoolsByBaseTestId,
   getTestPoolsByCreator,
+  findTestPool,
+  findAttemptByUserAndPool,
 };

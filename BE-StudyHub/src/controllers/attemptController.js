@@ -1,6 +1,8 @@
 const attemptModel = require("../models/testAttemptModel");
 const userAnswerModel = require("../models/userAnswerModel");
 const questionModel = require("../models/questionModel");
+const testPoolModel = require("../models/testPoolModel");
+const testModel = require("../models/testModel");
 
 const startAttempt = async (req, res) => {
   try {
@@ -157,10 +159,70 @@ const getAttemptByTest = async (req, res) => {
   }
 };
 
+const getAttemptInfo = async (req, res) => {
+  try {
+    const { userId, testId } = req.body;
+
+    // 1. Tìm pool theo testId
+    const testPool = await testPoolModel.findTestPool({
+      baseTestId: testId,
+      status: "active",
+    });
+    if (!testPool) {
+      return res
+        .status(404)
+        .json({ message: "No test pool found for this test" });
+    }
+
+    // 2. Tìm attempt của user trong pool này
+    const attempt = await attemptModel.findAttemptByUserAndPool(
+      userId,
+      testPool._id
+    );
+
+    console.log("Found attempt:", attempt);
+
+    // 3. Lấy thêm thông tin test gốc nếu muốn hiển thị
+    const baseTest = await testModel.findTestById(testId);
+
+    if (attempt) {
+      // Nếu user đã attempt
+      return res.json({
+        testInfo: baseTest,
+        attemptInfo: {
+          testPoolId: attempt.testPoolId?._id,
+          userId: attempt.userId?._id,
+          attemptNumber: attempt.attemptNumber,
+          maxAttempts: attempt.maxAttempts,
+          startTime: attempt.startTime,
+          endTime: attempt.endTime,
+          score: attempt.score,
+          feedback: attempt.feedback,
+          evaluationModel: attempt.evaluationModel,
+        },
+      });
+    } else {
+      // Nếu user chưa attempt -> trả về default
+      return res.json({
+        testInfo: baseTest,
+        attemptInfo: {
+          attemptNumber: 0,
+          maxAttempts: 3,
+          score: 0,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Error in getAttemptInfo:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   startAttempt,
   submitAttempt,
   getAttemptById,
   getAttemptsByUser,
   getAttemptByTest,
+  getAttemptInfo,
 };

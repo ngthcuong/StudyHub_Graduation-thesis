@@ -46,10 +46,22 @@ const findAttemptByTestId = async (generatedTestId, userId) => {
     .populate("generatedTestId userId");
 };
 
+const findAttemptByUserAndPool = async (userId, testPoolId) => {
+  try {
+    return await TestAttempt.findOne({ userId, testPoolId }).populate(
+      "testPoolId userId"
+    );
+  } catch (error) {
+    console.error("Error finding attempt by user and pool:", error);
+    throw new Error("Failed to find attempt by user and pool");
+  }
+};
+
 module.exports = {
   createAttempt,
   findAttemptById,
   findAttemptsByUser,
   updateAttemptById,
   findAttemptByTestId,
+  findAttemptByUserAndPool,
 };
