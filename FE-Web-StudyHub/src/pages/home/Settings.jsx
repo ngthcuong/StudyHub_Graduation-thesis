@@ -6,32 +6,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6">
-      <h1 className="text-2xl font-bold mb-6 text-black">Settings</h1>
-
-      {/* Profile Section */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-600 mb-3">Profile</h2>
-        <div className="flex justify-between items-center border-b border-gray-200 py-2">
-          <label className="text-base text-gray-800">Username</label>
-          <input
-            type="text"
-            value="EnglishLearner"
-            readOnly
-            className="bg-gray-100 px-2 py-1 rounded text-gray-700 text-sm"
-          />
-        </div>
-        <div className="flex justify-between items-center border-b border-gray-200 py-2">
-          <label className="text-base text-gray-800">Email</label>
-          <input
-            type="email"
-            value="learner@example.com"
-            readOnly
-            className="bg-gray-100 px-2 py-1 rounded text-gray-700 text-sm"
-          />
-        </div>
-      </div>
-
+    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-md p-6">
       {/* Language Preferences Section */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-600 mb-3">

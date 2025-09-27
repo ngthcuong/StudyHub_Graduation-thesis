@@ -12,6 +12,9 @@ import Achievements from "../pages/home/Achievements";
 import Settings from "../pages/home/Settings";
 import CourseList from "../pages/course/CourseList";
 import TestList from "../pages/test/TestList";
+import Header from "./Header";
+import UserInfoPage from "../pages/user/UserInfoPage";
+import { Person } from "@mui/icons-material";
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -21,11 +24,13 @@ export default function Sidebar() {
       case "dashboard":
         return <Dashboard />;
       case "courses":
-        return <CourseList />;
+        return <CourseList variant="owned" />;
       case "exercises":
         return <TestList />;
       case "achievements":
         return <Achievements />;
+      case "profile":
+        return <UserInfoPage />;
       case "settings":
         return <Settings />;
       default:
@@ -95,6 +100,18 @@ export default function Sidebar() {
           </button>
 
           <button
+            onClick={() => setActiveTab("profile")}
+            className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
+              activeTab === "profile"
+                ? "bg-blue-500 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <Person className="w-4 h-4 mr-2" />
+            Profile
+          </button>
+
+          <button
             onClick={() => setActiveTab("settings")}
             className={`flex items-center px-5 py-2 rounded-r-md ${
               activeTab === "settings"
@@ -109,7 +126,10 @@ export default function Sidebar() {
       </div>
 
       {/* Nội dung hiển thị */}
-      <div className="ml-64 flex-1 p-6">{renderContent()}</div>
+      <div className="ml-64 flex-1 px-6 py-2">
+        <Header />
+        {renderContent()}
+      </div>
     </div>
   );
 }

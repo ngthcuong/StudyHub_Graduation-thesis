@@ -70,8 +70,8 @@ const TestList = () => {
   }
 
   return (
-    <Box className="min-h-screen bg-gray-50 py-8 px-2">
-      <Box className="max-w-4xl mx-auto">
+    <Box className="min-h-fit bg-white py-8 px-6 rounded-xl">
+      <Box className="max-w-6xl mx-auto">
         <Typography
           variant="h5"
           fontWeight={700}

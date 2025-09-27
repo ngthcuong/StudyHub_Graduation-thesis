@@ -14,7 +14,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import FormField from "./FormField";
 import { useState } from "react";
-import authApi from "../services/authApi";
+import { useChangePasswordMutation } from "../services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../redux/slices/snackbar";
 import Snackbar from "../components/Snackbar";
@@ -42,12 +42,7 @@ const ModalChangePassword = ({ open, onClose }) => {
       .oneOf([yup.ref("newPassword")], "Mật khẩu không khớp"),
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-    reset,
-  } = useForm({
+  const { control, handleSubmit, reset } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
       currentPassword: "",
@@ -56,15 +51,28 @@ const ModalChangePassword = ({ open, onClose }) => {
     },
   });
 
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+
   const onSubmit = async (data) => {
     try {
-      const response = await authApi.changePassword({
+      const response = await changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      if (response) {
-        console.log(response);
-        dispatch(openSnackbar({ message: response }));
+      console.log(response);
+      if (response?.error) {
+        dispatch(
+          openSnackbar({
+            message: response?.error?.data?.error,
+            severity: "error",
+          })
+        );
+      } else {
+        dispatch(
+          openSnackbar({
+            message: response.data?.message || "Password changed successfully",
+          })
+        );
         reset();
         setTimeout(() => {
           onClose();
@@ -181,7 +189,7 @@ const ModalChangePassword = ({ open, onClose }) => {
             <Button
               type="submit"
               variant="contained"
-              disabled={isSubmitting}
+              disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white"
               sx={{
                 textTransform: "none",
