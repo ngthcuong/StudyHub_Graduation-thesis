@@ -26,13 +26,19 @@ import {
   DialogTitle,
   Tooltip,
   LinearProgress,
+  Stack,
+  InputAdornment,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 
 // Mock data for certificates
 const mockCertificates = [
@@ -74,26 +80,29 @@ const mockCertificates = [
   },
 ];
 
+const statusOptions = ["All", "Pending", "Active", "Rejected"];
+
 export default function Achievements() {
   const [certificates, setCertificates] = useState([]);
   const [filteredCertificates, setFilteredCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [status, setStatus] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openDialog, setOpenDialog] = useState(false);
   const [certificateToDelete, setCertificateToDelete] = useState(null);
-  const [showDateFilter, setShowDateFilter] = useState(false);
 
-  // Certificate types for filter
-  const certificateTypes = [
-    { value: "", label: "All Types" },
-    { value: "verified", label: "Verified" },
-    { value: "pending", label: "Pending Verification" },
-  ];
+  const [showFilter, setShowFilter] = useState(false);
+
+  const handleClearAll = () => {
+    setSearchKeyword("");
+    setStatus("All");
+    setStartDate(null);
+    setEndDate(null);
+  };
 
   // Load certificates data
   useEffect(() => {
@@ -109,9 +118,7 @@ export default function Achievements() {
   useEffect(() => {
     filterCertificates();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKeyword, typeFilter, startDate, endDate, certificates]);
-
-  // Apply all filters
+  }, [searchKeyword, startDate, endDate, certificates]); // Apply all filters
   const filterCertificates = () => {
     let filtered = [...certificates];
 
@@ -122,11 +129,6 @@ export default function Achievements() {
           cert.id.toLowerCase().includes(searchKeyword.toLowerCase()) ||
           cert.courseName.toLowerCase().includes(searchKeyword.toLowerCase())
       );
-    }
-
-    // Filter by certificate type/status
-    if (typeFilter) {
-      filtered = filtered.filter((cert) => cert.status === typeFilter);
     }
 
     // Filter by date range
@@ -187,147 +189,171 @@ export default function Achievements() {
     );
     setCertificates(updatedCertificates);
     setOpenDialog(false);
+    // Here you would typically call an API to delete the certificate
   };
 
   // View certificate details
-  const handleViewDetails = (certificate) => {};
+  const handleViewDetails = (certificate) => {
+    // Navigate to certificate details page or open a modal
+    console.log("View certificate details:", certificate);
+    // Implementation would depend on your app's navigation/routing
+  };
 
   // Add new certificate
-  const handleAddCertificate = () => {};
-
-  // Toggle date filter visibility
-  const toggleDateFilter = () => {
-    setShowDateFilter(!showDateFilter);
+  const handleAddCertificate = () => {
+    // Navigate to add certificate page or open a modal
+    console.log("Add new certificate");
+    // Implementation would depend on your app's navigation/routing
   };
 
   return (
     <div className="w-full bg-white min-h-screen">
       <Box className="container mx-auto px-4 py-6">
-        {/* Filters */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between mb-4">
-            <Typography variant="h6" className="text-blue-700 mb-3 sm:mb-0">
-              <FilterAltIcon className="mr-2 align-middle" />
-              Filter Certificates
-            </Typography>
-
-            {/* Search by keyword */}
-            <div className="flex-grow sm:max-w-xs sm:ml-4">
-              <TextField
-                fullWidth
-                size="small"
-                variant="outlined"
-                placeholder="Search by ID or Name"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                InputProps={{
-                  startAdornment: <SearchIcon className="mr-2 text-gray-400" />,
-                }}
-                className="bg-white"
-              />
-            </div>
-
-            {/* Type filter */}
-            <FormControl
+        {/* Search and Filters */}
+        <Box className="bg-white rounded-xl shadow p-4 mb-4">
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
+            className="w-full"
+          >
+            <TextField
+              placeholder="Search your certificate with keyword..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              fullWidth
               size="small"
-              className="min-w-[160px] ml-0 sm:ml-4 mt-3 sm:mt-0"
-            >
-              <InputLabel id="type-filter-label">Certificate Status</InputLabel>
-              <Select
-                labelId="type-filter-label"
-                id="type-filter"
-                value={typeFilter}
-                label="Certificate Status"
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="bg-white"
-              >
-                {certificateTypes.map((type) => (
-                  <MenuItem key={type.value} value={type.value}>
-                    {type.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            {/* Date filter toggle button */}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              sx={{ minWidth: 220 }}
+            />
             <Button
               variant="outlined"
               color="primary"
-              startIcon={<CalendarMonthIcon />}
-              onClick={toggleDateFilter}
-              className="mt-3 sm:mt-0 ml-0 sm:ml-4"
+              onClick={() => setShowFilter((v) => !v)}
+              sx={{ textTransform: "none", fontWeight: 600, minWidth: 100 }}
+              startIcon={
+                !showFilter ? <FilterAltOutlined /> : <FilterAltOffOutlined />
+              }
             >
-              {showDateFilter ? "Hide Date Filter" : "Date Filter"}
+              Filters
             </Button>
-          </div>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleClearAll}
+              sx={{ textTransform: "none", minWidth: 100 }}
+            >
+              Clear All
+            </Button>
+            <Typography
+              variant="body2"
+              color="#64748b"
+              sx={{ minWidth: 100, textAlign: "center" }}
+            >
+              {filteredCertificates.length} of {certificates?.total || 0} items
+            </Typography>
+          </Stack>
 
-          {/* Date range filter */}
-          {showDateFilter && (
-            <div className="flex flex-wrap items-center mt-4">
-              <TextField
-                label="From Date"
-                type="date"
-                value={
-                  startDate
-                    ? new Date(startDate).toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) =>
-                  setStartDate(e.target.value ? new Date(e.target.value) : null)
-                }
-                className="bg-white mr-4 mb-2 sm:mb-0"
-                size="small"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              <TextField
-                label="To Date"
-                type="date"
-                value={
-                  endDate ? new Date(endDate).toISOString().split("T")[0] : ""
-                }
-                onChange={(e) =>
-                  setEndDate(e.target.value ? new Date(e.target.value) : null)
-                }
-                className="bg-white"
-                size="small"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-
-              {(startDate || endDate) && (
-                <Button
-                  color="secondary"
+          {/* Bộ lọc chỉ hiện khi showFilter = true */}
+          {showFilter && (
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={2}
+              alignItems="center"
+            >
+              {/* Status */}
+              <Box className="flex flex-col w-full md:w-auto">
+                <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
+                  Completion Status
+                </Typography>
+                <Select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
                   size="small"
-                  onClick={() => {
-                    setStartDate(null);
-                    setEndDate(null);
-                  }}
-                  className="ml-4"
+                  sx={{ minWidth: 140 }}
                 >
-                  Clear Dates
-                </Button>
-              )}
-            </div>
+                  {statusOptions.map((opt) => (
+                    <MenuItem key={opt} value={opt}>
+                      {opt}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+
+              {/* Issued Date Range */}
+              <div className="flex flex-col w-full mt-4 p-4 rounded-lg">
+                <Typography
+                  variant="body2"
+                  className="text-gray-700 font-medium mb-3"
+                >
+                  Select date range:
+                </Typography>
+                <div className="flex flex-wrap items-center gap-4">
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="From Date"
+                      value={startDate}
+                      onChange={(newDate) => {
+                        if (newDate) {
+                          const date = new Date(newDate);
+                          date.setHours(0, 0, 0, 0);
+                          setStartDate(date);
+                        } else {
+                          setStartDate(null);
+                        }
+                      }}
+                      className="bg-white"
+                      slotProps={{ textField: { size: "small" } }}
+                    />
+                    <DatePicker
+                      label="To Date"
+                      value={endDate}
+                      onChange={(newDate) => {
+                        if (newDate) {
+                          const date = new Date(newDate);
+                          date.setHours(23, 59, 59, 999);
+                          setEndDate(date);
+                        } else {
+                          setEndDate(null);
+                        }
+                      }}
+                      className="bg-white"
+                      slotProps={{ textField: { size: "small" } }}
+                    />
+                  </LocalizationProvider>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setStartDate(null);
+                      setEndDate(null);
+                    }}
+                    className="text-blue-600 border-blue-600 hover:bg-blue-50 !normal-case"
+                  >
+                    Clear range
+                  </Button>
+                </div>
+              </div>
+            </Stack>
           )}
-        </div>
+        </Box>
 
         {/* Add New Certificate Button */}
-        <Box className="flex justify-between items-center mb-4">
-          <Typography variant="body1" className="text-gray-600">
-            Showing{" "}
-            {filteredCertificates.length > 0 ? page * rowsPerPage + 1 : 0} -{" "}
-            {Math.min((page + 1) * rowsPerPage, filteredCertificates.length)} of{" "}
-            {filteredCertificates.length} certificates
-          </Typography>
+        <Box className="flex items-center mb-4 w-full justify-end">
           <Button
             variant="contained"
             color="primary"
             startIcon={<AddCircleOutlineIcon />}
             onClick={handleAddCertificate}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 !normal-case"
           >
             Add Certificate
           </Button>
@@ -358,7 +384,7 @@ export default function Achievements() {
                       <TableCell className="font-bold text-blue-800">
                         Status
                       </TableCell>
-                      <TableCell className="font-bold text-blue-800 text-center">
+                      <TableCell className="font-bold text-blue-800 !text-center">
                         Actions
                       </TableCell>
                     </TableRow>
