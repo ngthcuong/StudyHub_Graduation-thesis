@@ -15,7 +15,9 @@ const {
   toPlain,
   structureCertificateData,
   structureCertificateList,
+  generateCertCode,
 } = require("../utils/helper");
+const Certificate = require("../schemas/Certificate");
 
 /**
  * Tạo bản ghi chứng chỉ trong cơ sở dữ liệu (KHÔNG phát hành on-chain).
@@ -52,12 +54,18 @@ const createCertificate = async (req, res) => {
  */
 const issueCertificate = async (req, res, next) => {
   try {
-    const { student, studentName, issuer, courseName } = req.body;
-    if (!student || !studentName || !issuer || !courseName) {
+    const { student, studentName, issuer, issuerName, courseName } = req.body;
+    if (!student || !studentName || !issuer || !issuerName || !courseName) {
       return res.status(400).json({
         error: "Missing required fields",
         received: req.body,
-        required: ["student", "studentName", "issuer", "courseName"],
+        required: [
+          "student",
+          "studentName",
+          "issuer",
+          "issuerName",
+          "courseName",
+        ],
       });
     }
 
@@ -70,36 +78,57 @@ const issueCertificate = async (req, res, next) => {
     //   );
     // }
 
+    const certCode = generateCertCode(
+      new Date(),
+      req.body.learnerId,
+      req.body.courseId
+    );
+
+    console.log("Generated certCode:", certCode);
+
     // Build JSON metadata
     const metadata = buildCertificateMetadata({
       issuer,
+      issuerName,
       studentAddress: student,
       studentName,
       courseName,
+      certCode,
     });
+
+    console.log("Built metadata:", JSON.stringify(metadata, null, 2));
 
     // Lưu JSON lên IPFS (Pinata)
     const meta = await uploadJSON(metadata, {
       name: "studyhub-certificate.json",
       keyvalues: {
         type: "studyhub-certificate",
-        student: student.toLowerCase(),
-        studentName,
-        issuer: issuer.toLowerCase(),
-        courseName,
+        student: String(student).toLowerCase(),
+        studentName: String(studentName),
+        issuer: String(issuer).toLowerCase(),
+        courseName: String(courseName),
+        certCode: String(certCode),
       },
     });
 
     // Gọi on-chain với metadataURI (ipfs://CID)
-    const { certHash, txHash } = await issueOnChain(
-      student,
-      studentName,
-      issuer,
-      courseName,
-      meta.uri
-    );
-    // Bổ sung certHash vào keyvalues để search nhanh hơn
-    await updatePinataKeyvalues(meta.cid, { certHash });
+    let certHash, txHash;
+    try {
+      const result = await issueOnChain(
+        student,
+        studentName,
+        issuer,
+        courseName,
+        meta.uri
+      );
+      certHash = result.certHash;
+      txHash = result.txHash;
+    } catch (contractError) {
+      throw contractError;
+    }
+    // Bổ sung certHash, certCode vào keyvalues để search nhanh hơn
+    await updatePinataKeyvalues(meta.cid, { certHash: String(certHash) });
+    await updatePinataKeyvalues(meta.cid, { certCode: String(certCode) });
 
     // Tạo và lưu chứng chỉ vào database
     await certificateModel.createCertificate({
@@ -117,6 +146,7 @@ const issueCertificate = async (req, res, next) => {
     return res.json({
       ok: true,
       certHash,
+      certCode,
       metadataURI: meta.uri,
       metadataCID: meta.cid,
       txHash,
@@ -179,8 +209,6 @@ const getCertificateByCode = async (req, res, next) => {
       certCode
     );
 
-    console.log(certificate.certHash);
-
     if (
       !certificate.certHash ||
       certificate.certHash.length !== 66 ||
@@ -227,6 +255,7 @@ const getStudentCertificatesByStudent = async (req, res, next) => {
     }
     const [list, total] = await readByStudent(studentAddress);
     const structuredList = structureCertificateList(toPlain(list));
+
     return res.json({
       total: Number(total),
       certificates: structuredList,

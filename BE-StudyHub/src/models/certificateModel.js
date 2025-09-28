@@ -23,7 +23,7 @@ const findCertificateById = async (id) => {
 
 const findCertificateByCertHash = async (certHash) => {
   try {
-    const certificate = await Certificate.findOne({ certHash });
+    const certificate = await Certificate.findOne({ certHash }).lean();
     return certificate;
   } catch (error) {
     console.error("Error finding certificate by cert hash:", error);
