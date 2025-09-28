@@ -99,9 +99,9 @@ const issueCertificate = async (req, res, next) => {
       name: "studyhub-certificate.json",
       keyvalues: {
         type: "studyhub-certificate",
-        student: String(student).toLowerCase(),
+        student: String(student),
         studentName: String(studentName),
-        issuer: String(issuer).toLowerCase(),
+        issuer: String(issuer),
         courseName: String(courseName),
         certCode: String(certCode),
       },
@@ -123,8 +123,17 @@ const issueCertificate = async (req, res, next) => {
       throw contractError;
     }
     // Bổ sung certHash, certCode vào keyvalues để search nhanh hơn
-    await updatePinataKeyvalues(meta.cid, { certHash: String(certHash) });
-    await updatePinataKeyvalues(meta.cid, { certCode: String(certCode) });
+    await updatePinataKeyvalues(meta.cid, {
+      certCode: String(certCode),
+      certHash,
+      issuer,
+      learnerId: req.body.learnerId,
+      courseId: req.body.courseId,
+      courseName,
+      learnerAddress: student,
+      issueDate: new Date(),
+      network: "sepolia",
+    });
 
     // Tạo và lưu chứng chỉ vào database
     await certificateModel.createCertificate({
@@ -293,19 +302,41 @@ const getStudentCertificatesHybrid = async (req, res, next) => {
       console.error("Database query failed:", dbError.message);
     }
 
-    // // 2. Fallback: Lấy từ Pinata
-    // const keyvalues = {
-    //   type: { value: "studyhub-certificate", op: "eq" },
-    //   student: { value: String(address).toLowerCase(), op: "eq" },
-    // };
+    // 2. Fallback: Lấy từ Pinata
+    const keyvalues = {
+      learnerAddress: { value: String(address), op: "eq" },
+    };
 
-    // const pinataCerts = await searchMetadataByKeyvalues(keyvalues, 100, 0);
+    // Lấy tất cả chứng chỉ trước (không lọc)
+    const pinataCerts = await searchMetadataByKeyvalues(keyvalues, 100, 0);
 
-    // return res.json({
-    //   total: pinataCerts.length,
-    //   certificates: pinataCerts,
-    //   source: "pinata",
-    // });
+    const formatPinataCertificates = pinataCerts.map((cert) => {
+      const keyvalues = cert.metadata?.keyvalues || {};
+
+      // Format lại theo cấu trúc database
+      return {
+        _id: cert.cid, // Sử dụng CID làm ID tạm thời
+        certHash: keyvalues.certHash || null,
+        issuer: keyvalues.issuer || null,
+        learnerId: keyvalues.learnerId || null,
+        learnerAddress: keyvalues.learnerAddress || keyvalues.student || null,
+        courseId: keyvalues.courseId || null,
+        courseName: keyvalues.courseName || null,
+        issueDate: keyvalues.issueDate || cert.date_pinned,
+        metadataURI: cert.uri,
+        metadataCID: cert.cid,
+        network: keyvalues.network || "sepolia",
+        createdAt: cert.date_pinned,
+        updatedAt: cert.date_pinned,
+        certCode: keyvalues.certCode || null,
+      };
+    });
+
+    return res.json({
+      total: pinataCerts.length,
+      certificates: formatPinataCertificates,
+      source: "pinata",
+    });
   } catch (error) {
     console.error("Can not get certificates (hybrid): ", error);
     next(error);
