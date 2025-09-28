@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { TextField, CircularProgress, Chip, Avatar } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
+import { TextField, CircularProgress } from "@mui/material";
 import { useLazyVerifyCertificateByCodeQuery } from "../../services/certificateApi";
 import CertificateDetailModal from "../../components/CertificateDetailModal";
+import Header from "../../components/Header";
 
 const VerifyCertificatePage = () => {
   const [code, setCode] = useState("");
@@ -48,8 +47,9 @@ const VerifyCertificatePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-start justify-center py-16 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-slate-200 p-10">
+    <div className="min-h-screen bg-slate-50 flex  mx-auto flex-col w-7xl">
+      <Header />
+      <div className="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-slate-200 p-10 self-center">
         <h1 className="text-3xl font-semibold text-center mb-2 text-slate-900">
           Certificate Verification
         </h1>
