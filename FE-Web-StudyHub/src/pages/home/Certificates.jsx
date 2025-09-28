@@ -69,8 +69,11 @@ export default function Certificate() {
   } = useGetCertificateByWalletAddressQuery(walletAddress);
 
   const certificates = useMemo(() => {
-    return apiCertificates?.certificates || [];
+    const certs = apiCertificates?.certificates || [];
+    return certs;
   }, [apiCertificates]);
+
+  console.log(certificates);
 
   const handleClearAll = () => {
     setSearchKeyword("");
@@ -87,7 +90,6 @@ export default function Certificate() {
     }
 
     let filtered = [...certificates];
-    console.log("filter: ", filtered);
 
     // Filter by keyword (certificate ID or course name)
     if (searchKeyword) {
@@ -393,15 +395,13 @@ export default function Certificate() {
                         page * rowsPerPage + rowsPerPage
                       )
                       .map((certificate) => (
-                        <TableRow key={certificate._id || certificate.id} hover>
+                        <TableRow key={certificate.certHash} hover>
                           <TableCell className="font-medium">
-                            {certificate.code || certificate.id}
+                            {certificate.certCode}
                           </TableCell>
+                          <TableCell>{certificate.courseName}</TableCell>
                           <TableCell>
-                            {certificate.course?.name || certificate.courseName}
-                          </TableCell>
-                          <TableCell>
-                            {formatDate(certificate.issueDate.formatted)}
+                            {formatDate(certificate.issueDate)}
                           </TableCell>
                           <TableCell>
                             <Chip

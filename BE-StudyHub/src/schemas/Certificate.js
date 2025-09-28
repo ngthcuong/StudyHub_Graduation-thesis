@@ -21,10 +21,18 @@ const certificateSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    learnerAddress: {
+      type: String,
+      require: true,
+    },
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
       required: true,
+    },
+    courseName: {
+      type: String,
+      require: true,
     },
     issueDate: {
       type: Date,

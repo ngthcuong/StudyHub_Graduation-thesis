@@ -84,8 +84,6 @@ const issueCertificate = async (req, res, next) => {
       req.body.courseId
     );
 
-    console.log("Generated certCode:", certCode);
-
     // Build JSON metadata
     const metadata = buildCertificateMetadata({
       issuer,
@@ -95,8 +93,6 @@ const issueCertificate = async (req, res, next) => {
       courseName,
       certCode,
     });
-
-    console.log("Built metadata:", JSON.stringify(metadata, null, 2));
 
     // Lưu JSON lên IPFS (Pinata)
     const meta = await uploadJSON(metadata, {
@@ -136,6 +132,8 @@ const issueCertificate = async (req, res, next) => {
       issuer,
       learnerId: req.body.learnerId,
       courseId: req.body.courseId,
+      courseName,
+      learnerAddress: student,
       issueDate: new Date(),
       metadataURI: meta.uri,
       metadataCID: meta.cid,
@@ -256,12 +254,60 @@ const getStudentCertificatesByStudent = async (req, res, next) => {
     const [list, total] = await readByStudent(studentAddress);
     const structuredList = structureCertificateList(toPlain(list));
 
+    console.log(structuredList);
+
     return res.json({
       total: Number(total),
       certificates: structuredList,
     });
   } catch (error) {
     console.error("Can not get list certificates by student: ", error);
+    next(error);
+  }
+};
+
+/**
+ * Lấy danh sách chứng chỉ kết hợp database và blockchain
+ * @param {import('express').Request} req - params: { address }
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
+const getStudentCertificatesHybrid = async (req, res, next) => {
+  try {
+    const { address } = req.params;
+
+    // 1. Lấy từ database trước
+    try {
+      const dbCertificates =
+        await certificateModel.findCertificatesByStudentAddress(address);
+
+      if (dbCertificates && dbCertificates.length > 0) {
+        return res.json({
+          total: dbCertificates.length,
+          certificates: dbCertificates,
+          source: "database",
+        });
+      }
+    } catch (dbError) {
+      console.error("Database query failed:", dbError.message);
+    }
+
+    // // 2. Fallback: Lấy từ Pinata
+    // const keyvalues = {
+    //   type: { value: "studyhub-certificate", op: "eq" },
+    //   student: { value: String(address).toLowerCase(), op: "eq" },
+    // };
+
+    // const pinataCerts = await searchMetadataByKeyvalues(keyvalues, 100, 0);
+
+    // return res.json({
+    //   total: pinataCerts.length,
+    //   certificates: pinataCerts,
+    //   source: "pinata",
+    // });
+  } catch (error) {
+    console.error("Can not get certificates (hybrid): ", error);
     next(error);
   }
 };
@@ -309,5 +355,6 @@ module.exports = {
   getCertificateByHash,
   getCertificateByCode,
   getStudentCertificatesByStudent,
+  getStudentCertificatesHybrid,
   searchCertificates,
 };
