@@ -16,38 +16,12 @@ import {
   Business as BusinessIcon,
   MenuBook as MenuBookIcon,
 } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 
 const CertificateDetailModal = ({ open, onClose, certificate }) => {
+  const user = useSelector((state) => state.auth.user);
+
   if (!certificate) return null;
-
-  // Mock detailed data - in real app, this would come from API
-  const certificateDetails = {
-    certificateCode: certificate.id || "CERT-2024-ENG-001",
-    issueDate: certificate.issueDate
-      ? new Date(certificate.issueDate).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      : "March 15, 2024",
-    hashCode:
-      "0x4a7d9c2d8cf13a5d6c9d2c4f7a8b1c3e5d6f1ba5b6c7d8e1ffa5bb0c3e2c4f7a8b",
-    blockchainNetwork: "Ethereum Mainnet",
-
-    // Student Information
-    studentName: "Sarah Johnson",
-    studentId: "STU-2024-001",
-
-    // Issuing Organization
-    organizationName: "Global Education Institute",
-    taxCode: "TAX-123456789",
-
-    // Course Information
-    courseName: certificate.courseName || "Advanced English Communication",
-    courseCode: "ENG-ADV-101",
-    duration: "6 months",
-    credits: "24 credits",
-  };
 
   return (
     <Dialog
@@ -65,10 +39,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       {/* Header */}
       <DialogTitle className="bg-white border-b border-gray-100">
         <div className="flex items-center justify-between">
-          <Typography
-            variant="h5"
-            className="text-blue-600 font-bold flex items-center"
-          >
+          <Typography variant="h5" className="font-bold flex items-center">
             Certificate Details
           </Typography>
           <IconButton
@@ -101,7 +72,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.certificateCode}
+                  {certificate.certCode}
                 </Typography>
               </div>
 
@@ -113,7 +84,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.issueDate}
+                  {certificate.issueDate}
                 </Typography>
               </div>
             </div>
@@ -127,7 +98,21 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body2"
                   className="font-mono text-gray-700 break-all text-sm"
                 >
-                  {certificateDetails.hashCode}
+                  {certificate.certHash}
+                </Typography>
+              </Box>
+            </div>
+
+            <div className="mt-4">
+              <Typography variant="body2" className="text-gray-500 mb-2">
+                Metadata
+              </Typography>
+              <Box className="bg-gray-50 p-3 rounded-lg border">
+                <Typography
+                  variant="body2"
+                  className="font-mono text-gray-700 break-all text-sm"
+                >
+                  {certificate.metadataURI}
                 </Typography>
               </Box>
             </div>
@@ -137,8 +122,8 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                 Blockchain Network
               </Typography>
               <Chip
-                label={certificateDetails.blockchainNetwork}
-                className="bg-green-100 text-green-800"
+                label={certificate.network}
+                className="bg-green-100 text-green-800 uppercase"
                 size="small"
                 icon={<div className="w-2 h-2 bg-green-500 rounded-full"></div>}
               />
@@ -163,7 +148,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.studentName}
+                  {user.fullName}
                 </Typography>
               </div>
 
@@ -175,7 +160,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.studentId}
+                  {certificate.learnerAddress}
                 </Typography>
               </div>
             </div>
@@ -199,7 +184,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.organizationName}
+                  {"StudyHub"}
                 </Typography>
               </div>
 
@@ -211,7 +196,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.taxCode}
+                  {certificate.issuer}
                 </Typography>
               </div>
             </div>
@@ -235,19 +220,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.courseName}
-                </Typography>
-              </div>
-
-              <div>
-                <Typography variant="body2" className="text-gray-500 mb-1">
-                  Course Code
-                </Typography>
-                <Typography
-                  variant="body1"
-                  className="font-medium text-gray-800"
-                >
-                  {certificateDetails.courseCode}
+                  {certificate.courseName}
                 </Typography>
               </div>
 
@@ -259,7 +232,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificateDetails.duration}
+                  {certificate.duration}
                 </Typography>
               </div>
             </div>
@@ -271,6 +244,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
           <Button
             variant="contained"
             className="bg-blue-600 hover:bg-blue-700 normal-case"
+            onClick={onClose}
           >
             OK
           </Button>

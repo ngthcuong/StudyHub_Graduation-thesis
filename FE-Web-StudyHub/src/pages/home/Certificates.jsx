@@ -73,8 +73,6 @@ export default function Certificate() {
     return certs;
   }, [apiCertificates]);
 
-  console.log(certificates);
-
   const handleClearAll = () => {
     setSearchKeyword("");
     setStatus("All");
@@ -163,10 +161,10 @@ export default function Certificate() {
   };
 
   // Delete certificate handlers
-  const handleOpenDeleteDialog = (certificate) => {
-    setCertificateToDelete(certificate);
-    setOpenDialog(true);
-  };
+  // const handleOpenDeleteDialog = (certificate) => {
+  //   setCertificateToDelete(certificate);
+  //   setOpenDialog(true);
+  // };
 
   const handleCloseDeleteDialog = () => {
     setOpenDialog(false);
@@ -190,11 +188,7 @@ export default function Certificate() {
   };
 
   // Add new certificate
-  const handleAddCertificate = () => {
-    // Navigate to add certificate page or open a modal
-    console.log("Add new certificate");
-    // Implementation would depend on your app's navigation/routing
-  };
+  // const handleAddCertificate = () => {};
 
   return (
     <div className="w-full bg-white min-h-screen">
@@ -337,7 +331,7 @@ export default function Certificate() {
         </Box>
 
         {/* Add New Certificate Button */}
-        <Box className="flex items-center mb-4 w-full justify-end">
+        {/* <Box className="flex items-center mb-4 w-full justify-end">
           <Button
             variant="contained"
             color="primary"
@@ -347,7 +341,7 @@ export default function Certificate() {
           >
             Add Certificate
           </Button>
-        </Box>
+        </Box> */}
 
         {/* Certificates Table */}
         {isLoading ? (
@@ -380,9 +374,9 @@ export default function Certificate() {
                       <TableCell className="font-bold text-blue-800">
                         Issue Date
                       </TableCell>
-                      <TableCell className="font-bold text-blue-800">
+                      {/* <TableCell className="font-bold text-blue-800">
                         Status
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell className="font-bold text-blue-800 !text-center">
                         Actions
                       </TableCell>
@@ -403,7 +397,7 @@ export default function Certificate() {
                           <TableCell>
                             {formatDate(certificate.issueDate)}
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <Chip
                               label={
                                 certificate.verified === true ||
@@ -420,7 +414,7 @@ export default function Certificate() {
                               size="small"
                               variant="outlined"
                             />
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell align="center">
                             <Tooltip title="View Details">
                               <IconButton
@@ -431,7 +425,7 @@ export default function Certificate() {
                                 <VisibilityIcon />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Delete">
+                            {/* <Tooltip title="Delete">
                               <IconButton
                                 color="error"
                                 onClick={() =>
@@ -441,7 +435,7 @@ export default function Certificate() {
                               >
                                 <DeleteIcon />
                               </IconButton>
-                            </Tooltip>
+                            </Tooltip> */}
                           </TableCell>
                         </TableRow>
                       ))}
