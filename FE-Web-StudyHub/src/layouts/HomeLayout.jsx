@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -7,12 +7,42 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import PortraitIcon from "@mui/icons-material/Portrait";
 import { Person } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
 export default function HomeLayout() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const routePart = currentPath.split("/home/")[1]?.split("/")[0];
+
+    switch (routePart) {
+      case "dashboard":
+        setActiveTab("dashboard");
+        break;
+      case "courses":
+        setActiveTab("courses");
+        break;
+      case "exercises":
+        setActiveTab("exercises");
+        break;
+      case "certificates":
+        setActiveTab("certificates");
+        break;
+      case "profile":
+        setActiveTab("profile");
+        break;
+      case "settings":
+        setActiveTab("settings");
+        break;
+      default:
+        setActiveTab("dashboard");
+        break;
+    }
+  }, [location.pathname]);
 
   return (
     <div className="flex ">
