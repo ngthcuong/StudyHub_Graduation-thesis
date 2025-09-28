@@ -23,6 +23,14 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
 
   if (!certificate) return null;
 
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
   return (
     <Dialog
       open={open}
@@ -84,7 +92,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.issueDate}
+                  {formatDate(certificate.issueDate)}
                 </Typography>
               </div>
             </div>

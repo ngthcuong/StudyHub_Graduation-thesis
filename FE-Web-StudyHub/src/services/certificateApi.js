@@ -12,6 +12,7 @@ export const certificateApi = rootApi.injectEndpoints({
     verifyCertificateByCode: builder.query({
       query: (code) => `/certs/code/${code}`,
       providesTags: ["Certificate"],
+      keepUnusedDataFor: 0,
     }),
 
     // Lấy danh sách chứng chỉ của một địa chỉ
@@ -35,6 +36,7 @@ export const certificateApi = rootApi.injectEndpoints({
 export const {
   useVerifyCertificateByHashQuery,
   useVerifyCertificateByCodeQuery,
+  useLazyVerifyCertificateByCodeQuery,
   useGetCertificateByWalletAddressQuery,
   useIssueCertificateMutation,
 } = certificateApi;

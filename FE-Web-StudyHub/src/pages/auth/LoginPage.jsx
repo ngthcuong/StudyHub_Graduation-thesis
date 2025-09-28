@@ -74,7 +74,7 @@ const LoginPage = () => {
 
       if (response) {
         dispatch(openSnackbar({ message: response.message }));
-        navigate("/home");
+        navigate("/home/dashboard");
       } else {
         dispatch(
           openSnackbar({ severity: "error", message: response.message })
