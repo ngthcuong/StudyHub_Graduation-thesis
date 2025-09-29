@@ -78,9 +78,10 @@ const TestInformation = () => {
         if (!attempt) {
           return;
         }
+
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data?.data?.data,
+            questions: testQuestions?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
@@ -95,7 +96,6 @@ const TestInformation = () => {
           createdBy: user.id,
           expiresAt: "2025-12-31T23:59:59.000Z",
         });
-        console.log(newTestPool.data.data._id);
 
         attempt = await createAttempt({
           testPoolId: newTestPool.data.data._id,
@@ -105,9 +105,10 @@ const TestInformation = () => {
         if (!attempt) {
           return;
         }
+
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data,
+            questions: testQuestions?.data?.data?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
