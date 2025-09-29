@@ -12,7 +12,7 @@ const createAttempt = async (attemptData) => {
 
 const findAttemptById = async (id) => {
   try {
-    return await TestAttempt.findById(id).populate("generatedTestId userId");
+    return await TestAttempt.findById(id).populate("testPoolId userId");
   } catch (error) {
     console.error("Error finding attempt by id:", error);
     throw new Error("Failed to find attempt by id");
@@ -21,7 +21,7 @@ const findAttemptById = async (id) => {
 
 const findAttemptsByUser = async (userId) => {
   try {
-    return await TestAttempt.find({ userId }).populate("generatedTestId");
+    return await TestAttempt.find({ userId }).populate("testPoolId");
   } catch (error) {
     console.error("Error finding attempts by user:", error);
     throw new Error("Failed to find attempts by user");
@@ -37,13 +37,13 @@ const updateAttemptById = async (id, updateData) => {
   }
 };
 
-const findAttemptByTestId = async (generatedTestId, userId) => {
-  const query = { generatedTestId };
+const findAttemptByTestId = async (testPoolId, userId) => {
+  const query = { testPoolId };
   if (userId) query.userId = userId;
 
   return await TestAttempt.findOne(query)
     .sort({ createdAt: -1 })
-    .populate("generatedTestId userId");
+    .populate("testPoolId userId");
 };
 
 const findAttemptByUserAndPool = async (userId, testPoolId) => {

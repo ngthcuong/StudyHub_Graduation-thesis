@@ -70,17 +70,18 @@ const TestInformation = () => {
       };
 
       let attempt;
-      if (testPool.data.attemptInfo.testPoolId) {
+      if (testPool?.data?.attemptInfo?.testPoolId) {
         attempt = await createAttempt({
-          testPoolId: testPool.data.attemptInfo.testPoolId,
+          testPoolId: testPool?.data?.attemptInfo?.testPoolId,
           evaluationModel: "gemini",
         });
         if (!attempt) {
           return;
         }
+
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data?.data?.data,
+            questions: testQuestions?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
@@ -105,9 +106,10 @@ const TestInformation = () => {
         if (!attempt) {
           return;
         }
+
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data,
+            questions: testQuestions?.data?.data?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
