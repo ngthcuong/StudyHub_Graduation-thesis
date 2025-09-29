@@ -70,9 +70,9 @@ const TestInformation = () => {
       };
 
       let attempt;
-      if (testPool.data.attemptInfo.testPoolId) {
+      if (testPool?.data?.attemptInfo?.testPoolId) {
         attempt = await createAttempt({
-          testPoolId: testPool.data.attemptInfo.testPoolId,
+          testPoolId: testPool?.data?.attemptInfo?.testPoolId,
           evaluationModel: "gemini",
         });
         if (!attempt) {
