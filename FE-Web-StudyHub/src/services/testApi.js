@@ -13,6 +13,33 @@ export const testApi = rootApi.injectEndpoints({
       invalidatesTags: ["Test"],
     }),
 
+    // Kiểm tra bài test đã có test pool hay chưa
+    checkExistTestPool: builder.mutation({
+      query: ({ userId, testId }) => ({
+        url: "/attempts/info",
+        method: "POST",
+        body: { userId, testId },
+      }),
+    }),
+
+    // Tạo test pool
+    createTestPool: builder.mutation({
+      query: (testPoolInfo) => ({
+        url: "/test-pools",
+        method: "POST",
+        body: testPoolInfo,
+      }),
+      invalidatesTags: ["TestPool"],
+    }),
+
+    // Lấy test pool theo creator Id
+    getTestPoolsByCreatorId: builder.mutation({
+      query: (creatorId) => ({
+        url: `/test-pools/creator/${creatorId}`,
+      }),
+      providesTags: ["TestPool"],
+    }),
+
     // Lấy toàn bộ bài test
     getAllTest: builder.query({
       query: () => ({
@@ -55,10 +82,10 @@ export const testApi = rootApi.injectEndpoints({
 
     // Tạo attempt
     createAttempt: builder.mutation({
-      query: ({ testId, userId }) => ({
+      query: ({ testPoolId }) => ({
         url: "/attempts",
         method: "POST",
-        body: { testId, userId },
+        body: { testPoolId },
       }),
       invalidatesTags: ["Test"],
     }),
@@ -98,6 +125,9 @@ export const testApi = rootApi.injectEndpoints({
 // Export hooks
 export const {
   useCreateTestMutation,
+  useCheckExistTestPoolMutation,
+  useCreateTestPoolMutation,
+  useGetTestPoolsByCreatorIdMutation,
   useGetAllTestQuery,
   useGetTestByTestIdQuery,
   useGetQuestionsByTestIdQuery,

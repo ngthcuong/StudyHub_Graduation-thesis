@@ -1,45 +1,51 @@
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PortraitIcon from "@mui/icons-material/Portrait";
-import Dashboard from "../pages/home/Dashboard";
-import Courses from "../pages/home/Courses";
-import Exercises from "../pages/home/Exercises";
-import Achievements from "../pages/home/Achievements";
-import Settings from "../pages/home/Settings";
-import CourseList from "../pages/course/CourseList";
-import TestList from "../pages/test/TestList";
-import Header from "./Header";
-import UserInfoPage from "../pages/user/UserInfoPage";
 import { Person } from "@mui/icons-material";
+import { CircularProgress } from "@mui/material";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 
-export default function Sidebar() {
+export default function HomeLayout() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const renderContent = () => {
-    switch (activeTab) {
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const routePart = currentPath.split("/home/")[1]?.split("/")[0];
+
+    switch (routePart) {
       case "dashboard":
-        return <Dashboard />;
+        setActiveTab("dashboard");
+        break;
       case "courses":
-        return <CourseList variant="owned" />;
+        setActiveTab("courses");
+        break;
       case "exercises":
-        return <TestList />;
-      case "achievements":
-        return <Achievements />;
+        setActiveTab("exercises");
+        break;
+      case "certificates":
+        setActiveTab("certificates");
+        break;
       case "profile":
-        return <UserInfoPage />;
+        setActiveTab("profile");
+        break;
       case "settings":
-        return <Settings />;
+        setActiveTab("settings");
+        break;
       default:
-        return <Dashboard />;
+        setActiveTab("dashboard");
+        break;
     }
-  };
+  }, [location.pathname]);
 
   return (
-    <div className="flex">
+    <div className="flex ">
       {/* Sidebar */}
       <div className="w-64 bg-white h-screen fixed top-0 left-0 shadow-md py-5 z-50">
         <h2 className="flex items-center text-xl font-semibold mb-6 px-5">
@@ -52,7 +58,10 @@ export default function Sidebar() {
 
         <nav className="flex flex-col">
           <button
-            onClick={() => setActiveTab("dashboard")}
+            onClick={() => {
+              setActiveTab("dashboard");
+              navigate("/home/dashboard");
+            }}
             className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
               activeTab === "dashboard"
                 ? "bg-blue-500 text-white"
@@ -64,7 +73,10 @@ export default function Sidebar() {
           </button>
 
           <button
-            onClick={() => setActiveTab("courses")}
+            onClick={() => {
+              setActiveTab("courses");
+              navigate("/home/courses");
+            }}
             className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
               activeTab === "courses"
                 ? "bg-blue-500 text-white"
@@ -76,7 +88,10 @@ export default function Sidebar() {
           </button>
 
           <button
-            onClick={() => setActiveTab("exercises")}
+            onClick={() => {
+              setActiveTab("exercises");
+              navigate("/home/exercises");
+            }}
             className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
               activeTab === "exercises"
                 ? "bg-blue-500 text-white"
@@ -88,19 +103,25 @@ export default function Sidebar() {
           </button>
 
           <button
-            onClick={() => setActiveTab("achievements")}
+            onClick={() => {
+              setActiveTab("certificates");
+              navigate("/home/certificates");
+            }}
             className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
-              activeTab === "achievements"
+              activeTab === "certificates"
                 ? "bg-blue-500 text-white"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
           >
             <EmojiEventsIcon className="w-4 h-4 mr-2" />
-            Achievements
+            Certificates
           </button>
 
           <button
-            onClick={() => setActiveTab("profile")}
+            onClick={() => {
+              setActiveTab("profile");
+              navigate("/home/profile");
+            }}
             className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
               activeTab === "profile"
                 ? "bg-blue-500 text-white"
@@ -112,7 +133,10 @@ export default function Sidebar() {
           </button>
 
           <button
-            onClick={() => setActiveTab("settings")}
+            onClick={() => {
+              setActiveTab("settings");
+              navigate("/home/settings");
+            }}
             className={`flex items-center px-5 py-2 rounded-r-md ${
               activeTab === "settings"
                 ? "bg-blue-500 text-white"
@@ -126,9 +150,12 @@ export default function Sidebar() {
       </div>
 
       {/* Nội dung hiển thị */}
-      <div className="ml-64 flex-1 px-6 py-2">
+      <div
+        className="ml-64 flex-1 px-6 py-2 flex-col flex"
+        fallback={<CircularProgress />}
+      >
         <Header />
-        {renderContent()}
+        <Outlet />
       </div>
     </div>
   );

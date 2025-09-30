@@ -103,7 +103,7 @@ const findTestPool = async (filter) => {
 const findAttemptByUserAndPool = async (userId, testPoolId) => {
   try {
     return await TestAttempt.findOne({ userId, testPoolId }).populate(
-      "generatedTestId userId"
+      "testPoolId userId"
     );
   } catch (error) {
     console.error("Error finding attempt by user and pool:", error);
