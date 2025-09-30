@@ -13,7 +13,7 @@ const createTest = async (testData) => {
 
 const findTestById = async (id) => {
   try {
-    return await Test.findById(id).populate("createdBy", "fullName email");
+    return await Test.findById(id);
   } catch (error) {
     console.error("Error finding test by id:", error);
     throw new Error("Failed to find test by id");

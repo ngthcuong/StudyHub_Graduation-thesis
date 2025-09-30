@@ -51,7 +51,12 @@ const testSchema = new mongoose.Schema(
         enum: ["multiple_choice", "fill_in_blank", "rearrange", "essay"],
         required: true,
       },
-    ], // các loại câu hỏi
+    ],
+    examType: {
+      type: String,
+      enum: ["TOEIC", "IELTS"],
+      required: true,
+    },
   },
   { timestamps: true }
 );

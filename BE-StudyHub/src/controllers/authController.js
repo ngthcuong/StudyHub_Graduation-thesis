@@ -68,17 +68,14 @@ const login = async (req, res) => {
       expiresIn: 24 * 60 * 60, // 24 giờ
     });
 
+    // Xóa password trước khi trả về
+    const { password, ...userWithoutPassword } = user.toObject();
+
     res.status(200).json({
       message: "Login successfully!",
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        walletAddress: user.walletAddress,
-      },
+      accessToken,
+      refreshToken,
+      user: userWithoutPassword, // ✅ trả về tất cả field còn lại
     });
   } catch (error) {
     console.error("Error logging in user:", error);

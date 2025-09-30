@@ -10,8 +10,6 @@ const submitAnswers = async (req, res) => {
   try {
     const { testId, attemptId } = req.body;
 
-    console.log(testId, attemptId);
-
     // --- Lấy thông tin test ---
     const testDetail = await testModel.findTestById(testId);
     const questionsByTest = await questionModel.findQuestionsByTest(testId);
@@ -28,7 +26,6 @@ const submitAnswers = async (req, res) => {
 
     // --- Lấy câu trả lời của học sinh ---
     const userAnswers = await userAnswerModel.findAnswersByAttempt(attemptId);
-    console.log("userAnswers: ", userAnswers);
 
     const questionMap = new Map(
       questionsByTest.map((q, index) => [q._id.toString(), index + 1]) // map questionId -> số thứ tự
@@ -89,6 +86,8 @@ const submitAnswers = async (req, res) => {
       "http://localhost:8000/grade",
       gradingPayload
     );
+
+    console.log("Grading response:", response.data);
 
     res.status(201).json({
       message: "Answers submitted successfully",

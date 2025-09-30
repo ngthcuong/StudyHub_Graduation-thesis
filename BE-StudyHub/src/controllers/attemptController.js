@@ -180,8 +180,6 @@ const getAttemptInfo = async (req, res) => {
       testPool._id
     );
 
-    console.log("Found attempt:", attempt);
-
     // 3. Lấy thêm thông tin test gốc nếu muốn hiển thị
     const baseTest = await testModel.findTestById(testId);
 

@@ -32,7 +32,7 @@ const TestResultsScreen = ({ navigation, route }) => {
 
       const gradeTest = await testApi.gradeTest(
         response.data.attempt.testPoolId.baseTestId,
-        response.data.attempt._id
+        attemptId
       );
 
       setGrade(gradeTest.data);
@@ -90,8 +90,6 @@ const TestResultsScreen = ({ navigation, route }) => {
   const diffSec = Math.floor(diffMs / 1000);
   const minutes = Math.floor(diffSec / 60);
   const seconds = diffSec % 60;
-
-  console.log("Time taken (s):", grade);
 
   return (
     <ScrollView style={styles.container}>
@@ -236,6 +234,11 @@ const QuizResult = ({ data }) => {
         <FlatList
           data={per_question}
           keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Chi tiết câu hỏi</Text>
+            </View>
+          }
           renderItem={({ item }) => (
             <View style={styles.questionItem}>
               <Text>ID: {item.id}</Text>
@@ -251,31 +254,35 @@ const QuizResult = ({ data }) => {
         />
       </View>
 
-      {/* Kế hoạch học tập */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Kế hoạch học tập</Text>
-        <Text>Materials: {personalized_plan.materials?.join(", ")}</Text>
-        <Text>Progress Speed: {personalized_plan.progress_speed}</Text>
-      </View>
+      <View style={styles.container}>
+        {/* Kế hoạch học tập */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Kế hoạch học tập</Text>
+          <Text>Materials: {personalized_plan.materials?.join(", ")}</Text>
+          <Text>Progress Speed: {personalized_plan.progress_speed}</Text>
+        </View>
 
-      {/* Khuyến nghị */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Khuyến nghị</Text>
-        <FlatList
-          data={recommendations}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => <Text>- {item}</Text>}
-        />
-      </View>
+        {/* Khuyến nghị */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Khuyến nghị</Text>
+          <FlatList
+            data={recommendations}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <Text>- {item}</Text>}
+            contentContainerStyle={{ width: "100%" }} // Đảm bảo chiều rộng
+          />
+        </View>
 
-      {/* Điểm yếu */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Điểm yếu</Text>
-        <FlatList
-          data={weak_topics}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => <Text>- {item}</Text>}
-        />
+        {/* Điểm yếu */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Điểm yếu</Text>
+          <FlatList
+            data={weak_topics}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <Text>- {item}</Text>}
+            contentContainerStyle={{ width: "100%" }} // Đảm bảo chiều rộng
+          />
+        </View>
       </View>
     </View>
   );
@@ -285,6 +292,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
+    width: "100%",
   },
   loadingContainer: {
     flex: 1,
@@ -369,6 +377,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 20,
     borderRadius: 12,
+    width: "100%",
   },
   sectionTitle: {
     fontSize: 18,
