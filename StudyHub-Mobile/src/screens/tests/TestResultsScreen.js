@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
@@ -253,7 +254,7 @@ const QuizResult = ({ data }) => {
       {/* Kế hoạch học tập */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Kế hoạch học tập</Text>
-        <Text>Materials: {personalized_plan.materials.join(", ")}</Text>
+        <Text>Materials: {personalized_plan.materials?.join(", ")}</Text>
         <Text>Progress Speed: {personalized_plan.progress_speed}</Text>
       </View>
 
