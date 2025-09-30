@@ -17,6 +17,7 @@ const generateTestController = async (req, res) => {
     if (!topic || !Array.isArray(question_types) || num_questions <= 0) {
       return res.status(400).json({ error: "Invalid input" });
     }
+
     if (!testId) {
       return res.status(400).json({ error: "testId is required" });
     }
