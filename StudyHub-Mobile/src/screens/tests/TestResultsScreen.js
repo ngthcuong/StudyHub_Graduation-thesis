@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
@@ -14,6 +15,8 @@ const TestResultsScreen = ({ navigation, route }) => {
   const { attemptId } = route.params;
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [test, setTest] = useState(null);
+  const [grade, setGrade] = useState(null);
 
   useEffect(() => {
     loadResults();
@@ -23,6 +26,17 @@ const TestResultsScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       const response = await testApi.getTestResults(attemptId);
+      const test = await testApi.getTestById(
+        response.data.attempt.testPoolId.baseTestId
+      );
+
+      const gradeTest = await testApi.gradeTest(
+        response.data.attempt.testPoolId.baseTestId,
+        response.data.attempt._id
+      );
+
+      setGrade(gradeTest.data);
+      setTest(test.data);
       setResults(response.data);
     } catch (error) {
       console.error("Error loading results:", error);
@@ -57,32 +71,27 @@ const TestResultsScreen = ({ navigation, route }) => {
     );
   }
 
-  const isPassed = results.attempt.score >= results.passingScore;
+  const isPassed = results.attempt?.score >= (results?.passingScore || 0);
   const scoreColor = isPassed ? "#10B981" : "#EF4444";
   const scoreIcon = isPassed ? "checkmark-circle" : "close-circle";
 
-  const correctAnswers = results.answers.filter((a) => a.isCorrect).length;
-  const totalQuestions = results.answers.length;
-
-  // Tính thời gian làm bài
-  const startTime = "2025-09-25T09:11:34.856Z";
-  const endTime = "2025-09-25T09:12:04.420Z";
+  const correctAnswers = results.answers?.filter((a) => a.isCorrect).length;
+  const totalQuestions = results.answers?.length;
 
   // Chuyển sang Date
-  const start = new Date(results.attempt.startTime);
-  const end = new Date(results.attempt.endTime);
 
-  // Tính chênh lệch mili-giây
-  const diffMs = end - start;
+  const startTime = results.attempt?.startTime;
+  const endTime = results.attempt?.endTime;
 
-  // Đổi sang phút, giây
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const start = new Date(startTime);
+  const end = new Date(endTime);
 
-  console.log("Chênh lệch (giây):", diffSeconds);
-  console.log("Chênh lệch (phút):", diffMinutes);
-  console.log("Chênh lệch (giờ):", diffHours);
+  const diffMs = end - start; // mili giây
+  const diffSec = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(diffSec / 60);
+  const seconds = diffSec % 60;
+
+  console.log("Time taken (s):", grade);
 
   return (
     <ScrollView style={styles.container}>
@@ -119,21 +128,23 @@ const TestResultsScreen = ({ navigation, route }) => {
         <View style={styles.detailItem}>
           <Ionicons name="clipboard" size={20} color="#6B7280" />
           <Text style={styles.detailLabel}>Test:</Text>
-          <Text style={styles.detailValue}>{results.attempt.testId.title}</Text>
+          <Text style={styles.detailValue}>{test ? test.title : "N/A"}</Text>
         </View>
 
         <View style={styles.detailItem}>
           <Ionicons name="time" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Time Taken:</Text>
-          <Text style={styles.detailValue}>
-            {` ${diffMinutes}:${diffSeconds}`}
-          </Text>
+          <Text style={styles.detailLabel}>Time:</Text>
+          <Text
+            style={styles.detailValue}
+          >{`     ${minutes} phút ${seconds} giây`}</Text>
         </View>
 
         <View style={styles.detailItem}>
           <Ionicons name="trophy" size={20} color="#6B7280" />
           <Text style={styles.detailLabel}>Passing Score:</Text>
-          <Text style={styles.detailValue}>{results.passingScore}%</Text>
+          <Text style={styles.detailValue}>
+            {results?.passingScore || "70"}%
+          </Text>
         </View>
 
         <View style={styles.detailItem}>
@@ -176,6 +187,9 @@ const TestResultsScreen = ({ navigation, route }) => {
         </View>
       </View>
 
+      {/* Graded */}
+      {grade && <QuizResult data={grade} />}
+
       {/* Action Buttons */}
       <View style={styles.actionSection}>
         {!isPassed && (
@@ -194,6 +208,76 @@ const TestResultsScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+  );
+};
+
+const QuizResult = ({ data }) => {
+  const {
+    per_question,
+    personalized_plan,
+    recommendations,
+    skill_summary,
+    total_score,
+    weak_topics,
+  } = data;
+
+  return (
+    <View style={styles.container}>
+      {/* Tóm tắt điểm số */}
+      <View style={styles.summary}>
+        <Text style={styles.title}>Kết quả bài kiểm tra</Text>
+        <Text>Tổng điểm: {total_score}/10</Text>
+        <Text>Độ chính xác: {skill_summary[0].accuracy}%</Text>
+      </View>
+
+      {/* Danh sách câu hỏi */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Chi tiết câu hỏi</Text>
+        <FlatList
+          data={per_question}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.questionItem}>
+              <Text>ID: {item.id}</Text>
+              <Text>Topic: {item.topic}</Text>
+              <Text>User Answer: {item.user_answer}</Text>
+              <Text>Expected: {item.expected_answer}</Text>
+              <Text style={item.correct ? styles.correct : styles.incorrect}>
+                {item.correct ? "Đúng" : "Sai"}
+              </Text>
+              {item.explain ? <Text>Giải thích: {item.explain}</Text> : null}
+            </View>
+          )}
+        />
+      </View>
+
+      {/* Kế hoạch học tập */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Kế hoạch học tập</Text>
+        <Text>Materials: {personalized_plan.materials?.join(", ")}</Text>
+        <Text>Progress Speed: {personalized_plan.progress_speed}</Text>
+      </View>
+
+      {/* Khuyến nghị */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Khuyến nghị</Text>
+        <FlatList
+          data={recommendations}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => <Text>- {item}</Text>}
+        />
+      </View>
+
+      {/* Điểm yếu */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Điểm yếu</Text>
+        <FlatList
+          data={weak_topics}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => <Text>- {item}</Text>}
+        />
+      </View>
+    </View>
   );
 };
 
@@ -365,6 +449,59 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
+  },
+  questionContainer: {
+    marginBottom: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+  },
+  question: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  answer: {
+    fontSize: 14,
+    color: "green",
+  },
+  time: {
+    fontSize: 12,
+    color: "#666",
+  },
+
+  summary: {
+    marginBottom: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  questionItem: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  correct: {
+    color: "green",
+  },
+  incorrect: {
+    color: "red",
   },
 });
 

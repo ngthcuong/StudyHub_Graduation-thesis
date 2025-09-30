@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
-import { mockTests } from "../../mock";
 
 const AssessmentListScreen = ({ navigation }) => {
   const [tests, setTests] = useState([]);
@@ -46,7 +45,6 @@ const AssessmentListScreen = ({ navigation }) => {
   const loadTests = async () => {
     try {
       setLoading(true);
-      // Sử dụng mock data thay vì API call
       const response = await testApi.getTests();
       const mappedTests = response.data.map(mapTestFromApi);
       setTests(mappedTests);
@@ -86,7 +84,7 @@ const AssessmentListScreen = ({ navigation }) => {
           <View style={styles.metaItem}>
             <Ionicons name="help-circle-outline" size={16} color="#6B7280" />
             <Text style={styles.metaText}>
-              {test.questionsCount || 0} questions
+              {test.totalQuestions || 0} questions
             </Text>
           </View>
         </View>
