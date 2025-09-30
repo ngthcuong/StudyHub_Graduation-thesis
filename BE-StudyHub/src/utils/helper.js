@@ -1,4 +1,5 @@
 const config = require("../configs/config");
+const crypto = require("crypto");
 
 // Chuyển dữ liệu từ BigInt -> String
 function toPlain(value) {
@@ -84,14 +85,26 @@ function structureCertificateList(certList) {
   return certList.map((cert) => structureCertificateData(cert));
 }
 
-module.exports = {
-  toPlain,
-  structureCertificateData,
-  structureCertificateList,
-};
+function generateCertCode(issueDate = new Date(), learnerId, courseId) {
+  // Format ngày: YYMMDD
+  const datePart = issueDate.toISOString().slice(2, 10).replace(/-/g, "");
+
+  // Sinh chuỗi gốc để hash (dựa trên learnerId + courseId + thời gian + random salt)
+  const raw = `${learnerId}-${courseId}-${Date.now()}-${Math.random()}`;
+
+  // Hash → base36 để rút gọn
+  const hash = crypto.createHash("sha256").update(raw).digest("hex");
+  const encoded = parseInt(hash.slice(0, 12), 16).toString(36).toUpperCase();
+
+  // Lấy 6 ký tự
+  const codePart = encoded.slice(0, 6);
+
+  return `CERT-${datePart}-${codePart}`;
+}
 
 module.exports = {
   toPlain,
   structureCertificateData,
   structureCertificateList,
+  generateCertCode,
 };

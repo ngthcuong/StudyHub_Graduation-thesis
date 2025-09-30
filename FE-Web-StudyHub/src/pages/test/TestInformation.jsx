@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -16,7 +16,9 @@ import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { InfoOutline } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
+  useCheckExistTestPoolMutation,
   useCreateAttemptMutation,
+  useCreateTestPoolMutation,
   useGenerateTestQuestionsMutation,
   useGetQuestionsByTestIdQuery,
 } from "../../services/testApi";
@@ -28,16 +30,32 @@ const TestInformation = () => {
   const { testInfor } = location.state || {};
   const { id: testId } = useParams();
 
+  const [testPool, setTestPool] = useState();
+
   const user = useSelector((state) => state.auth.user);
+
+  const [checkTestPool, { isLoading: isLoadingCheckTesPool }] =
+    useCheckExistTestPoolMutation();
 
   let { data: testQuestions, isLoading: isLoadingGetTest } =
     useGetQuestionsByTestIdQuery(testId);
+
+  const [createTestPool, { isLoading: isLoadingCreateTestPool }] =
+    useCreateTestPoolMutation();
 
   const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
     useGenerateTestQuestionsMutation();
 
   const [createAttempt, { isLoading: isLoadingAttempt }] =
     useCreateAttemptMutation();
+
+  useEffect(() => {
+    const checkExistTestPool = async () => {
+      const res = await checkTestPool({ userId: user.id, testId });
+      setTestPool(res);
+    };
+    checkExistTestPool();
+  }, [user.id, testId, checkTestPool]);
 
   const handleStartTest = async () => {
     try {
@@ -47,22 +65,23 @@ const TestInformation = () => {
         num_questions: testInfor.numQuestions,
         difficulty: testInfor.difficulty,
         question_types: testInfor.questionTypes,
+        exam_type: "TOEIC",
+        score_range: "405-600",
       };
 
-      const attempt = await createAttempt({
-        testId: testInfor._id,
-        userId: user._id,
-      });
+      let attempt;
+      if (testPool?.data?.attemptInfo?.testPoolId) {
+        attempt = await createAttempt({
+          testPoolId: testPool?.data?.attemptInfo?.testPoolId,
+          evaluationModel: "gemini",
+        });
+        if (!attempt) {
+          return;
+        }
 
-      if (!attempt) {
-        return;
-      }
-
-      if (testQuestions.data.length === 0) {
-        testQuestions = await generateTestQuestions(testData);
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data?.data?.data,
+            questions: testQuestions?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
@@ -70,9 +89,26 @@ const TestInformation = () => {
           },
         });
       } else {
+        testQuestions = await generateTestQuestions(testData);
+        const newTestPool = await createTestPool({
+          baseTestId: testId,
+          level: "TOEIC 550-650",
+          createdBy: user.id,
+          expiresAt: "2025-12-31T23:59:59.000Z",
+        });
+
+        attempt = await createAttempt({
+          testPoolId: newTestPool.data.data._id,
+          evaluationModel: "gemini",
+        });
+
+        if (!attempt) {
+          return;
+        }
+
         navigate(`/test/${testInfor._id}/attempt`, {
           state: {
-            questions: testQuestions?.data,
+            questions: testQuestions?.data?.data?.data,
             testTitle: testInfor.title,
             testDuration: testInfor.durationMin,
             testId: testInfor._id,
@@ -196,7 +232,8 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor?.attemptCount || 0} / {testInfor?.attemptMax || 0}
+                  {testPool?.data?.attemptInfo.attemptNumber || 0} /
+                  {testPool?.data?.attemptInfo.maxAttempts || 0}
                 </Typography>
               </Box>
             </Grid>
@@ -235,7 +272,11 @@ const TestInformation = () => {
               color="primary"
               size="medium"
               disabled={
-                isLoadingAttempt || isLoadingTestQuestion || isLoadingGetTest
+                isLoadingAttempt ||
+                isLoadingTestQuestion ||
+                isLoadingGetTest ||
+                isLoadingCreateTestPool ||
+                isLoadingCheckTesPool
               }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
@@ -245,7 +286,11 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoadingTestQuestion || isLoadingAttempt || isLoadingGetTest ? (
+              {isLoadingTestQuestion ||
+              isLoadingAttempt ||
+              isLoadingGetTest ||
+              isLoadingCreateTestPool ||
+              isLoadingCheckTesPool ? (
                 <CircularProgress size={24} color="white" />
               ) : (
                 "Start test"

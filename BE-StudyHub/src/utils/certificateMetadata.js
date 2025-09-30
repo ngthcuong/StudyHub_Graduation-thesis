@@ -1,18 +1,28 @@
 // src/utils/certificateMetadata.js
 const buildCertificateMetadata = ({
-  version = "1.0",
   issuer,
+  issuerName,
   studentAddress,
   studentName,
   courseName,
-  extra, // optional
+  certCode,
+  extra, //optional
 }) => {
   return {
-    version,
+    version: "1.0",
     type: "studyhub-certificate",
-    issuer: { name: issuer },
-    student: { address: studentAddress, name: studentName },
-    course: { name: courseName },
+    issuer: {
+      address: issuer,
+      name: issuerName,
+    },
+    student: {
+      address: studentAddress,
+      name: studentName,
+    },
+    course: {
+      name: courseName,
+    },
+    certCode: certCode, // thêm certCode
     issuedAt: Date.now(),
     ...extra,
   };

@@ -4,7 +4,6 @@ import ProtectedLayout from "../layouts/ProtectedLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
-import HomePage from "../pages/HomePage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
@@ -16,6 +15,10 @@ import TestLayout from "../layouts/TestLayout";
 import TestList from "../pages/test/TestList";
 import CourseList from "../pages/course/CourseList";
 import CourseLessson from "../components/CourseLessson";
+import HomeLayout from "../layouts/HomeLayout";
+import Dashboard from "../pages/home/Dashboard";
+import Settings from "../pages/home/Settings";
+import Certificate from "../pages/home/Certificates";
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +37,34 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/home",
-            element: <HomePage />,
+            element: <HomeLayout />,
+            children: [
+              {
+                path: "dashboard",
+                index: true,
+                element: <Dashboard />,
+              },
+              {
+                path: "courses",
+                element: <CourseList variant="owned" />,
+              },
+              {
+                path: "exercises",
+                element: <TestList />,
+              },
+              {
+                path: "certificates",
+                element: <Certificate />,
+              },
+              {
+                path: "profile",
+                element: <UserInfoPage />,
+              },
+              {
+                path: "settings",
+                element: <Settings />,
+              },
+            ],
           },
           {
             path: "/profile",

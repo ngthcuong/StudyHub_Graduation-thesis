@@ -111,7 +111,7 @@ async function searchMetadataByKeyvalues(
     pageLimit,
     pageOffset,
     metadata: {
-      name: "metadata.json", // chỉ lấy các item có tên metadata này (trùng với uploadJSON đã đặt)
+      name: "studyhub-certificate.json", // chỉ lấy các item có tên metadata này (trùng với uploadJSON đã đặt)
       keyvalues, // bộ lọc theo chuẩn Pinata (từng key có dạng {value,op}, vd: eq, like, ... )
     },
   };

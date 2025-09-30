@@ -37,13 +37,13 @@ const updateAttemptById = async (id, updateData) => {
   }
 };
 
-const findAttemptByTestId = async (generatedTestId, userId) => {
-  const query = { generatedTestId };
+const findAttemptByTestId = async (testPoolId, userId) => {
+  const query = { testPoolId };
   if (userId) query.userId = userId;
 
   return await TestAttempt.findOne(query)
     .sort({ createdAt: -1 })
-    .populate("generatedTestId userId");
+    .populate("testPoolId userId");
 };
 
 const findAttemptByUserAndPool = async (userId, testPoolId) => {

@@ -4,15 +4,16 @@ const {
   getCertificateByHash,
   issueCertificate,
   searchCertificates,
-  getStudentCertificatesByStudent,
   getCertificateByCode,
+  getStudentCertificatesHybrid,
 } = require("../controllers/certificateController");
+const { verifyToken } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
-router.post("/", createCertificate);
-router.get("/search", searchCertificates);
-router.post("/issue", issueCertificate);
-router.get("/student/:address", getStudentCertificatesByStudent);
+router.post("/", verifyToken, createCertificate);
+router.get("/search", verifyToken, searchCertificates);
+router.post("/issue", verifyToken, issueCertificate);
+router.get("/student/:address", verifyToken, getStudentCertificatesHybrid);
 router.get("/hash/:hash", getCertificateByHash);
 router.get("/code/:code", getCertificateByCode);
 
