@@ -19,6 +19,8 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(true);
   const [attemptId, setAttemptId] = useState(null);
+  const [testPool, setTestPool] = useState(null);
+  const [idTestPool, setIdTestPool] = useState(null);
 
   const user = useSelector((state) => state.auth.user);
 
@@ -38,9 +40,69 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const startTest = async () => {
     try {
       setLoading(true);
+
+      let attemptInfo = null;
+
+      try {
+        // Thử lấy attempt info
+        const res = await testApi.getAttemptInfo(user?._id, testId);
+        attemptInfo = res;
+      } catch (error) {
+        if (error.response?.status === 404) {
+          const test = await testApi.getTestById(testId);
+          console.log("Fetched test:", test.data);
+
+          try {
+            const generatedTest = await testApi.generrateTest({
+              testId,
+              exam_type: test.data.examType,
+              topic: test.data.topic,
+              question_types: test.data.questionTypes,
+              num_questions: test.data.numQuestions,
+              score_range: user.currentLevel[test.data.examType],
+            });
+            console.log("Generated test:", generatedTest);
+
+            const testPoolCreated = await testApi.createTestPool(
+              testId,
+              `${test.data.examType} ${user.currentLevel[test.data.examType]}`,
+              user?._id
+            );
+
+            console.log("Created test pool:", testPoolCreated);
+
+            setTestPool(testPoolCreated);
+            console.log("Created test pool:", testPoolCreated);
+          } catch (genError) {
+            console.error(
+              "Error while generating test:",
+              genError.response?.status,
+              genError.response?.data || genError.message
+            );
+            throw genError; // ném ra để catch bên ngoài
+          }
+        }
+      }
+
+      if (attemptInfo?.attemptInfo?.attemptNumber == 0) {
+        const test = await testApi.getTestById(testId);
+        const testPoolByLevel = await testApi.getTestPoolByLevel(
+          `${test.data.examType} ${user.currentLevel[test.data.examType]}`
+        );
+        console.log(
+          "Fetched test pool by level:",
+          testPoolByLevel?.data[0]?._id
+        );
+        setIdTestPool(testPoolByLevel?.data[0]?._id);
+      }
+
       const [questionsResponse, attemptResponse] = await Promise.all([
         testApi.getTestQuestions(testId),
-        testApi.startTestAttempt(testId, user?._id),
+        testApi.startTestAttempt(
+          testPool?.data._id ||
+            attemptInfo?.attemptInfo?.testPoolId ||
+            idTestPool
+        ),
       ]);
 
       setQuestions(questionsResponse || []);
@@ -135,7 +197,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.questionCounter}>
-            Question {currentQuestionIndex + 1} of {questions?.data.length}
+            Question {currentQuestionIndex + 1} of {questions?.data?.length}
           </Text>
         </View>
         <View style={styles.headerRight}>

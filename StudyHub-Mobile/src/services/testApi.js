@@ -20,10 +20,9 @@ export const testApi = {
   },
 
   // Start test attempt
-  startTestAttempt: async (testId, userId) => {
+  startTestAttempt: async (testPoolId) => {
     const response = await api.post(`/attempts`, {
-      testId,
-      userId,
+      testPoolId,
       evaluationModel: "gemini",
     });
     return response.data;
@@ -55,6 +54,44 @@ export const testApi = {
   // Get user's test attempts
   getMyTestAttempts: async () => {
     const response = await api.get("/attempts/my-attempts");
+    return response.data;
+  },
+
+  getAttemptInfo: async (userId, testId) => {
+    const response = await api.post(`/attempts/info`, {
+      userId,
+      testId,
+    });
+    return response.data;
+  },
+
+  generrateTest: async (payload) => {
+    const response = await api.post(`/generate-test`, payload);
+    return response.data;
+  },
+
+  createTestPool: async (testId, level, userId) => {
+    const response = await api.post(`/test-pools`, {
+      baseTestId: testId,
+      level,
+      createdBy: userId,
+      usageCount: 0,
+      maxReuse: 5,
+      status: "active",
+    });
+    return response.data;
+  },
+
+  getTestPoolByLevel: async (level) => {
+    const response = await api.get(`/test-pools/level/${level}`);
+    return response.data;
+  },
+
+  gradeTest: async (testId, attemptId) => {
+    const response = await api.post(`/test-result/submit`, {
+      attemptId,
+      testId,
+    });
     return response.data;
   },
 };

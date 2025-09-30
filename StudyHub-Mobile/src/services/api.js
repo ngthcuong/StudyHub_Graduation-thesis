@@ -7,8 +7,8 @@ const API_BASE_URL_HOME = "http://192.168.9.31:3000/api/v1"; // Update this with
 const API_BASE_URL_SCHOOL = "http://172.20.92.250:3000/api/v1"; // Update this with your backend URL
 
 const api = axios.create({
-  baseURL: API_BASE_URL_SCHOOL,
-  timeout: 10000,
+  baseURL: API_BASE_URL_HOME,
+  timeout: 300000, // 5 minutes timeout
   headers: {
     "Content-Type": "application/json",
   },
