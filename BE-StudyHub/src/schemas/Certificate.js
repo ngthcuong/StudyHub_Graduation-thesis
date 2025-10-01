@@ -16,7 +16,7 @@ const certificateSchema = new mongoose.Schema(
         required: true,
         index: true,
       },
-      fullName: {
+      name: {
         type: String,
         require: true,
       },
