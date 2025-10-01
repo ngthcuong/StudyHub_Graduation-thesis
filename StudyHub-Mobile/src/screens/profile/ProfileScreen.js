@@ -12,6 +12,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { logout } from "../../store/slices/authSlice";
 import { mockUser } from "../../mock";
+import { fetchUserStats } from "../../api/userApi";
 
 const ProfileScreen = ({ navigation }) => {
   const { user } = useSelector((state) => state.auth);
