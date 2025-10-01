@@ -9,7 +9,7 @@ const certificateSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
-    owner: {
+    student: {
       id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -32,14 +32,14 @@ const certificateSchema = new mongoose.Schema(
         ref: "Course",
         required: true,
       },
-      name: {
+      title: {
         type: String,
         require: true,
       },
       description: {
         type: String,
       },
-      duration: {
+      durationHours: {
         type: String,
       },
     },
@@ -78,7 +78,7 @@ const certificateSchema = new mongoose.Schema(
         require: true,
         unique: true,
       },
-      netword: {
+      network: {
         type: String,
         default: "Sepolia",
       },
@@ -94,7 +94,7 @@ const certificateSchema = new mongoose.Schema(
 
 // Middleware: auto generate certCode trước khi lưu
 certificateSchema.pre("save", async function (next) {
-  if (!this.certCode) {
+  if (!this.certificateCode) {
     let newCode;
     let exists = true;
 
@@ -102,16 +102,16 @@ certificateSchema.pre("save", async function (next) {
     while (exists) {
       newCode = generateCertCode(
         this.validity.issueDate,
-        this.owner.id,
+        this.student.id,
         this.course.id
       );
       const check = await mongoose.models.Certificate.findOne({
-        certCode: newCode,
+        certificateCode: newCode,
       });
       if (!check) exists = false;
     }
 
-    this.certCode = newCode;
+    this.certificateCode = newCode;
   }
   next();
 });

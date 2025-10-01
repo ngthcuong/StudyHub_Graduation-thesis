@@ -18,6 +18,8 @@ const {
   generateCertCode,
 } = require("../utils/helper");
 const Certificate = require("../schemas/Certificate");
+const userModel = require("../models/userModel");
+const courseModel = require("../models/courseModel");
 
 /**
  * Tạo bản ghi chứng chỉ trong cơ sở dữ liệu (KHÔNG phát hành on-chain).
@@ -54,18 +56,12 @@ const createCertificate = async (req, res) => {
  */
 const issueCertificate = async (req, res, next) => {
   try {
-    const { student, studentName, issuer, issuerName, courseName } = req.body;
-    if (!student || !studentName || !issuer || !issuerName || !courseName) {
+    const { studentId, courseId } = req.body;
+    if (!studentId || !courseId) {
       return res.status(400).json({
         error: "Missing required fields",
         received: req.body,
-        required: [
-          "student",
-          "studentName",
-          "issuer",
-          "issuerName",
-          "courseName",
-        ],
+        required: ["studentId", "courseId"],
       });
     }
 
@@ -78,86 +74,150 @@ const issueCertificate = async (req, res, next) => {
     //   );
     // }
 
-    const certCode = generateCertCode(
-      new Date(),
-      req.body.learnerId,
-      req.body.courseId
-    );
+    const certCode = generateCertCode(new Date(), studentId, courseId);
+
+    const [student, course] = await Promise.all([
+      userModel.findUserById(studentId),
+      courseModel.findCourseById(courseId),
+    ]);
+
+    if (!student) {
+      return res.status(404).json({
+        error: "Student not found",
+        studentId,
+      });
+    }
+
+    if (!student.walletAddress) {
+      return res.status(404).json({
+        error: "Student have not wallet address",
+        studentId,
+      });
+    }
+
+    if (!course) {
+      return res.status(404).json({
+        error: "Course not found",
+        courseId,
+      });
+    }
+
+    const defaultIssuer = {
+      walletAddress: config.contractAddress,
+      name: "StudyHub",
+    };
+
+    console.log(course);
+    console.log(student);
 
     // Build JSON metadata
     const metadata = buildCertificateMetadata({
-      issuer,
-      issuerName,
-      studentAddress: student,
-      studentName,
-      courseName,
       certCode,
+      student,
+      issuer: defaultIssuer,
+      course,
+      issueDate: new Date(),
     });
+
+    console.log(metadata);
 
     // Lưu JSON lên IPFS (Pinata)
     const meta = await uploadJSON(metadata, {
       name: "studyhub-certificate.json",
       keyvalues: {
         type: "studyhub-certificate",
-        student: String(student),
-        studentName: String(studentName),
-        issuer: String(issuer),
-        courseName: String(courseName),
-        certCode: String(certCode),
+        studentWalletAddress: String(student.walletAddress),
+        issuerWalletAddress: String(defaultIssuer.walletAddress),
+        certificateCode: String(certCode),
       },
     });
 
-    // Gọi on-chain với metadataURI (ipfs://CID)
+    // Gọi on-chain với metadataURI (ipfs://CID) - Lưu chứng chỉ lên blockchain
     let certHash, txHash;
     try {
       const result = await issueOnChain(
-        student,
-        studentName,
-        issuer,
-        courseName,
+        student.walletAddress,
+        student.fullName,
+        defaultIssuer.walletAddress,
+        course.title,
         meta.uri
       );
       certHash = result.certHash;
       txHash = result.txHash;
     } catch (contractError) {
+      console.error(
+        "Blockchain failed, metadata uploaded but unused:",
+        meta.cid
+      );
       throw contractError;
     }
-    // Bổ sung certHash, certCode vào keyvalues để search nhanh hơn
+
+    // Cập nhật keyvalues trên Pinata với thông tin blockchain
     await updatePinataKeyvalues(meta.cid, {
-      certCode: String(certCode),
-      certHash,
-      issuer,
-      learnerId: req.body.learnerId,
-      courseId: req.body.courseId,
-      courseName,
-      learnerAddress: student,
-      issueDate: new Date(),
-      network: "sepolia",
+      certificateHash: String(certHash),
+      studentWalletAddress: String(student.walletAddress),
+      issuerWalletAddress: String(defaultIssuer.walletAddress),
+      network: "Sepolia",
     });
 
     // Tạo và lưu chứng chỉ vào database
-    await certificateModel.createCertificate({
-      certHash,
-      issuer,
-      learnerId: req.body.learnerId,
-      courseId: req.body.courseId,
-      courseName,
-      learnerAddress: student,
-      issueDate: new Date(),
-      metadataURI: meta.uri,
-      metadataCID: meta.cid,
-      txHash,
-      network: "sepolia",
+    const savedCertificate = await Certificate.create({
+      certificateCode: certCode,
+      student: {
+        id: studentId,
+        name: student.fullName,
+        walletAddress: student.walletAddress,
+      },
+      course: {
+        id: courseId,
+        title: course.title,
+        description: course.description || "",
+        durationHours: course.durationHours || "",
+      },
+      issuer: {
+        walletAddress: defaultIssuer.walletAddress,
+        name: defaultIssuer.name,
+      },
+      validity: {
+        issueDate: new Date(),
+        expireDate: null,
+        isRevoked: false,
+      },
+      blockchain: {
+        transactionHash: txHash,
+        certificateHash: certHash,
+        network: "Sepolia",
+      },
+      ipfs: {
+        metadataURI: meta.uri,
+        metadataCID: meta.cid,
+        fileCID: "",
+      },
     });
 
-    return res.json({
-      ok: true,
-      certHash,
-      certCode,
-      metadataURI: meta.uri,
-      metadataCID: meta.cid,
-      txHash,
-      contract: config.contractAddress,
+    return res.status(201).json({
+      success: true,
+      message: "Certificate issued successfully",
+      data: {
+        certificateId: savedCertificate._id,
+        certCode,
+        certHash,
+        txHash,
+        metadataURI: meta.uri,
+        metadataCID: meta.cid,
+        network: "Sepolia",
+        issuer: defaultIssuer,
+        student: {
+          id: studentId,
+          name: student.fullName,
+          walletAddress: student.walletAddress,
+        },
+        course: {
+          id: courseId,
+          name: course.title,
+        },
+        issueDate: new Date().toISOString(),
+      },
     });
   } catch (error) {
     console.error("Can not issue certificate: ", error);

@@ -1,16 +1,12 @@
-const defaultIssuer = {
-  walletAddress: "0xB71327c4D0A7916c7874a025C766B4e482008db3",
-  name: "StudyHub",
-};
-
 const buildCertificateMetadata = ({
   certCode,
   issuer,
-  owner,
+  student,
   course,
   issueDate,
-  transactionHash,
-  certificateHash,
+  expireDate = null,
+  isRevoked = false,
+  // certificateHash = null,
   network = "Sepolia",
   extra, //optional
 }) => {
@@ -18,14 +14,16 @@ const buildCertificateMetadata = ({
     version: "1.0",
     type: "studyhub-certificate",
     certCode: certCode,
-    owner: {
-      walletAddress: owner.walletAddress,
-      name: owner.name,
+    student: {
+      id: student._id,
+      walletAddress: student.walletAddress,
+      name: student.fullName,
     },
     course: {
-      name: course.name,
+      id: course._id,
+      title: course.title,
       description: course.description,
-      duration: course.duration,
+      duration: course.durationHours,
     },
     issuer: {
       walletAddress: issuer.walletAddress,
@@ -33,12 +31,14 @@ const buildCertificateMetadata = ({
     },
     validity: {
       issueDate: issueDate || Date.now(),
+      // issueDate: issueDate
+      //   ? new Date(issueDate).toISOString()
+      //   : new Date().toISOString(),
       expireDate: typeof expireDate !== "undefined" ? expireDate : null,
       isRevoked: typeof isRevoked !== "undefined" ? isRevoked : false,
     },
     blockchain: {
-      transactionHash,
-      certificateHash,
+      // certificateHash,
       network,
     },
     ...extra,
