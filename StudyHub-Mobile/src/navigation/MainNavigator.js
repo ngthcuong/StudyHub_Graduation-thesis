@@ -22,6 +22,7 @@ import TestResultsScreen from "../screens/tests/TestResultsScreen";
 
 // Profile Stack
 import ProfileScreen from "../screens/profile/ProfileScreen";
+import EditInfoScreen from "../screens/profile/EditInfoScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -109,6 +110,11 @@ const ProfileStackNavigator = () => (
       name="ProfileMain"
       component={ProfileScreen}
       options={{ title: "Profile" }}
+    />
+    <ProfileStack.Screen
+      name="EditProfile"
+      component={EditInfoScreen}
+      options={{ title: "Edit Profile" }}
     />
   </ProfileStack.Navigator>
 );
