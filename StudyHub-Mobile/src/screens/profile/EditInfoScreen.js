@@ -13,13 +13,44 @@ import {
 import { useRoute } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { userApi } from "../../services/userApi";
+import { authApi } from "../../services/authApi";
+import * as ImagePicker from "expo-image-picker";
 
 const EditInfoScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+
   const route = useRoute();
   const { userInfo } = route.params || {};
+
+  const pickImage = async () => {
+    // xin quyền truy cập
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert("Permission required", "Bạn cần cấp quyền để chọn ảnh!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      // cập nhật state formData với ảnh mới
+      handleChange("avatarUrl", result.assets[0].uri);
+    }
+  };
 
   const formatDate = (isoString) => {
     if (!isoString) return "";
@@ -59,6 +90,26 @@ const EditInfoScreen = () => {
     setIsEditing(false);
   };
 
+  const handleChangePassword = async (
+    currentPassword,
+    newPassword,
+    confirmPassword
+  ) => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert("❌ Lỗi", "Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    try {
+      await authApi.changePassword({ currentPassword, newPassword });
+      Alert.alert("✅ Thành công", "Đổi mật khẩu thành công");
+      setIsShowModal(false);
+    } catch (error) {
+      console.error("Change password error:", error);
+      Alert.alert("❌ Thất bại", "Không thể đổi mật khẩu");
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Avatar + Header */}
@@ -66,11 +117,11 @@ const EditInfoScreen = () => {
         <View style={styles.avatarContainer}>
           <Image
             source={{
-              uri: userInfo?.avatarUrl || "https://via.placeholder.com/150",
+              uri: userInfo?.avatarUrl || "null",
             }}
             style={styles.avatar}
           />
-          <TouchableOpacity style={styles.editAvatarButton}>
+          <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage}>
             <Text style={{ color: "#fff", fontSize: 12 }}>✎</Text>
           </TouchableOpacity>
         </View>
@@ -219,32 +270,85 @@ const EditInfoScreen = () => {
       {isShowModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Mật khẩu mới"
-              secureTextEntry
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Xác nhận mật khẩu"
-              secureTextEntry
-            />
+            <Text style={styles.modalTitle}>🔐 Đổi mật khẩu</Text>
+
+            {/* Mật khẩu hiện tại */}
+            <Text style={styles.modalLabel}>Mật khẩu hiện tại</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Nhập mật khẩu hiện tại"
+                secureTextEntry={!showCurrentPassword}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+              >
+                <Text style={styles.eyeIcon}>
+                  {showCurrentPassword ? "🙈" : "👁"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Mật khẩu mới */}
+            <Text style={styles.modalLabel}>Mật khẩu mới</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Nhập mật khẩu mới"
+                secureTextEntry={!showPassword}
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Text style={styles.eyeIcon}>{showPassword ? "🙈" : "👁"}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Xác nhận mật khẩu */}
+            <Text style={styles.modalLabel}>Xác nhận mật khẩu</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Nhập lại mật khẩu"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Text style={styles.eyeIcon}>
+                  {showConfirmPassword ? "🙈" : "👁"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Nút */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={styles.modalCancelButton}
                 onPress={() => setIsShowModal(false)}
               >
-                <Text style={styles.buttonText}>Hủy</Text>
+                <Text style={styles.modalCancelText}>Hủy</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.saveButton}
+                style={styles.modalSaveButton}
                 onPress={() => {
-                  Alert.alert("Đổi mật khẩu", "Đã đổi mật khẩu thành công!");
-                  setIsShowModal(false);
+                  handleChangePassword(
+                    currentPassword,
+                    newPassword,
+                    confirmPassword
+                  );
                 }}
               >
-                <Text style={styles.buttonText}>Lưu</Text>
+                <Text style={styles.modalSaveText}>Lưu</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -364,20 +468,75 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-    width: "80%",
+    padding: 20,
+    borderRadius: 16,
+    width: "85%",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 6,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginBottom: 20,
     textAlign: "center",
+    color: "#1e3a8a",
+  },
+  modalLabel: {
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 6,
   },
   modalButtons: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: 16,
+    marginTop: 8,
+  },
+  modalCancelButton: {
+    backgroundColor: "#e5e7eb",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: "#374151",
+  },
+  modalSaveButton: {
+    backgroundColor: "#16a34a",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  modalSaveText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
+  inputWrapper: {
+    position: "relative",
+    marginBottom: 16,
+  },
+  modalInput: {
+    backgroundColor: "#f9fafb",
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    paddingRight: 40, // chừa chỗ cho icon
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 10,
+    top: "30%",
+  },
+  eyeIcon: {
+    fontSize: 18,
   },
 });
 
