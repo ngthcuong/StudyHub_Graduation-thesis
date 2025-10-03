@@ -163,8 +163,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -229,8 +234,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -290,8 +300,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -345,8 +360,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -406,8 +426,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -486,8 +511,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -557,8 +587,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -623,8 +658,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -679,8 +719,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -777,8 +822,13 @@
         "type": "string"
       },
       {
-        "internalType": "string",
+        "internalType": "address",
         "name": "_issuer",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_issuerName",
         "type": "string"
       },
       {

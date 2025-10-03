@@ -22,8 +22,6 @@ const buildCertificateMetadata = ({
     course: {
       id: course._id,
       title: course.title,
-      description: course.description,
-      duration: course.durationHours,
     },
     issuer: {
       walletAddress: issuer.walletAddress,

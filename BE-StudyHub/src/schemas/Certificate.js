@@ -36,12 +36,6 @@ const certificateSchema = new mongoose.Schema(
         type: String,
         require: true,
       },
-      description: {
-        type: String,
-      },
-      durationHours: {
-        type: String,
-      },
     },
     issuer: {
       walletAddress: {
