@@ -61,7 +61,8 @@ const createCertificate = async (req, res) => {
  */
 const issueCertificate = async (req, res, next) => {
   try {
-    const { studentId, courseId } = req.body;
+    const { courseId } = req.body;
+    const studentId = req.user.userId;
     if (!studentId || !courseId) {
       return res.status(400).json({
         error: "Missing required fields",
