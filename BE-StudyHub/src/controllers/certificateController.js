@@ -4,6 +4,8 @@ const {
   uploadJSON,
   searchMetadataByKeyvalues,
   updatePinataKeyvalues,
+  ipfsUriToGatewayUrl,
+  getPinataMetadataByCID,
 } = require("../services/ipfs.service");
 const {
   issueCertificate: issueOnChain,
@@ -193,7 +195,7 @@ const issueCertificate = async (req, res, next) => {
         network: "Sepolia",
       },
       ipfs: {
-        metadataURI: meta.uri,
+        metadataURI: ipfsUriToGatewayUrl(meta.uri),
         metadataCID: meta.cid,
         fileCID: "",
       },
@@ -226,24 +228,6 @@ const issueCertificate = async (req, res, next) => {
   } catch (error) {
     console.error("Can not issue certificate: ", error);
     next(error);
-  }
-};
-
-/**
- * Lấy metadata JSON của chứng chỉ từ Pinata/IPFS bằng CID.
- * @param {string} cid - CID của metadata trên IPFS
- * @returns {Promise<Object|null>} - Trả về metadata JSON hoặc null nếu lỗi
- */
-const getPinataMetadataByCID = async (cid) => {
-  try {
-    if (!cid) return null;
-    // Sử dụng gateway của Pinata để lấy nội dung JSON
-    const url = `https://blue-useful-puma-71.mypinata.cloud/ipfs/${cid}`;
-    const response = await axios.get(url, { timeout: 10000 });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching metadata from Pinata:", error.message);
-    return null;
   }
 };
 
@@ -453,51 +437,45 @@ const getStudentCertificatesHybrid = async (req, res, next) => {
 
     // 2. Fallback: Lấy từ Pinata
     const keyvalues = {
-      learnerAddress: { value: String(address), op: "eq" },
+      studentWalletAddress: { value: String(address), op: "eq" },
     };
 
     const pinataCerts = await searchMetadataByKeyvalues(keyvalues, 100, 0);
 
-    const formatPinataCertificates = pinataCerts.map((cert) => {
-      const kv = cert.metadata?.keyvalues || {};
-      return {
-        certificateCode: kv.certificateCode || kv.certCode || null,
-        student: {
-          id: null, // Không có id từ Pinata
-          name: kv.studentName || kv.name || null,
-          walletAddress:
-            kv.studentWalletAddress ||
-            kv.student ||
-            kv.learnerAddress ||
-            address,
-        },
-        course: {
-          id: null, // Không có id từ Pinata
-          title: kv.courseName || kv.title || null,
-        },
-        issuer: {
-          walletAddress: kv.issuerWalletAddress || kv.issuer || null,
-          name: kv.issuerName || kv.issuer || null,
-        },
-        validity: {
-          issueDate: kv.issueDate ? new Date(Number(kv.issueDate)) : null,
-          expireDate: null,
-          isRevoked: false,
-        },
-        blockchain: {
-          transactionHash: kv.transactionHash || null,
-          certificateHash: kv.certificateHash || kv.certHash || null,
-          network: kv.network || "Sepolia",
-        },
-        ipfs: {
-          metadataURI: cert.uri || null,
-          metadataCID: cert.cid || null,
-          fileCID: kv.fileCID || null,
-        },
-        createdAt: cert.date_pinned ? new Date(cert.date_pinned) : null,
-        updatedAt: cert.date_pinned ? new Date(cert.date_pinned) : null,
-      };
-    });
+    const formatPinataCertificates = await Promise.all(
+      pinataCerts.map(async (cert) => {
+        const data = await getPinataMetadataByCID(cert.cid);
+
+        return {
+          certificateCode: data.certificateCode,
+          student: {
+            id: data.student.id,
+            name: data.student.name,
+            walletAddress: data.student.walletAddress,
+          },
+          course: {
+            id: data.course.id,
+            title: data.course.title,
+          },
+          issuer: {
+            walletAddress: data.issuer.walletAddress,
+            name: data.issuer.name,
+          },
+          validity: {
+            issueDate: data.validity.issueDate,
+            expireDate: data.validity.expireDate,
+            isRevoked: data.validity.isRevoked,
+          },
+          blockchain: {
+            transactionHash: null,
+            certificateHash: null,
+            network: data.blockchain.network || "Sepolia",
+          },
+          createdAt: cert.date_pinned ? new Date(cert.date_pinned) : null,
+          updatedAt: cert.date_pinned ? new Date(cert.date_pinned) : null,
+        };
+      })
+    );
 
     return res.json({
       total: formatPinataCertificates.length,
