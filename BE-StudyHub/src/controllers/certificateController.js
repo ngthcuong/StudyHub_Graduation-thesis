@@ -1,8 +1,11 @@
+const axios = require("axios");
 const certificateModel = require("../models/certificateModel");
 const {
   uploadJSON,
   searchMetadataByKeyvalues,
   updatePinataKeyvalues,
+  ipfsUriToGatewayUrl,
+  getPinataMetadataByCID,
 } = require("../services/ipfs.service");
 const {
   issueCertificate: issueOnChain,
@@ -16,8 +19,12 @@ const {
   structureCertificateData,
   structureCertificateList,
   generateCertCode,
+  isCertificateConsistent,
 } = require("../utils/helper");
 const Certificate = require("../schemas/Certificate");
+const userModel = require("../models/userModel");
+const courseModel = require("../models/courseModel");
+const { ethers } = require("ethers");
 
 /**
  * Tạo bản ghi chứng chỉ trong cơ sở dữ liệu (KHÔNG phát hành on-chain).
@@ -54,18 +61,13 @@ const createCertificate = async (req, res) => {
  */
 const issueCertificate = async (req, res, next) => {
   try {
-    const { student, studentName, issuer, issuerName, courseName } = req.body;
-    if (!student || !studentName || !issuer || !issuerName || !courseName) {
+    const { courseId } = req.body;
+    const studentId = req.user.userId;
+    if (!studentId || !courseId) {
       return res.status(400).json({
         error: "Missing required fields",
         received: req.body,
-        required: [
-          "student",
-          "studentName",
-          "issuer",
-          "issuerName",
-          "courseName",
-        ],
+        required: ["studentId", "courseId"],
       });
     }
 
@@ -78,20 +80,47 @@ const issueCertificate = async (req, res, next) => {
     //   );
     // }
 
-    const certCode = generateCertCode(
-      new Date(),
-      req.body.learnerId,
-      req.body.courseId
-    );
+    const certCode = generateCertCode(new Date(), studentId, courseId);
+
+    const [student, course] = await Promise.all([
+      userModel.findUserById(studentId),
+      courseModel.findCourseById(courseId),
+    ]);
+
+    if (!student) {
+      return res.status(404).json({
+        error: "Student not found",
+        studentId,
+      });
+    }
+
+    if (!student.walletAddress || !ethers.isAddress(student.walletAddress)) {
+      return res.status(400).json({
+        error: "Invalid student wallet address format",
+        address: student.walletAddress,
+      });
+    }
+
+    if (!course) {
+      return res.status(404).json({
+        error: "Course not found",
+        courseId,
+      });
+    }
+
+    const defaultIssuer = {
+      walletAddress: config.adminAddress,
+      name: "StudyHub",
+    };
+    const issueDate = new Date();
 
     // Build JSON metadata
     const metadata = buildCertificateMetadata({
-      issuer,
-      issuerName,
-      studentAddress: student,
-      studentName,
-      courseName,
       certCode,
+      student,
+      issuer: defaultIssuer,
+      course,
+      issueDate,
     });
 
     // Lưu JSON lên IPFS (Pinata)
@@ -99,65 +128,103 @@ const issueCertificate = async (req, res, next) => {
       name: "studyhub-certificate.json",
       keyvalues: {
         type: "studyhub-certificate",
-        student: String(student),
-        studentName: String(studentName),
-        issuer: String(issuer),
-        courseName: String(courseName),
-        certCode: String(certCode),
+        studentWalletAddress: String(student.walletAddress),
+        issuerWalletAddress: String(defaultIssuer.walletAddress),
+        certificateCode: String(certCode),
       },
     });
 
-    // Gọi on-chain với metadataURI (ipfs://CID)
+    // Gọi on-chain với metadataURI (ipfs://CID) - Lưu chứng chỉ lên blockchain
     let certHash, txHash;
     try {
       const result = await issueOnChain(
-        student,
-        studentName,
-        issuer,
-        courseName,
+        student.walletAddress,
+        student.fullName,
+        defaultIssuer.walletAddress,
+        defaultIssuer.name,
+        course.title,
         meta.uri
       );
+
       certHash = result.certHash;
       txHash = result.txHash;
     } catch (contractError) {
-      throw contractError;
+      console.error(
+        "Blockchain failed, metadata uploaded but unused:",
+        meta.cid
+      );
+
+      return res.status(500).json({
+        error: "Blockchain transaction failed",
+        details: contractError.message,
+        metadata: { cid: meta.cid, uri: meta.uri },
+      });
     }
-    // Bổ sung certHash, certCode vào keyvalues để search nhanh hơn
+
+    // Cập nhật keyvalues trên Pinata với thông tin blockchain
     await updatePinataKeyvalues(meta.cid, {
-      certCode: String(certCode),
-      certHash,
-      issuer,
-      learnerId: req.body.learnerId,
-      courseId: req.body.courseId,
-      courseName,
-      learnerAddress: student,
-      issueDate: new Date(),
-      network: "sepolia",
+      certificateHash: String(certHash),
+      studentWalletAddress: String(student.walletAddress),
+      issuerWalletAddress: String(defaultIssuer.walletAddress),
+      network: "Sepolia",
     });
 
     // Tạo và lưu chứng chỉ vào database
-    await certificateModel.createCertificate({
-      certHash,
-      issuer,
-      learnerId: req.body.learnerId,
-      courseId: req.body.courseId,
-      courseName,
-      learnerAddress: student,
-      issueDate: new Date(),
-      metadataURI: meta.uri,
-      metadataCID: meta.cid,
-      txHash,
-      network: "sepolia",
+    const savedCertificate = await Certificate.create({
+      certificateCode: certCode,
+      student: {
+        id: studentId,
+        name: student.fullName,
+        walletAddress: student.walletAddress,
+      },
+      course: {
+        id: courseId,
+        title: course.title,
+      },
+      issuer: {
+        walletAddress: defaultIssuer.walletAddress,
+        name: defaultIssuer.name,
+      },
+      validity: {
+        issueDate,
+        expireDate: null,
+        isRevoked: false,
+      },
+      blockchain: {
+        transactionHash: txHash,
+        certificateHash: certHash,
+        network: "Sepolia",
+      },
+      ipfs: {
+        metadataURI: ipfsUriToGatewayUrl(meta.uri),
+        metadataCID: meta.cid,
+        fileCID: "",
+      },
     });
 
-    return res.json({
-      ok: true,
-      certHash,
-      certCode,
-      metadataURI: meta.uri,
-      metadataCID: meta.cid,
-      txHash,
-      contract: config.contractAddress,
+    return res.status(201).json({
+      success: true,
+      message: "Certificate issued successfully",
+      data: {
+        certificateId: savedCertificate._id,
+        certCode,
+        certHash,
+        txHash,
+        metadataURI: meta.uri,
+        metadataCID: meta.cid,
+        network: "Sepolia",
+        issuer: defaultIssuer,
+        student: {
+          id: studentId,
+          name: student.fullName,
+          walletAddress: student.walletAddress,
+        },
+        course: {
+          id: courseId,
+          name: course.title,
+        },
+        issueDate: new Date().toISOString(),
+      },
     });
   } catch (error) {
     console.error("Can not issue certificate: ", error);
@@ -181,15 +248,52 @@ const getCertificateByHash = async (req, res, next) => {
         .status(400)
         .json({ error: "Missing certificate's hash fields" });
     }
-    const cert = await readByHash(hash);
 
-    // Cấu trúc lại dữ liệu để dễ đọc
-    const structuredCert = structureCertificateData(cert);
+    // 1. Lấy dữ liệu từ blockchain
+    let blockchainCert = null;
+    try {
+      const rawBlockchainCert = await readByHash(hash);
+      blockchainCert = structureCertificateData(rawBlockchainCert);
+    } catch (err) {
+      console.error("Blockchain read error:", err.message);
+    }
 
-    return res.json({
-      certificate: structuredCert,
-      raw: toPlain(cert), // Giữ lại dữ liệu gốc nếu cần
-    });
+    // 2. Lấy dữ liệu từ database
+    let mongoCert = null;
+    try {
+      mongoCert = await certificateModel.findCertificateByCertHash(hash);
+    } catch (err) {
+      console.error("MongoDB read error:", err.message);
+    }
+
+    // 3. Lấy dữ liệu từ Pinata
+    let pinataMetadata = null;
+    try {
+      if (mongoCert?.ipfs?.metadataCID) {
+        pinataMetadata = await getPinataMetadataByCID(
+          mongoCert.ipfs.metadataCID
+        );
+      }
+    } catch (err) {
+      console.error("Pinata read error:", err.message);
+    }
+
+    // 4. So sánh dữ liệu giữa 3 nguồn
+    const isConsistent = isCertificateConsistent(
+      mongoCert,
+      blockchainCert,
+      pinataMetadata
+    );
+
+    if (isConsistent) {
+      return res.json({
+        certificate: mongoCert,
+      });
+    } else {
+      return res.status(400).json({
+        certificate: {},
+      });
+    }
   } catch (error) {
     console.error("Can not find certificate by hash: ", error);
     next(error);
@@ -206,37 +310,67 @@ const getCertificateByHash = async (req, res, next) => {
  */
 const getCertificateByCode = async (req, res, next) => {
   try {
-    const certCode = req.params.code;
-    if (!certCode) {
+    const certificateCode = req.params.certificateCode;
+
+    if (!certificateCode) {
       return res.status(400).json({ error: "Missing certificate code" });
     }
 
     // Tìm chứng chỉ trong DB
     const certificate = await certificateModel.findCertificateByCertCode(
-      certCode
+      certificateCode
     );
-
-    if (
-      !certificate.certHash ||
-      certificate.certHash.length !== 66 ||
-      !certificate.certHash.startsWith("0x")
-    ) {
-      return res.status(400).json({ error: "Invalid certificate hash format" });
-    }
-
     if (!certificate) {
       return res.status(404).json({ error: "Certificate not found" });
     }
 
-    // Lấy thông tin chứng chỉ từ blockchain
-    const cert = await readByHash(certificate.certHash);
-    const structuredCert = structureCertificateData(cert);
+    const certificateHash = certificate.blockchain.certificateHash;
+    if (
+      !certificateHash ||
+      certificateHash.length !== 66 ||
+      !certificateHash.startsWith("0x")
+    ) {
+      return res.status(400).json({ error: "Invalid certificate hash format" });
+    }
 
-    return res.json({
-      certificate: structuredCert,
-      metadata: certificate,
-      raw: toPlain(cert),
-    });
+    // Lấy dữ liệu từ blockchain
+    let blockchainCert = null;
+    try {
+      const rawBlockchainCert = await readByHash(certificateHash);
+      blockchainCert = structureCertificateData(rawBlockchainCert);
+    } catch (err) {
+      console.error("Blockchain read error:", err.message);
+    }
+
+    // Lấy dữ liệu từ Pinata
+    let pinataMetadata = null;
+    try {
+      // Nếu có metadataCID hoặc metadataURI
+      if (certificate.ipfs?.metadataCID) {
+        pinataMetadata = await getPinataMetadataByCID(
+          certificate.ipfs.metadataCID
+        );
+      }
+    } catch (err) {
+      console.error("Pinata read error:", err.message);
+    }
+
+    // So sánh dữ liệu giữa 3 nguồn
+    const isConsistent = isCertificateConsistent(
+      certificate,
+      blockchainCert,
+      pinataMetadata
+    );
+
+    if (isConsistent) {
+      return res.json({
+        certificate: certificate,
+      });
+    } else {
+      return res.status(400).json({
+        certificate: {},
+      });
+    }
   } catch (error) {
     console.error("Can not find certificate by code: ", error);
     next(error);
@@ -304,36 +438,48 @@ const getStudentCertificatesHybrid = async (req, res, next) => {
 
     // 2. Fallback: Lấy từ Pinata
     const keyvalues = {
-      learnerAddress: { value: String(address), op: "eq" },
+      studentWalletAddress: { value: String(address), op: "eq" },
     };
 
-    // Lấy tất cả chứng chỉ trước (không lọc)
     const pinataCerts = await searchMetadataByKeyvalues(keyvalues, 100, 0);
 
-    const formatPinataCertificates = pinataCerts.map((cert) => {
-      const keyvalues = cert.metadata?.keyvalues || {};
+    const formatPinataCertificates = await Promise.all(
+      pinataCerts.map(async (cert) => {
+        const data = await getPinataMetadataByCID(cert.cid);
 
-      // Format lại theo cấu trúc database
-      return {
-        _id: cert.cid, // Sử dụng CID làm ID tạm thời
-        certHash: keyvalues.certHash || null,
-        issuer: keyvalues.issuer || null,
-        learnerId: keyvalues.learnerId || null,
-        learnerAddress: keyvalues.learnerAddress || keyvalues.student || null,
-        courseId: keyvalues.courseId || null,
-        courseName: keyvalues.courseName || null,
-        issueDate: keyvalues.issueDate || cert.date_pinned,
-        metadataURI: cert.uri,
-        metadataCID: cert.cid,
-        network: keyvalues.network || "sepolia",
-        createdAt: cert.date_pinned,
-        updatedAt: cert.date_pinned,
-        certCode: keyvalues.certCode || null,
-      };
-    });
+        return {
+          certificateCode: data.certificateCode,
+          student: {
+            id: data.student.id,
+            name: data.student.name,
+            walletAddress: data.student.walletAddress,
+          },
+          course: {
+            id: data.course.id,
+            title: data.course.title,
+          },
+          issuer: {
+            walletAddress: data.issuer.walletAddress,
+            name: data.issuer.name,
+          },
+          validity: {
+            issueDate: data.validity.issueDate,
+            expireDate: data.validity.expireDate,
+            isRevoked: data.validity.isRevoked,
+          },
+          blockchain: {
+            transactionHash: null,
+            certificateHash: null,
+            network: data.blockchain.network || "Sepolia",
+          },
+          createdAt: cert.date_pinned ? new Date(cert.date_pinned) : null,
+          updatedAt: cert.date_pinned ? new Date(cert.date_pinned) : null,
+        };
+      })
+    );
 
     return res.json({
-      total: pinataCerts.length,
+      total: formatPinataCertificates.length,
       certificates: formatPinataCertificates,
       source: "pinata",
     });

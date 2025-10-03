@@ -8,8 +8,9 @@ contract CertificateRegistry is AccessControl {
 
     struct Certificate {
         bytes32 certHash; // Hash duy nhất của chứng chỉ (keccak256)
-        string issuer; // Tên tổ chức/cơ sở cấp chứng chỉ
-        address student; // Tên người nhận chứng chỉ
+        address issuer; // Địa chỉ tổ chức/cơ sở cấp chứng chỉ
+        string issuerName; // Tên của tổ chức/cơ sở cấp chứng chỉ
+        address student; // Địa chỉ người nhận chứng chỉ
         string studentName; // Tên của người nhận chứng chỉ
         string courseName; // Tên khóa học/ môn học
         uint256 issuedDate; // Ngày cấp (timestamp)
@@ -35,7 +36,8 @@ contract CertificateRegistry is AccessControl {
      * @notice Hàm cấp chứng chỉ
      * @param _student địa chỉ ví người nhận
      * @param _studentName tên của người nhận
-     * @param _issuer thông tin bên cấp chứng chỉ
+     * @param _issuer địa chỉ ví bên cấp chứng chỉ
+     * @param _issuerName ten bên cấp chứng chỉ
      * @param _courseName tên khóa học
      * @param _metadataURI link IPFS
      * @return certHash hash của chứng chỉ
@@ -43,7 +45,8 @@ contract CertificateRegistry is AccessControl {
     function issueCertificate(
         address _student,
         string memory _studentName,
-        string memory _issuer,
+        address _issuer,
+        string memory _issuerName,
         string memory _courseName,
         string memory _metadataURI
     ) public onlyRole(ADMIN_ROLE) returns (bytes32) {
@@ -58,6 +61,7 @@ contract CertificateRegistry is AccessControl {
             student: _student,
             studentName: _studentName,
             issuer: _issuer,
+            issuerName: _issuerName,
             courseName: _courseName,
             issuedDate: block.timestamp,
             metadataURI: _metadataURI

@@ -10,6 +10,7 @@ async function deployCertificateFixture() {
 
   const ADMIN_ROLE = await certificateRegistry.ADMIN_ROLE();
   await certificateRegistry.grantRole(ADMIN_ROLE, admin.address);
+  await certificateRegistry.grantRole(ADMIN_ROLE, issuer.address);
 
   return {
     certificateRegistry,
