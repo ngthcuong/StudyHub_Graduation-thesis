@@ -389,13 +389,13 @@ export default function Certificate() {
                         page * rowsPerPage + rowsPerPage
                       )
                       .map((certificate) => (
-                        <TableRow key={certificate.certHash} hover>
+                        <TableRow key={certificate.id} hover>
                           <TableCell className="font-medium">
-                            {certificate.certCode}
+                            {certificate.certificateCode}
                           </TableCell>
-                          <TableCell>{certificate.courseName}</TableCell>
+                          <TableCell>{certificate.course.title}</TableCell>
                           <TableCell>
-                            {formatDate(certificate.issueDate)}
+                            {formatDate(certificate.validity.issueDate)}
                           </TableCell>
                           {/* <TableCell>
                             <Chip

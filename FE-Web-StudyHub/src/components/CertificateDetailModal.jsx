@@ -16,11 +16,9 @@ import {
   Business as BusinessIcon,
   MenuBook as MenuBookIcon,
 } from "@mui/icons-material";
-import { useSelector } from "react-redux";
+import CopyButton from "./CopyButton";
 
 const CertificateDetailModal = ({ open, onClose, certificate }) => {
-  const user = useSelector((state) => state.auth.user);
-
   if (!certificate) return null;
 
   const formatDate = (date) => {
@@ -80,7 +78,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.certCode}
+                  {certificate.certificateCode}
                 </Typography>
               </div>
 
@@ -92,22 +90,48 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {formatDate(certificate.issueDate)}
+                  {formatDate(certificate.validity.issueDate)}
                 </Typography>
               </div>
             </div>
 
+            {/* <div className="mt-4">
+              <Typography variant="body2" className="text-gray-500 mb-2">
+                Certificate Hash
+              </Typography>
+              <Box className="bg-gray-50 p-3 rounded-lg border relative">
+                <div className="flex items-center justify-between">
+                  <Typography
+                    variant="body2"
+                    className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
+                  >
+                    {certificate.blockchain.certificateHash}
+                  </Typography>
+                  <CopyButton
+                    text={certificate.blockchain.certificateHash}
+                    tooltip="Copy certificate hash"
+                  />
+                </div>
+              </Box>
+            </div> */}
+
             <div className="mt-4">
               <Typography variant="body2" className="text-gray-500 mb-2">
-                Hash Code
+                Transaction Hash
               </Typography>
-              <Box className="bg-gray-50 p-3 rounded-lg border">
-                <Typography
-                  variant="body2"
-                  className="font-mono text-gray-700 break-all text-sm"
-                >
-                  {certificate.certHash}
-                </Typography>
+              <Box className="bg-gray-50 px-3 py-2 rounded-lg border relative">
+                <div className="flex items-center justify-between">
+                  <Typography
+                    variant="body2"
+                    className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
+                  >
+                    {certificate.blockchain.transactionHash}
+                  </Typography>
+                  <CopyButton
+                    text={certificate.blockchain.transactionHash}
+                    tooltip="Copy transaction hash"
+                  />
+                </div>
               </Box>
             </div>
 
@@ -115,13 +139,19 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
               <Typography variant="body2" className="text-gray-500 mb-2">
                 Metadata
               </Typography>
-              <Box className="bg-gray-50 p-3 rounded-lg border">
-                <Typography
-                  variant="body2"
-                  className="font-mono text-gray-700 break-all text-sm"
-                >
-                  {certificate.metadataURI}
-                </Typography>
+              <Box className="bg-gray-50 px-3 py-2 rounded-lg border relative">
+                <div className="flex items-center justify-between">
+                  <Typography
+                    variant="body2"
+                    className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
+                  >
+                    {certificate.ipfs.metadataURI}
+                  </Typography>
+                  <CopyButton
+                    text={certificate.ipfs.metadataURI}
+                    tooltip="Copy metadata URI"
+                  />
+                </div>
               </Box>
             </div>
 
@@ -130,7 +160,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                 Blockchain Network
               </Typography>
               <Chip
-                label={certificate.network}
+                label={certificate.blockchain.network}
                 className="bg-green-100 text-green-800 uppercase"
                 size="small"
                 icon={<div className="w-2 h-2 bg-green-500 rounded-full"></div>}
@@ -156,7 +186,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {user.fullName}
+                  {certificate.student.name}
                 </Typography>
               </div>
 
@@ -168,7 +198,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.learnerAddress}
+                  {certificate.student.walletAddress}
                 </Typography>
               </div>
             </div>
@@ -192,7 +222,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {"StudyHub"}
+                  {certificate.issuer.name}
                 </Typography>
               </div>
 
@@ -204,7 +234,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.issuer}
+                  {certificate.issuer.walletAddress}
                 </Typography>
               </div>
             </div>
@@ -228,11 +258,11 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.courseName}
+                  {certificate.course.title}
                 </Typography>
               </div>
 
-              <div>
+              {/* <div>
                 <Typography variant="body2" className="text-gray-500 mb-1">
                   Duration
                 </Typography>
@@ -242,7 +272,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                 >
                   {certificate.duration}
                 </Typography>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -251,7 +281,16 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
         <div className="flex justify-center gap-3 mt-6 pt-4 border-t border-gray-200">
           <Button
             variant="contained"
-            className="bg-blue-600 hover:bg-blue-700 normal-case"
+            color="success"
+            className=" h normal-case"
+            onClick={onClose}
+          >
+            Download
+          </Button>
+          <Button
+            variant="contained"
+            color="info"
+            className=" normal-case"
             onClick={onClose}
           >
             OK
