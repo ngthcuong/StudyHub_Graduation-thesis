@@ -17,7 +17,6 @@ import {
   Paper,
   IconButton,
   Typography,
-  Chip,
   TablePagination,
   Dialog,
   DialogActions,
@@ -33,9 +32,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import SearchIcon from "@mui/icons-material/Search";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 
 const statusOptions = ["All", "Pending", "Active", "Rejected"];

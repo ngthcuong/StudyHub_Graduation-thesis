@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +8,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -15,10 +16,14 @@ import {
   Person as PersonIcon,
   Business as BusinessIcon,
   MenuBook as MenuBookIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import CopyButton from "./CopyButton";
+import { downloadCertificateAsImage } from "../utils/imageGenerator";
 
 const CertificateDetailModal = ({ open, onClose, certificate }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+
   if (!certificate) return null;
 
   const formatDate = (date) => {
@@ -27,6 +32,18 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       month: "2-digit",
       day: "2-digit",
     });
+  };
+
+  const handleDownloadImage = async () => {
+    try {
+      setIsDownloading(true);
+      await downloadCertificateAsImage(certificate);
+    } catch (error) {
+      console.error("Error downloading certificate image:", error);
+      alert("Có lỗi xảy ra khi tải certificate. Vui lòng thử lại.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -282,15 +299,23 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
           <Button
             variant="contained"
             color="success"
-            className=" h normal-case"
-            onClick={onClose}
+            className="normal-case"
+            onClick={handleDownloadImage}
+            disabled={isDownloading}
+            startIcon={
+              isDownloading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <DownloadIcon />
+              )
+            }
           >
-            Download
+            {isDownloading ? "Downloading..." : "Download Image"}
           </Button>
           <Button
             variant="contained"
             color="info"
-            className=" normal-case"
+            className="normal-case"
             onClick={onClose}
           >
             OK
