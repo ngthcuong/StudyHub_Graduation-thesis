@@ -1,9 +1,9 @@
 import html2canvas from "html2canvas";
 
 export const downloadCertificateAsImage = async (certificate) => {
+  const container = document.createElement("div");
   try {
     // Tạo container cho certificate
-    const container = document.createElement("div");
     container.style.position = "fixed";
     container.style.left = "-9999px";
     container.style.top = "0";
@@ -121,12 +121,12 @@ export const downloadCertificateAsImage = async (certificate) => {
     link.click();
     document.body.removeChild(link);
 
-    // Cleanup
-    document.body.removeChild(container);
-
     return true;
   } catch (error) {
     console.error("Error generating certificate image:", error);
     throw error;
+  } finally {
+    // Cleanup container
+    document.body.removeChild(container);
   }
 };
