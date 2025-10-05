@@ -15,6 +15,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { userApi } from "../../services/userApi";
 import { authApi } from "../../services/authApi";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 
 const EditInfoScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -122,7 +123,7 @@ const EditInfoScreen = () => {
             style={styles.avatar}
           />
           <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage}>
-            <Text style={{ color: "#fff", fontSize: 12 }}>✎</Text>
+            <Ionicons name="pencil-outline" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -131,14 +132,14 @@ const EditInfoScreen = () => {
       <View style={styles.formContainer}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-            <Text style={styles.buttonText}>Cập nhật thông tin</Text>
+            <Text style={styles.buttonText}>Edit Profile</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.passwordButton}
             onPress={() => setIsShowModal(true)}
           >
             <Text style={[styles.buttonText, { color: "#1e3a8a" }]}>
-              Đổi mật khẩu
+              Change Password
             </Text>
           </TouchableOpacity>
         </View>
@@ -146,7 +147,7 @@ const EditInfoScreen = () => {
         {/* Form */}
         {/* Họ tên */}
         <View style={styles.formField}>
-          <Text style={styles.label}>Họ và tên</Text>
+          <Text style={styles.label}>Full Name</Text>
           <TextInput
             style={[styles.input, !isEditing && styles.disabledInput]}
             value={formData.fullName}
@@ -168,7 +169,7 @@ const EditInfoScreen = () => {
 
         {/* Phone */}
         <View style={styles.formField}>
-          <Text style={styles.label}>Số điện thoại</Text>
+          <Text style={styles.label}>Phone Number</Text>
           <TextInput
             style={[styles.input, !isEditing && styles.disabledInput]}
             value={formData.phone}
@@ -179,7 +180,7 @@ const EditInfoScreen = () => {
 
         {/* DOB */}
         <View style={styles.formField}>
-          <Text style={styles.label}>Ngày sinh</Text>
+          <Text style={styles.label}>Date of Birth</Text>
           <TouchableOpacity
             style={[styles.input, { justifyContent: "center" }]}
             onPress={() => isEditing && setShowDatePicker(true)}
@@ -203,7 +204,7 @@ const EditInfoScreen = () => {
 
         {/* Gender */}
         <View style={styles.formField}>
-          <Text style={styles.label}>Giới tính</Text>
+          <Text style={styles.label}>Gender</Text>
           <View style={{ flexDirection: "row", gap: 16 }}>
             {["male", "female"].map((g) => (
               <TouchableOpacity
@@ -221,7 +222,7 @@ const EditInfoScreen = () => {
                   {formData.gender === g && <View style={styles.radioInner} />}
                 </View>
                 <Text style={styles.radioLabel}>
-                  {g === "male" ? "Nam" : "Nữ"}
+                  {g === "male" ? "Male" : "Female"}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -230,7 +231,7 @@ const EditInfoScreen = () => {
 
         {/* Organization */}
         <View style={styles.formField}>
-          <Text style={styles.label}>Tổ chức</Text>
+          <Text style={styles.label}>Organization</Text>
           <TextInput
             style={[styles.input, !isEditing && styles.disabledInput]}
             value={formData.organization}
@@ -241,7 +242,7 @@ const EditInfoScreen = () => {
 
         {/* Wallet Address */}
         <View style={styles.formField}>
-          <Text style={styles.label}>Địa chỉ ví</Text>
+          <Text style={styles.label}>Wallet Address</Text>
           <TextInput
             style={[styles.input, !isEditing && styles.disabledInput]}
             value={formData.walletAddress}
@@ -270,14 +271,17 @@ const EditInfoScreen = () => {
       {isShowModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>🔐 Đổi mật khẩu</Text>
+            <Text style={styles.modalTitle}>
+              <Ionicons name="lock-closed-outline" size={24} color="#1e3a8a" />{" "}
+              Change Password
+            </Text>
 
-            {/* Mật khẩu hiện tại */}
-            <Text style={styles.modalLabel}>Mật khẩu hiện tại</Text>
+            {/* Current Password */}
+            <Text style={styles.modalLabel}>Current Password</Text>
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.modalInput}
-                placeholder="Nhập mật khẩu hiện tại"
+                placeholder="Enter current password"
                 secureTextEntry={!showCurrentPassword}
                 value={currentPassword}
                 onChangeText={setCurrentPassword}
@@ -286,18 +290,19 @@ const EditInfoScreen = () => {
                 style={styles.eyeButton}
                 onPress={() => setShowCurrentPassword(!showCurrentPassword)}
               >
-                <Text style={styles.eyeIcon}>
-                  {showCurrentPassword ? "🙈" : "👁"}
-                </Text>
+                <Ionicons
+                  name={showCurrentPassword ? "eye-off-outline" : "eye-outline"}
+                  style={styles.eyeIcon}
+                />
               </TouchableOpacity>
             </View>
 
-            {/* Mật khẩu mới */}
-            <Text style={styles.modalLabel}>Mật khẩu mới</Text>
+            {/* New Password */}
+            <Text style={styles.modalLabel}>New Password</Text>
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.modalInput}
-                placeholder="Nhập mật khẩu mới"
+                placeholder="Enter new password"
                 secureTextEntry={!showPassword}
                 value={newPassword}
                 onChangeText={setNewPassword}
@@ -306,16 +311,19 @@ const EditInfoScreen = () => {
                 style={styles.eyeButton}
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <Text style={styles.eyeIcon}>{showPassword ? "🙈" : "👁"}</Text>
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  style={styles.eyeIcon}
+                />
               </TouchableOpacity>
             </View>
 
-            {/* Xác nhận mật khẩu */}
-            <Text style={styles.modalLabel}>Xác nhận mật khẩu</Text>
+            {/* Confirm Password */}
+            <Text style={styles.modalLabel}>Confirm Password</Text>
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.modalInput}
-                placeholder="Nhập lại mật khẩu"
+                placeholder="Enter confirm password"
                 secureTextEntry={!showConfirmPassword}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -324,9 +332,10 @@ const EditInfoScreen = () => {
                 style={styles.eyeButton}
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                <Text style={styles.eyeIcon}>
-                  {showConfirmPassword ? "🙈" : "👁"}
-                </Text>
+                <Ionicons
+                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                  style={styles.eyeIcon}
+                />
               </TouchableOpacity>
             </View>
 
@@ -336,7 +345,7 @@ const EditInfoScreen = () => {
                 style={styles.modalCancelButton}
                 onPress={() => setIsShowModal(false)}
               >
-                <Text style={styles.modalCancelText}>Hủy</Text>
+                <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalSaveButton}
@@ -348,7 +357,7 @@ const EditInfoScreen = () => {
                   );
                 }}
               >
-                <Text style={styles.modalSaveText}>Lưu</Text>
+                <Text style={styles.modalSaveText}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
