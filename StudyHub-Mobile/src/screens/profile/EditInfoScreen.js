@@ -16,6 +16,7 @@ import { userApi } from "../../services/userApi";
 import { authApi } from "../../services/authApi";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 
 const EditInfoScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -242,7 +243,7 @@ const EditInfoScreen = () => {
         </View>
 
         {/* Wallet Address */}
-        <View style={styles.formField}>
+        {/* <View style={styles.formField}>
           <Text style={styles.label}>Wallet Address</Text>
           <TextInput
             style={[styles.input, !isEditing && styles.disabledInput]}
@@ -250,6 +251,37 @@ const EditInfoScreen = () => {
             editable={isEditing}
             onChangeText={(text) => handleChange("walletAddress", text)}
           />
+        </View> */}
+
+        <View style={styles.formField}>
+          <Text style={styles.label}>Wallet Address</Text>
+
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[
+                styles.input,
+                !isEditing && styles.disabledInput,
+                { flex: 1 },
+              ]}
+              value={formData.walletAddress}
+              editable={isEditing}
+              onChangeText={(text) => handleChange("walletAddress", text)}
+            />
+
+            {/* Nút Copy */}
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={() => {
+                Clipboard.setStringAsync(formData.walletAddress);
+                Alert.alert(
+                  "Copied",
+                  "Wallet address has been copied to clipboard."
+                );
+              }}
+            >
+              <Ionicons name="copy-outline" size={22} color="#2563EB" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Nút Lưu / Hủy */}
@@ -418,7 +450,19 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontSize: 16 },
   formField: { marginBottom: 16 },
-  label: { fontSize: 14, color: "#374151", marginBottom: 4 },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  copyButton: {
+    marginLeft: 8,
+    padding: 8,
+  },
   input: {
     backgroundColor: "#fff",
     borderRadius: 8,
