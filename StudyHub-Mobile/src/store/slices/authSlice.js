@@ -5,6 +5,7 @@ import { authApi } from "../../services/authApi";
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
+    console.log("Logging in with:", email, password);
     try {
       const response = await authApi.login({ email, password });
       return response;

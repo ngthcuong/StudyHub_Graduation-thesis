@@ -12,9 +12,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { logout } from "../../store/slices/authSlice";
 import { mockUser } from "../../mock";
+import { userApi } from "../../services/userApi";
 
 const ProfileScreen = ({ navigation }) => {
   const { user } = useSelector((state) => state.auth);
+  const [userInfo, setUserInfo] = useState(null);
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
@@ -24,6 +26,18 @@ const ProfileScreen = ({ navigation }) => {
     passedTests: 0,
     averageScore: 0,
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const profileData = await userApi.getProfile(user._id);
+        setUserInfo(profileData.data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     loadUserStats();
@@ -69,9 +83,11 @@ const ProfileScreen = ({ navigation }) => {
     );
   };
 
+  console.log("User Info:", userInfo);
+
   const handleEditProfile = () => {
     // Navigate to edit profile screen
-    Alert.alert("Coming Soon", "Edit profile feature will be available soon");
+    navigation.navigate("EditProfile", { userInfo });
   };
 
   const MenuItem = ({ icon, title, subtitle, onPress, showArrow = true }) => (
@@ -111,10 +127,8 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.avatar}>
           <Ionicons name="person" size={40} color="#3B82F6" />
         </View>
-        <Text style={styles.userName}>
-          {user?.firstName} {user?.lastName}
-        </Text>
-        <Text style={styles.userEmail}>{user?.email}</Text>
+        <Text style={styles.userName}>{userInfo?.fullName}</Text>
+        <Text style={styles.userEmail}>{userInfo?.email}</Text>
       </View>
 
       {/* Stats Section */}
