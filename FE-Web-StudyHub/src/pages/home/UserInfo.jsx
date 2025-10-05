@@ -7,6 +7,7 @@ import {
   Paper,
   Grid,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import {
   AccountBalanceWallet,
@@ -58,6 +59,8 @@ const UserInfo = () => {
 
   const { data } = useGetUserInfoQuery();
   const userData = data?.data;
+
+  console.log(userData);
 
   const [updateUserInfo, { isLoading }] = useUpdateUserInfoMutation();
 
@@ -140,10 +143,8 @@ const UserInfo = () => {
       phone: "",
       organization: "",
       walletAddress: "",
-      currentLevel: {
-        TOEIC: "0",
-        IELTS: "0",
-      },
+      toeic: "0",
+      ielts: "0",
     },
     mode: "onChange",
   });
@@ -158,10 +159,8 @@ const UserInfo = () => {
     gender: userData.gender || "",
     organization: userData.organization || "",
     walletAddress: userData.walletAddress || "",
-    currentLevel: {
-      IELTS: userData.currentLevel?.IELTS || "0",
-      TOEIC: userData.currentLevel?.TOEIC || "0",
-    },
+    toeic: userData.currentLevel?.TOEIC || "0",
+    ielts: userData.currentLevel?.IELTS || "0",
   });
 
   useEffect(() => {
@@ -291,7 +290,13 @@ const UserInfo = () => {
 
             {/* Form thông tin */}
             <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
-              <Grid container spacing={4}>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <Typography variant="h6" fontWeight={"600"} mb={-1}>
+                    User Information
+                  </Typography>
+                </Grid>
+
                 <Grid size={{ xs: 12, md: 12 }}>
                   <FormField
                     name={"fullName"}
@@ -309,7 +314,7 @@ const UserInfo = () => {
                     control={control}
                     label="Email"
                     type="email"
-                    disable={!isEditing}
+                    disable={true}
                     startIcon={<Email className="text-gray-400" />}
                   />
                 </Grid>
@@ -345,9 +350,9 @@ const UserInfo = () => {
                     label="Gender"
                     type="select"
                     options={[
-                      { value: "male", label: "Nam" },
-                      { value: "female", label: "Nữ" },
-                      { value: "other", label: "Khác" },
+                      { value: "male", label: "Male" },
+                      { value: "female", label: "Female" },
+                      { value: "other", label: "Other" },
                     ]}
                     disable={!isEditing}
                     startIcon={<Transgender className="text-gray-400" />}
@@ -380,10 +385,16 @@ const UserInfo = () => {
                   />
                 </Grid>
 
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <Typography variant="h6" fontWeight={"600"} mb={-1}>
+                    Current Level
+                  </Typography>
+                </Grid>
+
                 {/* Current Level IELTS */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormField
-                    name="currentLevel.TOEIC"
+                    name="toeic"
                     control={control}
                     label="TOEIC"
                     type="select"
@@ -396,7 +407,7 @@ const UserInfo = () => {
                 {/* Current Level TOEIC */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormField
-                    name="currentLevel.IELTS"
+                    name="ielts"
                     control={control}
                     label="IELTS"
                     type="select"
