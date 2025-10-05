@@ -17,6 +17,7 @@ import {
   Lock,
   Person,
   PhoneIphone,
+  School,
   Transgender,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,7 +33,23 @@ import {
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
 
-const UserInfoPage = () => {
+const levelTOEIC = [
+  { value: "0", label: "No level" },
+  { value: "450", label: "450 - Basic" },
+  { value: "600", label: "600 - Intermediate" },
+  { value: "750", label: "750 - Upper Intermediate" },
+  { value: "900", label: "900 - Advanced" },
+];
+
+const levelIELTS = [
+  { value: "0", label: "No level" },
+  { value: "3.0", label: "3.0 - Basic" },
+  { value: "5.0", label: "5.0 - Intermediate" },
+  { value: "6.5", label: "6.5 - Upper Intermediate" },
+  { value: "8.0", label: "8.0 - Advanced" },
+];
+
+const UserInfo = () => {
   const dispatch = useDispatch();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
@@ -47,40 +64,37 @@ const UserInfoPage = () => {
   const formSchema = yup.object({
     fullName: yup
       .string()
-      .required("Họ tên là bắt buộc")
-      .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .required("Full name is required")
+      .min(2, "Full name must have at least 2 characters")
       .matches(
         /^[A-Za-zÀ-ỹ][A-Za-zÀ-ỹ\s]{0,48}[A-Za-zÀ-ỹ]$/,
-        "Họ tên không hợp lệ"
+        "Fullname is invalid"
       )
       .trim(),
 
     dob: yup
       .date()
-      .required("Ngày sinh là bắt buộc")
-      .typeError("Ngày sinh không hợp lệ")
-      .max(new Date(), "Ngày sinh không hợp lệ"),
+      .required("Birthday is required")
+      .typeError("Birthday is invalid")
+      .max(new Date(), "Birthday is invalid"),
 
     gender: yup
       .string()
-      .required("Vui lòng chọn giới tính")
-      .oneOf(["male", "female", "other"], "Giới tính không hợp lệ"),
+      .required("Please select one gender")
+      .oneOf(["male", "female", "other"], "Gender is invalid"),
 
-    email: yup
-      .string()
-      .required("Email là bắt buộc")
-      .email("Email không hợp lệ"),
+    email: yup.string().required("Email is required").email("Email is invalid"),
 
     phone: yup
       .string()
-      .required("Số điện thoại là bắt buộc")
-      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
+      .required("Phone number is required")
+      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Phone number is invalid"),
 
     organization: yup
       .string()
       .nullable()
       .transform((value) => (value === "" ? null : value))
-      .test("organization-format", "Tổ chức không hợp lệ", (value) => {
+      .test("organization-format", "Organization is invalid", (value) => {
         if (!value) return true;
         return /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/.test(
           value.trim()
@@ -91,10 +105,29 @@ const UserInfoPage = () => {
       .string()
       .nullable()
       .transform((value) => (value === "" ? null : value))
-      .test("wallet-format", "Địa chỉ ví điện tử không hợp lệ", (value) => {
+      .test("wallet-format", "Wallet Address is invalid", (value) => {
         if (!value) return true;
         return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
       }),
+
+    currentLevel: yup.object({
+      TOEIC: yup
+        .string()
+        .nullable()
+        .transform((value) => (value === "" ? null : value))
+        .oneOf(
+          ["0", "450", "600", "750", "900"],
+          "Current level TOEIC is invalid"
+        ),
+      IELTS: yup
+        .string()
+        .nullable()
+        .transform((value) => (value === "" ? null : value))
+        .oneOf(
+          ["0", "3.0", "5.0", "6.5", "8.0"],
+          "Current level IELTS is invalid"
+        ),
+    }),
   });
 
   const { control, handleSubmit, reset, clearErrors } = useForm({
@@ -107,6 +140,10 @@ const UserInfoPage = () => {
       phone: "",
       organization: "",
       walletAddress: "",
+      currentLevel: {
+        TOEIC: "0",
+        IELTS: "0",
+      },
     },
     mode: "onChange",
   });
@@ -121,11 +158,17 @@ const UserInfoPage = () => {
     gender: userData.gender || "",
     organization: userData.organization || "",
     walletAddress: userData.walletAddress || "",
+    currentLevel: {
+      IELTS: userData.currentLevel?.IELTS || "0",
+      TOEIC: userData.currentLevel?.TOEIC || "0",
+    },
   });
 
   useEffect(() => {
     if (userData) {
       const formattedData = formatUserData(userData);
+      console.log(formattedData);
+
       reset(formattedData);
     }
   }, [userData, reset]);
@@ -135,7 +178,13 @@ const UserInfoPage = () => {
       const payload = {
         ...data,
         dob: data.dob,
+        currentLevel: {
+          IELTS: data.ielts,
+          TOEIC: data.toeic,
+        },
       };
+      console.log("payload: ", payload);
+
       const response = await updateUserInfo(payload);
       if (!response) return;
 
@@ -148,6 +197,8 @@ const UserInfoPage = () => {
 
       // Cập nhật form với dữ liệu mới
       const updatedData = formatUserData(response.data.data);
+      console.log(updatedData);
+
       reset(updatedData);
       setIsEditing(false);
     } catch (error) {
@@ -219,7 +270,7 @@ const UserInfoPage = () => {
                     fontWeight: 500,
                   }}
                 >
-                  Cập nhật thông tin
+                  Update your information
                 </Button>
                 <Button
                   variant="outlined"
@@ -233,7 +284,7 @@ const UserInfoPage = () => {
                     fontWeight: 400,
                   }}
                 >
-                  Đổi mật khẩu
+                  Change password
                 </Button>
               </Grid>
             </Grid>
@@ -245,7 +296,7 @@ const UserInfoPage = () => {
                   <FormField
                     name={"fullName"}
                     control={control}
-                    label={"Họ và tên"}
+                    label={"Full Name"}
                     disable={!isEditing}
                     startIcon={<Person className="text-gray-400" />}
                   />
@@ -267,7 +318,7 @@ const UserInfoPage = () => {
                   <FormField
                     name="phone"
                     control={control}
-                    label="Số điện thoại"
+                    label="Phone Number"
                     type="tel"
                     disable={!isEditing}
                     startIcon={<PhoneIphone className="text-gray-400" />}
@@ -279,7 +330,7 @@ const UserInfoPage = () => {
                   <FormField
                     name="dob"
                     control={control}
-                    label="Ngày sinh"
+                    label="Birthday"
                     type="date"
                     disable={!isEditing}
                     startIcon={<CalendarMonth className="text-gray-400" />}
@@ -291,7 +342,7 @@ const UserInfoPage = () => {
                   <FormField
                     name="gender"
                     control={control}
-                    label="Giới tính"
+                    label="Gender"
                     type="select"
                     options={[
                       { value: "male", label: "Nam" },
@@ -308,7 +359,7 @@ const UserInfoPage = () => {
                   <FormField
                     name="organization"
                     control={control}
-                    label="Tổ chức"
+                    label="Organization"
                     type="text"
                     disable={!isEditing}
                     startIcon={<CorporateFare className="text-gray-400" />}
@@ -320,12 +371,38 @@ const UserInfoPage = () => {
                   <FormField
                     name="walletAddress"
                     control={control}
-                    label="Địa chỉ ví điện tử"
+                    label="Wallet Address"
                     type="text"
                     disable={!isEditing}
                     startIcon={
                       <AccountBalanceWallet className="text-gray-400" />
                     }
+                  />
+                </Grid>
+
+                {/* Current Level IELTS */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="currentLevel.TOEIC"
+                    control={control}
+                    label="TOEIC"
+                    type="select"
+                    options={levelTOEIC}
+                    disable={!isEditing}
+                    startIcon={<School className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Current Level TOEIC */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="currentLevel.IELTS"
+                    control={control}
+                    label="IELTS"
+                    type="select"
+                    options={levelIELTS}
+                    disable={!isEditing}
+                    startIcon={<School className="text-gray-400" />}
                   />
                 </Grid>
               </Grid>
@@ -360,7 +437,7 @@ const UserInfoPage = () => {
                       fontWeight: 500,
                     }}
                   >
-                    {isLoading ? <CircularProgress size={20} /> : "Lưu"}
+                    {isLoading ? <CircularProgress size={20} /> : "Save"}
                   </Button>
                 </div>
               )}
@@ -381,4 +458,4 @@ const UserInfoPage = () => {
   );
 };
 
-export default UserInfoPage;
+export default UserInfo;
