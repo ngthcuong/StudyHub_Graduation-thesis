@@ -167,12 +167,12 @@ const ProfileScreen = ({ navigation }) => {
           onPress={handleEditProfile}
         />
 
-        <MenuItem
+        {/* <MenuItem
           icon="lock-closed-outline"
           title="Change Password"
           subtitle="Update your password"
           onPress={handleChangePassword}
-        />
+        /> */}
 
         <MenuItem
           icon="notifications-outline"

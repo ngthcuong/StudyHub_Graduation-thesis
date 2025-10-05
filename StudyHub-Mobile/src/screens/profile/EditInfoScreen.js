@@ -9,6 +9,7 @@ import {
   Image,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -77,6 +78,42 @@ const EditInfoScreen = () => {
 
   // cập nhật dữ liệu
   const handleChange = (key, value) => {
+    // Nếu là fullName thì kiểm tra
+    if (key === "fullName") {
+      const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/; // cho phép chữ cái và khoảng trắng
+      if (!nameRegex.test(value)) {
+        Alert.alert(
+          "❌ Input error",
+          "Full name cannot contain numbers or special characters."
+        );
+        return; // không cập nhật giá trị sai
+      }
+    }
+
+    // Kiểm tra email
+    if (key === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        Alert.alert(
+          "❌ Email error",
+          "Please enter a valid email address (ví dụ: abc@gmail.com)."
+        );
+        return;
+      }
+    }
+
+    // Kiểm tra số điện thoại
+    if (key === "phone") {
+      const phoneRegex = /^(0|\+84)[0-9]{9}$/; // cho phép 0xxxxxxxxx hoặc +84xxxxxxxxx
+      if (!phoneRegex.test(value)) {
+        Alert.alert(
+          "❌ Phone number error",
+          "Please enter a valid Vietnamese phone number."
+        );
+        return;
+      }
+    }
+
     setFormData({ ...formData, [key]: value });
   };
 
@@ -113,290 +150,303 @@ const EditInfoScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Avatar + Header */}
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Image
-            source={{
-              uri: userInfo?.avatarUrl || "null",
-            }}
-            style={styles.avatar}
-          />
-          <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage}>
-            <Ionicons name="pencil-outline" size={16} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Nút hành động */}
-      <View style={styles.formContainer}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-            <Text style={styles.buttonText}>Edit Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.passwordButton}
-            onPress={() => setIsShowModal(true)}
-          >
-            <Text style={[styles.buttonText, { color: "#1e3a8a" }]}>
-              Change Password
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Form */}
-        {/* Họ tên */}
-        <View style={styles.formField}>
-          <Text style={styles.label}>Full Name</Text>
-          <TextInput
-            style={[styles.input, !isEditing && styles.disabledInput]}
-            value={formData.fullName}
-            editable={isEditing}
-            onChangeText={(text) => handleChange("fullName", text)}
-          />
-        </View>
-
-        {/* Email */}
-        <View style={styles.formField}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, !isEditing && styles.disabledInput]}
-            value={formData.email}
-            editable={isEditing}
-            onChangeText={(text) => handleChange("email", text)}
-          />
-        </View>
-
-        {/* Phone */}
-        <View style={styles.formField}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={[styles.input, !isEditing && styles.disabledInput]}
-            value={formData.phone}
-            editable={isEditing}
-            onChangeText={(text) => handleChange("phone", text)}
-          />
-        </View>
-
-        {/* DOB */}
-        <View style={styles.formField}>
-          <Text style={styles.label}>Date of Birth</Text>
-          <TouchableOpacity
-            style={[styles.input, { justifyContent: "center" }]}
-            onPress={() => isEditing && setShowDatePicker(true)}
-          >
-            <Text>{formatDate(formData.dob)}</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={new Date(formData.dob)}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              maximumDate={new Date()}
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) {
-                  handleChange("dob", selectedDate.toISOString());
-                }
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Avatar + Header */}
+        <View style={styles.header}>
+          <View style={styles.avatarContainer}>
+            <Image
+              source={{
+                uri: userInfo?.avatarUrl || "null",
               }}
+              style={styles.avatar}
             />
-          )}
-        </View>
-
-        {/* Gender */}
-        <View style={styles.formField}>
-          <Text style={styles.label}>Gender</Text>
-          <View style={{ flexDirection: "row", gap: 16 }}>
-            {["male", "female"].map((g) => (
-              <TouchableOpacity
-                key={g}
-                style={styles.radioContainer}
-                disabled={!isEditing}
-                onPress={() => handleChange("gender", g)}
-              >
-                <View
-                  style={[
-                    styles.radioOuter,
-                    formData.gender === g && styles.radioOuterSelected,
-                  ]}
-                >
-                  {formData.gender === g && <View style={styles.radioInner} />}
-                </View>
-                <Text style={styles.radioLabel}>
-                  {g === "male" ? "Male" : "Female"}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            <TouchableOpacity
+              style={styles.editAvatarButton}
+              onPress={pickImage}
+            >
+              <Ionicons name="pencil-outline" size={16} color="#fff" />
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Organization */}
-        <View style={styles.formField}>
-          <Text style={styles.label}>Organization</Text>
-          <TextInput
-            style={[styles.input, !isEditing && styles.disabledInput]}
-            value={formData.organization}
-            editable={isEditing}
-            onChangeText={(text) => handleChange("organization", text)}
-          />
-        </View>
+        {/* Nút hành động */}
+        <View style={styles.formContainer}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+              <Text style={styles.buttonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.passwordButton}
+              onPress={() => setIsShowModal(true)}
+            >
+              <Text style={[styles.buttonText, { color: "#1e3a8a" }]}>
+                Change Password
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Wallet Address */}
-        {/* <View style={styles.formField}>
-          <Text style={styles.label}>Wallet Address</Text>
-          <TextInput
-            style={[styles.input, !isEditing && styles.disabledInput]}
-            value={formData.walletAddress}
-            editable={isEditing}
-            onChangeText={(text) => handleChange("walletAddress", text)}
-          />
-        </View> */}
-
-        <View style={styles.formField}>
-          <Text style={styles.label}>Wallet Address</Text>
-
-          <View style={styles.inputRow}>
+          {/* Form */}
+          {/* Họ tên */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Full Name</Text>
             <TextInput
-              style={[
-                styles.input,
-                !isEditing && styles.disabledInput,
-                { flex: 1 },
-              ]}
-              value={formData.walletAddress}
+              style={[styles.input, !isEditing && styles.disabledInput]}
+              value={formData.fullName}
               editable={isEditing}
-              onChangeText={(text) => handleChange("walletAddress", text)}
+              onChangeText={(text) => handleChange("fullName", text)}
             />
-
-            {/* Nút Copy */}
-            <TouchableOpacity
-              style={styles.copyButton}
-              onPress={() => {
-                Clipboard.setStringAsync(formData.walletAddress);
-                Alert.alert(
-                  "Copied",
-                  "Wallet address has been copied to clipboard."
-                );
-              }}
-            >
-              <Ionicons name="copy-outline" size={22} color="#2563EB" />
-            </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Nút Lưu / Hủy */}
-        {isEditing && (
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleCancel}
-            >
-              <Text style={styles.buttonText}>Hủy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.buttonText}>Lưu</Text>
-            </TouchableOpacity>
+          {/* Email */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.disabledInput]}
+              value={formData.email}
+              editable={isEditing}
+              onChangeText={(text) => handleChange("email", text)}
+            />
           </View>
-        )}
-      </View>
 
-      {/* Modal đổi mật khẩu */}
-      {isShowModal && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>
-              <Ionicons name="lock-closed-outline" size={24} color="#1e3a8a" />{" "}
-              Change Password
-            </Text>
+          {/* Phone */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.disabledInput]}
+              value={formData.phone}
+              editable={isEditing}
+              keyboardType="phone-pad"
+              onChangeText={(text) => handleChange("phone", text)}
+            />
+          </View>
 
-            {/* Current Password */}
-            <Text style={styles.modalLabel}>Current Password</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Enter current password"
-                secureTextEntry={!showCurrentPassword}
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
+          {/* DOB */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Date of Birth</Text>
+            <TouchableOpacity
+              style={[styles.input, { justifyContent: "center" }]}
+              onPress={() => isEditing && setShowDatePicker(true)}
+            >
+              <Text>{formatDate(formData.dob)}</Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={new Date(formData.dob)}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                maximumDate={new Date()}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    handleChange("dob", selectedDate.toISOString());
+                  }
+                }}
               />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-              >
-                <Ionicons
-                  name={showCurrentPassword ? "eye-off-outline" : "eye-outline"}
-                  style={styles.eyeIcon}
-                />
-              </TouchableOpacity>
-            </View>
+            )}
+          </View>
 
-            {/* New Password */}
-            <Text style={styles.modalLabel}>New Password</Text>
-            <View style={styles.inputWrapper}>
+          {/* Gender */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Gender</Text>
+            <View style={{ flexDirection: "row", gap: 16 }}>
+              {["male", "female"].map((g) => (
+                <TouchableOpacity
+                  key={g}
+                  style={styles.radioContainer}
+                  disabled={!isEditing}
+                  onPress={() => handleChange("gender", g)}
+                >
+                  <View
+                    style={[
+                      styles.radioOuter,
+                      formData.gender === g && styles.radioOuterSelected,
+                    ]}
+                  >
+                    {formData.gender === g && (
+                      <View style={styles.radioInner} />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>
+                    {g === "male" ? "Male" : "Female"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Organization */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Organization</Text>
+            <TextInput
+              style={[styles.input, !isEditing && styles.disabledInput]}
+              value={formData.organization}
+              editable={isEditing}
+              onChangeText={(text) => handleChange("organization", text)}
+            />
+          </View>
+
+          {/* Wallet Address */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Wallet Address</Text>
+
+            <View style={styles.inputRow}>
               <TextInput
-                style={styles.modalInput}
-                placeholder="Enter new password"
-                secureTextEntry={!showPassword}
-                value={newPassword}
-                onChangeText={setNewPassword}
+                style={[
+                  styles.input,
+                  !isEditing && styles.disabledInput,
+                  { flex: 1 },
+                ]}
+                value={formData.walletAddress}
+                editable={isEditing}
+                onChangeText={(text) => handleChange("walletAddress", text)}
               />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  style={styles.eyeIcon}
-                />
-              </TouchableOpacity>
-            </View>
 
-            {/* Confirm Password */}
-            <Text style={styles.modalLabel}>Confirm Password</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Enter confirm password"
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
+              {/* Nút Copy */}
               <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <Ionicons
-                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                  style={styles.eyeIcon}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Nút */}
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => setIsShowModal(false)}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSaveButton}
+                style={styles.copyButton}
                 onPress={() => {
-                  handleChangePassword(
-                    currentPassword,
-                    newPassword,
-                    confirmPassword
+                  Clipboard.setStringAsync(formData.walletAddress);
+                  Alert.alert(
+                    "Copied",
+                    "Wallet address has been copied to clipboard."
                   );
                 }}
               >
-                <Text style={styles.modalSaveText}>Save</Text>
+                <Ionicons name="copy-outline" size={22} color="#2563EB" />
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Nút Lưu / Hủy */}
+          {isEditing && (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={handleCancel}
+              >
+                <Text style={styles.buttonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.buttonText}>Lưu</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-      )}
-    </ScrollView>
+
+        {/* Modal đổi mật khẩu */}
+        {isShowModal && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={24}
+                  color="#1e3a8a"
+                />{" "}
+                Change Password
+              </Text>
+
+              {/* Current Password */}
+              <Text style={styles.modalLabel}>Current Password</Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter current password"
+                  secureTextEntry={!showCurrentPassword}
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  <Ionicons
+                    name={
+                      showCurrentPassword ? "eye-off-outline" : "eye-outline"
+                    }
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* New Password */}
+              <Text style={styles.modalLabel}>New Password</Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter new password"
+                  secureTextEntry={!showPassword}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Confirm Password */}
+              <Text style={styles.modalLabel}>Confirm Password</Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter confirm password"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Ionicons
+                    name={
+                      showConfirmPassword ? "eye-off-outline" : "eye-outline"
+                    }
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Nút */}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => setIsShowModal(false)}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalSaveButton}
+                  onPress={() => {
+                    handleChangePassword(
+                      currentPassword,
+                      newPassword,
+                      confirmPassword
+                    );
+                  }}
+                >
+                  <Text style={styles.modalSaveText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
