@@ -99,6 +99,8 @@ const ProfileScreen = ({ navigation }) => {
     </View>
   );
 
+  console.log("Rendering ProfileScreen with user:", user);
+
   return (
     <ScrollView
       style={styles.container}
