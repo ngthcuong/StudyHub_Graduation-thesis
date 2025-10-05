@@ -192,6 +192,7 @@ const EditInfoScreen = () => {
               value={new Date(formData.dob)}
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "default"}
+              maximumDate={new Date()}
               onChange={(event, selectedDate) => {
                 setShowDatePicker(false);
                 if (selectedDate) {
