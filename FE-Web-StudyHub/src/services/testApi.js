@@ -20,6 +20,7 @@ export const testApi = rootApi.injectEndpoints({
         method: "POST",
         body: { userId, testId },
       }),
+      providesTags: ["Attempt"],
     }),
 
     // Tạo test pool
@@ -70,12 +71,20 @@ export const testApi = rootApi.injectEndpoints({
         testId,
         topic,
         num_questions,
-        difficulty,
         question_types,
+        exam_type,
+        score_range,
       }) => ({
         url: "/generate-test",
         method: "POST",
-        body: { testId, topic, num_questions, difficulty, question_types },
+        body: {
+          testId,
+          topic,
+          num_questions,
+          question_types,
+          exam_type,
+          score_range,
+        },
       }),
       invalidatesTags: ["Question"],
     }),

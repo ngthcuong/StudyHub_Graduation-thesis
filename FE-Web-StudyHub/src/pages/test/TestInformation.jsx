@@ -22,17 +22,21 @@ import {
   useGenerateTestQuestionsMutation,
   useGetQuestionsByTestIdQuery,
 } from "../../services/testApi";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import Snackbar from "../../components/Snackbar";
+import { openSnackbar } from "../../redux/slices/snackbar";
 
 const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const { testInfor } = location.state || {};
   const { id: testId } = useParams();
-
-  const [testPool, setTestPool] = useState();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
   const user = useSelector((state) => state.auth.user);
+
+  const [testPool, setTestPool] = useState();
 
   const [checkTestPool, { isLoading: isLoadingCheckTesPool }] =
     useCheckExistTestPoolMutation();
@@ -51,28 +55,34 @@ const TestInformation = () => {
 
   useEffect(() => {
     const checkExistTestPool = async () => {
-      const res = await checkTestPool({ userId: user.id, testId });
-      setTestPool(res);
+      try {
+        const res = await checkTestPool({ userId: user._id, testId });
+        setTestPool(res.data);
+      } catch (error) {
+        console.log(error);
+      }
     };
     checkExistTestPool();
-  }, [user.id, testId, checkTestPool]);
+  }, [user._id, testId, checkTestPool]);
 
   const handleStartTest = async () => {
+    const examType = testInfor.examType;
+    const scoreRange = user.currentLevel[examType];
+
     try {
       const testData = {
         testId: testInfor._id,
         topic: testInfor.topic,
         num_questions: testInfor.numQuestions,
-        difficulty: testInfor.difficulty,
         question_types: testInfor.questionTypes,
-        exam_type: "TOEIC",
-        score_range: "405-600",
+        exam_type: examType,
+        score_range: scoreRange,
       };
 
       let attempt;
-      if (testPool?.data?.attemptInfo?.testPoolId) {
+      if (testPool?.attemptInfo?.testPoolId) {
         attempt = await createAttempt({
-          testPoolId: testPool?.data?.attemptInfo?.testPoolId,
+          testPoolId: testPool?.attemptInfo?.testPoolId,
           evaluationModel: "gemini",
         });
         if (!attempt) {
@@ -90,11 +100,23 @@ const TestInformation = () => {
         });
       } else {
         testQuestions = await generateTestQuestions(testData);
+        if (!testQuestions?.data?.data?.data) {
+          dispatch(
+            openSnackbar({
+              severity: "error",
+              message: testQuestions?.error?.data?.error,
+            })
+          );
+          return;
+        }
+
         const newTestPool = await createTestPool({
           baseTestId: testId,
-          level: "TOEIC 550-650",
+          level: examType + " " + scoreRange,
           createdBy: user.id,
-          expiresAt: "2025-12-31T23:59:59.000Z",
+          usageCount: 0,
+          maxReuse: 5,
+          status: "active",
         });
 
         attempt = await createAttempt({
@@ -232,8 +254,8 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testPool?.data?.attemptInfo.attemptNumber || 0} /
-                  {testPool?.data?.attemptInfo.maxAttempts || 0}
+                  {testPool?.attemptInfo.attemptNumber || 0}/
+                  {testPool?.attemptInfo.maxAttempts || 0}
                 </Typography>
               </Box>
             </Grid>
@@ -298,6 +320,8 @@ const TestInformation = () => {
             </Button>
           </Box>
         </CardContent>
+
+        <Snackbar isOpen={isOpen} message={message} severity={severity} />
       </Card>
     </Box>
   );

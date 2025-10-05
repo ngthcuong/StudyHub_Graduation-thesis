@@ -40,10 +40,12 @@ function formatTime(s) {
 
 const TestResult = () => {
   const location = useLocation();
-  const { resultData } = location.state || {};
+  const { resultData, testAttempt } = location.state || {};
   const [tab, setTab] = useState(0);
 
-  console.log("Location state:", resultData);
+  const startTime = new Date(testAttempt.startTime);
+  const endTime = new Date(testAttempt.endTime);
+  const timeTaken = Math.floor((endTime - startTime) / 1000);
 
   // Destructuring với giá trị mặc định để tránh undefined
   const {
@@ -75,7 +77,7 @@ const TestResult = () => {
     correct: correctCount,
     incorrect: incorrectCount,
     total: total_questions,
-    time: 300, // GIẢ LẬP 5 PHÚT - SAU NÀY SẼ THAY LẠI
+    time: timeTaken,
   };
 
   // Tạo correctAnswers từ per_question với safe checks
@@ -637,7 +639,7 @@ const TestResult = () => {
             color="inherit"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
             LinkComponent={"a"}
-            href="/home"
+            href="/home/exercises"
           >
             View All Tests
           </Button>

@@ -259,8 +259,8 @@ const TestList = () => {
                   </Box>
                   {/* Loại bài */}
                   <Chip
-                    label={item.type}
-                    color={item.type === "Test" ? "warning" : "info"}
+                    label={item.examType}
+                    color={item.examType === "TOEIC" ? "warning" : "info"}
                     size="small"
                     sx={{ textTransform: "capitalize" }}
                   />

@@ -103,7 +103,10 @@ const TestMultipleChoice = () => {
 
         if (testResult.data) {
           navigate(`/test/${testId}/result`, {
-            state: { resultData: testResult.data.data },
+            state: {
+              resultData: testResult.data.data,
+              testAttempt: testSubmit.data.attempt,
+            },
           });
         }
       } else {
@@ -233,7 +236,8 @@ const TestMultipleChoice = () => {
                     disabled={
                       isLoadingGetResult ||
                       isLoadingSubmit ||
-                      isLoadingSaveAnswers
+                      isLoadingSaveAnswers ||
+                      answers.some((a) => a === null)
                     }
                   >
                     {isLoadingSubmit ||
