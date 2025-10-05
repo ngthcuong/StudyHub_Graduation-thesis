@@ -1,5 +1,5 @@
 const attemptModel = require("../models/testAttemptModel");
-const userAnswerModel = require("../models/userAnswerModel");
+const attemptDetailModel = require("../models/attemptDetailModel");
 const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
@@ -28,20 +28,20 @@ const startAttempt = async (req, res) => {
 const submitAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
-    const { answers } = req.body;
+    const { answers, analysisResult } = req.body;
 
     if (!attemptId)
       return res.status(400).json({ error: "attemptId is required" });
     if (!Array.isArray(answers) || !answers.length)
       return res.status(400).json({ error: "answers is required" });
 
-    // Lấy câu hỏi theo ID
+    // Lấy danh sách câu hỏi để chấm điểm
     const qIds = answers.map((a) => a.questionId);
     const questionDocs = await questionModel.findQuestionsByIds(qIds);
     const qMap = new Map(questionDocs.map((q) => [q._id.toString(), q]));
 
     let totalScore = 0;
-    const savedAnswers = [];
+    const processedAnswers = [];
 
     for (const a of answers) {
       const q = qMap.get(String(a.questionId));
@@ -72,32 +72,43 @@ const submitAttempt = async (req, res) => {
         }
       }
 
-      const ua = await userAnswerModel.createUserAnswer({
-        attemptId,
-        questionId: a.questionId,
+      totalScore += score;
+      processedAnswers.push({
+        questionId: q._id,
+        questionText: q.questionText,
         selectedOptionId: selectedOption?._id,
-        selectedOptionText: selectedOption?.optionText,
-        answerText: a.answerText,
+        selectedOptionText: selectedOption?.optionText || a.answerText || "",
         isCorrect,
         score,
       });
-
-      totalScore += score;
-      savedAnswers.push(ua);
     }
 
+    // Lấy attempt hiện tại để tăng số lần làm bài
     const attemptDoc = await attemptModel.findAttemptById(attemptId);
+    const newAttemptNumber = (attemptDoc.attemptNumber || 0) + 1;
+
+    // Tạo AttemptDetail mới (1 bản ghi / lần nộp)
+    const attemptDetail = await attemptDetailModel.createAttemptDetail({
+      attemptId,
+      attemptNumber: newAttemptNumber,
+      answers: processedAnswers,
+      analysisResult: analysisResult || {},
+      totalScore,
+      submittedAt: new Date(),
+    });
+
+    // Cập nhật tổng điểm và số lần attempt
     const updatedAttempt = await attemptModel.updateAttemptById(attemptId, {
       score: totalScore,
       endTime: new Date(),
-      attemptNumber: (attemptDoc.attemptNumber || 0) + 1,
+      attemptNumber: newAttemptNumber,
     });
 
     res.status(200).json({
       message: "Submitted successfully",
       attempt: updatedAttempt,
-      answers: savedAnswers,
-      summary: { totalScore, answered: savedAnswers.length },
+      attemptDetail,
+      summary: { totalScore, answered: processedAnswers.length },
     });
   } catch (error) {
     console.error("Error submitting attempt:", error);
@@ -114,10 +125,14 @@ const getAttemptById = async (req, res) => {
     const attempt = await attemptModel.findAttemptById(attemptId);
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
 
-    const answers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    // Lấy tất cả các lần attempt detail của attempt này
+    const details = await attemptDetailModel.find({ attemptId }).sort({
+      attemptNumber: 1,
+    });
+
     res.status(200).json({
       message: "Attempt retrieved",
-      data: { attempt, answers },
+      data: { attempt, details },
     });
   } catch (error) {
     console.error("Error getting attempt:", error);
@@ -148,7 +163,6 @@ const getAttemptByTest = async (req, res) => {
     if (!testId) return res.status(400).json({ error: "testId is required" });
 
     const userId = req.user?.userId;
-
     const attempt = await attemptModel.findAttemptByTestId(testId, userId);
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
 
@@ -163,28 +177,23 @@ const getAttemptInfo = async (req, res) => {
   try {
     const { userId, testId } = req.body;
 
-    // 1. Tìm pool theo testId
     const testPool = await testPoolModel.findTestPool({
       baseTestId: testId,
       status: "active",
     });
-    if (!testPool) {
+    if (!testPool)
       return res
         .status(404)
         .json({ message: "No test pool found for this test" });
-    }
 
-    // 2. Tìm attempt của user trong pool này
     const attempt = await attemptModel.findAttemptByUserAndPool(
       userId,
       testPool._id
     );
 
-    // 3. Lấy thêm thông tin test gốc nếu muốn hiển thị
     const baseTest = await testModel.findTestById(testId);
 
     if (attempt) {
-      // Nếu user đã attempt
       return res.json({
         testInfo: baseTest,
         attemptInfo: {
@@ -200,7 +209,6 @@ const getAttemptInfo = async (req, res) => {
         },
       });
     } else {
-      // Nếu user chưa attempt -> trả về default
       return res.json({
         testInfo: baseTest,
         attemptInfo: {
