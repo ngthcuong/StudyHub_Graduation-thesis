@@ -13,7 +13,7 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import { InfoOutline } from "@mui/icons-material";
+import { ArrowBack, InfoOutline } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useCheckExistTestPoolMutation,
@@ -25,6 +25,27 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import Snackbar from "../../components/Snackbar";
 import { openSnackbar } from "../../redux/slices/snackbar";
+
+const fakeAttemptHistory = [
+  {
+    _id: "1",
+    startTime: "2025-10-01T09:00:00.000Z",
+    endTime: "2025-10-01T09:25:30.000Z",
+    score: 85,
+  },
+  {
+    _id: "2",
+    startTime: "2025-10-03T14:10:00.000Z",
+    endTime: "2025-10-03T14:35:10.000Z",
+    score: 92,
+  },
+  {
+    _id: "3",
+    startTime: "2025-10-05T16:48:18.698Z",
+    endTime: "2025-10-05T16:49:57.356Z",
+    score: 78,
+  },
+];
 
 const TestInformation = () => {
   const navigate = useNavigate();
@@ -144,7 +165,23 @@ const TestInformation = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50">
+    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col">
+      <Box className="w-full max-w-2xl ">
+        <Button
+          startIcon={<ArrowBack />}
+          variant="text"
+          onClick={() => navigate(-1)}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: 24,
+            color: "#2563eb",
+          }}
+        >
+          Back
+        </Button>
+      </Box>
+
       <Card
         className="w-full max-w-2xl"
         sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
@@ -319,6 +356,56 @@ const TestInformation = () => {
               )}
             </Button>
           </Box>
+
+          <Divider sx={{ my: 3 }} />
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            color="#2563eb"
+            gutterBottom
+          >
+            Your Test Attempts
+          </Typography>
+          {fakeAttemptHistory.length === 0 ? (
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              You have not taken this test yet.
+            </Typography>
+          ) : (
+            <Box>
+              <Grid container spacing={2}>
+                {fakeAttemptHistory.map((attempt, idx) => (
+                  <Grid size={12} key={attempt._id || idx}>
+                    <Card variant="outlined" className="">
+                      <CardContent
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                        className=""
+                      >
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Date: {attempt.startTime}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Duration: {(attempt.startTime, attempt.endTime)}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="h6"
+                          color="#22c55e"
+                          fontWeight={700}
+                        >
+                          Score: {attempt.score}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
         </CardContent>
 
         <Snackbar isOpen={isOpen} message={message} severity={severity} />
