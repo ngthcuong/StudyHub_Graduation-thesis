@@ -186,6 +186,7 @@ const getAttemptInfo = async (req, res) => {
         .status(404)
         .json({ message: "No test pool found for this test" });
 
+    console.log("Found test pool:", testPool, "for testId:", userId);
     const attempt = await attemptModel.findAttemptByUserAndPool(
       userId,
       testPool._id
