@@ -23,7 +23,9 @@ const findCertificateById = async (id) => {
 
 const findCertificateByCertHash = async (certHash) => {
   try {
-    const certificate = await Certificate.findOne({ certHash }).lean();
+    const certificate = await Certificate.findOne({
+      "blockchain.certificateHash": certHash,
+    }).lean();
     return certificate;
   } catch (error) {
     console.error("Error finding certificate by cert hash:", error);
@@ -31,9 +33,11 @@ const findCertificateByCertHash = async (certHash) => {
   }
 };
 
-const findCertificateByCertCode = async (certCode) => {
+const findCertificateByCertCode = async (certificateCode) => {
   try {
-    const certificate = await Certificate.findOne({ certCode });
+    const certificate = await Certificate.findOne({
+      certificateCode,
+    }).lean();
     return certificate;
   } catch (error) {
     console.error("Error finding certificate by cert code:", error);
@@ -43,7 +47,9 @@ const findCertificateByCertCode = async (certCode) => {
 
 const findCertificatesByStudentAddress = async (address) => {
   try {
-    const certificates = await Certificate.find({ learnerAddress: address });
+    const certificates = await Certificate.find({
+      "student.walletAddress": address,
+    }).lean();
     return certificates;
   } catch (error) {
     console.error("Error finding certificate by cert code:", error);
@@ -51,9 +57,11 @@ const findCertificatesByStudentAddress = async (address) => {
   }
 };
 
-const getCertificateByLearnerId = async (learnerId) => {
+const getCertificateByStudentId = async (learnerId) => {
   try {
-    const certificates = await Certificate.find({ learnerId });
+    const certificates = await Certificate.find({
+      "student.id": learnerId,
+    }).lean();
     return certificates;
   } catch (error) {
     console.error("Error getting certificates by learner id:", error);
@@ -67,5 +75,5 @@ module.exports = {
   findCertificateByCertHash,
   findCertificateByCertCode,
   findCertificatesByStudentAddress,
-  getCertificateByLearnerId,
+  getCertificateByStudentId,
 };

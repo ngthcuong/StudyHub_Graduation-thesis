@@ -19,14 +19,15 @@ function toPlain(value) {
  * @returns {Object} Dữ liệu có cấu trúc
  */
 function structureCertificateData(certData) {
-  if (!Array.isArray(certData) || certData.length < 7) {
+  if (!Array.isArray(certData) || certData.length < 8) {
     return { error: "Invalid certificate data format" };
   }
 
   const [
     certHash,
-    studentAddress,
     issuerAddress,
+    issuerName,
+    studentAddress,
     studentName,
     courseName,
     issuedDate,
@@ -44,7 +45,7 @@ function structureCertificateData(certData) {
     },
     issuer: {
       address: issuerAddress,
-      name: "StudyHub",
+      name: issuerName,
     },
     course: {
       name: courseName,
@@ -52,14 +53,6 @@ function structureCertificateData(certData) {
     issueDate: {
       timestamp: issuedDate,
       formatted: issueDate.toISOString(),
-      readable: issueDate.toLocaleString("vi-VN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
     },
     metadata: {
       uri: metadataURI,
@@ -102,9 +95,50 @@ function generateCertCode(issueDate = new Date(), learnerId, courseId) {
   return `CERT-${datePart}-${codePart}`;
 }
 
+/**
+ * Kiểm tra các trường quan trọng của chứng chỉ ở MongoDB, Blockchain, Pinata có giống nhau không
+ * @param {Object} mongoCert - Chứng chỉ từ MongoDB
+ * @param {Object} blockchainCert - Chứng chỉ từ Blockchain (đã qua structureCertificateData)
+ * @param {Object} pinataMetadata - Metadata từ Pinata (JSON)
+ * @returns {boolean} - true nếu tất cả trường đều giống nhau, false nếu có trường khác
+ */
+function isCertificateConsistent(mongoCert, blockchainCert, pinataMetadata) {
+  if (!mongoCert || !blockchainCert) return false;
+
+  // Lấy các trường cần so sánh
+  const mongoIssuer = mongoCert.issuer?.walletAddress;
+  const mongoStudent = mongoCert.student?.walletAddress;
+  const mongoCourse = mongoCert.course?.title || mongoCert.course?.name;
+
+  const bcIssuer = blockchainCert.issuer?.address;
+  const bcStudent = blockchainCert.student?.address;
+  const bcCourse = blockchainCert.course?.name;
+
+  // Pinata có thể thiếu, nên kiểm tra nếu có
+  let pinIssuer, pinStudent, pinCourse;
+  if (pinataMetadata) {
+    pinIssuer = pinataMetadata.issuer?.walletAddress;
+    pinStudent = pinataMetadata.student?.walletAddress;
+    pinCourse = pinataMetadata.course?.title || pinataMetadata.course?.name;
+  }
+
+  // So sánh từng trường
+  const issuerMatch =
+    mongoIssuer === bcIssuer && (!pinataMetadata || pinIssuer === bcIssuer);
+
+  const studentMatch =
+    mongoStudent === bcStudent && (!pinataMetadata || pinStudent === bcStudent);
+
+  const courseMatch =
+    mongoCourse === bcCourse && (!pinataMetadata || pinCourse === bcCourse);
+
+  return issuerMatch && studentMatch && courseMatch;
+}
+
 module.exports = {
   toPlain,
   structureCertificateData,
   structureCertificateList,
   generateCertCode,
+  isCertificateConsistent,
 };

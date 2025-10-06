@@ -5,7 +5,6 @@ import AuthLayout from "../layouts/AuthLayout";
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
-import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
 import TestInformation from "../pages/test/TestInformation";
@@ -19,6 +18,7 @@ import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
 import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
+import UserInfo from "../pages/home/UserInfo";
 
 export const router = createBrowserRouter([
   {
@@ -58,7 +58,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "profile",
-                element: <UserInfoPage />,
+                element: <UserInfo />,
               },
               {
                 path: "settings",
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "/profile",
-            element: <UserInfoPage />,
+            element: <UserInfo />,
           },
           {
             path: "/course",

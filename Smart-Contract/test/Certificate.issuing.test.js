@@ -8,9 +8,8 @@ const { deployCertificateFixture } = require("./fixtures/Certificate.fixture");
 describe("CertificateRegistry - Issue Certificate", function () {
   describe("Access Control", function () {
     it("Should allow admin to issue certificate", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       await expect(
         certificateRegistry
@@ -18,6 +17,7 @@ describe("CertificateRegistry - Issue Certificate", function () {
           .issueCertificate(
             student1.address,
             "Nguyen Van A",
+            issuer.address,
             "IUH University",
             "Blockchain Development",
             "ipfs://test-metadata"
@@ -26,9 +26,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
     });
 
     it("Should reject non-admin from issuing certificate", async function () {
-      const { certificateRegistry, student1, student2 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, student1, student2, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       await expect(
         certificateRegistry
@@ -36,6 +35,7 @@ describe("CertificateRegistry - Issue Certificate", function () {
           .issueCertificate(
             student2.address,
             "Nguyen Van B",
+            issuer.address,
             "IUH University",
             "Smart Contracts",
             "ipfs://test-metadata"
@@ -49,12 +49,11 @@ describe("CertificateRegistry - Issue Certificate", function () {
 
   describe("Certificate Creation", function () {
     it("Should create certificate with correct data", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const studentName = "Nguyen Van A";
-      const issuer = "IUH University";
+      const issuerName = "IUH University";
       const courseName = "Blockchain Development";
       const metadataURI = "ipfs://test-metadata";
 
@@ -63,13 +62,14 @@ describe("CertificateRegistry - Issue Certificate", function () {
         .issueCertificate(
           student1.address,
           studentName,
-          issuer,
+          issuer.address,
+          issuerName,
           courseName,
           metadataURI
         );
 
       const receipt = await tx.wait();
-      const certHash = receipt.logs[0].args[0]; // Lấy hash từ event
+      const certHash = receipt.logs[0].args[0];
 
       const certificate = await certificateRegistry.getCertificateByHash(
         certHash
@@ -77,7 +77,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
 
       expect(certificate.student).to.equal(student1.address);
       expect(certificate.studentName).to.equal(studentName);
-      expect(certificate.issuer).to.equal(issuer);
+      expect(certificate.issuer).to.equal(issuer.address);
+      expect(certificate.issuerName).to.equal(issuerName);
       expect(certificate.courseName).to.equal(courseName);
       expect(certificate.metadataURI).to.equal(metadataURI);
       expect(certificate.certHash).to.equal(certHash);
@@ -85,7 +86,7 @@ describe("CertificateRegistry - Issue Certificate", function () {
     });
 
     it("Should generate unique hash for each certificate", async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
 
       const tx1 = await certificateRegistry
@@ -93,6 +94,7 @@ describe("CertificateRegistry - Issue Certificate", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 1",
           "ipfs://1"
@@ -103,6 +105,7 @@ describe("CertificateRegistry - Issue Certificate", function () {
         .issueCertificate(
           student2.address,
           "Student 2",
+          issuer.address,
           "IUH",
           "Course 2",
           "ipfs://2"
@@ -120,9 +123,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
 
   describe("Events", function () {
     it("Should emit CertificateIssued event", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       await expect(
         certificateRegistry
@@ -130,6 +132,7 @@ describe("CertificateRegistry - Issue Certificate", function () {
           .issueCertificate(
             student1.address,
             "Nguyen Van A",
+            issuer.address,
             "IUH University",
             "Blockchain Development",
             "ipfs://test-metadata"
