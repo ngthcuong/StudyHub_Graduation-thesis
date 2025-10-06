@@ -24,11 +24,15 @@ import TestResultsScreen from "../screens/tests/TestResultsScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import EditInfoScreen from "../screens/profile/EditInfoScreen";
 
+// Certificate Stack
+import CertificateListScreen from "../screens/Certificate/CertificateListScreen";
+
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const CoursesStack = createStackNavigator();
 const TestsStack = createStackNavigator();
 const ProfileStack = createStackNavigator();
+const CertificateStack = createStackNavigator();
 
 // Home Stack Navigator
 const HomeStackNavigator = () => (
@@ -115,6 +119,11 @@ const ProfileStackNavigator = () => (
       name="EditProfile"
       component={EditInfoScreen}
       options={{ title: "Edit Profile" }}
+    />
+    <ProfileStack.Screen
+      name="Certificates"
+      component={CertificateListScreen}
+      options={{ title: "Certificates" }}
     />
   </ProfileStack.Navigator>
 );

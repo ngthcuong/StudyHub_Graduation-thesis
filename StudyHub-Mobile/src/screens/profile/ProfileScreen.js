@@ -75,15 +75,10 @@ const ProfileScreen = ({ navigation }) => {
     ]);
   };
 
-  const handleChangePassword = () => {
-    // Navigate to change password screen
-    Alert.alert(
-      "Coming Soon",
-      "Change password feature will be available soon"
-    );
+  const handleCertificate = () => {
+    // Navigate to certificate screen
+    navigation.navigate("Certificates", { userInfo });
   };
-
-  console.log("User Info:", userInfo);
 
   const handleEditProfile = () => {
     // Navigate to edit profile screen
@@ -167,12 +162,12 @@ const ProfileScreen = ({ navigation }) => {
           onPress={handleEditProfile}
         />
 
-        {/* <MenuItem
-          icon="lock-closed-outline"
-          title="Change Password"
-          subtitle="Update your password"
-          onPress={handleChangePassword}
-        /> */}
+        <MenuItem
+          icon="certificate"
+          title="Certificates"
+          subtitle="View your earned certificates"
+          onPress={handleCertificate}
+        />
 
         <MenuItem
           icon="notifications-outline"
