@@ -15,7 +15,7 @@ const createAttemptDetail = async (data) => {
 // Lấy AttemptDetail theo attemptId
 const getAttemptDetailByAttemptId = async (attemptId) => {
   try {
-    return await AttemptDetail.findOne({ attemptId })
+    return await AttemptDetail.findOne(attemptId)
       .populate("attemptId")
       .populate("answers.questionId");
   } catch (error) {

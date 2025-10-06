@@ -126,8 +126,8 @@ const getAttemptById = async (req, res) => {
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
 
     // Lấy tất cả các lần attempt detail của attempt này
-    const details = await attemptDetailModel.find({ attemptId }).sort({
-      attemptNumber: 1,
+    const details = await attemptDetailModel.getAttemptDetailByAttemptId({
+      attemptId,
     });
 
     res.status(200).json({

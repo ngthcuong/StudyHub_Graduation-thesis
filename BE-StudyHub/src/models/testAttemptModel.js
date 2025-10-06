@@ -11,6 +11,7 @@ const createAttempt = async (attemptData) => {
 };
 
 const findAttemptById = async (id) => {
+  console.log("Finding attempt by ID:", id);
   try {
     return await TestAttempt.findById(id).populate("testPoolId userId");
   } catch (error) {
