@@ -1,247 +1,217 @@
 import React from "react";
 import {
-  Modal,
   View,
   Text,
+  TextInput,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  SafeAreaView,
+  Alert,
 } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 
-const CertificateDetailModal = ({ visible, onClose, certificate }) => {
-  // fake data nếu chưa truyền certificate
-  const fakeCertificate = certificate || {
-    certCode: "CERT-250928-1N6U3T",
-    issueDate: "2025-09-28",
-    certHash:
-      "0xa34b8f2c71d09b2a3c84d8a1e52c41e212b7a8c9b0af3d0efb893acdf12c9a8f",
-    metadataURI: "https://studyhub.ai/certificates/CERT-250928-1N6U3T",
-    network: "Polygon",
-    learnerAddress: "0x98F...12ab",
-    issuer: "0xABcdEF12...88Aa",
-    courseName: "English for IT Professionals",
-    duration: "60 hours",
+const CertificateDetailScreen = () => {
+  const route = useRoute();
+  const { item } = route.params || {};
+
+  const transactionHash = "0x1234abcd5678ef90";
+  const metadata =
+    "ipfs://bafkreie34gv3dkrf4mknwpqhadn25v6hglqiz42iebfqjacpz5oea";
+
+  const handleCopy = async (text) => {
+    await Clipboard.setStringAsync(text);
+    Alert.alert("Just copied", "Content has been copied to clipboard!");
   };
 
-  const user = { fullName: "Nguyen Van A" };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+  const handleDownload = () => {
+    Alert.alert("Download", "Downloading certificate image...");
+  };
+  const handleOk = () => {
+    Alert.alert("OK", "You pressed OK.");
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <SafeAreaView style={styles.overlay}>
-        <View style={styles.modal}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Certificate Details</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={22} color="#555" />
+    <ScrollView style={styles.container}>
+      {/* Thông Tin Chứng Chỉ */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Certificate Information</Text>
+        <View style={styles.field}>
+          <Text style={styles.label}>Certificate Code:</Text>
+          <Text style={styles.value}>CERT-251001-9CVK21</Text>
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.label}>Issue Date:</Text>
+          <Text style={styles.value}>02/10/2025</Text>
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.label}>Transaction Hash:</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={transactionHash}
+              editable={false}
+            />
+            <TouchableOpacity onPress={() => handleCopy(transactionHash)}>
+              <Ionicons name="copy-outline" size={22} color="#007bff" />
             </TouchableOpacity>
           </View>
-
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Certificate Info */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="ribbon-outline" size={20} color="#007bff" />
-                <Text style={styles.sectionTitle}>Certificate Information</Text>
-              </View>
-
-              <InfoRow
-                label="Certificate Code"
-                value={fakeCertificate.certCode}
-              />
-              <InfoRow
-                label="Issue Date"
-                value={formatDate(fakeCertificate.issueDate)}
-              />
-              <InfoRow
-                label="Hash Code"
-                value={fakeCertificate.certHash}
-                mono
-              />
-              <InfoRow
-                label="Metadata URI"
-                value={fakeCertificate.metadataURI}
-                mono
-              />
-              <View style={styles.row}>
-                <Text style={styles.label}>Blockchain Network</Text>
-                <View style={styles.badge}>
-                  <View style={styles.dot} />
-                  <Text style={styles.badgeText}>
-                    {fakeCertificate.network}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Student Info */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Feather name="user" size={20} color="#007bff" />
-                <Text style={styles.sectionTitle}>Student Information</Text>
-              </View>
-
-              <InfoRow label="Student Name" value={user.fullName} />
-              <InfoRow
-                label="Student Address"
-                value={fakeCertificate.learnerAddress}
-              />
-            </View>
-
-            {/* Issuer Info */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Feather name="briefcase" size={20} color="#007bff" />
-                <Text style={styles.sectionTitle}>Issuing Organization</Text>
-              </View>
-
-              <InfoRow label="Organization Name" value="StudyHub" />
-              <InfoRow
-                label="Organization Address"
-                value={fakeCertificate.issuer}
-              />
-            </View>
-
-            {/* Course Info */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="book-outline" size={20} color="#007bff" />
-                <Text style={styles.sectionTitle}>Course Information</Text>
-              </View>
-
-              <InfoRow label="Course Name" value={fakeCertificate.courseName} />
-              <InfoRow label="Duration" value={fakeCertificate.duration} />
-            </View>
-
-            {/* OK Button */}
-            <TouchableOpacity style={styles.okButton} onPress={onClose}>
-              <Text style={styles.okButtonText}>OK</Text>
-            </TouchableOpacity>
-          </ScrollView>
         </View>
-      </SafeAreaView>
-    </Modal>
+        <View style={styles.field}>
+          <Text style={styles.label}>Metadata:</Text>
+          <View style={styles.inputContainer}>
+            <TextInput style={styles.input} value={metadata} editable={false} />
+            <TouchableOpacity onPress={() => handleCopy(metadata)}>
+              <Ionicons name="copy-outline" size={22} color="#007bff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.label}>Blockchain Network:</Text>
+          <Text style={styles.value}>SEPOLIA</Text>
+        </View>
+      </View>
+
+      {/* Student Information */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Student Information</Text>
+        <View style={styles.field}>
+          <Text style={styles.label}>Student Name:</Text>
+          <Text style={styles.value}>Nguyễn Thành Cương</Text>
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.label}>Student Address:</Text>
+          <Text style={styles.value}>
+            0xA1587E706e6Da463E7d63702147705e7BE722164
+          </Text>
+        </View>
+      </View>
+
+      {/* Issuer Organization */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Issuer Organization</Text>
+        <View style={styles.field}>
+          <Text style={styles.label}>Organization Name:</Text>
+          <Text style={styles.value}>StudyHub</Text>
+        </View>
+        <View style={styles.field}>
+          <Text style={styles.label}>Organization Address:</Text>
+          <Text style={styles.value}>
+            0xDd8585206D51f17Ea82c5767FeA5f7805015f0E
+          </Text>
+        </View>
+      </View>
+
+      {/* Course Information */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Course Information</Text>
+        <View style={styles.field}>
+          <Text style={styles.label}>Course Name:</Text>
+          <Text style={styles.value}>Blockchain Development Fundamentals</Text>
+        </View>
+      </View>
+
+      {/* Buttons */}
+      <View style={styles.buttons}>
+        <TouchableOpacity
+          style={[styles.button, styles.green]}
+          onPress={() => handleDownload()}
+        >
+          <Text style={styles.buttonText}>Download Image</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.blue]}
+          onPress={() => handleOk()}
+        >
+          <Text style={styles.buttonText}>OK</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
-// Component hiển thị label + value
-const InfoRow = ({ label, value, mono }) => (
-  <View style={styles.row}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={[styles.value, mono && styles.mono]} numberOfLines={2}>
-      {value}
-    </Text>
-  </View>
-);
-
-export default CertificateDetailModal;
+export default CertificateDetailScreen;
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 10,
-  },
-  modal: {
-    width: "100%",
-    maxHeight: "90%",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 15,
-    elevation: 6,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderColor: "#eee",
-    paddingBottom: 8,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    backgroundColor: "#f9f9f9",
+    paddingHorizontal: 10,
   },
   section: {
-    backgroundColor: "#f9f9f9",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
   },
   sectionTitle: {
-    fontWeight: "600",
-    color: "#007bff",
-    marginLeft: 6,
+    color: "#0055cc",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
-  row: {
-    marginBottom: 6,
+  field: {
+    marginVertical: 6,
   },
   label: {
-    fontSize: 13,
-    color: "#666",
+    fontWeight: "bold",
+    color: "#444",
+    fontSize: 14,
     marginBottom: 2,
   },
   value: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#222",
+    color: "#333",
+    flexWrap: "wrap",
   },
-  mono: {
-    fontFamily: "monospace",
-    color: "#444",
+  input: {
+    backgroundColor: "#f1f1f1",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 6,
+    fontSize: 13,
+    textAlign: "right",
   },
-  badge: {
+  buttons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 15,
+    marginBottom: 30,
+  },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 5,
+  },
+  green: {
+    backgroundColor: "#28a745",
+  },
+  blue: {
+    backgroundColor: "#007bff",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E6F7EC",
-    alignSelf: "flex-start",
+    backgroundColor: "#f1f1f1",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
   },
-  badgeText: {
-    fontSize: 12,
-    color: "#10893E",
-    fontWeight: "600",
-    textTransform: "uppercase",
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    backgroundColor: "#10893E",
-    borderRadius: 3,
-    marginRight: 6,
-  },
-  okButton: {
-    marginTop: 10,
-    backgroundColor: "#007bff",
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  okButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+  input: {
+    flex: 1,
+    fontSize: 13,
+    paddingVertical: 6,
+    color: "#333",
   },
 });

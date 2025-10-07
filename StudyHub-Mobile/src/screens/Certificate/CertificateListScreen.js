@@ -13,10 +13,8 @@ import {
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 
-const CertificateListScreen = () => {
+const CertificateListScreen = ({ navigation }) => {
   const [search, setSearch] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCertificate, setSelectedCertificate] = useState(null);
   const route = useRoute();
   const { userInfo } = route.params || {};
 
@@ -54,8 +52,7 @@ const CertificateListScreen = () => {
   );
 
   const handleView = (item) => {
-    setSelectedCertificate(item);
-    setModalVisible(true);
+    navigation.navigate("CertificateDetail", { item });
   };
 
   return (
@@ -91,7 +88,7 @@ const CertificateListScreen = () => {
 
       {/* Danh sách chứng chỉ */}
       <FlatList
-        data={certificates}
+        data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -115,54 +112,6 @@ const CertificateListScreen = () => {
           <Text style={styles.empty}>No certificates found.</Text>
         }
       />
-
-      {/* MODAL HIỂN THỊ CHI TIẾT */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {selectedCertificate && (
-              <>
-                <Text style={styles.modalTitle}>Certificate Details</Text>
-                <View style={styles.detailRow}>
-                  <Ionicons
-                    name="document-text-outline"
-                    size={20}
-                    color="#555"
-                  />
-                  <Text style={styles.detailText}>
-                    {selectedCertificate.code}
-                  </Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Ionicons name="book-outline" size={20} color="#555" />
-                  <Text style={styles.detailText}>
-                    {selectedCertificate.course}
-                  </Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Ionicons name="calendar-outline" size={20} color="#555" />
-                  <Text style={styles.detailText}>
-                    {selectedCertificate.date}
-                  </Text>
-                </View>
-
-                <Pressable
-                  style={styles.closeButton}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Ionicons name="close-circle" size={24} color="white" />
-                  <Text style={{ color: "white", marginLeft: 6 }}>Close</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
 
       {/* Phân trang */}
       <View style={styles.pagination}>

@@ -77,7 +77,7 @@ const ProfileScreen = ({ navigation }) => {
 
   const handleCertificate = () => {
     // Navigate to certificate screen
-    navigation.navigate("Certificates", { userInfo });
+    navigation.navigate("CertificatesList", { userInfo });
   };
 
   const handleEditProfile = () => {

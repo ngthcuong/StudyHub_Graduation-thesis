@@ -26,6 +26,7 @@ import EditInfoScreen from "../screens/profile/EditInfoScreen";
 
 // Certificate Stack
 import CertificateListScreen from "../screens/Certificate/CertificateListScreen";
+import CertificateDetailScreen from "../screens/Certificate/CertificateDetailModal";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -121,9 +122,14 @@ const ProfileStackNavigator = () => (
       options={{ title: "Edit Profile" }}
     />
     <ProfileStack.Screen
-      name="Certificates"
+      name="CertificatesList"
       component={CertificateListScreen}
-      options={{ title: "Certificates" }}
+      options={{ title: "CertificatesList" }}
+    />
+    <ProfileStack.Screen
+      name="CertificateDetail"
+      component={CertificateDetailScreen}
+      options={{ title: "Certificate Detail" }}
     />
   </ProfileStack.Navigator>
 );
