@@ -38,10 +38,9 @@ export const testApi = {
   },
 
   // Submit test attempt
-  submitTestAttempt: async (attemptId, answersPayload, testId) => {
+  submitTestAttempt: async (attemptId, answersPayload) => {
     const response = await api.post(`/attempts/${attemptId}/submit`, {
       answers: answersPayload,
-      testId,
     });
     return response.data;
   },
@@ -88,28 +87,11 @@ export const testApi = {
     return response.data;
   },
 
-  createTestPool: async (testId, level, userId) => {
-    const response = await api.post(`/test-pools`, {
-      baseTestId: testId,
-      level,
-      createdBy: userId,
-      usageCount: 0,
-      maxReuse: 10,
-      status: "active",
-    });
-    return response.data;
-  },
-
   gradeTest: async (testId, attemptId) => {
     const response = await api.post(`/test-result/submit`, {
       attemptId,
       testId,
     });
-    return response.data;
-  },
-
-  getCompletedTests: async () => {
-    const response = await api.get("/attempt-details/details/grouped");
     return response.data;
   },
 };

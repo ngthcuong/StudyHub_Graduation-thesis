@@ -1,16 +1,10 @@
 import axios from "axios";
 import { store } from "../store/store";
 import { refreshToken, logout } from "../store/slices/authSlice";
-import { Platform } from "react-native";
 
 // Base API configuration
-let API_BASE_URL_HOME = "http://192.168.9.31:3000/api/v1"; // Update this with your backend URL
-let API_BASE_URL_SCHOOL = "http://172.20.92.250:3000/api/v1"; // Update this with your backend URL
-
-// Nếu chạy web thì dùng proxy hoặc localhost
-if (Platform.OS === "web") {
-  API_BASE_URL_HOME = "/api/v1"; // => trỏ qua proxy của webpack (cấu hình trong package.json)
-}
+const API_BASE_URL_HOME = "http://192.168.9.31:3000/api/v1"; // Update this with your backend URL
+const API_BASE_URL_SCHOOL = "http://172.20.92.250:3000/api/v1"; // Update this with your backend URL
 
 const api = axios.create({
   baseURL: API_BASE_URL_HOME,

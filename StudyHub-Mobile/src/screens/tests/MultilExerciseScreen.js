@@ -93,26 +93,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
           "Fetched test pool by level:",
           testPoolByLevel?.data[0]?._id
         );
-        if (testPoolByLevel?.data[0]?.baseTestId !== testId) {
-          setIdTestPool(testPoolByLevel?.data[0]?._id);
-        } else {
-          const createdTestPool = await testApi.createTestPool(
-            testId,
-            `${test.data.examType} ${user.currentLevel[test.data.examType]}`,
-            user?._id
-          );
-
-          setTestPool(createdTestPool?.data[0]?._id);
-
-          const generatedTest = await testApi.generrateTest({
-            testId,
-            exam_type: test.data.examType,
-            topic: test.data.topic,
-            question_types: test.data.questionTypes,
-            num_questions: test.data.numQuestions,
-            score_range: user.currentLevel[test.data.examType],
-          });
-        }
+        setIdTestPool(testPoolByLevel?.data[0]?._id);
       }
 
       const [questionsResponse, attemptResponse] = await Promise.all([
@@ -172,7 +153,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       );
 
       // Gửi 1 request duy nhất
-      await testApi.submitTestAttempt(attemptId, answersPayload, testId);
+      await testApi.submitTestAttempt(attemptId, answersPayload);
 
       navigation.navigate("TestResults", { attemptId });
     } catch (error) {

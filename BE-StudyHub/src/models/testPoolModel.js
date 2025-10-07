@@ -89,11 +89,8 @@ const findTestPool = async (filter) => {
     if (filter.baseTestId && typeof filter.baseTestId === "string") {
       filter.baseTestId = new mongoose.Types.ObjectId(filter.baseTestId);
     }
-    if (filter.createdBy && typeof filter.createdBy === "string") {
-      filter.createdBy = new mongoose.Types.ObjectId(filter.createdBy);
-    }
 
-    return await TestPool.find(filter).populate(
+    return await TestPool.findOne(filter).populate(
       "createdBy",
       "fullName email role currentLevel"
     );

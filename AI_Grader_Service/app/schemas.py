@@ -21,7 +21,6 @@ class LearningProfile(BaseModel):
 
 class QuestionKey(BaseModel):
     id: int
-    question: Optional[str] = None 
     answer: str
     skill: Optional[str] = None
     topic: Optional[str] = None
@@ -42,7 +41,6 @@ class GradeRequest(BaseModel):
 
 class PerQuestionResult(BaseModel):
     id: int
-    question: Optional[str] = None 
     correct: bool
     expected_answer: str
     user_answer: Optional[str] = None

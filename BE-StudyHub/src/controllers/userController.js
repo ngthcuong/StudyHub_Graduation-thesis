@@ -21,12 +21,12 @@ const createUser = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!id) {
+    const { userId } = req.params;
+    if (!userId) {
       return res.status(404).json({ error: "User Id not found" });
     }
 
-    const user = await userModel.findUserById(id);
+    const user = await userModel.findUserById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
