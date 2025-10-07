@@ -153,7 +153,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       );
 
       // Gửi 1 request duy nhất
-      await testApi.submitTestAttempt(attemptId, answersPayload);
+      await testApi.submitTestAttempt(attemptId, answersPayload, testId);
 
       navigation.navigate("TestResults", { attemptId });
     } catch (error) {
