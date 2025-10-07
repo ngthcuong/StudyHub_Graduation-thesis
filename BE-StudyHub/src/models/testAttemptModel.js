@@ -49,6 +49,7 @@ const findAttemptByTestId = async (testPoolId, userId) => {
 
 const findAttemptByUserAndPool = async (userId, testPoolId) => {
   try {
+    console.log("Finding attempt for user:", userId, "and pool:", testPoolId);
     return await TestAttempt.findOne({ userId, testPoolId }).populate(
       "testPoolId userId"
     );

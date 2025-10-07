@@ -180,16 +180,18 @@ const getAttemptInfo = async (req, res) => {
     const testPool = await testPoolModel.findTestPool({
       baseTestId: testId,
       status: "active",
+      createdBy: userId,
     });
     if (!testPool)
       return res
         .status(404)
         .json({ message: "No test pool found for this test" });
 
-    console.log("Found test pool:", testPool, "for testId:", userId);
+    console.log("Found testPool:", testPool);
+
     const attempt = await attemptModel.findAttemptByUserAndPool(
       userId,
-      testPool._id
+      testPool[0]?._id
     );
 
     const baseTest = await testModel.findTestById(testId);
@@ -198,6 +200,7 @@ const getAttemptInfo = async (req, res) => {
       return res.json({
         testInfo: baseTest,
         attemptInfo: {
+          id: attempt._id,
           testPoolId: attempt.testPoolId?._id,
           userId: attempt.userId?._id,
           attemptNumber: attempt.attemptNumber,
