@@ -36,4 +36,11 @@ router.get(
   attemptDetailController.getAllAttemptDetails
 );
 
+// Lấy toàn bộ chi tiết attempt của user, gom nhóm theo Test
+router.get(
+  "/details/grouped",
+  verifyToken,
+  attemptDetailController.getUserTestDetailsGroupedByTest
+);
+
 module.exports = router;

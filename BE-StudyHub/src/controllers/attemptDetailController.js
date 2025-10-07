@@ -1,5 +1,10 @@
 const attemptDetailModel = require("../models/attemptDetailModel");
 
+const TestAttempt = require("../schemas/TestAttempt");
+const AttemptDetail = require("../schemas/AttemptDetail");
+const TestPool = require("../schemas/TestPool");
+const Test = require("../schemas/Test");
+
 const createAttemptDetail = async (req, res) => {
   try {
     const data = req.body;
@@ -95,10 +100,86 @@ const getAllAttemptDetails = async (req, res) => {
   }
 };
 
+const getUserTestDetailsGroupedByTest = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.params.userId;
+
+    // 1️⃣ Lấy toàn bộ attempt của user + populate sang testPool -> test
+    const attempts = await TestAttempt.find({ userId })
+      .populate({
+        path: "testPoolId",
+        populate: {
+          path: "baseTestId",
+          model: "Test",
+          select: "title skill level examType durationMin",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    // 2️⃣ Lấy toàn bộ attemptId của user
+    const attemptIds = attempts.map((a) => a._id);
+
+    // 3️⃣ Lấy toàn bộ chi tiết attempt (AttemptDetail)
+    const attemptDetails = await AttemptDetail.find({
+      attemptId: { $in: attemptIds },
+    });
+
+    // 4️⃣ Gom nhóm theo Test
+    const groupedByTest = {};
+
+    for (const attempt of attempts) {
+      const testInfo = attempt.testPoolId?.baseTestId;
+      if (!testInfo) continue;
+
+      const testId = testInfo._id.toString();
+
+      if (!groupedByTest[testId]) {
+        groupedByTest[testId] = {
+          testId,
+          title: testInfo.title,
+          skill: testInfo.skill,
+          level: testInfo.level,
+          examType: testInfo.examType,
+          durationMin: testInfo.durationMin,
+          attempts: [],
+        };
+      }
+
+      // tìm chi tiết tương ứng
+      const details = attemptDetails.filter(
+        (d) => d.attemptId.toString() === attempt._id.toString()
+      );
+
+      groupedByTest[testId].attempts.push({
+        attemptId: attempt._id,
+        attemptNumber: attempt.attemptNumber,
+        startTime: attempt.startTime,
+        endTime: attempt.endTime,
+        score: attempt.score,
+        totalScore: details[0]?.totalScore || 0,
+        detailCount: details[0]?.answers?.length || 0,
+        submittedAt: details[0]?.submittedAt,
+      });
+    }
+
+    res.status(200).json({
+      message: "Fetched all test details grouped by test successfully",
+      data: Object.values(groupedByTest),
+    });
+  } catch (error) {
+    console.error("Error fetching test details:", error);
+    res.status(500).json({
+      message: "Failed to get test details for user",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
   updateAttemptDetailByAttemptId,
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
+  getUserTestDetailsGroupedByTest,
 };
