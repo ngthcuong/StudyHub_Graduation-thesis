@@ -299,23 +299,23 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
         (a) => a._id.toString() === detail.attemptId.toString()
       );
 
+      console.log(detail);
+
       return {
         attemptId: detail.attemptId,
-        attemptNumber: detail.attemptNumber,
-        totalScore: detail.totalScore,
-        submittedAt: detail.submittedAt,
         testTitle: relatedAttempt?.testPoolId?.baseTestId?.title,
         skill: relatedAttempt?.testPoolId?.baseTestId?.skill,
         level: relatedAttempt?.testPoolId?.baseTestId?.level,
         examType: relatedAttempt?.testPoolId?.baseTestId?.examType,
         durationMin: relatedAttempt?.testPoolId?.baseTestId?.durationMin,
-        answers: detail.answers.map((a) => ({
-          questionId: a.questionId?._id,
-          questionText: a.questionText || a.questionId?.questionText,
-          selectedOptionText: a.selectedOptionText,
-          isCorrect: a.isCorrect,
-          score: a.score,
-        })),
+        // answers: detail.answers.map((a) => ({
+        //   questionId: a.questionId?._id,
+        //   questionText: a.questionText || a.questionId?.questionText,
+        //   selectedOptionText: a.selectedOptionText,
+        //   isCorrect: a.isCorrect,
+        //   score: a.score,
+        // })),
+        analysisResult: detail.analysisResult || {},
       };
     });
 
