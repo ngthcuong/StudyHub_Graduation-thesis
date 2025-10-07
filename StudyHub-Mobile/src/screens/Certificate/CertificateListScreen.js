@@ -21,27 +21,33 @@ const CertificateListScreen = ({ navigation }) => {
   const certificates = [
     {
       id: "1",
-      code: "CERT-250928-1N6U3T",
-      course: "English for IT Professionals",
-      date: "28/09/2025",
+      code: "CERT-251001-9CVK2I",
+      course: "Blockchain Development Fundamentals",
+      date: "02/10/2025",
     },
     {
       id: "2",
-      code: "CERT-250928-HC2VZ2",
+      code: "CERT-251002-2PV4WT",
       course: "English for IT Professionals",
-      date: "28/09/2025",
+      date: "03/10/2025",
     },
     {
       id: "3",
-      code: "CERT-250928-206GXT",
+      code: "CERT-251002-1TAZZN",
       course: "English for IT Professionals",
-      date: "28/09/2025",
+      date: "03/10/2025",
     },
     {
       id: "4",
-      code: "CERT-250928-60FA22",
+      code: "CERT-251002-222YGZ",
       course: "English for IT Professionals",
-      date: "28/09/2025",
+      date: "03/10/2025",
+    },
+    {
+      id: "5",
+      code: "CERT-251003-VYCZEG",
+      course: "English for IT Professionals",
+      date: "03/10/2025",
     },
   ];
 

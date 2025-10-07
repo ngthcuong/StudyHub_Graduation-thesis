@@ -39,7 +39,7 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Certificate Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Certificate Code:</Text>
-          <Text style={styles.value}>CERT-251001-9CVK21</Text>
+          <Text style={styles.value}>CERT-251001-9CVK2I</Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Issue Date:</Text>

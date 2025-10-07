@@ -173,7 +173,7 @@ const submitAttempt = async (req, res) => {
         gradingPayload
       );
 
-      resForTestResult = response?.data?.data || {};
+      resForTestResult = response?.data || {};
 
       // console.log("Grading response:", response.data);
 

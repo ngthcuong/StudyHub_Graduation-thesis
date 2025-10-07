@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/details/grouped",
   verifyToken,
-  attemptDetailController.getUserTestDetailsGroupedByTest
+  attemptDetailController.getAllAttemptDetailsByUserId
 );
 
 module.exports = router;

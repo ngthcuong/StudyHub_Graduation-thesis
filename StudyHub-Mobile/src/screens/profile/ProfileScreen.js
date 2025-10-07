@@ -85,6 +85,11 @@ const ProfileScreen = ({ navigation }) => {
     navigation.navigate("EditProfile", { userInfo });
   };
 
+  const handleHistoryTest = () => {
+    // Navigate to history test screen
+    navigation.navigate("CompletedTests", { userInfo });
+  };
+
   const MenuItem = ({ icon, title, subtitle, onPress, showArrow = true }) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
       <View style={styles.menuItemLeft}>
@@ -167,6 +172,13 @@ const ProfileScreen = ({ navigation }) => {
           title="Certificates"
           subtitle="View your earned certificates"
           onPress={handleCertificate}
+        />
+
+        <MenuItem
+          icon="information-circle-outline"
+          title="Result Test"
+          subtitle="View your test results"
+          onPress={handleHistoryTest}
         />
 
         <MenuItem

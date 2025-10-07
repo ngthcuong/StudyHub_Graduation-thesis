@@ -28,6 +28,10 @@ import EditInfoScreen from "../screens/profile/EditInfoScreen";
 import CertificateListScreen from "../screens/Certificate/CertificateListScreen";
 import CertificateDetailScreen from "../screens/Certificate/CertificateDetailModal";
 
+// History Test Screen
+import HistoryTestScreen from "../screens/tests/HistoryTestResultScreen";
+import CompletedTestsScreen from "../screens/tests/CompletedTestsScreen";
+
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const CoursesStack = createStackNavigator();
@@ -130,6 +134,18 @@ const ProfileStackNavigator = () => (
       name="CertificateDetail"
       component={CertificateDetailScreen}
       options={{ title: "Certificate Detail" }}
+    />
+
+    <ProfileStack.Screen
+      name="HistoryTest"
+      component={HistoryTestScreen}
+      options={{ title: "History Test" }}
+    />
+
+    <ProfileStack.Screen
+      name="CompletedTests"
+      component={CompletedTestsScreen}
+      options={{ title: "Completed Tests" }}
     />
   </ProfileStack.Navigator>
 );

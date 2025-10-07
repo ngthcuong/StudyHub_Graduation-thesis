@@ -100,11 +100,86 @@ const getAllAttemptDetails = async (req, res) => {
   }
 };
 
+// const getUserTestDetailsGroupedByTest = async (req, res) => {
+//   try {
+//     const userId = req.user?.userId || req.params.userId;
+
+//     // 1️⃣ Lấy toàn bộ attempt của user + populate sang testPool -> test
+//     const attempts = await TestAttempt.find({ userId })
+//       .populate({
+//         path: "testPoolId",
+//         populate: {
+//           path: "baseTestId",
+//           model: "Test",
+//           select: "title skill level examType durationMin",
+//         },
+//       })
+//       .sort({ createdAt: -1 });
+
+//     // 2️⃣ Lấy toàn bộ attemptId của user
+//     const attemptIds = attempts.map((a) => a._id);
+
+//     // 3️⃣ Lấy toàn bộ chi tiết attempt (AttemptDetail)
+//     const attemptDetails = await AttemptDetail.find({
+//       attemptId: { $in: attemptIds },
+//     });
+
+//     // 4️⃣ Gom nhóm theo Test
+//     const groupedByTest = {};
+
+//     for (const attempt of attempts) {
+//       const testInfo = attempt.testPoolId?.baseTestId;
+//       if (!testInfo) continue;
+
+//       const testId = testInfo._id.toString();
+
+//       if (!groupedByTest[testId]) {
+//         groupedByTest[testId] = {
+//           testId,
+//           title: testInfo.title,
+//           skill: testInfo.skill,
+//           level: testInfo.level,
+//           examType: testInfo.examType,
+//           durationMin: testInfo.durationMin,
+//           attempts: [],
+//         };
+//       }
+
+//       // tìm chi tiết tương ứng
+//       const details = attemptDetails.filter(
+//         (d) => d.attemptId.toString() === attempt._id.toString()
+//       );
+
+//       groupedByTest[testId].attempts.push({
+//         attemptId: attempt._id,
+//         attemptNumber: attempt.attemptNumber,
+//         startTime: attempt.startTime,
+//         endTime: attempt.endTime,
+//         score: attempt.score,
+//         totalScore: details[0]?.totalScore || 0,
+//         detailCount: details[0]?.answers?.length || 0,
+//         submittedAt: details[0]?.submittedAt,
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Fetched all test details grouped by test successfully",
+//       data: Object.values(groupedByTest),
+//     });
+//   } catch (error) {
+//     console.error("Error fetching test details:", error);
+//     res.status(500).json({
+//       message: "Failed to get test details for user",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const getUserTestDetailsGroupedByTest = async (req, res) => {
   try {
     const userId = req.user?.userId || req.params.userId;
 
-    // 1️⃣ Lấy toàn bộ attempt của user + populate sang testPool -> test
+    // 1️⃣ Lấy tất cả các attempt của user (liên kết sang Test)
     const attempts = await TestAttempt.find({ userId })
       .populate({
         path: "testPoolId",
@@ -116,15 +191,20 @@ const getUserTestDetailsGroupedByTest = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    // 2️⃣ Lấy toàn bộ attemptId của user
-    const attemptIds = attempts.map((a) => a._id);
+    if (!attempts.length) {
+      return res.status(200).json({
+        message: "User has no attempts yet",
+        data: [],
+      });
+    }
 
-    // 3️⃣ Lấy toàn bộ chi tiết attempt (AttemptDetail)
+    // 2️⃣ Lấy toàn bộ AttemptDetail của user theo danh sách attemptId
+    const attemptIds = attempts.map((a) => a._id);
     const attemptDetails = await AttemptDetail.find({
       attemptId: { $in: attemptIds },
     });
 
-    // 4️⃣ Gom nhóm theo Test
+    // 3️⃣ Gom nhóm theo Test
     const groupedByTest = {};
 
     for (const attempt of attempts) {
@@ -145,20 +225,22 @@ const getUserTestDetailsGroupedByTest = async (req, res) => {
         };
       }
 
-      // tìm chi tiết tương ứng
-      const details = attemptDetails.filter(
+      // 🔍 Lấy toàn bộ AttemptDetail tương ứng với attempt này
+      const details = attemptDetails.find(
         (d) => d.attemptId.toString() === attempt._id.toString()
       );
 
+      // Đưa toàn bộ object AttemptDetail vào
       groupedByTest[testId].attempts.push({
         attemptId: attempt._id,
         attemptNumber: attempt.attemptNumber,
         startTime: attempt.startTime,
         endTime: attempt.endTime,
         score: attempt.score,
-        totalScore: details[0]?.totalScore || 0,
-        detailCount: details[0]?.answers?.length || 0,
-        submittedAt: details[0]?.submittedAt,
+        totalScore: details?.totalScore || 0,
+        submittedAt: details?.submittedAt,
+        answers: details?.answers || [],
+        analysisResult: details?.analysisResult || {}, // ⚡ Thêm luôn phân tích AI
       });
     }
 
@@ -175,11 +257,86 @@ const getUserTestDetailsGroupedByTest = async (req, res) => {
   }
 };
 
+const getAllAttemptDetailsByUserId = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.params.userId; // lấy từ JWT hoặc params
+
+    // Lấy tất cả các attempt của user này
+    const attempts = await TestAttempt.find({ userId })
+      .populate({
+        path: "testPoolId",
+        populate: {
+          path: "baseTestId",
+          model: "Test",
+          select: "title skill level examType durationMin",
+        },
+      })
+      .lean();
+
+    if (!attempts.length) {
+      return res
+        .status(404)
+        .json({ message: "No attempts found for this user" });
+    }
+
+    // Lấy danh sách attemptId
+    const attemptIds = attempts.map((a) => a._id);
+
+    // Lấy tất cả attempt details tương ứng
+    const attemptDetails = await AttemptDetail.find({
+      attemptId: { $in: attemptIds },
+    })
+      .populate({
+        path: "answers.questionId",
+        model: "Question",
+        select: "questionText options points skill topic",
+      })
+      .lean();
+
+    // Ghép dữ liệu attempt + detail
+    const mergedData = attemptDetails.map((detail) => {
+      const relatedAttempt = attempts.find(
+        (a) => a._id.toString() === detail.attemptId.toString()
+      );
+
+      return {
+        attemptId: detail.attemptId,
+        attemptNumber: detail.attemptNumber,
+        totalScore: detail.totalScore,
+        submittedAt: detail.submittedAt,
+        testTitle: relatedAttempt?.testPoolId?.baseTestId?.title,
+        skill: relatedAttempt?.testPoolId?.baseTestId?.skill,
+        level: relatedAttempt?.testPoolId?.baseTestId?.level,
+        examType: relatedAttempt?.testPoolId?.baseTestId?.examType,
+        durationMin: relatedAttempt?.testPoolId?.baseTestId?.durationMin,
+        answers: detail.answers.map((a) => ({
+          questionId: a.questionId?._id,
+          questionText: a.questionText || a.questionId?.questionText,
+          selectedOptionText: a.selectedOptionText,
+          isCorrect: a.isCorrect,
+          score: a.score,
+        })),
+      };
+    });
+
+    res.status(200).json({
+      message: "Fetched all attempt details successfully",
+      data: mergedData,
+    });
+  } catch (error) {
+    console.error("Error fetching attempt details:", error);
+    res.status(500).json({
+      message: "Error fetching attempt details",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
   updateAttemptDetailByAttemptId,
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
-  getUserTestDetailsGroupedByTest,
+  getAllAttemptDetailsByUserId,
 };
