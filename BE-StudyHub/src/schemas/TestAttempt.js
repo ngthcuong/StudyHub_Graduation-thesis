@@ -12,7 +12,7 @@ const testAttemptSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    attemptNumber: { type: Number, default: 1 }, // lần attempt cho cùng 1 đề
+    attemptNumber: { type: Number, default: 0 }, // lần attempt cho cùng 1 đề
     maxAttempts: { type: Number, default: 3 }, // mặc định 3
     startTime: { type: Date, default: Date.now },
     endTime: { type: Date },
