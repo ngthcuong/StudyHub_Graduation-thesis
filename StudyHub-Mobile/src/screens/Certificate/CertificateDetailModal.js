@@ -16,9 +16,8 @@ const CertificateDetailScreen = () => {
   const route = useRoute();
   const { item } = route.params || {};
 
-  const transactionHash = "0x1234abcd5678ef90";
-  const metadata =
-    "ipfs://bafkreie34gv3dkrf4mknwpqhadn25v6hglqiz42iebfqjacpz5oea";
+  const transactionHash = item?.blockchain?.certificateHash || "";
+  const metadata = item?.ipfs?.metadataURI || "";
 
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -69,7 +68,7 @@ const CertificateDetailScreen = () => {
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Blockchain Network:</Text>
-          <Text style={styles.value}>SEPOLIA</Text>
+          <Text style={styles.value}>{item?.blockchain?.network || ""}</Text>
         </View>
       </View>
 
@@ -78,13 +77,11 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Student Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Student Name:</Text>
-          <Text style={styles.value}>Nguyễn Thành Cương</Text>
+          <Text style={styles.value}>{item?.student?.name || ""}</Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Student Address:</Text>
-          <Text style={styles.value}>
-            0xA1587E706e6Da463E7d63702147705e7BE722164
-          </Text>
+          <Text style={styles.value}>{item?.student?.walletAddress || ""}</Text>
         </View>
       </View>
 
@@ -93,13 +90,11 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Issuer Organization</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Organization Name:</Text>
-          <Text style={styles.value}>StudyHub</Text>
+          <Text style={styles.value}>{item?.issuer?.name || ""}</Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Organization Address:</Text>
-          <Text style={styles.value}>
-            0xDd8585206D51f17Ea82c5767FeA5f7805015f0E
-          </Text>
+          <Text style={styles.value}>{item?.issuer?.walletAddress || ""}</Text>
         </View>
       </View>
 
@@ -108,7 +103,7 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Course Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Course Name:</Text>
-          <Text style={styles.value}>Blockchain Development Fundamentals</Text>
+          <Text style={styles.value}>{item?.course?.title || ""}</Text>
         </View>
       </View>
 

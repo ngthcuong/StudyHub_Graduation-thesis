@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,53 +12,77 @@ import {
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
+import { certificateApi } from "../../services/certificateApi";
 
 const CertificateListScreen = ({ navigation }) => {
   const [search, setSearch] = useState("");
+  const [certificates, setCertificates] = useState([]);
   const route = useRoute();
   const { userInfo } = route.params || {};
 
-  const certificates = [
-    {
-      id: "1",
-      code: "CERT-251001-9CVK2I",
-      course: "Blockchain Development Fundamentals",
-      date: "02/10/2025",
-    },
-    {
-      id: "2",
-      code: "CERT-251002-2PV4WT",
-      course: "English for IT Professionals",
-      date: "03/10/2025",
-    },
-    {
-      id: "3",
-      code: "CERT-251002-1TAZZN",
-      course: "English for IT Professionals",
-      date: "03/10/2025",
-    },
-    {
-      id: "4",
-      code: "CERT-251002-222YGZ",
-      course: "English for IT Professionals",
-      date: "03/10/2025",
-    },
-    {
-      id: "5",
-      code: "CERT-251003-VYCZEG",
-      course: "English for IT Professionals",
-      date: "03/10/2025",
-    },
-  ];
+  // const certificates = [
+  //   {
+  //     id: "1",
+  //     code: "CERT-251001-9CVK2I",
+  //     course: "Blockchain Development Fundamentals",
+  //     date: "02/10/2025",
+  //   },
+  //   {
+  //     id: "2",
+  //     code: "CERT-251002-2PV4WT",
+  //     course: "English for IT Professionals",
+  //     date: "03/10/2025",
+  //   },
+  //   {
+  //     id: "3",
+  //     code: "CERT-251002-1TAZZN",
+  //     course: "English for IT Professionals",
+  //     date: "03/10/2025",
+  //   },
+  //   {
+  //     id: "4",
+  //     code: "CERT-251002-222YGZ",
+  //     course: "English for IT Professionals",
+  //     date: "03/10/2025",
+  //   },
+  //   {
+  //     id: "5",
+  //     code: "CERT-251003-VYCZEG",
+  //     course: "English for IT Professionals",
+  //     date: "03/10/2025",
+  //   },
+  // ];
 
-  const filtered = certificates.filter(
+  useEffect(() => {
+    fetchCertificates();
+  }, []);
+
+  const fetchCertificates = async () => {
+    if (userInfo && userInfo.walletAddress) {
+      const data = await certificateApi.getCertificateByWalletAddress(
+        userInfo.walletAddress
+      );
+      setCertificates(data);
+    }
+  };
+
+  const filtered = certificates?.certificates?.filter(
     (item) =>
-      item.code.toLowerCase().includes(search.toLowerCase()) ||
-      item.course.toLowerCase().includes(search.toLowerCase())
+      item?.course?.title?.toLowerCase().includes(search.toLowerCase()) ||
+      item.course?.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleView = (item) => {
     navigation.navigate("CertificateDetail", { item });
+  };
+
+  const handleChangeDate = (isoString) => {
+    const parsedDate = new Date(isoString);
+    const day = String(parsedDate.getDate()).padStart(2, "0");
+    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+    const year = parsedDate.getFullYear();
+
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -89,21 +113,23 @@ const CertificateListScreen = ({ navigation }) => {
 
       {/* Bộ lọc thông tin */}
       <Text style={styles.filterInfo}>
-        {filtered.length} of {certificates.length} items
+        {filtered?.length} of {certificates?.certificates?.length} items
       </Text>
 
       {/* Danh sách chứng chỉ */}
       <FlatList
         data={filtered}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.code}>{item.code}</Text>
-              <Text style={styles.course}>{item.course}</Text>
+              <Text style={styles.code}>{item?.certificateCode}</Text>
+              <Text style={styles.course}>{item.course?.title}</Text>
               <View style={styles.dateRow}>
                 <Ionicons name="calendar-outline" size={18} color="#888" />
-                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.date}>
+                  {handleChangeDate(item?.validity?.issueDate)}
+                </Text>
               </View>
             </View>
             <TouchableOpacity
@@ -125,7 +151,7 @@ const CertificateListScreen = ({ navigation }) => {
           Rows per page: <Text style={{ fontWeight: "600" }}>5</Text>
         </Text>
         <Text style={styles.paginationText}>
-          1-{filtered.length} of {certificates.length}
+          1-{filtered?.length} of {certificates?.certificates?.length}
         </Text>
       </View>
     </SafeAreaView>
