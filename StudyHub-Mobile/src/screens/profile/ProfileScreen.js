@@ -168,7 +168,7 @@ const ProfileScreen = ({ navigation }) => {
         />
 
         <MenuItem
-          icon="certificate"
+          icon="ribbon-outline"
           title="Certificates"
           subtitle="View your earned certificates"
           onPress={handleCertificate}

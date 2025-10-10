@@ -37,7 +37,8 @@ import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 
 const statusOptions = ["All", "Pending", "Active", "Rejected"];
 
-export default function Certificate() {
+export default function Certificate({ item }) {
+  console.log("Certificate item prop:", item);
   const [filteredCertificates, setFilteredCertificates] = useState([]);
 
   const [searchKeyword, setSearchKeyword] = useState("");
