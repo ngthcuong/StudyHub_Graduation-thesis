@@ -13,7 +13,7 @@ if not GEMINI_API_KEY:
     # Note: we don't raise here so unit tests can run without key if not calling gemini.
     pass
 
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent"
 
 def _build_prompt(payload: Dict[str, Any]) -> str:
     """
