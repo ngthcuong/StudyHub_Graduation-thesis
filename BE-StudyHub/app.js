@@ -22,6 +22,8 @@ const testPoolRoutes = require("./src/routes/testPoolRoutes");
 
 const attemptDetailRoutes = require("./src/routes/attemptDetailRoutes");
 
+const studyRoutes = require("./src/routes/studyRoutes");
+
 require("dotenv").config();
 
 // Create Expresss App and HTTP Server
@@ -55,6 +57,8 @@ app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chun
 app.use("/api/v1/test-pools", testPoolRoutes);
 
 app.use("/api/v1/attempt-details", attemptDetailRoutes);
+
+app.use("/api/v1/study", studyRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {

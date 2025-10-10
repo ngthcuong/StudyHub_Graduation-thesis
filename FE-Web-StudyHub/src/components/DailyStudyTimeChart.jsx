@@ -8,19 +8,18 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function DailyLessonsChart({ data }) {
-  // Nếu không có data thì render rỗng
+export default function DailyStudyTimeChart({ data }) {
   if (!data || !Array.isArray(data)) {
     return <p className="text-center text-gray-500">Không có dữ liệu</p>;
   }
 
-  // ✨ Chuyển dữ liệu API → format cho Recharts
+  // ✨ Chuyển dữ liệu từ API → Recharts
   const chartData = data.map((item) => ({
-    // Lấy ngày từ chuỗi "2025-10-01" → "1"
     day: new Date(item.date).getDate().toString(),
-    lessons: item.completedLessons,
     studyTimeMinutes: item.studyTimeMinutes,
   }));
+
+  console.log("📊 studyTimeChartData:", chartData);
 
   return (
     <div className="flex justify-center">
@@ -29,15 +28,23 @@ export default function DailyLessonsChart({ data }) {
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="day" label={{ position: "insideBottom", dy: 10 }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip
-              formatter={(value, name) =>
-                name === "lessons"
-                  ? [`${value} bài học`, "Bài học hoàn thành"]
-                  : [`${value} phút`, "Thời gian học"]
-              }
+            <YAxis
+              allowDecimals={false}
+              label={{
+                angle: -90,
+                position: "insideLeft",
+                dy: 50,
+              }}
             />
-            <Bar dataKey="lessons" fill="#007bff" name="Bài học hoàn thành" />
+            <Tooltip
+              formatter={(value) => [`${value} mins`, "Study Time"]}
+              labelFormatter={(label) => `Days ${label}`}
+            />
+            <Bar
+              dataKey="studyTimeMinutes"
+              fill="#007bff"
+              name="Study Time (minutes)"
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
