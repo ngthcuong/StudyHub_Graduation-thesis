@@ -25,3 +25,18 @@ export const studyApi = rootApi.injectEndpoints({
 
 export const { useGetStudyStatsQuery, useLogStudySessionMutation } = studyApi;
 export default studyApi;
+
+// CÁCH DÙNG trong component React:
+// const [logStudySession, { isLoading, error }] = useLogStudySessionMutation();
+
+//   const handleLog = async () => {
+//     try {
+//       const result = await logStudySession({
+//         lessonId,
+//         durationMinutes: 45, // ví dụ học 45 phút
+//       }).unwrap(); // unwrap giúp lấy data thật hoặc throw lỗi
+//       console.log("✅ Ghi log thành công:", result);
+//     } catch (err) {
+//       console.error("❌ Ghi log thất bại:", err);
+//     }
+//   };
