@@ -86,7 +86,6 @@ const TestMultipleChoice = () => {
   const handleSubmit = async () => {
     try {
       const formattedAnswers = answers.map((selectedOptionId, index) => ({
-        attemptId: attemptId,
         questionId: questions[index]._id,
         selectedOptionId: selectedOptionId,
       }));
@@ -94,6 +93,7 @@ const TestMultipleChoice = () => {
       const testSubmit = await submitTest({
         answers: formattedAnswers,
         attemptId,
+        testId,
       });
 
       await saveAnswers(formattedAnswers);

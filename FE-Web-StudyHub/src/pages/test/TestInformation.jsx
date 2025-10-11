@@ -165,8 +165,8 @@ const TestInformation = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col">
-      <Box className="w-full max-w-2xl ">
+    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
+      <Box className="w-full max-w-3xl ">
         <Button
           startIcon={<ArrowBack />}
           variant="text"
@@ -183,7 +183,7 @@ const TestInformation = () => {
       </Box>
 
       <Card
-        className="w-full max-w-2xl"
+        className="w-full max-w-3xl"
         sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
       >
         <CardContent>

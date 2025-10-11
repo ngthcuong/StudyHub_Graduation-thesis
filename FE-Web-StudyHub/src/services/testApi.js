@@ -111,10 +111,10 @@ export const testApi = rootApi.injectEndpoints({
 
     // Submit test
     submitTest: builder.mutation({
-      query: ({ answers, attemptId }) => ({
+      query: ({ answers, attemptId, testId }) => ({
         url: `/attempts/${attemptId}/submit`,
         method: "POST",
-        body: { answers },
+        body: { answers, testId },
       }),
       invalidatesTags: ["Attempt"],
     }),
@@ -127,6 +127,14 @@ export const testApi = rootApi.injectEndpoints({
         body: { testId, attemptId },
       }),
       // invalidatesTags: ["Test"],
+    }),
+
+    // Lấy danh sách các attempts cũ
+    getListAttempt: builder.query({
+      query: () => ({
+        url: "/attempt-details/details/grouped",
+      }),
+      providesTags: ["Attempt"],
     }),
   }),
 });
