@@ -19,6 +19,11 @@ import Dashboard from "../pages/home/Dashboard";
 import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
 import UserInfo from "../pages/home/UserInfo";
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/Dashboard";
+import AdminCertificate from "../pages/admin/Certificate";
+import AdminTest from "../pages/admin/Test";
+import AdminReview from "../pages/admin/Review";
 
 export const router = createBrowserRouter([
   {
@@ -63,6 +68,28 @@ export const router = createBrowserRouter([
               {
                 path: "settings",
                 element: <Settings />,
+              },
+            ],
+          },
+          {
+            path: "/admin",
+            element: <AdminLayout />,
+            children: [
+              {
+                path: "dashboard",
+                element: <AdminDashboard />,
+              },
+              {
+                path: "certificate",
+                element: <AdminCertificate />,
+              },
+              {
+                path: "test",
+                element: <AdminTest />,
+              },
+              {
+                path: "review",
+                element: <AdminReview />,
               },
             ],
           },
