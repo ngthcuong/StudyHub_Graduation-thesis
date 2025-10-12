@@ -20,6 +20,12 @@ import {
   AccordionSummary,
   AccordionDetails,
   Collapse,
+  Button,
+  Select,
+  MenuItem,
+  Stack,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -30,6 +36,8 @@ import {
   ExpandMore as ExpandMoreIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
+  FilterAltOutlined,
+  FilterAltOffOutlined,
 } from "@mui/icons-material";
 
 const Test = () => {
@@ -37,13 +45,17 @@ const Test = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
+  const [showFilter, setShowFilter] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("title");
+  const [filteredTests, setFilteredTests] = useState([]);
 
   // Mock data cho tests với levels
   const tests = [
     {
       id: 1,
-      title: "JavaScript Fundamentals Quiz",
-      category: "Programming",
+      title: "TOEIC Reading Comprehension",
+      category: "TOEIC",
       totalQuestions: 75,
       totalParticipants: 456,
       totalAttempts: 1042,
@@ -74,8 +86,8 @@ const Test = () => {
     },
     {
       id: 2,
-      title: "React Hooks Assessment",
-      category: "Framework",
+      title: "TOEIC Listening Practice",
+      category: "TOEIC",
       totalQuestions: 60,
       totalParticipants: 328,
       totalAttempts: 789,
@@ -106,8 +118,8 @@ const Test = () => {
     },
     {
       id: 3,
-      title: "Node.js Basic Test",
-      category: "Backend",
+      title: "IELTS Reading Test",
+      category: "IELTS",
       totalQuestions: 55,
       totalParticipants: 545,
       totalAttempts: 1212,
@@ -138,8 +150,8 @@ const Test = () => {
     },
     {
       id: 4,
-      title: "MongoDB Database Quiz",
-      category: "Database",
+      title: "IELTS Writing Task Assessment",
+      category: "IELTS",
       totalQuestions: 50,
       totalParticipants: 298,
       totalAttempts: 687,
@@ -170,8 +182,8 @@ const Test = () => {
     },
     {
       id: 5,
-      title: "HTML & CSS Mastery",
-      category: "Web Design",
+      title: "TOEIC Vocabulary Builder",
+      category: "TOEIC",
       totalQuestions: 70,
       totalParticipants: 612,
       totalAttempts: 1478,
@@ -202,8 +214,8 @@ const Test = () => {
     },
     {
       id: 6,
-      title: "TypeScript Advanced",
-      category: "Programming",
+      title: "IELTS Speaking Practice",
+      category: "IELTS",
       totalQuestions: 45,
       totalParticipants: 187,
       totalAttempts: 456,
@@ -263,11 +275,45 @@ const Test = () => {
     }
   };
 
-  const filteredTests = tests.filter(
-    (test) =>
-      test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      test.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleClearAll = () => {
+    setSearchTerm("");
+    setCategoryFilter("All");
+    setSortBy("title");
+  };
+
+  // Filter and sort logic
+  React.useEffect(() => {
+    let filtered = tests.filter((test) => {
+      const matchesSearch =
+        test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        test.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesCategory =
+        categoryFilter === "All" || test.category === categoryFilter;
+
+      return matchesSearch && matchesCategory;
+    });
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          return a.title.localeCompare(b.title);
+        case "participants":
+          return b.totalParticipants - a.totalParticipants;
+        case "attempts":
+          return b.totalAttempts - a.totalAttempts;
+        case "questions":
+          return b.totalQuestions - a.totalQuestions;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredTests(filtered);
+    setPage(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, categoryFilter, sortBy]);
 
   // Calculate total stats
   const totalTests = tests.length;
@@ -423,13 +469,19 @@ const Test = () => {
         sx={{ borderRadius: 3, boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)" }}
       >
         <CardContent sx={{ p: 3 }}>
-          {/* Search Bar */}
-          <Box sx={{ mb: 3 }}>
+          {/* Search and Filters */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
+            className="w-full mb-4"
+          >
             <TextField
               fullWidth
               placeholder="Search tests by title or category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -441,9 +493,78 @@ const Test = () => {
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 2,
                 },
+                minWidth: 220,
               }}
             />
-          </Box>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setShowFilter((v) => !v)}
+              sx={{ textTransform: "none", fontWeight: 600, minWidth: 100 }}
+              startIcon={
+                !showFilter ? <FilterAltOutlined /> : <FilterAltOffOutlined />
+              }
+            >
+              Filters
+            </Button>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleClearAll}
+              sx={{ textTransform: "none", minWidth: 100 }}
+            >
+              Clear All
+            </Button>
+            <Typography
+              variant="body2"
+              color="#64748b"
+              sx={{ minWidth: 100, textAlign: "center" }}
+            >
+              {filteredTests.length} of {tests.length} items
+            </Typography>
+          </Stack>
+
+          {/* Filters Panel */}
+          {showFilter && (
+            <Box sx={{ mb: 3, p: 2, bgcolor: "#f9fafb", borderRadius: 2 }}>
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                alignItems="center"
+              >
+                {/* Category Filter */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel size="small">Category</InputLabel>
+                  <Select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    label="Category"
+                    size="small"
+                  >
+                    <MenuItem value="All">All Categories</MenuItem>
+                    <MenuItem value="TOEIC">TOEIC</MenuItem>
+                    <MenuItem value="IELTS">IELTS</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* Sort By */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel size="small">Sort By</InputLabel>
+                  <Select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    label="Sort By"
+                    size="small"
+                  >
+                    <MenuItem value="title">Test Name (A-Z)</MenuItem>
+                    <MenuItem value="participants">Total Participants</MenuItem>
+                    <MenuItem value="attempts">Total Attempts</MenuItem>
+                    <MenuItem value="questions">Total Questions</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </Box>
+          )}
 
           {/* Table */}
           <TableContainer>
