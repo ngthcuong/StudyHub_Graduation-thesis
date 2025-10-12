@@ -1,10 +1,9 @@
 const axios = require("axios");
 const { model } = require("mongoose");
-// const testResultService = require("../services/testResultService.service");
 const testModel = require("../models/testModel");
 const questionModel = require("../models/questionModel");
-const userAnswerModel = require("../models/userAnswerModel");
 const attemptModel = require("../models/testAttemptModel");
+const attemptDetailModel = require("../models/attemptDetailModel");
 
 const submitAnswers = async (req, res) => {
   try {
@@ -26,7 +25,10 @@ const submitAnswers = async (req, res) => {
     });
 
     // --- Lấy câu trả lời của học sinh ---
-    const userAnswers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    // const userAnswers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    const userAnswers = await attemptDetailModel.findAnswersByAttempt(
+      attemptId
+    );
 
     const questionMap = new Map(
       questionsByTest.map((q, index) => [q._id.toString(), index + 1]) // map questionId -> số thứ tự

@@ -43,4 +43,6 @@ router.get(
   attemptDetailController.getAllAttemptDetailsByUserId
 );
 
+router.get("/attempt/:attemptId", attemptDetailController.getAnswersByAttempt);
+
 module.exports = router;

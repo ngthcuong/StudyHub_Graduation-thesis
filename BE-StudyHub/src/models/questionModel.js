@@ -64,6 +64,18 @@ const deleteQuestionById = async (id) => {
   }
 };
 
+const findQuestionsByTestLevelAndCreator = async (filter) => {
+  try {
+    return await Question.find(filter).sort({ createdAt: 1 });
+  } catch (error) {
+    console.error(
+      "Error finding questions by test, level, and creator:",
+      error
+    );
+    throw new Error("Failed to find questions by test, level, and creator");
+  }
+};
+
 module.exports = {
   createQuestion,
   createManyQuestions,
@@ -72,4 +84,5 @@ module.exports = {
   updateQuestionById,
   deleteQuestionById,
   findQuestionsByIds,
+  findQuestionsByTestLevelAndCreator,
 };

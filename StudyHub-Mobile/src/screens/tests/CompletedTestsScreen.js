@@ -23,7 +23,6 @@ const CompletedTestsScreen = ({ navigation }) => {
     try {
       setLoading(true);
       const response = await testApi.getCompletedTests(); // ✅ gọi API thật
-      console.log("Completed Tests Data:", response.data);
 
       // Map dữ liệu backend sang format UI
       const mapped = response.data.map((item) => {
@@ -59,7 +58,6 @@ const CompletedTestsScreen = ({ navigation }) => {
   };
 
   const CompletedTestCard = ({ test }) => {
-    console.log("Rendering test:", test);
     const isPassed = test.score >= test.passingScore;
     const scoreColor = isPassed ? "#10B981" : "#EF4444";
     const iconName = isPassed ? "checkmark-circle" : "close-circle";

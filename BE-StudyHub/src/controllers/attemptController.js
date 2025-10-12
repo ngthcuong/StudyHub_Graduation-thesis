@@ -6,11 +6,11 @@ const testModel = require("../models/testModel");
 
 //  For calling external grading service
 const axios = require("axios");
-const userAnswerModel = require("../models/userAnswerModel");
+// const userAnswerModel = require("../models/userAnswerModel");
 
 const startAttempt = async (req, res) => {
   try {
-    const { testPoolId, evaluationModel } = req.body;
+    const { testPoolId, testId, evaluationModel } = req.body;
     if (!testPoolId)
       return res.status(400).json({ error: "testPoolId is required" });
 
@@ -19,6 +19,7 @@ const startAttempt = async (req, res) => {
       userId: req.user?.userId || req.body.userId,
       evaluationModel: evaluationModel || "gemini",
       feedback: "",
+      testId,
     };
 
     const savedAttempt = await attemptModel.createAttempt(attemptData);
@@ -54,7 +55,10 @@ const submitAttempt = async (req, res) => {
       });
 
       // --- Lấy câu trả lời của học sinh ---
-      const userAnswers = await userAnswerModel.findAnswersByAttempt(attemptId);
+      // const userAnswers = await userAnswerModel.findAnswersByAttempt(attemptId);
+      const userAnswers = await attemptDetailModel.findAnswersByAttempt(
+        attemptId
+      );
 
       const questionMap = new Map(
         questionsByTest.map((q, index) => [q._id.toString(), index + 1]) // map questionId -> số thứ tự
@@ -130,7 +134,6 @@ const submitAttempt = async (req, res) => {
 
       // --- Lấy thông tin học sinh ---
       const userInfo = await attemptModel.findAttemptById(attemptId);
-      console.log("User info:", userInfo);
       const formattedUser = {
         student_id: userInfo?.userId._id.toString(),
         name: userInfo?.userId.fullName,
@@ -277,6 +280,7 @@ const submitAttempt = async (req, res) => {
 const getAttemptById = async (req, res) => {
   try {
     const { attemptId } = req.params;
+    console.log("Fetching attempt with ID:", attemptId);
     if (!attemptId)
       return res.status(400).json({ error: "Attempt ID not found" });
 
@@ -340,12 +344,11 @@ const getAttemptInfo = async (req, res) => {
       status: "active",
       createdBy: userId,
     });
-    if (!testPool)
+    console.log("Found testPool:", testPool);
+    if (!testPool || !testPool.length)
       return res
         .status(404)
         .json({ message: "No test pool found for this test" });
-
-    console.log("Found testPool:", testPool);
 
     const attempt = await attemptModel.findAttemptByUserAndPool(
       userId,
@@ -386,6 +389,43 @@ const getAttemptInfo = async (req, res) => {
   }
 };
 
+const getAttemptsByTestPool = async (req, res) => {
+  try {
+    const { testPoolId, userId } = req.body;
+    console.log("Request body:", req.body);
+
+    const attempts = await attemptModel.findAttemptsByTestPool(
+      testPoolId,
+      userId
+    );
+
+    res.status(200).json({
+      message: "Attempts retrieved successfully",
+      data: attempts,
+    });
+  } catch (error) {
+    console.error("Error in controller:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getAttemptsByTestIdAndUser = async (req, res) => {
+  const { testId, userId } = req.params;
+  try {
+    const attempts = await attemptModel.findAttemptsByTestIdAndUser(
+      testId,
+      userId
+    );
+    res.status(200).json({
+      message: "Attempts retrieved successfully",
+      data: attempts,
+    });
+  } catch (error) {
+    console.error("Error getting attempts by testId and user:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   startAttempt,
   submitAttempt,
@@ -393,4 +433,6 @@ module.exports = {
   getAttemptsByUser,
   getAttemptByTest,
   getAttemptInfo,
+  getAttemptsByTestPool,
+  getAttemptsByTestIdAndUser,
 };
