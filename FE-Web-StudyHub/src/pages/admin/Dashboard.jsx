@@ -171,7 +171,7 @@ const Dashboard = () => {
                   variant="caption"
                   className="text-green-600 font-semibold"
                 >
-                  ★ {averageRating} Average
+                  {averageRating} Average
                 </Typography>
               </div>
               <div className="bg-blue-100 rounded-full p-3">
@@ -282,8 +282,8 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex-1">
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex-2/3">
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
@@ -309,8 +309,7 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
 
-              <div className="ml-6">
-                {/* Legend */}
+              <div className="flex-1/3 ">
                 <div className="space-y-3 mb-6">
                   {reviewData.map((item) => (
                     <div key={item.name} className="flex items-center">
@@ -323,16 +322,6 @@ const Dashboard = () => {
                       </Typography>
                     </div>
                   ))}
-                </div>
-
-                {/* Average Rating */}
-                <div className="text-center pt-4 border-t border-gray-200">
-                  <Typography variant="h3" className="font-bold text-gray-800">
-                    {averageRating}
-                  </Typography>
-                  <Typography variant="body2" className="text-gray-600">
-                    Average Rating
-                  </Typography>
                 </div>
               </div>
             </div>
