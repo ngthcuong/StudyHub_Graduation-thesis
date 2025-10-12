@@ -59,10 +59,21 @@ const getAllAttemptDetails = async () => {
   }
 };
 
+const findAnswersByAttempt = async (attemptId) => {
+  try {
+    const attemptDetail = await AttemptDetail.findOne({ attemptId }).lean();
+    return attemptDetail ? attemptDetail.answers : [];
+  } catch (error) {
+    console.error("Error finding answers by attempt:", error);
+    throw new Error("Failed to find answers by attempt");
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
   updateAttemptDetailByAttemptId,
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
+  findAnswersByAttempt,
 };

@@ -1,3 +1,4 @@
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import api from "./api";
 
 export const testApi = {
@@ -20,9 +21,10 @@ export const testApi = {
   },
 
   // Start test attempt
-  startTestAttempt: async (testPoolId) => {
+  startTestAttempt: async (testPoolId, testId) => {
     const response = await api.post(`/attempts`, {
       testPoolId,
+      testId,
       evaluationModel: "gemini",
     });
     return response.data;
@@ -39,6 +41,7 @@ export const testApi = {
 
   // Submit test attempt
   submitTestAttempt: async (attemptId, answersPayload, testId) => {
+    console.log("Submitting test attempt:", attemptId, answersPayload, testId);
     const response = await api.post(`/attempts/${attemptId}/submit`, {
       answers: answersPayload,
       testId,
@@ -66,25 +69,9 @@ export const testApi = {
     return response.data;
   },
 
-  generrateTest: async (payload) => {
+  generateTest: async (payload) => {
+    console.log("Generating test with payload:", payload);
     const response = await api.post(`/generate-test`, payload);
-    return response.data;
-  },
-
-  createTestPool: async (testId, level, userId) => {
-    const response = await api.post(`/test-pools`, {
-      baseTestId: testId,
-      level,
-      createdBy: userId,
-      usageCount: 0,
-      maxReuse: 5,
-      status: "active",
-    });
-    return response.data;
-  },
-
-  getTestPoolByLevel: async (level) => {
-    const response = await api.get(`/test-pools/level/${level}`);
     return response.data;
   },
 
@@ -100,6 +87,29 @@ export const testApi = {
     return response.data;
   },
 
+  getTestPoolByLevel: async (level) => {
+    const response = await api.get(`/test-pools/level/${level}`);
+    return response.data;
+  },
+
+  createTestPool: async (testId, level, userId) => {
+    const response = await api.post(`/test-pools`, {
+      baseTestId: testId?.testId,
+      level: testId?.level,
+      createdBy: testId?.userId,
+      usageCount: 0,
+      maxReuse: 10,
+      status: "active",
+    });
+    return response.data;
+  },
+
+  updateTestPool: async (poolId, updateData) => {
+    console.log("Updating test pool:", poolId, updateData);
+    const response = await api.put(`/test-pools/${poolId}`, updateData);
+    return response.data;
+  },
+
   gradeTest: async (testId, attemptId) => {
     const response = await api.post(`/test-result/submit`, {
       attemptId,
@@ -110,6 +120,42 @@ export const testApi = {
 
   getCompletedTests: async () => {
     const response = await api.get("/attempt-details/details/grouped");
+    return response.data;
+  },
+
+  getTestPoolByLevel: async (level) => {
+    const response = await api.get(`/test-pools/level/${level}`);
+    return response.data;
+  },
+
+  // GET BY TEST ID, LEVEL AND CREATE
+  getTestPoolByTestIdAndLevel: async (
+    testId,
+    exam_type,
+    score_range,
+    createdBy
+  ) => {
+    const response = await api.post(`/questions/filter`, {
+      testId,
+      exam_type,
+      score_range,
+      createdBy,
+    });
+
+    return response.data;
+  },
+
+  // Get test attempts by test ID
+  getTestAttemptsByTestId: async (testPoolId, userId) => {
+    const response = await api.post(`/attempts/by-test-pool`, {
+      testPoolId,
+      userId,
+    });
+    return response.data;
+  },
+
+  getAttemptByTestAndUser: async (testId, userId) => {
+    const response = await api.get(`/attempts/test/${testId}/user/${userId}`);
     return response.data;
   },
 };

@@ -332,10 +332,29 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
   }
 };
 
+const getAnswersByAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    if (!attemptId)
+      return res.status(400).json({ error: "Attempt ID not found" });
+
+    const answers = await attemptDetailModel.findAnswersByAttempt(attemptId);
+    res.status(200).json({
+      message: "Answers retrieved",
+      data: answers,
+      total: answers.length,
+    });
+  } catch (error) {
+    console.error("Error getting answers by attempt:", error);
+    res.status(500).json({ error: "Failed to get answers" });
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
   updateAttemptDetailByAttemptId,
+  getAnswersByAttempt,
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
   getAllAttemptDetailsByUserId,

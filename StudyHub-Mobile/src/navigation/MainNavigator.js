@@ -29,7 +29,7 @@ import CertificateListScreen from "../screens/Certificate/CertificateListScreen"
 import CertificateDetailScreen from "../screens/Certificate/CertificateDetailModal";
 
 // History Test Screen
-import HistoryTestScreen from "../screens/tests/HistoryTestResultScreen";
+import HistoryTestResultScreen from "../screens/tests/HistoryTestResultScreen";
 import CompletedTestsScreen from "../screens/tests/CompletedTestsScreen";
 
 const Tab = createBottomTabNavigator();
@@ -138,7 +138,7 @@ const ProfileStackNavigator = () => (
 
     <ProfileStack.Screen
       name="HistoryTest"
-      component={HistoryTestScreen}
+      component={HistoryTestResultScreen}
       options={{ title: "History Test" }}
     />
 

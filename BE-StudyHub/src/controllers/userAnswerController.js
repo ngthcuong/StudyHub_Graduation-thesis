@@ -1,6 +1,6 @@
 const userAnswerModel = require("../models/userAnswerModel");
 const questionModel = require("../models/questionModel");
-// const AnswerOption = require("../schemas/AnswerOption");
+const attemptDetailModel = require("../models/attemptDetailModel");
 
 const submitAnswer = async (req, res) => {
   try {
@@ -194,7 +194,8 @@ const getAnswersByAttempt = async (req, res) => {
     if (!attemptId)
       return res.status(400).json({ error: "Attempt ID not found" });
 
-    const answers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    // const answers = await userAnswerModel.findAnswersByAttempt(attemptId);
+    const answers = await attemptDetailModel.findAnswersByAttempt(attemptId);
     res.status(200).json({
       message: "Answers retrieved",
       data: answers,

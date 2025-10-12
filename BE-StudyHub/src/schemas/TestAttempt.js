@@ -12,6 +12,11 @@ const testAttemptSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    testId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Test",
+      required: true,
+    },
     attemptNumber: { type: Number, default: 0 }, // lần attempt cho cùng 1 đề
     maxAttempts: { type: Number, default: 3 }, // mặc định 3
     startTime: { type: Date, default: Date.now },

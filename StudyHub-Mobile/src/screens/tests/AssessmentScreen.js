@@ -14,6 +14,7 @@ import { testApi } from "../../services/testApi";
 const AssessmentScreen = ({ navigation, route }) => {
   const { testId } = route.params;
   const [test, setTest] = useState(null);
+  const [attemptInfo, setAttemptInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const user = useSelector((state) => state.auth.user);
 
@@ -24,20 +25,28 @@ const AssessmentScreen = ({ navigation, route }) => {
   const loadTest = async () => {
     try {
       setLoading(true);
-
       try {
         // Gọi API attemptInfo trước
         const res = await testApi.getAttemptInfo(user?._id, testId);
+        console.log("Found attempt info:", res);
         setTest(res); // nếu thành công thì dùng res
       } catch (error) {
         if (error.response?.status === 404) {
           // Nếu là 404 thì fallback sang getTestById
           const response = await testApi.getTestById(testId);
+          console.log("Fetched test details:", response);
           setTest(response.data);
         } else {
           // Các lỗi khác vẫn throw để nhảy xuống catch ngoài
           throw error;
         }
+      }
+
+      try {
+        const res = await testApi.getAttemptByTestAndUser(testId, user?._id);
+        setAttemptInfo(res.data[0]);
+      } catch (error) {
+        console.log("No attempt info found:", error);
       }
     } catch (error) {
       console.error("Error loading test:", error);
@@ -123,9 +132,9 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="repeat-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Attempts:</Text>
           <Text style={styles.infoValue}>
-            {test.attemptInfo
-              ? `${test.attemptInfo.attemptNumber || 0}/${
-                  test.attemptInfo.maxAttempts
+            {attemptInfo
+              ? `${attemptInfo.attemptNumber || 0}/${
+                  attemptInfo.maxAttempts || 3
                 }`
               : "0/3"}
           </Text>
