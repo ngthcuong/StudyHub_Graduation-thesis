@@ -41,7 +41,6 @@ export const testApi = {
 
   // Submit test attempt
   submitTestAttempt: async (attemptId, answersPayload, testId) => {
-    console.log("Submitting test attempt:", attemptId, answersPayload, testId);
     const response = await api.post(`/attempts/${attemptId}/submit`, {
       answers: answersPayload,
       testId,

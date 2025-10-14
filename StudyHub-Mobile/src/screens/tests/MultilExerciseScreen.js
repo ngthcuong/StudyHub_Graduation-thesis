@@ -362,7 +362,6 @@ const MultilExerciseScreen = ({ navigation, route }) => {
         testId
       );
 
-      console.log("Test submitted successfully:", result);
       setLoadingResult(false);
 
       if (testPool.data[0].createdBy._id !== user._id) {

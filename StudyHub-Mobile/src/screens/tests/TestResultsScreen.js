@@ -9,35 +9,29 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { testApi } from "../../services/testApi";
 
 const TestResultsScreen = ({ navigation, route }) => {
-  const { attemptId } = route.params;
+  const { result } = route.params; // ✅ dữ liệu truyền qua navigation
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [test, setTest] = useState(null);
   const [grade, setGrade] = useState(null);
 
   useEffect(() => {
-    loadResults();
-  }, [attemptId]);
+    if (result) {
+      loadResults();
+    }
+  }, [result]);
 
   const loadResults = async () => {
     try {
       setLoading(true);
-      const response = await testApi.getTestResults(attemptId);
-      const test = await testApi.getTestById(
-        response.data.attempt.testPoolId.baseTestId
-      );
+      console.log("Result from route params:", result);
 
-      const gradeTest = await testApi.gradeTest(
-        response.data.attempt.testPoolId.baseTestId,
-        attemptId
-      );
-
-      setGrade(gradeTest.data);
-      setTest(test.data);
-      setResults(response.data);
+      // ✅ Gán dữ liệu trực tiếp từ result
+      setResults(result);
+      setTest(result?.attemptDetail || null);
+      setGrade(result?.attemptDetail?.analysisResult || null);
     } catch (error) {
       console.error("Error loading results:", error);
       Alert.alert("Error", "Failed to load test results");
@@ -47,7 +41,9 @@ const TestResultsScreen = ({ navigation, route }) => {
   };
 
   const handleRetakeTest = () => {
-    navigation.navigate("Assessment", { testId: results.testId });
+    navigation.navigate("Assessment", {
+      testId: results?.attempt?.testId,
+    });
   };
 
   const handleBackToTests = () => {
@@ -71,22 +67,19 @@ const TestResultsScreen = ({ navigation, route }) => {
     );
   }
 
-  const isPassed = results.attempt?.score >= (results?.passingScore || 0);
+  // ✅ Trích xuất dữ liệu từ result
+  const { attempt, attemptDetail, summary } = results;
+  const totalQuestions = summary?.answered || 0;
+  const correctAnswers = attemptDetail?.analysisResult?.total_score || 0;
+  const score = attempt?.score || 0;
+
+  const isPassed = score >= 7; // ví dụ đạt >=7 là qua
   const scoreColor = isPassed ? "#10B981" : "#EF4444";
   const scoreIcon = isPassed ? "checkmark-circle" : "close-circle";
 
-  const correctAnswers = results.answers?.filter((a) => a.isCorrect).length;
-  const totalQuestions = results.answers?.length;
-
-  // Chuyển sang Date
-
-  const startTime = results.attempt?.startTime;
-  const endTime = results.attempt?.endTime;
-
-  const start = new Date(startTime);
-  const end = new Date(endTime);
-
-  const diffMs = end - start; // mili giây
+  const start = new Date(attempt?.startTime);
+  const end = new Date(attempt?.endTime);
+  const diffMs = end - start;
   const diffSec = Math.floor(diffMs / 1000);
   const minutes = Math.floor(diffSec / 60);
   const seconds = diffSec % 60;
@@ -101,7 +94,7 @@ const TestResultsScreen = ({ navigation, route }) => {
           <Ionicons name={scoreIcon} size={60} color={scoreColor} />
         </View>
         <Text style={styles.resultTitle}>
-          {isPassed ? "Congratulations!" : "Better luck next time!"}
+          {isPassed ? "🎉 Congratulations!" : "💪 Keep trying!"}
         </Text>
         <Text style={styles.resultSubtitle}>
           {isPassed ? "You passed the test!" : "You need to improve your score"}
@@ -111,9 +104,7 @@ const TestResultsScreen = ({ navigation, route }) => {
       {/* Score Card */}
       <View style={styles.scoreCard}>
         <Text style={styles.scoreLabel}>Your Score</Text>
-        <Text style={[styles.scoreValue, { color: scoreColor }]}>
-          {results.attempt.score}
-        </Text>
+        <Text style={[styles.scoreValue, { color: scoreColor }]}>{score}</Text>
         <Text style={styles.scoreDetails}>
           {correctAnswers} out of {totalQuestions} questions correct
         </Text>
@@ -125,23 +116,15 @@ const TestResultsScreen = ({ navigation, route }) => {
 
         <View style={styles.detailItem}>
           <Ionicons name="clipboard" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Test:</Text>
-          <Text style={styles.detailValue}>{test ? test.title : "N/A"}</Text>
+          <Text style={styles.detailLabel}>Test ID:</Text>
+          <Text style={styles.detailValue}>{attempt?.testId || "N/A"}</Text>
         </View>
 
         <View style={styles.detailItem}>
           <Ionicons name="time" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Time:</Text>
-          <Text
-            style={styles.detailValue}
-          >{`     ${minutes} phút ${seconds} giây`}</Text>
-        </View>
-
-        <View style={styles.detailItem}>
-          <Ionicons name="trophy" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Passing Score:</Text>
+          <Text style={styles.detailLabel}>Duration:</Text>
           <Text style={styles.detailValue}>
-            {results?.passingScore || "70"}%
+            {minutes} phút {seconds} giây
           </Text>
         </View>
 
@@ -149,7 +132,7 @@ const TestResultsScreen = ({ navigation, route }) => {
           <Ionicons name="calendar" size={20} color="#6B7280" />
           <Text style={styles.detailLabel}>Completed:</Text>
           <Text style={styles.detailValue}>
-            {new Date(results.completedAt).toLocaleDateString()}
+            {new Date(attempt?.endTime).toLocaleString()}
           </Text>
         </View>
       </View>
@@ -175,17 +158,9 @@ const TestResultsScreen = ({ navigation, route }) => {
             {totalQuestions - correctAnswers}
           </Text>
         </View>
-
-        <View style={styles.breakdownItem}>
-          <View style={styles.breakdownLeft}>
-            <Ionicons name="help-circle" size={20} color="#6B7280" />
-            <Text style={styles.breakdownLabel}>Total Questions</Text>
-          </View>
-          <Text style={styles.breakdownValue}>{totalQuestions}</Text>
-        </View>
       </View>
 
-      {/* Graded */}
+      {/* Graded Analysis (AI feedback) */}
       {grade && <QuizResult data={grade} />}
 
       {/* Action Buttons */}
@@ -211,82 +186,44 @@ const TestResultsScreen = ({ navigation, route }) => {
 
 const QuizResult = ({ data }) => {
   const {
-    per_question,
-    personalized_plan,
-    recommendations,
-    skill_summary,
-    total_score,
-    weak_topics,
+    per_question = [],
+    personalized_plan = {},
+    recommendations = [],
+    skill_summary = [],
+    total_score = 0,
+    weak_topics = [],
   } = data;
 
   return (
-    <View style={styles.container}>
-      {/* Tóm tắt điểm số */}
-      <View style={styles.summary}>
-        <Text style={styles.title}>Kết quả bài kiểm tra</Text>
-        <Text>Tổng điểm: {total_score}/10</Text>
-        <Text>Độ chính xác: {skill_summary[0].accuracy}%</Text>
-      </View>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>AI Evaluation Summary</Text>
+      <Text>Total Score: {total_score}</Text>
+      {skill_summary.length > 0 && (
+        <Text>Accuracy: {skill_summary[0]?.accuracy}%</Text>
+      )}
 
-      {/* Danh sách câu hỏi */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Chi tiết câu hỏi</Text>
-        <FlatList
-          data={per_question}
-          keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Chi tiết câu hỏi</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.questionItem}>
-              <Text>ID: {item.id}</Text>
-              <Text>Topic: {item.topic}</Text>
-              <Text>User Answer: {item.user_answer}</Text>
-              <Text>Expected: {item.expected_answer}</Text>
-              <Text style={item.correct ? styles.correct : styles.incorrect}>
-                {item.correct ? "Đúng" : "Sai"}
-              </Text>
-              {item.explain ? <Text>Giải thích: {item.explain}</Text> : null}
-            </View>
-          )}
-        />
-      </View>
+      <Text style={styles.sectionTitle}>Weak Topics</Text>
+      {weak_topics.map((topic, i) => (
+        <Text key={i}>- {topic}</Text>
+      ))}
 
-      <View style={styles.container}>
-        {/* Kế hoạch học tập */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Kế hoạch học tập</Text>
-          <Text>Materials: {personalized_plan.materials?.join(", ")}</Text>
-          <Text>Progress Speed: {personalized_plan.progress_speed}</Text>
-        </View>
+      <Text style={styles.sectionTitle}>Recommendations</Text>
+      {recommendations.map((r, i) => (
+        <Text key={i}>• {r}</Text>
+      ))}
 
-        {/* Khuyến nghị */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Khuyến nghị</Text>
-          <FlatList
-            data={recommendations}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => <Text>- {item}</Text>}
-            contentContainerStyle={{ width: "100%" }} // Đảm bảo chiều rộng
-          />
-        </View>
-
-        {/* Điểm yếu */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Điểm yếu</Text>
-          <FlatList
-            data={weak_topics}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => <Text>- {item}</Text>}
-            contentContainerStyle={{ width: "100%" }} // Đảm bảo chiều rộng
-          />
-        </View>
-      </View>
+      {personalized_plan?.materials && (
+        <>
+          <Text style={styles.sectionTitle}>Personalized Plan</Text>
+          <Text>Materials: {personalized_plan.materials.join(", ")}</Text>
+          <Text>Progress: {personalized_plan.progress_speed}</Text>
+        </>
+      )}
     </View>
   );
 };
+
+// (Giữ nguyên styles của bạn ở đây)
 
 const styles = StyleSheet.create({
   container: {
