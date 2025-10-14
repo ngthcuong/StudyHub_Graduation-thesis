@@ -13,20 +13,20 @@ const VerifyCertificatePage = () => {
   const [
     verifyCertificate,
     { data: result, isLoading, error: apiError, isError, isSuccess },
-  ] = useLazyVerifyCertificateByCodeQuery(code);
+  ] = useLazyVerifyCertificateByCodeQuery();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!code.trim()) {
-      setError("Vui lòng nhập mã chứng chỉ");
+      setError("Please input certificate code.");
       return;
     }
 
     try {
       const response = await verifyCertificate(code.trim()).unwrap();
-      setCurrentResult(response);
+      setCurrentResult(response.certificate);
       setOpenDetailModal(true);
     } catch (err) {
       // Error được handle tự động bởi RTK Query
@@ -47,7 +47,7 @@ const VerifyCertificatePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex  mx-auto flex-col w-7xl">
+    <div className="min-h-screen flex mx-auto flex-col w-7xl">
       <Header />
       <div className="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-slate-200 p-10 self-center">
         <h1 className="text-3xl font-semibold text-center mb-2 text-slate-900">
@@ -102,7 +102,7 @@ const VerifyCertificatePage = () => {
 
         <CertificateDetailModal
           open={openDetailModal}
-          certificate={currentResult?.metadata || result?.metadata}
+          certificate={result?.certificate || currentResult}
           onClose={handleCloseDetailModal}
         />
 

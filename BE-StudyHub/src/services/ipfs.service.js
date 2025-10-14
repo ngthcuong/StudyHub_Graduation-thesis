@@ -1,6 +1,7 @@
 const config = require("../configs/config");
 const pinataSDK = require("@pinata/sdk");
 const { Readable } = require("stream");
+const axios = require("axios");
 
 const pinata = new pinataSDK({ pinataJWTKey: config.pinataJwt });
 
