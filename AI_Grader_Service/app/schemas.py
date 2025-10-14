@@ -35,7 +35,7 @@ class TestInfo(BaseModel):
 class GradeRequest(BaseModel):
     test_info: Optional[TestInfo] = None
     answer_key: List[QuestionKey]
-    student_answers: Dict[int, str]
+    student_answers: Dict[str, str]
     use_gemini: Optional[bool] = False
     profile: Optional[LearningProfile]
 

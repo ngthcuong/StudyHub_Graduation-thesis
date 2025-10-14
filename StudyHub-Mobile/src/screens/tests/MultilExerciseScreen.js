@@ -22,6 +22,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const [loadingResult, setLoadingResult] = useState(false);
   const [attemptId, setAttemptId] = useState(null);
   const [testPool, setTestPool] = useState(null);
+  const [date, setDate] = useState(new Date());
   const [idTestPool, setIdTestPool] = useState(null);
 
   const user = useSelector((state) => state.auth.user);
@@ -42,6 +43,10 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const startTest = async () => {
     try {
       setLoading(true);
+
+      const now = new Date();
+      const isoString = now.toISOString();
+      setDate(isoString);
 
       const test = await testApi.getTestById(testId);
       const userLevel = `${test?.data?.examType} ${
@@ -359,9 +364,11 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       const result = await testApi.submitTestAttempt(
         attemptId,
         answersPayload,
-        testId
+        testId,
+        date
       );
 
+      console.log("Test submitted successfully:", result);
       setLoadingResult(false);
 
       if (testPool.data[0].createdBy._id !== user._id) {

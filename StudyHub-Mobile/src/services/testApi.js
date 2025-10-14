@@ -40,10 +40,11 @@ export const testApi = {
   },
 
   // Submit test attempt
-  submitTestAttempt: async (attemptId, answersPayload, testId) => {
+  submitTestAttempt: async (attemptId, answersPayload, testId, date) => {
     const response = await api.post(`/attempts/${attemptId}/submit`, {
       answers: answersPayload,
       testId,
+      startTime: date,
     });
     return response.data;
   },

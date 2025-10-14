@@ -33,7 +33,10 @@ const startAttempt = async (req, res) => {
 const submitAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
-    const { answers, testId } = req.body;
+    const { answers, testId, startTime } = req.body;
+
+    console.log("req.headers:", req.headers);
+    console.log("req.body:", req.body);
 
     let resForTestResult = {};
 
@@ -150,10 +153,10 @@ const submitAttempt = async (req, res) => {
       );
       const testHistory = history.map((a) => ({
         test_date: a.startTime
-          ? new Date(a.startTime).toISOString().split("T")[0]
-          : null,
+          ? new Date(a.startTime).toISOString().split("T")[0] // yyyy-mm-dd
+          : "1970-01-01", // nếu null, gán ngày mặc định hợp lệ
         level_at_test: a.level || "Unknown",
-        score: a.score || 0,
+        score: a.score != null ? a.score : 0, // nếu score undefined/null -> 0
         notes: a.feedback || "",
       }));
 
@@ -170,6 +173,8 @@ const submitAttempt = async (req, res) => {
         use_gemini: true,
         profile: formattedUser,
       };
+
+      console.log("Grading payload:", gradingPayload.profile.test_history);
 
       const response = await axios.post(
         "http://localhost:8000/grade",
@@ -252,6 +257,8 @@ const submitAttempt = async (req, res) => {
     const attemptDetail = await attemptDetailModel.createAttemptDetail({
       attemptId,
       attemptNumber: newAttemptNumber,
+      startTime: startTime ? new Date(startTime) : new Date(), // thời điểm bắt đầu (hoặc lấy từ frontend nếu có)
+      endTime: new Date(), // thời điểm kết thúc khi nộp
       answers: processedAnswers,
       analysisResult: resForTestResult || {},
       totalScore,
@@ -261,7 +268,6 @@ const submitAttempt = async (req, res) => {
     // Cập nhật tổng điểm và số lần attempt
     const updatedAttempt = await attemptModel.updateAttemptById(attemptId, {
       score: totalScore,
-      endTime: new Date(),
       attemptNumber: newAttemptNumber,
     });
 
@@ -366,8 +372,8 @@ const getAttemptInfo = async (req, res) => {
           userId: attempt.userId?._id,
           attemptNumber: attempt.attemptNumber,
           maxAttempts: attempt.maxAttempts,
-          startTime: attempt.startTime,
-          endTime: attempt.endTime,
+          startTime: null,
+          endTime: null,
           score: attempt.score,
           feedback: attempt.feedback,
           evaluationModel: attempt.evaluationModel,
@@ -392,7 +398,6 @@ const getAttemptInfo = async (req, res) => {
 const getAttemptsByTestPool = async (req, res) => {
   try {
     const { testPoolId, userId } = req.body;
-    console.log("Request body:", req.body);
 
     const attempts = await attemptModel.findAttemptsByTestPool(
       testPoolId,

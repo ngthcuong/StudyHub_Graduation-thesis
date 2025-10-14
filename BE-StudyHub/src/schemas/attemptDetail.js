@@ -7,6 +7,10 @@ const attemptDetailSchema = new mongoose.Schema({
     required: true,
   },
   attemptNumber: { type: Number, required: true },
+
+  startTime: { type: Date, default: Date.now }, // ✅ thêm mới
+  endTime: { type: Date }, // ✅ thêm mới
+
   answers: [
     {
       questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },

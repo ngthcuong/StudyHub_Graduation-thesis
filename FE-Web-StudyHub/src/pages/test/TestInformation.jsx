@@ -16,15 +16,12 @@ import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import { ArrowBack, InfoOutline } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  useCheckExistTestPoolMutation,
-  useCreateAttemptMutation,
-  useCreateTestPoolMutation,
-  useGenerateTestQuestionsMutation,
-  useGetQuestionsByTestIdQuery,
+  useGetTestByTestIdMutation,
+  useGetAttemptByTestAndUserMutation,
+  useGetAttemptInfoMutation,
 } from "../../services/testApi";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Snackbar from "../../components/Snackbar";
-import { openSnackbar } from "../../redux/slices/snackbar";
 
 const fakeAttemptHistory = [
   {
@@ -50,118 +47,74 @@ const fakeAttemptHistory = [
 const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
   const { testInfor } = location.state || {};
   const { id: testId } = useParams();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+  const [attempt, setAttempt] = useState();
 
   const user = useSelector((state) => state.auth.user);
 
   const [testPool, setTestPool] = useState();
 
-  const [checkTestPool, { isLoading: isLoadingCheckTesPool }] =
-    useCheckExistTestPoolMutation();
-
-  let { data: testQuestions, isLoading: isLoadingGetTest } =
-    useGetQuestionsByTestIdQuery(testId);
-
-  const [createTestPool, { isLoading: isLoadingCreateTestPool }] =
-    useCreateTestPoolMutation();
-
-  const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
-    useGenerateTestQuestionsMutation();
-
-  const [createAttempt, { isLoading: isLoadingAttempt }] =
-    useCreateAttemptMutation();
+  const [getTestByTestId] = useGetTestByTestIdMutation();
+  const [getAttemptInfo] = useGetAttemptInfoMutation();
+  const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
 
   useEffect(() => {
-    const checkExistTestPool = async () => {
+    if (!user?._id || !testId) return;
+
+    const fetchData = async () => {
       try {
-        const res = await checkTestPool({ userId: user._id, testId });
-        setTestPool(res.data);
+        const res = await getAttemptInfo({
+          userId: user._id,
+          testId,
+        }).unwrap();
+        setTestPool(res);
       } catch (error) {
-        console.log(error);
+        if (error.status === 404) {
+          const res = await getTestByTestId(testId).unwrap();
+          setTestPool(res.data);
+        } else {
+          throw error;
+        }
+      }
+
+      try {
+        const res = await getAttemptByTestAndUser({
+          testId,
+          userId: user._id,
+        }).unwrap();
+        setAttempt(res.data[0]);
+      } catch (err) {
+        console.error("Failed to fetch attempt:", err);
       }
     };
-    checkExistTestPool();
-  }, [user._id, testId, checkTestPool]);
 
-  const handleStartTest = async () => {
-    const examType = testInfor.examType;
-    const scoreRange = user.currentLevel[examType];
+    fetchData();
+  }, [user?._id, testId]);
 
-    try {
-      const testData = {
-        testId: testInfor._id,
-        topic: testInfor.topic,
-        num_questions: testInfor.numQuestions,
-        question_types: testInfor.questionTypes,
-        exam_type: examType,
-        score_range: scoreRange,
-      };
+  const handleStartTest = () => {
+    navigate(`/test/${testPool._id || testId}/attempt`, {
+      state: { testId: testPool._id || testId },
+    });
+  };
 
-      let attempt;
-      if (testPool?.attemptInfo?.testPoolId) {
-        attempt = await createAttempt({
-          testPoolId: testPool?.attemptInfo?.testPoolId,
-          evaluationModel: "gemini",
-        });
-        if (!attempt) {
-          return;
+  // Format question types for display
+  const formatQuestionTypes = (types) => {
+    return types
+      .map((type) => {
+        switch (type) {
+          case "multiple_choice":
+            return "Multi Choice";
+          case "fill_in_blank":
+            return "Fill in the Blank";
+          case "true_false":
+            return "True / False";
+          default:
+            return type;
         }
-
-        navigate(`/test/${testInfor._id}/attempt`, {
-          state: {
-            questions: testQuestions?.data,
-            testTitle: testInfor.title,
-            testDuration: testInfor.durationMin,
-            testId: testInfor._id,
-            attemptId: attempt?.data.data._id,
-          },
-        });
-      } else {
-        testQuestions = await generateTestQuestions(testData);
-        if (!testQuestions?.data?.data?.data) {
-          dispatch(
-            openSnackbar({
-              severity: "error",
-              message: testQuestions?.error?.data?.error,
-            })
-          );
-          return;
-        }
-
-        const newTestPool = await createTestPool({
-          baseTestId: testId,
-          level: examType + " " + scoreRange,
-          createdBy: user.id,
-          usageCount: 0,
-          maxReuse: 5,
-          status: "active",
-        });
-
-        attempt = await createAttempt({
-          testPoolId: newTestPool.data.data._id,
-          evaluationModel: "gemini",
-        });
-
-        if (!attempt) {
-          return;
-        }
-
-        navigate(`/test/${testInfor._id}/attempt`, {
-          state: {
-            questions: testQuestions?.data?.data?.data,
-            testTitle: testInfor.title,
-            testDuration: testInfor.durationMin,
-            testId: testInfor._id,
-            attemptId: attempt?.data.data._id,
-          },
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
+      })
+      .join(", ");
   };
 
   return (
@@ -291,8 +244,11 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testPool?.attemptInfo.attemptNumber || 0}/
-                  {testPool?.attemptInfo.maxAttempts || 0}
+                  {attempt
+                    ? `${attempt.attemptNumber || 0}/${
+                        attempt.maxAttempts || 3
+                      }`
+                    : "0/3"}
                 </Typography>
               </Box>
             </Grid>
@@ -311,7 +267,7 @@ const TestInformation = () => {
                   </Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={600} color="#111827">
-                  {testInfor.questionTypes.join(", ")}
+                  {formatQuestionTypes(testInfor.questionTypes)}
                 </Typography>
               </Box>
             </Grid>
@@ -330,13 +286,7 @@ const TestInformation = () => {
               variant="contained"
               color="primary"
               size="medium"
-              disabled={
-                isLoadingAttempt ||
-                isLoadingTestQuestion ||
-                isLoadingGetTest ||
-                isLoadingCreateTestPool ||
-                isLoadingCheckTesPool
-              }
+              disabled={attempt && attempt.attemptNumber >= attempt.maxAttempts}
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
                 fontSize: 18,
@@ -345,11 +295,7 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoadingTestQuestion ||
-              isLoadingAttempt ||
-              isLoadingGetTest ||
-              isLoadingCreateTestPool ||
-              isLoadingCheckTesPool ? (
+              {!testPool ? (
                 <CircularProgress size={24} color="white" />
               ) : (
                 "Start test"

@@ -19,8 +19,6 @@ const testAttemptSchema = new mongoose.Schema(
     },
     attemptNumber: { type: Number, default: 0 }, // lần attempt cho cùng 1 đề
     maxAttempts: { type: Number, default: 3 }, // mặc định 3
-    startTime: { type: Date, default: Date.now },
-    endTime: { type: Date },
     score: { type: Number, default: 0 },
     feedback: { type: String, trim: true },
     evaluationModel: { type: String, default: "gemini" },
