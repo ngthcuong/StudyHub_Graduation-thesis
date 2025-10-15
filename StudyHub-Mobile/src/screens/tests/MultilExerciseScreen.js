@@ -373,19 +373,16 @@ const MultilExerciseScreen = ({ navigation, route }) => {
 
       if (testPool.data[0].createdBy._id !== user._id) {
         try {
-          const updatedTestPool = await testApi.updateTestPool(
-            testPool.data[0]._id,
-            {
-              usageCount: testPool.data[0].usageCount + 1,
-            }
-          );
+          await testApi.updateTestPool(testPool.data[0]._id, {
+            usageCount: testPool.data[0].usageCount + 1,
+          });
         } catch (error) {
           console.log("Error updating test pool:", error);
         }
       }
       setLoadingResult(false);
 
-      navigation.navigate("TestResults", { result });
+      navigation.navigate("TestResults", { resultData: result });
     } catch (error) {
       console.error("Error submitting test:", error);
       Alert.alert("Error", "Failed to submit test");

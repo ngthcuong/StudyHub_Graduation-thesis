@@ -133,8 +133,8 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Text style={styles.infoLabel}>Attempts:</Text>
           <Text style={styles.infoValue}>
             {attemptInfo
-              ? `${attemptInfo.attemptNumber || 0}/${
-                  attemptInfo.maxAttempts || 3
+              ? `${attemptInfo?.attemptNumber || 0}/${
+                  attemptInfo?.maxAttempts || 3
                 }`
               : "0/3"}
           </Text>
@@ -173,8 +173,19 @@ const AssessmentScreen = ({ navigation, route }) => {
       </View>
 
       {/* Start Button */}
+
       <View style={styles.actionSection}>
-        <TouchableOpacity style={styles.startButton} onPress={handleStartTest}>
+        <TouchableOpacity
+          style={[
+            styles.startButton,
+            // 3. Thay đổi style dựa trên trạng thái disabled
+            attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts &&
+              styles.startButtonDisabled,
+          ]}
+          onPress={handleStartTest}
+          // 2. Áp dụng thuộc tính disabled
+          disabled={attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts}
+        >
           <Ionicons name="play" size={20} color="#FFFFFF" />
           <Text style={styles.startButtonText}>Start Test</Text>
         </TouchableOpacity>
@@ -285,18 +296,36 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   startButton: {
-    backgroundColor: "#10B981",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    minWidth: 150,
   },
   startButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
+  },
+  startButtonDisabled: {
+    backgroundColor: "#adb5bd",
+    opacity: 0.7,
+  },
+  startButtonText: {
+    color: "#FFFFFF",
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  limitText: {
+    marginTop: 10,
+    color: "red",
+    textAlign: "center",
+    fontSize: 14,
   },
 });
 
