@@ -99,6 +99,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
         } catch (error) {
           if (error.response?.status === 404) {
             if (testByLevel?.usageCount !== testByLevel?.maxReuse) {
+              console.log("✅ Found test pool:", testByLevel);
               const testPoolin = await testApi.getTestPoolByTestIdAndLevel(
                 testId, // string, ID của test
                 test?.data?.examType, // string, ví dụ "TOEIC"
@@ -412,7 +413,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  if (loading) {
+  if (loading || questions.data?.data.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading test...</Text>

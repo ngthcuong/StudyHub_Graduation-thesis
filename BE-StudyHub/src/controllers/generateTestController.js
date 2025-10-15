@@ -19,6 +19,7 @@ const generateTestController = async (req, res) => {
     if (!testId) {
       return res.status(400).json({ error: "testId is required" });
     }
+    console.log("Generating test with:");
 
     // Call AI service
     const response = await axios.post("http://localhost:8001/generate-test", {

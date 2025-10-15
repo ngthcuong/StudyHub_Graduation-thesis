@@ -34,6 +34,7 @@ const submitAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
     const { answers, testId, startTime } = req.body;
+    const endTime = new Date();
 
     let resForTestResult = {};
 
@@ -157,7 +158,7 @@ const submitAttempt = async (req, res) => {
         notes: a.feedback || "",
       }));
 
-      formattedUser.test_history = testHistory;
+      formattedUser.test_history = [];
 
       // --- Ghép thành object cuối cùng ---
       const gradingPayload = {
@@ -171,7 +172,7 @@ const submitAttempt = async (req, res) => {
         profile: formattedUser,
       };
 
-      console.log("Grading payload:", gradingPayload.profile.test_history);
+      console.log("Grading payload:", gradingPayload);
 
       const response = await axios.post(
         "http://localhost:8000/grade",
@@ -255,11 +256,11 @@ const submitAttempt = async (req, res) => {
       attemptId,
       attemptNumber: newAttemptNumber,
       startTime: startTime ? new Date(startTime) : new Date(), // thời điểm bắt đầu (hoặc lấy từ frontend nếu có)
-      endTime: new Date(), // thời điểm kết thúc khi nộp
+      endTime: endTime, // thời điểm kết thúc khi nộp
       answers: processedAnswers,
       analysisResult: resForTestResult || {},
       totalScore,
-      submittedAt: new Date(),
+      submittedAt: endTime,
     });
 
     // Cập nhật tổng điểm và số lần attempt
