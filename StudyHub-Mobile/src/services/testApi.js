@@ -22,6 +22,7 @@ export const testApi = {
 
   // Start test attempt
   startTestAttempt: async (testPoolId, testId) => {
+    console.log("Starting test attempt with:", { testPoolId, testId });
     const response = await api.post(`/attempts`, {
       testPoolId,
       testId,

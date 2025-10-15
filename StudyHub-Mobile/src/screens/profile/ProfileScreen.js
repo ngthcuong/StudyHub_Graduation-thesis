@@ -105,6 +105,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleHistoryTest = () => {
+    console.log("Navigating to History Test with userInfo:", userInfo);
     // Navigate to history test screen
     navigation.navigate("CompletedTests", { userInfo });
   };
@@ -194,7 +195,7 @@ const ProfileScreen = ({ navigation }) => {
         />
 
         <MenuItem
-          icon="information-circle-outline"
+          icon="stats-chart-outline"
           title="Result Test"
           subtitle="View your test results"
           onPress={handleHistoryTest}

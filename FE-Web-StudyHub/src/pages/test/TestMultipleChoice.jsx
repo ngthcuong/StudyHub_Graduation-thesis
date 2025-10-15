@@ -39,6 +39,7 @@ const TestMultipleChoice = () => {
   const [questions, setQuestions] = useState();
   const [attemptId, setAttemptId] = useState();
   const [date, setDate] = useState(null);
+  const [test, setTest] = useState(null);
 
   useEffect(() => {
     startTest();
@@ -67,16 +68,20 @@ const TestMultipleChoice = () => {
       setDate(isoString);
 
       const test = await getTestByIdTrigger(testId).unwrap();
+      setTest(test);
       const userLevel = `${test?.data?.examType} ${
         user?.currentLevel?.[test?.data?.examType]
       }`;
 
       try {
-        const testByLevel = await getTestPoolByLevelTrigger({
+        const bylevel = await getTestPoolByLevelTrigger({
           level: userLevel,
         }).unwrap();
+        const testByLevel = bylevel.data.find(
+          (pool) => pool.baseTestId === testId
+        );
 
-        console.log("✅ Found test:", testByLevel.data[0].usageCount);
+        console.log("✅ Found test:", testByLevel);
         setTestPool(testByLevel);
 
         try {
@@ -91,27 +96,35 @@ const TestMultipleChoice = () => {
 
           try {
             const attemptByTestPool = await getTestAttemptsByTestIdTrigger({
-              testPoolId: testByLevel.data[0]?._id,
+              testPoolId: testByLevel?._id,
               userId: user?._id,
             }).unwrap();
 
             setAttemptId(attemptByTestPool?.data[0]?._id);
             console.log("✅ Found attempt by test pool:", attemptByTestPool);
+            if (!attemptByTestPool?.data?.length === 0) {
+              try {
+                const attempt = await createAttemptTrigger({
+                  testPoolId: testPool?.testPoolId,
+                  testId: testId,
+                }).unwrap();
+                setAttemptId(attempt?.data?._id);
+                console.log("🆕 Created attempt:", attempt);
+              } catch (error) {
+                console.log("❌ Lỗi khi tạo attempt:", error);
+              }
+            }
           } catch (error) {
             console.log("❌ Lỗi khi tạo attempt:", error);
           }
         } catch (error) {
           if (error.status === 404) {
-            if (
-              testByLevel?.data?.length > 0 &&
-              testByLevel?.data[0]?.usageCount !==
-                testByLevel?.data[0]?.maxReuse
-            ) {
+            if (testByLevel?.usageCount !== testByLevel?.maxReuse) {
               const testPoolin = await getTestPoolByTestIdAndLevelTrigger({
                 testId: testId, // string, ID của test
                 exam_type: test?.data?.examType, // string, ví dụ "TOEIC"
                 score_range: user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
-                createdBy: testByLevel.data[0]?.createdBy?._id, // string, ID của user
+                createdBy: testByLevel?.createdBy?._id, // string, ID của user
               }).unwrap();
               setQuestions({ data: testPoolin });
 
@@ -130,7 +143,7 @@ const TestMultipleChoice = () => {
                 } else {
                   try {
                     const attempt = await createAttemptTrigger({
-                      testPoolId: testByLevel.data[0]?._id,
+                      testPoolId: testByLevel?._id,
                       testId: testId,
                     }).unwrap();
                     setAttemptId(attempt?.data?._id);
@@ -309,14 +322,14 @@ const TestMultipleChoice = () => {
 
     console.log("Simulated API response:", response);
 
-    if (testPool.data[0].createdBy._id !== user._id) {
+    if (testPool.createdBy._id !== user._id) {
       try {
         const updateData = {
-          usageCount: testPool.data[0].usageCount + 1,
+          usageCount: testPool?.usageCount + 1,
         };
 
         const updatedPool = await updateTestPoolTrigger({
-          poolId: testPool.data[0]._id,
+          poolId: testPool?._id,
           updateData,
         }).unwrap();
         console.log("Test pool updated:", updatedPool);
@@ -355,7 +368,7 @@ const TestMultipleChoice = () => {
       <Box className="max-w-6xl mx-auto">
         <Box className="bg-white rounded-xl shadow p-4 mb-6 flex justify-between">
           <Typography variant="h6" fontWeight={700} color="#22223b">
-            {"Bài kiểm tra ReactJS cơ bản (Mocked)"}
+            {test?.data.title || "Multiple Choice Test"}
           </Typography>
           <Chip
             icon={<AccessTimeOutlinedIcon />}

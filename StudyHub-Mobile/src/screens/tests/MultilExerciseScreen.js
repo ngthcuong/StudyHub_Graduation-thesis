@@ -54,8 +54,11 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       }`;
 
       try {
-        const testByLevel = await testApi.getTestPoolByLevel(userLevel);
-        console.log("✅ Found test:", testByLevel.data[0].usageCount);
+        const bylevel = await testApi.getTestPoolByLevel(userLevel);
+        const testByLevel = bylevel.data.find(
+          (pool) => pool.baseTestId === testId
+        );
+        console.log("✅ Found test:", testByLevel);
         setTestPool(testByLevel);
 
         try {
@@ -67,29 +70,40 @@ const MultilExerciseScreen = ({ navigation, route }) => {
           );
 
           setQuestions({ data: testPool });
-
+          console.log("✅ Found test pool:", testPool);
           try {
             const attemptByTestPool = await testApi.getTestAttemptsByTestId(
-              testByLevel.data[0]?._id,
+              testByLevel?._id,
               user?._id
             );
             setAttemptId(attemptByTestPool?.data[0]?._id);
-            console.log("✅ Found attempt by test pool:", attemptByTestPool);
+            if (attemptByTestPool?.data?.length === 0) {
+              console.log("✅ Found existing attempt:", attemptByTestPool);
+              try {
+                const attempt = await testApi.startTestAttempt(
+                  testPool?.testPoolId,
+                  testId
+                );
+                setAttemptId(attempt?.data?._id);
+                console.log("🆕 Created attempt:", attempt);
+              } catch (attemptError) {
+                console.log(
+                  "❌ Lỗi khi tạo attempt:",
+                  attemptError.response?.data || attemptError.message
+                );
+              }
+            }
           } catch (error) {
             console.log("❌ Lỗi khi tạo attempt:", error);
           }
         } catch (error) {
           if (error.response?.status === 404) {
-            if (
-              testByLevel?.data?.length > 0 &&
-              testByLevel?.data[0]?.usageCount !==
-                testByLevel?.data[0]?.maxReuse
-            ) {
+            if (testByLevel?.usageCount !== testByLevel?.maxReuse) {
               const testPoolin = await testApi.getTestPoolByTestIdAndLevel(
                 testId, // string, ID của test
                 test?.data?.examType, // string, ví dụ "TOEIC"
                 user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
-                testByLevel.data[0]?.createdBy?._id // string, ID của user
+                testByLevel?.createdBy?._id // string, ID của user
               );
               setQuestions({ data: testPoolin });
 
@@ -108,7 +122,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
                 } else {
                   try {
                     const attempt = await testApi.startTestAttempt(
-                      testByLevel.data[0]?._id,
+                      testByLevel?._id,
                       testId
                     );
                     setAttemptId(attempt?.data?._id);
@@ -371,10 +385,10 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       console.log("Test submitted successfully:", result);
       setLoadingResult(false);
 
-      if (testPool.data[0].createdBy._id !== user._id) {
+      if (testPool.createdBy?._id !== user?._id) {
         try {
-          await testApi.updateTestPool(testPool.data[0]._id, {
-            usageCount: testPool.data[0].usageCount + 1,
+          await testApi.updateTestPool(testPool._id, {
+            usageCount: testPool.usageCount + 1,
           });
         } catch (error) {
           console.log("Error updating test pool:", error);

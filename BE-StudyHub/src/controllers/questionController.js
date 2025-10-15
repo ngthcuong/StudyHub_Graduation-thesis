@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const questionModel = require("../models/questionModel");
+const testPoolModel = require("../models/testPoolModel");
 
 // Create question (optionally with options array)
 const createQuestion = async (req, res) => {
@@ -164,15 +166,29 @@ const getQuestionsByTestLevelAndCreator = async (req, res) => {
   try {
     const { testId, exam_type, score_range, createdBy } = req.body;
 
-    console.log("Filter params:", {
-      testId,
-      exam_type,
-      score_range,
-      createdBy,
-    });
-
     if (!testId) {
       return res.status(400).json({ error: "Test ID is required" });
+    }
+
+    // 1. TÌM TEST POOL DỰA TRÊN baseTestId VÀ createdBy (Nếu createdBy được cung cấp)
+    let testPoolId = null;
+
+    // Xác thực ID trước khi tìm kiếm để tránh lỗi BSONError
+    const isValidTestId = mongoose.Types.ObjectId.isValid(testId);
+    const isValidCreatorId =
+      createdBy && mongoose.Types.ObjectId.isValid(createdBy);
+
+    if (isValidCreatorId && isValidTestId) {
+      // Sử dụng hàm model mới
+      const pools = await testPoolModel.findTestPoolByBaseTestIdAndCreator(
+        testId, // baseTestId
+        createdBy // creatorId
+      );
+
+      // Lấy pool đầu tiên nếu có
+      if (pools && pools.length > 0) {
+        testPoolId = pools[0]._id;
+      }
     }
 
     // 🎯 Tạo điều kiện lọc động
@@ -201,6 +217,7 @@ const getQuestionsByTestLevelAndCreator = async (req, res) => {
     res.status(200).json({
       message: "Questions retrieved successfully",
       total: questions.length,
+      testPoolId: testPoolId,
       data: questions,
     });
   } catch (error) {

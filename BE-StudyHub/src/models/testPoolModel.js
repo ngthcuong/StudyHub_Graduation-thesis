@@ -114,6 +114,26 @@ const findAttemptByUserAndPool = async (userId, testPoolId) => {
   }
 };
 
+const findTestPoolByBaseTestIdAndCreator = async (baseTestId, creatorId) => {
+  try {
+    // 1. Xây dựng bộ lọc với hai điều kiện
+    const filter = {
+      baseTestId: baseTestId,
+      createdBy: creatorId,
+      status: "active", // Tùy chọn: chỉ tìm các pool đang hoạt động
+    };
+
+    // 2. Thực hiện truy vấn và populate thông tin người tạo
+    return await TestPool.find(filter)
+      .populate("createdBy", "fullName email role currentLevel")
+      .sort({ createdAt: -1 });
+  } catch (error) {
+    // Lỗi có thể là BSONError nếu ID không hợp lệ, nên cần xử lý
+    console.error("Error finding test pool by baseTestId and creator:", error);
+    throw new Error("Failed to find test pool by criteria");
+  }
+};
+
 module.exports = {
   createTestPool,
   findTestPoolById,
@@ -125,4 +145,5 @@ module.exports = {
   getTestPoolsByCreator,
   findTestPool,
   findAttemptByUserAndPool,
+  findTestPoolByBaseTestIdAndCreator,
 };

@@ -35,9 +35,6 @@ const submitAttempt = async (req, res) => {
     const { attemptId } = req.params;
     const { answers, testId, startTime } = req.body;
 
-    console.log("req.headers:", req.headers);
-    console.log("req.body:", req.body);
-
     let resForTestResult = {};
 
     // TEST RESULT CONTROLLER
