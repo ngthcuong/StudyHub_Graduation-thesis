@@ -162,7 +162,7 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
         numQuestions: data.numQuestions,
         questionTypes: data.questionTypes,
         examType: data.examType,
-        passingScore: data.passingScore,
+        passingScore: data.passingScore / 10,
         maxAttempts: data.maxAttempts,
         isTheLastTest: data.isTheLastTest,
       };

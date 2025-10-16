@@ -53,7 +53,7 @@ const TestList = () => {
       }
     };
     fetchTests();
-  }, []);
+  }, [getAllTests]);
 
   // Lọc dữ liệu
   const filtered = useMemo(() => {
