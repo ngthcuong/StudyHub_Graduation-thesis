@@ -13,7 +13,7 @@ function LessonContentViewer() {
     const fetchLessons = async () => {
       try {
         const lesson = await getGrammarLessonById(
-          "68f0c8a17615e0de4beb3b4b"
+          "68f0ec6c313927c6cd68578a"
         ).unwrap();
         setLesson(lesson);
       } catch (error) {
@@ -22,7 +22,7 @@ function LessonContentViewer() {
     };
 
     fetchLessons();
-  }, [lesson]);
+  }, []);
 
   return (
     <div
