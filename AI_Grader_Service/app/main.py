@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.encoders import jsonable_encoder
 from .schemas import GradeRequest, GradeResponse, PerQuestionResult, SkillSummary
 from .grader import grade_locally
 from .gemini_client import call_gemini_analysis
@@ -19,13 +20,10 @@ async def grade_endpoint(req: GradeRequest):
         def serialize_profile(profile):
             if not profile:
                 return None
-            profile_dict = profile.dict()
+            profile_dict = jsonable_encoder(profile)
             if "test_history" in profile_dict:
-                for item in profile_dict["test_history"]:
-                    if isinstance(item.get("test_date"), (str,)):
-                        continue
-                    if item.get("test_date") is not None:
-                        item["test_date"] = item["test_date"].isoformat()
+                del profile_dict["test_history"]
+                
             return profile_dict
 
         if req.use_gemini:

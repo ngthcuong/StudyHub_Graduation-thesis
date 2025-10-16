@@ -42,6 +42,18 @@ const questionSchema = new mongoose.Schema(
     },
     topic: [{ type: String, trim: true }],
     tag: [{ type: String, trim: true }],
+
+    // Người tạo câu hỏi (teacher/admin/AI)
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+
+    level: {
+      TOEIC: { type: String },
+      IELTS: { type: String },
+    },
   },
   { timestamps: true }
 );

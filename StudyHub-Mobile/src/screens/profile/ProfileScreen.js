@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { logout } from "../../store/slices/authSlice";
 import { mockUser } from "../../mock";
 import { userApi } from "../../services/userApi";
+import { persistor } from "../../store/store";
 
 const ProfileScreen = ({ navigation }) => {
   const { user } = useSelector((state) => state.auth);
@@ -64,13 +65,31 @@ const ProfileScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (navigation) => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Logout",
         style: "destructive",
-        onPress: () => dispatch(logout()),
+        onPress: async () => {
+          try {
+            // 1️⃣ Reset Redux state
+            dispatch(logout());
+
+            // 2️⃣ Xóa dữ liệu persist
+            await persistor.purge();
+
+            // 3️⃣ Reset navigation stack về Login
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Login" }],
+            });
+
+            console.log("✅ User logged out successfully");
+          } catch (error) {
+            console.error("❌ Error during logout:", error);
+          }
+        },
       },
     ]);
   };
@@ -86,6 +105,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleHistoryTest = () => {
+    console.log("Navigating to History Test with userInfo:", userInfo);
     // Navigate to history test screen
     navigation.navigate("CompletedTests", { userInfo });
   };
@@ -175,7 +195,7 @@ const ProfileScreen = ({ navigation }) => {
         />
 
         <MenuItem
-          icon="information-circle-outline"
+          icon="stats-chart-outline"
           title="Result Test"
           subtitle="View your test results"
           onPress={handleHistoryTest}

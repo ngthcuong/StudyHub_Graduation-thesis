@@ -1,4 +1,5 @@
 const AttemptDetail = require("../schemas/AttemptDetail");
+const TestAttempt = require("../schemas/TestAttempt");
 
 // Tạo mới bản ghi AttemptDetail
 const createAttemptDetail = async (data) => {
@@ -59,10 +60,47 @@ const getAllAttemptDetails = async () => {
   }
 };
 
+const findAnswersByAttempt = async (attemptId) => {
+  try {
+    const attemptDetail = await AttemptDetail.findOne({ attemptId }).lean();
+    return attemptDetail ? attemptDetail.answers : [];
+  } catch (error) {
+    console.error("Error finding answers by attempt:", error);
+    throw new Error("Failed to find answers by attempt");
+  }
+};
+
+const getAttemptDetailByUserAndTest = async (userId, testId) => {
+  try {
+    // Bước 1: Tìm attempt tương ứng
+    const testAttempt = await TestAttempt.findOne({ userId, testId });
+
+    if (!testAttempt) return null;
+
+    // Bước 2: Tìm tất cả attempt detail của attempt đó
+    const attemptDetails = await AttemptDetail.find({
+      attemptId: testAttempt._id,
+    })
+      .populate({
+        path: "attemptId",
+        populate: { path: "testId userId", select: "fullName email title" },
+      })
+      .populate("answers.questionId")
+      .sort({ attemptNumber: -1 }); // sắp xếp giảm dần (mới nhất trước)
+
+    return attemptDetails;
+  } catch (error) {
+    console.error("Error getting attempt detail:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
   updateAttemptDetailByAttemptId,
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
+  findAnswersByAttempt,
+  getAttemptDetailByUserAndTest,
 };

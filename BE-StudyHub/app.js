@@ -13,7 +13,6 @@ const certificateRoutes = require("./src/routes/certificateRoutes");
 const testRoutes = require("./src/routes/testRoutes");
 const questionRoutes = require("./src/routes/questionRoutes");
 const attemptRoutes = require("./src/routes/attemptRoutes");
-const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 
 const testResultRoutes = require("./src/routes/testResultRoutes");
 const generateTestRoutes = require("./src/routes/generateTestRoutes");
@@ -23,6 +22,8 @@ const testPoolRoutes = require("./src/routes/testPoolRoutes");
 const attemptDetailRoutes = require("./src/routes/attemptDetailRoutes");
 
 const studyRoutes = require("./src/routes/studyRoutes");
+
+const grammarLessonRoutes = require("./src/routes/grammarLessonRoutes");
 
 require("dotenv").config();
 
@@ -50,7 +51,6 @@ app.use("/api/v1/certs", certificateRoutes);
 app.use("/api/v1/tests", testRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/attempts", attemptRoutes);
-app.use("/api/v1/answers", userAnswerRoutes);
 
 app.use("/api/v1/test-result", testResultRoutes);
 app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chung
@@ -59,6 +59,8 @@ app.use("/api/v1/test-pools", testPoolRoutes);
 app.use("/api/v1/attempt-details", attemptDetailRoutes);
 
 app.use("/api/v1/study", studyRoutes);
+
+app.use("/api/v1/grammar-lessons", grammarLessonRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {

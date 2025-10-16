@@ -19,6 +19,10 @@ import Dashboard from "../pages/home/Dashboard";
 import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
 import UserInfo from "../pages/home/UserInfo";
+
+import TestResultDisplay from "../pages/test/TestResultDisplay";
+import LessonContentViewer from "../pages/course/LessonContentViewer";
+
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
 import AdminCertificate from "../pages/admin/Certificate";
@@ -137,6 +141,14 @@ export const router = createBrowserRouter([
                 element: <TestResult />,
               },
             ],
+          },
+          {
+            path: "/attempt/:attemptId",
+            element: <TestResultDisplay />,
+          },
+          {
+            path: "/lesson/:lessonId",
+            element: <LessonContentViewer />,
           },
         ],
       },

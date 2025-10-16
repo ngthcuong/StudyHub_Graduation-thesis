@@ -11,7 +11,6 @@ const createAttempt = async (attemptData) => {
 };
 
 const findAttemptById = async (id) => {
-  console.log("Finding attempt by ID:", id);
   try {
     return await TestAttempt.findById(id).populate("testPoolId userId");
   } catch (error) {
@@ -59,11 +58,44 @@ const findAttemptByUserAndPool = async (userId, testPoolId) => {
   }
 };
 
+const findAttemptsByTestPool = async (testPoolId, userId = null) => {
+  try {
+    const filter = { testPoolId };
+    if (userId) filter.userId = userId;
+
+    const attempts = await TestAttempt.find(filter)
+      .sort({ createdAt: -1 }) // mới nhất trước
+      .populate("userId", "fullName email") // lấy thông tin user
+      .populate("testPoolId", "level baseTestId"); // lấy thông tin test pool
+
+    return attempts;
+  } catch (error) {
+    console.error("Error finding attempts by test pool:", error);
+    throw new Error("Failed to find attempts by test pool");
+  }
+};
+
+const findAttemptsByTestIdAndUser = async (testId, userId) => {
+  try {
+    const attempts = await TestAttempt.find({
+      testId: testId,
+      userId: userId,
+    }).sort({ attemptNumber: 1 }); // sort theo lần attempt tăng dần
+
+    return attempts;
+  } catch (error) {
+    console.error("Error finding attempts by testId and user:", error);
+    throw new Error("Failed to find attempts by testId and user");
+  }
+};
+
 module.exports = {
   createAttempt,
   findAttemptById,
   findAttemptsByUser,
+  findAttemptsByTestIdAndUser,
   updateAttemptById,
   findAttemptByTestId,
   findAttemptByUserAndPool,
+  findAttemptsByTestPool,
 };

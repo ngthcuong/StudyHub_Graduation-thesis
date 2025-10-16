@@ -6,9 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  StatusBar, // Thêm StatusBar để kiểm soát thanh trạng thái
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
+
+// --- Component Chính ---
 
 const CompletedTestsScreen = ({ navigation }) => {
   const [completedTests, setCompletedTests] = useState([]);
@@ -22,25 +25,42 @@ const CompletedTestsScreen = ({ navigation }) => {
   const loadCompletedTests = async () => {
     try {
       setLoading(true);
-      const response = await testApi.getCompletedTests(); // ✅ gọi API thật
-      console.log("Completed Tests Data:", response.data);
+      const response = await testApi.getCompletedTests();
+      // console.log("Completed Tests API Response:", response); // Giữ lại log để debug
 
-      // Map dữ liệu backend sang format UI
-      const mapped = response.data.map((item) => {
-        const totalQuestions = item.answers?.length || 1;
-        const scorePercent = Math.round(
-          (item.totalScore / totalQuestions) * 100
-        );
+      if (!response.data || !Array.isArray(response.data)) {
+        return;
+      }
+
+      const mapped = response.data.map((item, index) => {
+        // <-- LẤY INDEX TỪ HÀM MAP
+        // Lấy thông tin score từ analysisResult (tên chuẩn xác hơn)
+        const totalScore = item.analysisResult?.total_score || 0;
+        const totalQuestions = item.analysisResult?.total_questions || 1;
+
+        const scorePercent =
+          totalQuestions > 0
+            ? Math.round((totalScore / totalQuestions) * 100)
+            : 0;
+
+        // FIX LỖI TRÙNG LẶP KEY: Sử dụng index để đảm bảo key duy nhất
+        const uniqueKey = `${item.attemptId}_${index}`;
+
+        // SỬA: Lấy submittedAt nếu có, nếu không lấy thời điểm hiện tại (Fallback)
+        const completedAt = item.submittedAt || new Date().toISOString();
+
         return {
-          id: item.attemptId,
+          id: uniqueKey, // <-- Key duy nhất (attemptId + index)
           title: item.testTitle,
           score: scorePercent,
-          passingScore: 70, // có thể set mặc định hoặc lấy từ test info
-          completedAt: item.submittedAt,
+          passingScore: 70, // Giữ nguyên
+          completedAt: completedAt,
           skill: item.skill,
           level: item.level,
           examType: item.examType,
           duration: item.durationMin,
+
+          fullResultData: item,
         };
       });
 
@@ -59,7 +79,6 @@ const CompletedTestsScreen = ({ navigation }) => {
   };
 
   const CompletedTestCard = ({ test }) => {
-    console.log("Rendering test:", test);
     const isPassed = test.score >= test.passingScore;
     const scoreColor = isPassed ? "#10B981" : "#EF4444";
     const iconName = isPassed ? "checkmark-circle" : "close-circle";
@@ -67,34 +86,54 @@ const CompletedTestsScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         style={styles.testCard}
-        onPress={() => navigation.navigate("HistoryTest", { testData: test })}
+        onPress={() =>
+          navigation.navigate("TestResults", {
+            resultData: test.fullResultData,
+          })
+        }
       >
-        <View style={styles.testIcon}>
-          <Ionicons name={iconName} size={32} color={scoreColor} />
+        {/* Vùng Icon & Điểm */}
+        <View style={styles.scoreBadge}>
+          <Ionicons name={iconName} size={28} color={scoreColor} />
+          <Text style={[styles.testScore, { color: scoreColor, fontSize: 18 }]}>
+            {test.score}%
+          </Text>
         </View>
 
+        {/* Nội dung Bài Test */}
         <View style={styles.testContent}>
           <Text style={styles.testTitle} numberOfLines={2}>
             {test.title}
           </Text>
-          <Text style={styles.testMetaText}>
-            {test.examType?.toUpperCase()} • {test.skill} • Level {test.level}
-          </Text>
-          <Text style={styles.testMetaText}>
-            Completed: {new Date(test.completedAt).toLocaleDateString("en-GB")}
-          </Text>
-          <View style={styles.testScoreContainer}>
-            <Text style={[styles.testScore, { color: scoreColor }]}>
-              {test.score}%
-            </Text>
-            <Text style={styles.passingScore}>
-              (Pass: {test.passingScore}%)
-            </Text>
+
+          <View style={styles.metaRow}>
+            {/* Thẻ Skill */}
+            <View style={[styles.tag, { backgroundColor: "#E0F2F1" }]}>
+              <Text style={[styles.tagText, { color: "#004D40" }]}>
+                {test.skill?.toUpperCase()}
+              </Text>
+            </View>
+
+            {/* Thẻ Level */}
+            <View style={[styles.tag, { backgroundColor: "#F3E5F5" }]}>
+              <Text style={[styles.tagText, { color: "#4A148C" }]}>
+                {test.level} ({test.examType})
+              </Text>
+            </View>
           </View>
+
+          <Text style={styles.testMetaText}>
+            completed: {new Date(test.completedAt).toLocaleDateString("vi-VN")}
+          </Text>
         </View>
 
+        {/* Mũi tên Điều hướng */}
         <View style={styles.testStatus}>
-          <Ionicons name="arrow-forward-circle" size={24} color="#3B82F6" />
+          <Ionicons
+            name="chevron-forward" // Dùng chevron-forward cho mũi tên đơn giản
+            size={24}
+            color="#9CA3AF"
+          />
         </View>
       </TouchableOpacity>
     );
@@ -102,10 +141,10 @@ const CompletedTestsScreen = ({ navigation }) => {
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="document-text-outline" size={64} color="#9CA3AF" />
-      <Text style={styles.emptyStateTitle}>No completed tests yet</Text>
+      <Ionicons name="stats-chart-outline" size={64} color="#9CA3AF" />
+      <Text style={styles.emptyStateTitle}>Chưa có bài kiểm tra nào</Text>
       <Text style={styles.emptyStateText}>
-        Take some assessments to see your progress here.
+        Hãy tham gia một bài đánh giá để xem tiến độ của bạn tại đây.
       </Text>
     </View>
   );
@@ -113,20 +152,25 @@ const CompletedTestsScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading completed tests...</Text>
+        <Text style={styles.loadingText}>Đang tải kết quả...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
       <FlatList
         data={completedTests}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => <CompletedTestCard test={item} />}
         contentContainerStyle={styles.listContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#3B82F6"
+          />
         }
         ListEmptyComponent={<EmptyState />}
         showsVerticalScrollIndicator={false}
@@ -134,6 +178,8 @@ const CompletedTestsScreen = ({ navigation }) => {
     </View>
   );
 };
+
+// --- Stylesheet Đã Tinh Chỉnh ---
 
 const styles = StyleSheet.create({
   container: {
@@ -144,6 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F9FAFB",
   },
   loadingText: {
     fontSize: 16,
@@ -154,52 +201,58 @@ const styles = StyleSheet.create({
   },
   testCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 2,
+    elevation: 3,
   },
-  testIcon: {
-    width: 60,
-    height: 60,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-    justifyContent: "center",
+  scoreBadge: {
+    // Vùng hiển thị icon và % điểm
+    width: 70,
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 16,
   },
   testContent: {
     flex: 1,
   },
   testTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
     color: "#1F2937",
-    marginBottom: 6,
+    marginBottom: 4,
+  },
+  metaRow: {
+    flexDirection: "row",
+    marginBottom: 4,
+    flexWrap: "wrap",
+  },
+  tag: {
+    // Style chung cho Skill và Level
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  tagText: {
+    fontSize: 11,
+    fontWeight: "600",
   },
   testMetaText: {
     fontSize: 13,
     color: "#6B7280",
-    marginBottom: 4,
-  },
-  testScoreContainer: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   testScore: {
-    fontSize: 16,
+    // Chỉ hiển thị % điểm trong Score Badge
     fontWeight: "bold",
-  },
-  passingScore: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginLeft: 4,
+    marginTop: 2,
   },
   testStatus: {
     marginLeft: 10,
@@ -220,6 +273,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
+    paddingHorizontal: 30,
   },
 });
 

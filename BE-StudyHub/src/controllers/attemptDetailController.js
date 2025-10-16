@@ -2,8 +2,6 @@ const attemptDetailModel = require("../models/attemptDetailModel");
 
 const TestAttempt = require("../schemas/TestAttempt");
 const AttemptDetail = require("../schemas/AttemptDetail");
-const TestPool = require("../schemas/TestPool");
-const Test = require("../schemas/Test");
 
 const createAttemptDetail = async (req, res) => {
   try {
@@ -12,7 +10,10 @@ const createAttemptDetail = async (req, res) => {
       return res.status(400).json({ error: "attemptId is required" });
     }
 
-    const created = await attemptDetailModel.createAttemptDetail(data);
+    const created = await attemptDetailModel.createAttemptDetail({
+      ...data,
+      startTime: data.startTime || new Date(),
+    });
     res.status(201).json({
       message: "AttemptDetail created successfully",
       data: created,
@@ -99,81 +100,6 @@ const getAllAttemptDetails = async (req, res) => {
     res.status(500).json({ error: "Failed to get AttemptDetails" });
   }
 };
-
-// const getUserTestDetailsGroupedByTest = async (req, res) => {
-//   try {
-//     const userId = req.user?.userId || req.params.userId;
-
-//     // 1️⃣ Lấy toàn bộ attempt của user + populate sang testPool -> test
-//     const attempts = await TestAttempt.find({ userId })
-//       .populate({
-//         path: "testPoolId",
-//         populate: {
-//           path: "baseTestId",
-//           model: "Test",
-//           select: "title skill level examType durationMin",
-//         },
-//       })
-//       .sort({ createdAt: -1 });
-
-//     // 2️⃣ Lấy toàn bộ attemptId của user
-//     const attemptIds = attempts.map((a) => a._id);
-
-//     // 3️⃣ Lấy toàn bộ chi tiết attempt (AttemptDetail)
-//     const attemptDetails = await AttemptDetail.find({
-//       attemptId: { $in: attemptIds },
-//     });
-
-//     // 4️⃣ Gom nhóm theo Test
-//     const groupedByTest = {};
-
-//     for (const attempt of attempts) {
-//       const testInfo = attempt.testPoolId?.baseTestId;
-//       if (!testInfo) continue;
-
-//       const testId = testInfo._id.toString();
-
-//       if (!groupedByTest[testId]) {
-//         groupedByTest[testId] = {
-//           testId,
-//           title: testInfo.title,
-//           skill: testInfo.skill,
-//           level: testInfo.level,
-//           examType: testInfo.examType,
-//           durationMin: testInfo.durationMin,
-//           attempts: [],
-//         };
-//       }
-
-//       // tìm chi tiết tương ứng
-//       const details = attemptDetails.filter(
-//         (d) => d.attemptId.toString() === attempt._id.toString()
-//       );
-
-//       groupedByTest[testId].attempts.push({
-//         attemptId: attempt._id,
-//         attemptNumber: attempt.attemptNumber,
-//         startTime: attempt.startTime,
-//         endTime: attempt.endTime,
-//         score: attempt.score,
-//         totalScore: details[0]?.totalScore || 0,
-//         detailCount: details[0]?.answers?.length || 0,
-//         submittedAt: details[0]?.submittedAt,
-//       });
-//     }
-
-//     res.status(200).json({
-//       message: "Fetched all test details grouped by test successfully",
-//       data: Object.values(groupedByTest),
-//     });
-//   } catch (error) {
-//     console.error("Error fetching test details:", error);
-//     res.status(500).json({
-//       message: "Failed to get test details for user",
-//       error: error.message,
-//     });
-//   }
-// };
 
 const getUserTestDetailsGroupedByTest = async (req, res) => {
   try {
@@ -332,11 +258,56 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
   }
 };
 
+const getAnswersByAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    if (!attemptId)
+      return res.status(400).json({ error: "Attempt ID not found" });
+
+    const answers = await attemptDetailModel.findAnswersByAttempt(attemptId);
+    res.status(200).json({
+      message: "Answers retrieved",
+      data: answers,
+      total: answers.length,
+    });
+  } catch (error) {
+    console.error("Error getting answers by attempt:", error);
+    res.status(500).json({ error: "Failed to get answers" });
+  }
+};
+
+const getAttemptDetailByUserAndTest = async (req, res) => {
+  const { userId, testId } = req.params;
+  try {
+    const detail = await attemptDetailModel.getAttemptDetailByUserAndTest(
+      userId,
+      testId
+    );
+
+    console.log("detail:", detail);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json({ message: "No attempt found for this user and test" });
+    }
+
+    res.status(200).json({
+      message: "Attempt detail retrieved",
+      data: detail,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
   updateAttemptDetailByAttemptId,
+  getAnswersByAttempt,
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
   getAllAttemptDetailsByUserId,
+  getAttemptDetailByUserAndTest,
 };

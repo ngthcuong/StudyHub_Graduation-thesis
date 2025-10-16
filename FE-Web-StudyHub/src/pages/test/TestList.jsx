@@ -18,7 +18,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useGetAllTestQuery } from "../../services/testApi";
+import { useGetAllTestsMutation } from "../../services/testApi";
+import { useEffect } from "react";
 
 const typeOptions = ["All Types", "Test", "Assignment"];
 const statusOptions = ["All Status", "Completed", "Not Completed"];
@@ -32,8 +33,27 @@ const TestList = () => {
   const [status, setStatus] = useState("All Status");
   const [difficulty, setDifficulty] = useState("All Levels");
   const [showFilter, setShowFilter] = useState(false);
+  const [tests, setTests] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const { data: tests, isLoading, error } = useGetAllTestQuery();
+  const [getAllTests] = useGetAllTestsMutation();
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        setIsLoading(true);
+        const res = await getAllTests().unwrap();
+        console.log("Fetched tests:", res);
+        setTests(res);
+      } catch (error) {
+        console.error("Error fetching tests:", error);
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTests();
+  }, []);
 
   // Lọc dữ liệu
   const filtered = useMemo(() => {
@@ -259,8 +279,8 @@ const TestList = () => {
                   </Box>
                   {/* Loại bài */}
                   <Chip
-                    label={item.type}
-                    color={item.type === "Test" ? "warning" : "info"}
+                    label={item.examType}
+                    color={item.examType === "TOEIC" ? "warning" : "info"}
                     size="small"
                     sx={{ textTransform: "capitalize" }}
                   />

@@ -25,11 +25,6 @@ const testSchema = new mongoose.Schema(
       ],
       required: true,
     },
-    level: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     durationMin: { type: Number, required: true }, // thời gian làm bài (phút)
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -40,11 +35,6 @@ const testSchema = new mongoose.Schema(
       ref: "User",
     }, // teacher/admin
     numQuestions: { type: Number, default: 10 }, // số lượng câu hỏi
-    difficulty: {
-      type: String,
-      enum: ["easy", "medium", "hard"],
-      default: "medium",
-    },
     questionTypes: [
       {
         type: String,
@@ -57,6 +47,8 @@ const testSchema = new mongoose.Schema(
       enum: ["TOEIC", "IELTS"],
       required: true,
     },
+    passingScore: { type: Number, default: 7 }, // điểm đạt
+    maxAttempts: { type: Number, default: 3 }, // số lần được phép thi
   },
   { timestamps: true }
 );

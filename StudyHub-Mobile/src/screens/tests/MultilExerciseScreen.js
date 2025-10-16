@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
@@ -18,8 +19,10 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingResult, setLoadingResult] = useState(false);
   const [attemptId, setAttemptId] = useState(null);
   const [testPool, setTestPool] = useState(null);
+  const [date, setDate] = useState(new Date());
   const [idTestPool, setIdTestPool] = useState(null);
 
   const user = useSelector((state) => state.auth.user);
@@ -41,91 +44,262 @@ const MultilExerciseScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
 
-      let attemptInfo = null;
+      const now = new Date();
+      const isoString = now.toISOString();
+      setDate(isoString);
+
+      const test = await testApi.getTestById(testId);
+      const userLevel = `${test?.data?.examType} ${
+        user?.currentLevel?.[test?.data?.examType]
+      }`;
 
       try {
-        // Thử lấy attempt info
-        const res = await testApi.getAttemptInfo(user?._id, testId);
-        attemptInfo = res;
-      } catch (error) {
-        if (error.response?.status === 404) {
-          const test = await testApi.getTestById(testId);
-          console.log("Fetched test:", test.data);
-
-          try {
-            const generatedTest = await testApi.generrateTest({
-              testId,
-              exam_type: test.data.examType,
-              topic: test.data.topic,
-              question_types: test.data.questionTypes,
-              num_questions: test.data.numQuestions,
-              score_range: user.currentLevel[test.data.examType],
-            });
-            console.log("Generated test:", generatedTest);
-
-            const testPoolCreated = await testApi.createTestPool(
-              testId,
-              `${test.data.examType} ${user.currentLevel[test.data.examType]}`,
-              user?._id
-            );
-
-            console.log("Created test pool:", testPoolCreated);
-
-            setTestPool(testPoolCreated);
-            console.log("Created test pool:", testPoolCreated);
-          } catch (genError) {
-            console.error(
-              "Error while generating test:",
-              genError.response?.status,
-              genError.response?.data || genError.message
-            );
-            throw genError; // ném ra để catch bên ngoài
-          }
-        }
-      }
-
-      if (attemptInfo?.attemptInfo?.attemptNumber == 0) {
-        const test = await testApi.getTestById(testId);
-        const testPoolByLevel = await testApi.getTestPoolByLevel(
-          `${test.data.examType} ${user.currentLevel[test.data.examType]}`
+        const bylevel = await testApi.getTestPoolByLevel(userLevel);
+        const testByLevel = bylevel.data.find(
+          (pool) => pool.baseTestId === testId
         );
-        console.log(
-          "Fetched test pool by level:",
-          testPoolByLevel?.data[0]?._id
-        );
-        if (testPoolByLevel?.data[0]?.baseTestId !== testId) {
-          setIdTestPool(testPoolByLevel?.data[0]?._id);
-        } else {
-          const createdTestPool = await testApi.createTestPool(
-            testId,
-            `${test.data.examType} ${user.currentLevel[test.data.examType]}`,
-            user?._id
+        console.log("✅ Found test:", testByLevel);
+        setTestPool(testByLevel);
+
+        try {
+          const testPool = await testApi.getTestPoolByTestIdAndLevel(
+            testId, // string, ID của test
+            test?.data?.examType, // string, ví dụ "TOEIC"
+            user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
+            user?._id // string, ID của user
           );
 
-          setTestPool(createdTestPool?.data[0]?._id);
+          setQuestions({ data: testPool });
+          console.log("✅ Found test pool:", testPool);
+          try {
+            const attemptByTestPool = await testApi.getTestAttemptsByTestId(
+              testByLevel?._id,
+              user?._id
+            );
+            setAttemptId(attemptByTestPool?.data[0]?._id);
+            if (attemptByTestPool?.data?.length === 0) {
+              console.log("✅ Found existing attempt:", attemptByTestPool);
+              try {
+                const attempt = await testApi.startTestAttempt(
+                  testPool?.testPoolId,
+                  testId
+                );
+                setAttemptId(attempt?.data?._id);
+                console.log("🆕 Created attempt:", attempt);
+              } catch (attemptError) {
+                console.log(
+                  "❌ Lỗi khi tạo attempt:",
+                  attemptError.response?.data || attemptError.message
+                );
+              }
+            }
+          } catch (error) {
+            console.log("❌ Lỗi khi tạo attempt:", error);
+          }
+        } catch (error) {
+          if (error.response?.status === 404) {
+            if (testByLevel?.usageCount !== testByLevel?.maxReuse) {
+              console.log("✅ Found test pool:", testByLevel);
+              const testPoolin = await testApi.getTestPoolByTestIdAndLevel(
+                testId, // string, ID của test
+                test?.data?.examType, // string, ví dụ "TOEIC"
+                user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
+                testByLevel?.createdBy?._id // string, ID của user
+              );
+              setQuestions({ data: testPoolin });
 
-          const generatedTest = await testApi.generrateTest({
-            testId,
-            exam_type: test.data.examType,
-            topic: test.data.topic,
-            question_types: test.data.questionTypes,
-            num_questions: test.data.numQuestions,
-            score_range: user.currentLevel[test.data.examType],
-          });
+              try {
+                const attemptInfo = await testApi.getAttemptByTestAndUser(
+                  testId,
+                  user?._id
+                );
+                if (
+                  attemptInfo?.data?.length > 0 &&
+                  attemptInfo?.data[0]?.attemptNumber <
+                    attemptInfo?.data[0]?.maxAttempts
+                ) {
+                  setAttemptId(attemptInfo?.data[0]?._id);
+                  console.log("✅ Found existing attempt:", attemptInfo);
+                } else {
+                  try {
+                    const attempt = await testApi.startTestAttempt(
+                      testByLevel?._id,
+                      testId
+                    );
+                    setAttemptId(attempt?.data?._id);
+                    console.log("🆕 Created attempt:", attempt);
+                  } catch (error) {
+                    console.log("❌ Lỗi khi tạo attempt:", error);
+                  }
+                }
+              } catch (error) {
+                console.log("❌ Lỗi khi lấy attempt info:", error);
+              }
+            } else {
+              console.log("⚠️ Test pool đã đạt giới hạn sử dụng");
+              try {
+                const newTestPool = await testApi.createTestPool({
+                  testId,
+                  level: userLevel,
+                  userId: user?._id,
+                });
+                console.log("🆕 Created new test pool:", newTestPool);
+
+                try {
+                  const newQuestions = await testApi.generateTest({
+                    testId,
+                    exam_type: test?.data?.examType,
+                    topic: test?.data?.topic,
+                    question_types: test?.data?.questionTypes,
+                    num_questions: 10,
+                    score_range: user?.currentLevel?.[test?.data?.examType],
+                  });
+                  setQuestions(newQuestions);
+                  console.log("🧠 Created questions:", newQuestions);
+
+                  try {
+                    const attemptInfo = await testApi.getAttemptByTestAndUser(
+                      testId,
+                      user?._id
+                    );
+                    if (attemptInfo?.data?.length > 0) {
+                      setAttemptId(attemptInfo?.data[0]?._id);
+                      console.log("✅ Found existing attempt:", attemptInfo);
+                    } else {
+                      console.log("🚫 No existing attempt found");
+                    }
+                  } catch (error) {}
+
+                  try {
+                    const attempt = await testApi.startTestAttempt(
+                      newTestPool?.data?._id,
+                      testId
+                    );
+                    setAttemptId(attempt?.data?._id);
+                    console.log("🆕 Created attempt:", attempt);
+                  } catch (attemptError) {
+                    console.log(
+                      "❌ Lỗi khi tạo attempt:",
+                      attemptError.response?.data || attemptError.message
+                    );
+                  }
+                } catch (questionError) {
+                  console.log(
+                    "❌ Lỗi khi tạo questions:",
+                    questionError.response?.data || questionError.message
+                  );
+                }
+              } catch (createError) {
+                console.log(
+                  "❌ Lỗi khi tạo test pool mới:",
+                  createError.response?.data || createError.message
+                );
+              }
+            }
+          }
+        }
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 404) {
+            console.log(
+              "⚠️ Không tìm thấy test phù hợp — thử lấy attempt info..."
+            );
+
+            try {
+              const testInfo = await testApi.getAttemptInfo(testId, user?._id);
+              console.log("✅ Found attempt info:", testInfo);
+            } catch (attemptError) {
+              if (attemptError.response) {
+                if (attemptError.response.status === 404) {
+                  try {
+                    const newTestPool = await testApi.createTestPool({
+                      testId,
+                      level: userLevel,
+                      userId: user?._id,
+                    });
+                    console.log("🆕 Created new test pool:", newTestPool);
+
+                    try {
+                      const newQuestions = await testApi.generateTest({
+                        testId,
+                        exam_type: test?.data?.examType,
+                        topic: test?.data?.topic,
+                        question_types: test?.data?.questionTypes,
+                        num_questions: 10,
+                        score_range: user?.currentLevel?.[test?.data?.examType],
+                      });
+                      setQuestions(newQuestions);
+                      console.log("🧠 Created questions:", newQuestions);
+
+                      try {
+                        const attemptInfo =
+                          await testApi.getAttemptByTestAndUser(
+                            testId,
+                            user?._id
+                          );
+                        if (attemptInfo?.data?.length > 0) {
+                          setAttemptId(attemptInfo?.data[0]?._id);
+                          console.log(
+                            "✅ Found existing attempt:",
+                            attemptInfo
+                          );
+                        } else {
+                          console.log("🚫 No existing attempt found");
+                        }
+                      } catch (error) {}
+
+                      try {
+                        const attempt = await testApi.startTestAttempt(
+                          newTestPool?.data?._id,
+                          testId
+                        );
+                        setAttemptId(attempt?.data?._id);
+                        console.log("🆕 Created attempt:", attempt);
+                      } catch (attemptError) {
+                        console.log(
+                          "❌ Lỗi khi tạo attempt:",
+                          attemptError.response?.data || attemptError.message
+                        );
+                      }
+                    } catch (questionError) {
+                      console.log(
+                        "❌ Lỗi khi tạo questions:",
+                        questionError.response?.data || questionError.message
+                      );
+                    }
+                  } catch (createError) {
+                    console.log(
+                      "❌ Lỗi khi tạo test pool mới:",
+                      createError.response?.data || createError.message
+                    );
+                  }
+                } else {
+                  console.log(
+                    "❌ Lỗi khi lấy attempt info:",
+                    attemptError.response.status,
+                    attemptError.response.data
+                  );
+                }
+              } else {
+                console.log(
+                  "🚫 Không nhận được phản hồi attempt info:",
+                  attemptError.message
+                );
+              }
+            }
+          } else {
+            console.log(
+              "❌ Lỗi server:",
+              error.response.status,
+              error.response.data
+            );
+          }
+        } else if (error.request) {
+          console.log("🚫 Không nhận được phản hồi từ server:", error.request);
+        } else {
+          console.log("❗ Lỗi không xác định:", error.message);
         }
       }
-
-      const [questionsResponse, attemptResponse] = await Promise.all([
-        testApi.getTestQuestions(testId),
-        testApi.startTestAttempt(
-          testPool?.data._id ||
-            attemptInfo?.attemptInfo?.testPoolId ||
-            idTestPool
-        ),
-      ]);
-
-      setQuestions(questionsResponse || []);
-      setAttemptId(attemptResponse?.data?._id);
 
       // ⚠️ API questions không có durationMin => gọi getTestById
       const testResponse = await testApi.getTestById(testId);
@@ -148,7 +322,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.data?.length - 1) {
+    if (currentQuestionIndex < questions.data?.data.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       handleSubmitTest();
@@ -162,6 +336,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   };
 
   const handleSubmitTest = async () => {
+    setLoadingResult(true);
     try {
       // Build mảng answers từ state answers
       const answersPayload = Object.entries(answers).map(
@@ -172,9 +347,28 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       );
 
       // Gửi 1 request duy nhất
-      await testApi.submitTestAttempt(attemptId, answersPayload, testId);
+      const result = await testApi.submitTestAttempt(
+        attemptId,
+        answersPayload,
+        testId,
+        date
+      );
 
-      navigation.navigate("TestResults", { attemptId });
+      console.log("Test submitted successfully:", result);
+      setLoadingResult(false);
+
+      // if (testPool.createdBy?._id !== user?._id) {
+      //   try {
+      //     await testApi.updateTestPool(testPool._id, {
+      //       usageCount: testPool.usageCount + 1,
+      //     });
+      //   } catch (error) {
+      //     console.log("Error updating test pool:", error);
+      //   }
+      // }
+      setLoadingResult(false);
+
+      navigation.navigate("TestResults", { resultData: result });
     } catch (error) {
       console.error("Error submitting test:", error);
       Alert.alert("Error", "Failed to submit test");
@@ -190,7 +384,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  if (loading) {
+  if (loading || questions.data?.data.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading test...</Text>
@@ -198,7 +392,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
     );
   }
 
-  if (questions.data?.length === 0) {
+  if (questions.data?.data.length === 0) {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle" size={64} color="#EF4444" />
@@ -207,7 +401,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
     );
   }
 
-  const currentQuestion = questions.data?.[currentQuestionIndex];
+  const currentQuestion = questions.data?.data?.[currentQuestionIndex];
   const selectedAnswer = answers[currentQuestion?._id];
 
   return (
@@ -216,7 +410,8 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.questionCounter}>
-            Question {currentQuestionIndex + 1} of {questions?.data?.length}
+            Question {currentQuestionIndex + 1} of{" "}
+            {questions?.data?.data.length}
           </Text>
         </View>
         <View style={styles.headerRight}>
@@ -232,7 +427,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
             styles.progressBar,
             {
               width: `${
-                ((currentQuestionIndex + 1) / questions.data?.length) * 100
+                ((currentQuestionIndex + 1) / questions.data?.data.length) * 100
               }%`,
             },
           ]}
@@ -303,17 +498,23 @@ const MultilExerciseScreen = ({ navigation, route }) => {
           style={[
             styles.navButton,
             styles.primaryButton,
-            !selectedAnswer && styles.disabledButton,
+            (!selectedAnswer || loadingResult) && styles.disabledButton, // thêm isLoading
           ]}
           onPress={handleNextQuestion}
-          disabled={!selectedAnswer}
+          disabled={!selectedAnswer || loadingResult} // disable khi isLoading = true
         >
-          <Text style={styles.primaryButtonText}>
-            {currentQuestionIndex === questions.data?.length - 1
-              ? "Submit"
-              : "Next"}
-          </Text>
-          <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+          {loadingResult ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <>
+              <Text style={styles.primaryButtonText}>
+                {currentQuestionIndex === questions.data?.data.length - 1
+                  ? "Submit"
+                  : "Next"}
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </View>

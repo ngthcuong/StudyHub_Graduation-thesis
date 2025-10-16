@@ -13,118 +13,156 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import { InfoOutline } from "@mui/icons-material";
+import { ArrowBack, InfoOutline } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  useCheckExistTestPoolMutation,
-  useCreateAttemptMutation,
-  useCreateTestPoolMutation,
-  useGenerateTestQuestionsMutation,
-  useGetQuestionsByTestIdQuery,
+  useGetTestByTestIdMutation,
+  useGetAttemptByTestAndUserMutation,
+  useGetAttemptInfoMutation,
+  useGetAttemptDetailByUserAndTestMutation,
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
+import Snackbar from "../../components/Snackbar";
+
+// const fakeAttemptHistory = [
+//   {
+//     _id: "1",
+//     startTime: "2025-10-01T09:00:00.000Z",
+//     endTime: "2025-10-01T09:25:30.000Z",
+//     score: 85,
+//   },
+//   {
+//     _id: "2",
+//     startTime: "2025-10-03T14:10:00.000Z",
+//     endTime: "2025-10-03T14:35:10.000Z",
+//     score: 92,
+//   },
+//   {
+//     _id: "3",
+//     startTime: "2025-10-05T16:48:18.698Z",
+//     endTime: "2025-10-05T16:49:57.356Z",
+//     score: 78,
+//   },
+// ];
 
 const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { testInfor } = location.state || {};
   const { id: testId } = useParams();
-
-  const [testPool, setTestPool] = useState();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+  const [attempt, setAttempt] = useState();
+  const [history, setHistory] = useState([]);
 
   const user = useSelector((state) => state.auth.user);
 
-  const [checkTestPool, { isLoading: isLoadingCheckTesPool }] =
-    useCheckExistTestPoolMutation();
+  const [testPool, setTestPool] = useState();
 
-  let { data: testQuestions, isLoading: isLoadingGetTest } =
-    useGetQuestionsByTestIdQuery(testId);
-
-  const [createTestPool, { isLoading: isLoadingCreateTestPool }] =
-    useCreateTestPoolMutation();
-
-  const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
-    useGenerateTestQuestionsMutation();
-
-  const [createAttempt, { isLoading: isLoadingAttempt }] =
-    useCreateAttemptMutation();
+  const [getTestByTestId] = useGetTestByTestIdMutation();
+  const [getAttemptInfo] = useGetAttemptInfoMutation();
+  const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
+  const [getAttemptDetailByUserAndTest] =
+    useGetAttemptDetailByUserAndTestMutation();
 
   useEffect(() => {
-    const checkExistTestPool = async () => {
-      const res = await checkTestPool({ userId: user.id, testId });
-      setTestPool(res);
-    };
-    checkExistTestPool();
-  }, [user.id, testId, checkTestPool]);
+    if (!user?._id || !testId) return;
 
-  const handleStartTest = async () => {
-    try {
-      const testData = {
-        testId: testInfor._id,
-        topic: testInfor.topic,
-        num_questions: testInfor.numQuestions,
-        difficulty: testInfor.difficulty,
-        question_types: testInfor.questionTypes,
-        exam_type: "TOEIC",
-        score_range: "405-600",
-      };
+    const fetchData = async () => {
+      try {
+        const res = await getAttemptInfo({
+          userId: user._id,
+          testId,
+        }).unwrap();
+        setTestPool(res);
 
-      let attempt;
-      if (testPool?.data?.attemptInfo?.testPoolId) {
-        attempt = await createAttempt({
-          testPoolId: testPool?.data?.attemptInfo?.testPoolId,
-          evaluationModel: "gemini",
-        });
-        if (!attempt) {
-          return;
+        try {
+          const res = await getAttemptDetailByUserAndTest({
+            userId: user._id,
+            testId,
+          }).unwrap();
+          setHistory(res.data);
+        } catch (error) {
+          console.error("Failed to fetch attempt detail:", error);
         }
-
-        navigate(`/test/${testInfor._id}/attempt`, {
-          state: {
-            questions: testQuestions?.data,
-            testTitle: testInfor.title,
-            testDuration: testInfor.durationMin,
-            testId: testInfor._id,
-            attemptId: attempt?.data.data._id,
-          },
-        });
-      } else {
-        testQuestions = await generateTestQuestions(testData);
-        const newTestPool = await createTestPool({
-          baseTestId: testId,
-          level: "TOEIC 550-650",
-          createdBy: user.id,
-          expiresAt: "2025-12-31T23:59:59.000Z",
-        });
-
-        attempt = await createAttempt({
-          testPoolId: newTestPool.data.data._id,
-          evaluationModel: "gemini",
-        });
-
-        if (!attempt) {
-          return;
+      } catch (error) {
+        if (error.status === 404) {
+          const res = await getTestByTestId(testId).unwrap();
+          setTestPool(res.data);
+        } else {
+          throw error;
         }
-
-        navigate(`/test/${testInfor._id}/attempt`, {
-          state: {
-            questions: testQuestions?.data?.data?.data,
-            testTitle: testInfor.title,
-            testDuration: testInfor.durationMin,
-            testId: testInfor._id,
-            attemptId: attempt?.data.data._id,
-          },
-        });
       }
-    } catch (error) {
-      console.log(error);
-    }
+
+      try {
+        const res = await getAttemptByTestAndUser({
+          testId,
+          userId: user._id,
+        }).unwrap();
+        setAttempt(res.data[0]);
+      } catch (err) {
+        console.error("Failed to fetch attempt:", err);
+      }
+    };
+
+    fetchData();
+  }, [user?._id, testId]);
+
+  const handleStartTest = () => {
+    navigate(`/test/${testPool._id || testId}/attempt`, {
+      state: { testId: testPool._id || testId },
+    });
+  };
+
+  // Format question types for display
+  const formatQuestionTypes = (types) => {
+    return types
+      .map((type) => {
+        switch (type) {
+          case "multiple_choice":
+            return "Multi Choice";
+          case "fill_in_blank":
+            return "Fill in the Blank";
+          case "true_false":
+            return "True / False";
+          default:
+            return type;
+        }
+      })
+      .join(", ");
+  };
+
+  const formatDuration = (startTime, endTime) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    const diffMs = end - start; // chênh lệch tính bằng milliseconds
+
+    const diffSec = Math.floor(diffMs / 1000); // giây
+    const diffMin = Math.floor(diffSec / 60); // phút
+
+    return `${diffMin} minutes ${diffSec % 60} seconds`;
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50">
+    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
+      <Box className="w-full max-w-3xl ">
+        <Button
+          startIcon={<ArrowBack />}
+          variant="text"
+          onClick={() => navigate(-1)}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: 24,
+            color: "#2563eb",
+          }}
+        >
+          Back
+        </Button>
+      </Box>
+
       <Card
-        className="w-full max-w-2xl"
+        className="w-full max-w-3xl"
         sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
       >
         <CardContent>
@@ -232,8 +270,11 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testPool?.data?.attemptInfo.attemptNumber || 0} /
-                  {testPool?.data?.attemptInfo.maxAttempts || 0}
+                  {attempt
+                    ? `${attempt.attemptNumber || 0}/${
+                        attempt.maxAttempts || 3
+                      }`
+                    : "0/3"}
                 </Typography>
               </Box>
             </Grid>
@@ -252,7 +293,7 @@ const TestInformation = () => {
                   </Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={600} color="#111827">
-                  {testInfor.questionTypes.join(", ")}
+                  {formatQuestionTypes(testInfor.questionTypes)}
                 </Typography>
               </Box>
             </Grid>
@@ -271,13 +312,7 @@ const TestInformation = () => {
               variant="contained"
               color="primary"
               size="medium"
-              disabled={
-                isLoadingAttempt ||
-                isLoadingTestQuestion ||
-                isLoadingGetTest ||
-                isLoadingCreateTestPool ||
-                isLoadingCheckTesPool
-              }
+              disabled={attempt && attempt.attemptNumber >= attempt.maxAttempts}
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
                 fontSize: 18,
@@ -286,18 +321,88 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoadingTestQuestion ||
-              isLoadingAttempt ||
-              isLoadingGetTest ||
-              isLoadingCreateTestPool ||
-              isLoadingCheckTesPool ? (
+              {!testPool ? (
                 <CircularProgress size={24} color="white" />
               ) : (
                 "Start test"
               )}
             </Button>
           </Box>
+
+          <Divider sx={{ my: 3 }} />
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            color="#2563eb"
+            gutterBottom
+          >
+            Your Test Attempts
+          </Typography>
+          {history?.length === 0 ? (
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              You have not taken this test yet.
+            </Typography>
+          ) : (
+            <Box>
+              <Grid container spacing={2}>
+                {history?.map((attempt, idx) => (
+                  <Grid size={12} key={attempt._id || idx}>
+                    <Card
+                      variant="outlined"
+                      onClick={() =>
+                        navigate(`/attempt/${attempt._id}`, {
+                          state: attempt,
+                        })
+                      }
+                      className=""
+                      sx={{
+                        cursor: "pointer", // 🖱️ hiển thị con trỏ khi hover
+                        transition: "0.2s ease-in-out",
+                        "&:hover": {
+                          boxShadow: 3, // hiệu ứng nổi nhẹ
+                          transform: "scale(1.02)", // phóng nhẹ
+                          backgroundColor: "#f9fafb", // nền sáng hơn
+                        },
+                      }}
+                    >
+                      <CardContent
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                        className=""
+                      >
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Date:{" "}
+                            {new Date(attempt.startTime).toLocaleString(
+                              "vi-VN",
+                              { timeZone: "Asia/Ho_Chi_Minh" }
+                            )}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Duration:{" "}
+                            {formatDuration(attempt.startTime, attempt.endTime)}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="h6"
+                          color="#22c55e"
+                          fontWeight={700}
+                        >
+                          Score: {attempt.attemptId.score}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
         </CardContent>
+
+        <Snackbar isOpen={isOpen} message={message} severity={severity} />
       </Card>
     </Box>
   );

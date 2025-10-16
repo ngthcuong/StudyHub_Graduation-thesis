@@ -31,4 +31,7 @@ router.delete(
   questionController.deleteQuestionById
 );
 
+// GET /questions/filter?testId=&level=&createdBy=
+router.post("/filter", questionController.getQuestionsByTestLevelAndCreator);
+
 module.exports = router;
