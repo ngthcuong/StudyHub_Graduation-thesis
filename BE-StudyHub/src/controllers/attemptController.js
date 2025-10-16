@@ -36,13 +36,19 @@ const submitAttempt = async (req, res) => {
     const { answers, testId, startTime } = req.body;
     const endTime = new Date();
 
+    console.log("Submitting attempt:", attemptId, answers);
+
     let resForTestResult = {};
 
     // TEST RESULT CONTROLLER
     try {
       // --- Lấy thông tin test ---
       const testDetail = await testModel.findTestById(testId);
-      const questionsByTest = await questionModel.findQuestionsByTest(testId);
+
+      const questionIds = answers.map((a) => a.questionId);
+      const questionsByTest = await questionModel.findQuestionsByIds(
+        questionIds
+      );
 
       const formattedAnswerKey = questionsByTest.map((q, index) => {
         const correctOption = q.options.find((opt) => opt.isCorrect);
