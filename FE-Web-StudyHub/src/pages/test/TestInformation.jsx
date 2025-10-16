@@ -13,7 +13,12 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import { ArrowBack, InfoOutline } from "@mui/icons-material";
+import {
+  ArrowBack,
+  InfoOutline,
+  GradeOutlined,
+  FlagOutlined,
+} from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useGetTestByTestIdMutation,
@@ -23,31 +28,13 @@ import {
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
 import Snackbar from "../../components/Snackbar";
-
-// const fakeAttemptHistory = [
-//   {
-//     _id: "1",
-//     startTime: "2025-10-01T09:00:00.000Z",
-//     endTime: "2025-10-01T09:25:30.000Z",
-//     score: 85,
-//   },
-//   {
-//     _id: "2",
-//     startTime: "2025-10-03T14:10:00.000Z",
-//     endTime: "2025-10-03T14:35:10.000Z",
-//     score: 92,
-//   },
-//   {
-//     _id: "3",
-//     startTime: "2025-10-05T16:48:18.698Z",
-//     endTime: "2025-10-05T16:49:57.356Z",
-//     score: 78,
-//   },
-// ];
+import { useDispatch } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
 
 const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const { testInfor } = location.state || {};
   const { id: testId } = useParams();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
@@ -105,12 +92,61 @@ const TestInformation = () => {
     };
 
     fetchData();
-  }, [user?._id, testId]);
+  }, [
+    user._id,
+    testId,
+    getAttemptInfo,
+    getAttemptDetailByUserAndTest,
+    getTestByTestId,
+    getAttemptByTestAndUser,
+  ]);
 
   const handleStartTest = () => {
+    // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
+    if (!user?.currentLevel || !testInfor?.examType) {
+      dispatch(
+        openSnackbar({
+          message:
+            "Please update your profile with current level information before taking this test.",
+          severity: "error",
+        })
+      );
+      return;
+    }
+
+    // Kiểm tra xem examType của test có trong currentLevel của user hay không
+    const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
+      user.currentLevel,
+      testInfor.examType
+    );
+
+    if (!hasMatchingLevel) {
+      dispatch(
+        openSnackbar({
+          message: `Please update your ${testInfor.examType} level in your profile before taking this test.`,
+          severity: "error",
+        })
+      );
+      return;
+    }
+
+    // Nếu có currentLevel phù hợp, bắt đầu làm bài
     navigate(`/test/${testPool._id || testId}/attempt`, {
       state: { testId: testPool._id || testId },
     });
+  };
+
+  // Kiểm tra xem user có thể làm bài test hay không
+  const canTakeTest = () => {
+    if (!user?.currentLevel || !testInfor?.examType) return false;
+    return Object.prototype.hasOwnProperty.call(
+      user.currentLevel,
+      testInfor.examType
+    );
+  };
+
+  const handleUpdateProfile = () => {
+    navigate("/profile");
   };
 
   // Format question types for display
@@ -199,9 +235,10 @@ const TestInformation = () => {
             {testInfor.description}
           </Typography>
 
-          {/* Các thông tin khác: số câu hỏi, thời gian, số lần làm lại, loại câu hỏi */}
+          {/* Các thông tin khác: 2 dòng 3 cột */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            {/* Dòng 1 */}
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <DescriptionOutlinedIcon />
@@ -225,7 +262,7 @@ const TestInformation = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <AccessTimeOutlinedIcon />
@@ -250,7 +287,28 @@ const TestInformation = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
+                <Box className="flex items-center gap-2 text-blue-600">
+                  <AssignmentOutlinedIcon />
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    color="#2563eb"
+                    whiteSpace="nowrap"
+                    textTransform={"uppercase"}
+                  >
+                    Test type
+                  </Typography>
+                </Box>
+                <Typography variant="body1" fontWeight={600} color="#111827">
+                  {formatQuestionTypes(testInfor.questionTypes)}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-green-600">
                   <ReplayOutlinedIcon />
@@ -278,28 +336,98 @@ const TestInformation = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
-                <Box className="flex items-center gap-2 text-blue-600">
-                  <AssignmentOutlinedIcon />
+                <Box className="flex items-center gap-2 text-orange-600">
+                  <GradeOutlined />
                   <Typography
                     variant="caption"
                     fontWeight={600}
-                    color="#2563eb"
+                    color="#ea580c"
                     whiteSpace="nowrap"
                     textTransform={"uppercase"}
                   >
-                    Test type
+                    Pass Score
                   </Typography>
                 </Box>
-                <Typography variant="body1" fontWeight={600} color="#111827">
-                  {formatQuestionTypes(testInfor.questionTypes)}
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  color="#111827"
+                  noWrap
+                >
+                  {testInfor.passScore || 0}
+                  <span className="text-base font-normal">%</span>
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
+                <Box className="flex items-center gap-2 text-purple-600">
+                  <FlagOutlined />
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    color="#7c3aed"
+                    whiteSpace="nowrap"
+                    textTransform={"uppercase"}
+                  >
+                    Final Test
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  color={testInfor.isFinalTest ? "#dc2626" : "#16a34a"}
+                  noWrap
+                >
+                  {testInfor.isFinalTest ? "Yes" : "No"}
                 </Typography>
               </Box>
             </Grid>
           </Grid>
 
           <Box className="flex justify-center items-center w-full flex-col">
+            {/* Kiểm tra và hiển thị thông báo nếu user chưa có currentLevel phù hợp */}
+            {!canTakeTest() && testInfor?.examType && (
+              <Box
+                sx={{
+                  backgroundColor: "#fff3cd",
+                  borderColor: "#ffeaa7",
+                  color: "#856404",
+                  p: 2,
+                  borderRadius: 1,
+                  border: "1px solid #ffeaa7",
+                  mb: 2,
+                  width: "100%",
+                  textAlign: "center",
+                }}
+              >
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  ⚠️ You need to update your{" "}
+                  <strong>{testInfor.examType}</strong> level in your profile
+                  before taking this test.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleUpdateProfile}
+                  sx={{
+                    textTransform: "none",
+                    borderColor: "#856404",
+                    color: "#856404",
+                    "&:hover": {
+                      backgroundColor: "#856404",
+                      color: "white",
+                    },
+                  }}
+                >
+                  Update Profile
+                </Button>
+              </Box>
+            )}
+
             <Typography
               variant="caption"
               color="#6b7280"
@@ -312,7 +440,10 @@ const TestInformation = () => {
               variant="contained"
               color="primary"
               size="medium"
-              disabled={attempt && attempt.attemptNumber >= attempt.maxAttempts}
+              disabled={
+                (attempt && attempt.attemptNumber >= attempt.maxAttempts) ||
+                !canTakeTest()
+              }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
                 fontSize: 18,

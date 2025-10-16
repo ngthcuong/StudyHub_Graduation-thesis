@@ -40,7 +40,7 @@ function formatTime(s) {
 
 const TestResult = () => {
   const location = useLocation();
-  const resultData = location.state?.resultData;
+  const resultData = location?.state?.resultData;
   const [tab, setTab] = useState(0);
 
   // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi

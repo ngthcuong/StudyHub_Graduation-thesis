@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Card,
@@ -16,9 +16,6 @@ import {
   TextField,
   InputAdornment,
   LinearProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Collapse,
   Button,
   Select,
@@ -26,6 +23,9 @@ import {
   Stack,
   FormControl,
   InputLabel,
+  Tooltip,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -38,7 +38,10 @@ import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   FilterAltOutlined,
   FilterAltOffOutlined,
+  Add as AddIcon,
 } from "@mui/icons-material";
+import ModalCreateTest from "../../components/ModalCreateTest";
+import { useGetTestStatisticsQuery } from "../../services/testApi";
 
 const Test = () => {
   const [page, setPage] = useState(0);
@@ -49,202 +52,30 @@ const Test = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sortBy, setSortBy] = useState("title");
   const [filteredTests, setFilteredTests] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Mock data cho tests với levels
-  const tests = [
-    {
-      id: 1,
-      title: "TOEIC Reading Comprehension",
-      category: "TOEIC",
-      totalQuestions: 75,
-      totalParticipants: 456,
-      totalAttempts: 1042,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 25,
-          participants: 156,
-          totalAttempts: 342,
-          avgScore: 85,
-        },
-        {
-          level: "Medium",
-          questionCount: 30,
-          participants: 200,
-          totalAttempts: 450,
-          avgScore: 75,
-        },
-        {
-          level: "Hard",
-          questionCount: 20,
-          participants: 100,
-          totalAttempts: 250,
-          avgScore: 62,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "TOEIC Listening Practice",
-      category: "TOEIC",
-      totalQuestions: 60,
-      totalParticipants: 328,
-      totalAttempts: 789,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 20,
-          participants: 128,
-          totalAttempts: 289,
-          avgScore: 78,
-        },
-        {
-          level: "Medium",
-          questionCount: 25,
-          participants: 150,
-          totalAttempts: 350,
-          avgScore: 68,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 50,
-          totalAttempts: 150,
-          avgScore: 58,
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "IELTS Reading Test",
-      category: "IELTS",
-      totalQuestions: 55,
-      totalParticipants: 545,
-      totalAttempts: 1212,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 20,
-          participants: 245,
-          totalAttempts: 512,
-          avgScore: 82,
-        },
-        {
-          level: "Medium",
-          questionCount: 20,
-          participants: 200,
-          totalAttempts: 450,
-          avgScore: 72,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 100,
-          totalAttempts: 250,
-          avgScore: 65,
-        },
-      ],
-    },
-    {
-      id: 4,
-      title: "IELTS Writing Task Assessment",
-      category: "IELTS",
-      totalQuestions: 50,
-      totalParticipants: 298,
-      totalAttempts: 687,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 15,
-          participants: 98,
-          totalAttempts: 187,
-          avgScore: 80,
-        },
-        {
-          level: "Medium",
-          questionCount: 20,
-          participants: 120,
-          totalAttempts: 300,
-          avgScore: 71,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 80,
-          totalAttempts: 200,
-          avgScore: 63,
-        },
-      ],
-    },
-    {
-      id: 5,
-      title: "TOEIC Vocabulary Builder",
-      category: "TOEIC",
-      totalQuestions: 70,
-      totalParticipants: 612,
-      totalAttempts: 1478,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 25,
-          participants: 312,
-          totalAttempts: 678,
-          avgScore: 88,
-        },
-        {
-          level: "Medium",
-          questionCount: 25,
-          participants: 200,
-          totalAttempts: 500,
-          avgScore: 85,
-        },
-        {
-          level: "Hard",
-          questionCount: 20,
-          participants: 100,
-          totalAttempts: 300,
-          avgScore: 75,
-        },
-      ],
-    },
-    {
-      id: 6,
-      title: "IELTS Speaking Practice",
-      category: "IELTS",
-      totalQuestions: 45,
-      totalParticipants: 187,
-      totalAttempts: 456,
-      status: "Draft",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 15,
-          participants: 87,
-          totalAttempts: 156,
-          avgScore: 70,
-        },
-        {
-          level: "Medium",
-          questionCount: 15,
-          participants: 60,
-          totalAttempts: 180,
-          avgScore: 62,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 40,
-          totalAttempts: 120,
-          avgScore: 55,
-        },
-      ],
-    },
-  ];
+  // Fetch test statistics from API
+  const {
+    data: testStatisticsData,
+    isLoading: testsLoading,
+    error: testsError,
+    refetch,
+  } = useGetTestStatisticsQuery();
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleCreateTest = () => {
+    // Gọi lại API để lấy danh sách tests mới nhất
+    refetch();
+    closeModal();
+  };
+
+  // Get tests data from API
+  const tests = useMemo(
+    () => testStatisticsData?.data || [],
+    [testStatisticsData]
+  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -285,11 +116,11 @@ const Test = () => {
   React.useEffect(() => {
     let filtered = tests.filter((test) => {
       const matchesSearch =
-        test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        test.category.toLowerCase().includes(searchTerm.toLowerCase());
+        test.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        test.examType?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory =
-        categoryFilter === "All" || test.category === categoryFilter;
+        categoryFilter === "All" || test.examType === categoryFilter;
 
       return matchesSearch && matchesCategory;
     });
@@ -298,13 +129,13 @@ const Test = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "title":
-          return a.title.localeCompare(b.title);
+          return a.title?.localeCompare(b.title) || 0;
         case "participants":
-          return b.totalParticipants - a.totalParticipants;
+          return (b.totalParticipants || 0) - (a.totalParticipants || 0);
         case "attempts":
-          return b.totalAttempts - a.totalAttempts;
+          return (b.totalAttempts || 0) - (a.totalAttempts || 0);
         case "questions":
-          return b.totalQuestions - a.totalQuestions;
+          return (b.totalQuestions || 0) - (a.totalQuestions || 0);
         default:
           return 0;
       }
@@ -312,8 +143,34 @@ const Test = () => {
 
     setFilteredTests(filtered);
     setPage(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, categoryFilter, sortBy]);
+  }, [searchTerm, categoryFilter, sortBy, tests]);
+
+  // Show loading state
+  if (testsLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress size={50} />
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (testsError) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">
+          Failed to load test statistics. Please try again later.
+        </Alert>
+      </Box>
+    );
+  }
 
   // Calculate total stats
   const totalTests = tests.length;
@@ -330,15 +187,53 @@ const Test = () => {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: 700, color: "#1f2937", mb: 1 }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "center", sm: "flex-start" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
+            mb: 1,
+          }}
         >
-          Test Management
-        </Typography>
-        <Typography variant="body2" sx={{ color: "#6b7280" }}>
-          Manage all tests, questions, and participant statistics
-        </Typography>
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 700, color: "#1f2937", mb: 1 }}
+            >
+              Test Management
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#6b7280" }}>
+              Manage all tests, questions, and participant statistics
+            </Typography>
+          </Box>
+          <Tooltip title="Create a new test with custom questions and settings">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openModal}
+              sx={{
+                backgroundColor: "#1976d2",
+                "&:hover": { backgroundColor: "#1565c0" },
+                "&:disabled": { backgroundColor: "#ccc" },
+                textTransform: "none",
+                fontWeight: 600,
+                py: 1,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.25)",
+                minWidth: { xs: "auto", sm: 160 },
+              }}
+            >
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                Create New Test
+              </Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                Create Test
+              </Box>
+            </Button>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Stats Cards */}
@@ -567,282 +462,339 @@ const Test = () => {
           )}
 
           {/* Table */}
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-                  <TableCell sx={{ fontWeight: 600, width: 50 }}></TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Test Title</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Total Questions
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Total Participants
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Total Attempts
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredTests
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((test) => (
-                    <React.Fragment key={test.id}>
-                      {/* Main Row */}
-                      <TableRow hover>
-                        <TableCell>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleRowExpand(test.id)}
-                          >
-                            {expandedRows[test.id] ? (
-                              <KeyboardArrowUpIcon />
-                            ) : (
-                              <KeyboardArrowDownIcon />
-                            )}
-                          </IconButton>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {test.title}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={test.category}
-                            size="small"
-                            sx={{
-                              backgroundColor: "#f3f4f6",
-                              color: "#374151",
-                              fontWeight: 500,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            label={test.totalQuestions}
-                            size="small"
-                            sx={{
-                              backgroundColor: "#dbeafe",
-                              color: "#1976d2",
-                              fontWeight: 600,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {test.totalParticipants}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {test.totalAttempts}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={test.status}
-                            size="small"
-                            sx={{
-                              backgroundColor:
-                                test.status === "Active"
-                                  ? "#d1fae5"
-                                  : "#f3f4f6",
-                              color:
-                                test.status === "Active"
-                                  ? "#10b981"
-                                  : "#6b7280",
-                              fontWeight: 600,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            sx={{
-                              color: "#1976d2",
-                              "&:hover": { backgroundColor: "#dbeafe" },
-                              mr: 0.5,
-                            }}
-                          >
-                            <VisibilityIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            sx={{
-                              color: "#f59e0b",
-                              "&:hover": { backgroundColor: "#fef3c7" },
-                            }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
+          {filteredTests.length === 0 ? (
+            // Empty State
+            <Box sx={{ textAlign: "center", py: 8 }}>
+              <QuizIcon sx={{ fontSize: 80, color: "#d1d5db", mb: 2 }} />
+              <Typography variant="h6" sx={{ color: "#6b7280", mb: 1 }}>
+                {searchTerm || categoryFilter !== "All"
+                  ? "No tests found matching your criteria"
+                  : "No tests created yet"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#9ca3af", mb: 3 }}>
+                {searchTerm || categoryFilter !== "All"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Create your first test to get started with managing assessments"}
+              </Typography>
+              {!searchTerm && categoryFilter === "All" && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openModal}
+                  sx={{
+                    backgroundColor: "#1976d2",
+                    "&:hover": { backgroundColor: "#1565c0" },
+                    "&:disabled": { backgroundColor: "#ccc" },
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 2,
+                  }}
+                >
+                  {"Create Your First Test"}
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+                    <TableCell sx={{ fontWeight: 600, width: 50 }}></TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Test Title</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Total Questions
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Total Participants
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Total Attempts
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredTests
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((test) => (
+                      <React.Fragment key={test.id}>
+                        {/* Main Row */}
+                        <TableRow hover>
+                          <TableCell>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRowExpand(test.id)}
+                            >
+                              {expandedRows[test.id] ? (
+                                <KeyboardArrowUpIcon />
+                              ) : (
+                                <KeyboardArrowDownIcon />
+                              )}
+                            </IconButton>
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {test.title}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={test.examType}
+                              size="small"
+                              sx={{
+                                backgroundColor: "#f3f4f6",
+                                color: "#374151",
+                                fontWeight: 500,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={test.totalQuestions}
+                              size="small"
+                              sx={{
+                                backgroundColor: "#dbeafe",
+                                color: "#1976d2",
+                                fontWeight: 600,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {test.totalParticipants}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {test.totalAttempts}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label="Active"
+                              size="small"
+                              sx={{
+                                backgroundColor: "#d1fae5",
+                                color: "#10b981",
+                                fontWeight: 600,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              sx={{
+                                color: "#1976d2",
+                                "&:hover": { backgroundColor: "#dbeafe" },
+                                mr: 0.5,
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                color: "#f59e0b",
+                                "&:hover": { backgroundColor: "#fef3c7" },
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
 
-                      {/* Expanded Row - Levels Detail */}
-                      <TableRow>
-                        <TableCell
-                          style={{ paddingBottom: 0, paddingTop: 0 }}
-                          colSpan={8}
-                        >
-                          <Collapse
-                            in={expandedRows[test.id]}
-                            timeout="auto"
-                            unmountOnExit
+                        {/* Expanded Row - Levels Detail */}
+                        <TableRow>
+                          <TableCell
+                            style={{ paddingBottom: 0, paddingTop: 0 }}
+                            colSpan={8}
                           >
-                            <Box sx={{ margin: 2 }}>
-                              <Typography
-                                variant="h6"
-                                gutterBottom
-                                component="div"
-                                sx={{ fontWeight: 600, mb: 2 }}
-                              >
-                                Level Details
-                              </Typography>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-                                    <TableCell sx={{ fontWeight: 600 }}>
-                                      Level
-                                    </TableCell>
-                                    <TableCell
-                                      sx={{ fontWeight: 600 }}
-                                      align="center"
+                            <Collapse
+                              in={expandedRows[test.id]}
+                              timeout="auto"
+                              unmountOnExit
+                            >
+                              <Box sx={{ margin: 2 }}>
+                                <Typography
+                                  variant="h6"
+                                  gutterBottom
+                                  component="div"
+                                  sx={{ fontWeight: 600, mb: 2 }}
+                                >
+                                  Level Details
+                                </Typography>
+                                <Table size="small">
+                                  <TableHead>
+                                    <TableRow
+                                      sx={{ backgroundColor: "#f9fafb" }}
                                     >
-                                      Questions
-                                    </TableCell>
-                                    <TableCell
-                                      sx={{ fontWeight: 600 }}
-                                      align="center"
-                                    >
-                                      Participants
-                                    </TableCell>
-                                    <TableCell
-                                      sx={{ fontWeight: 600 }}
-                                      align="center"
-                                    >
-                                      Attempts
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>
-                                      Avg Score
-                                    </TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {test.levels.map((level, index) => {
-                                    const diffColor = getDifficultyColor(
-                                      level.level
-                                    );
-                                    return (
-                                      <TableRow key={index}>
-                                        <TableCell>
-                                          <Chip
-                                            label={level.level}
-                                            size="small"
-                                            sx={{
-                                              backgroundColor: diffColor.bg,
-                                              color: diffColor.color,
-                                              fontWeight: 600,
-                                            }}
-                                          />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Chip
-                                            label={level.questionCount}
-                                            size="small"
-                                            sx={{
-                                              backgroundColor: "#dbeafe",
-                                              color: "#1976d2",
-                                              fontWeight: 600,
-                                            }}
-                                          />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Typography
-                                            variant="body2"
-                                            sx={{ fontWeight: 600 }}
-                                          >
-                                            {level.participants}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Typography
-                                            variant="body2"
-                                            sx={{ fontWeight: 600 }}
-                                          >
-                                            {level.totalAttempts}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                          <Box sx={{ width: 120 }}>
-                                            <Box
+                                      <TableCell sx={{ fontWeight: 600 }}>
+                                        Level
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{ fontWeight: 600 }}
+                                        align="center"
+                                      >
+                                        Questions
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{ fontWeight: 600 }}
+                                        align="center"
+                                      >
+                                        Participants
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{ fontWeight: 600 }}
+                                        align="center"
+                                      >
+                                        Attempts
+                                      </TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>
+                                        Question Percentage
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {test.levels?.map((level, index) => {
+                                      const diffColor = getDifficultyColor(
+                                        level.level
+                                      );
+                                      return (
+                                        <TableRow key={index}>
+                                          <TableCell>
+                                            <Chip
+                                              label={level.level}
+                                              size="small"
                                               sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                mb: 0.5,
-                                              }}
-                                            >
-                                              <Typography
-                                                variant="caption"
-                                                sx={{ fontWeight: 600 }}
-                                              >
-                                                {level.avgScore}%
-                                              </Typography>
-                                            </Box>
-                                            <LinearProgress
-                                              variant="determinate"
-                                              value={level.avgScore}
-                                              sx={{
-                                                height: 6,
-                                                borderRadius: 1,
-                                                backgroundColor: "#e5e7eb",
-                                                "& .MuiLinearProgress-bar": {
-                                                  backgroundColor:
-                                                    level.avgScore >= 80
-                                                      ? "#10b981"
-                                                      : level.avgScore >= 60
-                                                      ? "#3b82f6"
-                                                      : "#f59e0b",
-                                                  borderRadius: 1,
-                                                },
+                                                backgroundColor: diffColor.bg,
+                                                color: diffColor.color,
+                                                fontWeight: 600,
                                               }}
                                             />
-                                          </Box>
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </Box>
-                          </Collapse>
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Chip
+                                              label={level.totalQuestions}
+                                              size="small"
+                                              sx={{
+                                                backgroundColor: "#dbeafe",
+                                                color: "#1976d2",
+                                                fontWeight: 600,
+                                              }}
+                                            />
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Typography
+                                              variant="body2"
+                                              sx={{ fontWeight: 600 }}
+                                            >
+                                              {level.totalParticipants}
+                                            </Typography>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Typography
+                                              variant="body2"
+                                              sx={{ fontWeight: 600 }}
+                                            >
+                                              {level.totalAttempts}
+                                            </Typography>
+                                          </TableCell>
+                                          <TableCell>
+                                            <Box sx={{ width: 120 }}>
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  justifyContent:
+                                                    "space-between",
+                                                  mb: 0.5,
+                                                }}
+                                              >
+                                                <Typography
+                                                  variant="caption"
+                                                  sx={{ fontWeight: 600 }}
+                                                >
+                                                  {level.questionPercentage ||
+                                                    0}
+                                                  %
+                                                </Typography>
+                                              </Box>
+                                              <LinearProgress
+                                                variant="determinate"
+                                                value={
+                                                  level.questionPercentage || 0
+                                                }
+                                                sx={{
+                                                  height: 6,
+                                                  borderRadius: 1,
+                                                  backgroundColor: "#e5e7eb",
+                                                  "& .MuiLinearProgress-bar": {
+                                                    backgroundColor:
+                                                      (level.questionPercentage ||
+                                                        0) >= 40
+                                                        ? "#10b981"
+                                                        : (level.questionPercentage ||
+                                                            0) >= 20
+                                                        ? "#3b82f6"
+                                                        : "#f59e0b",
+                                                    borderRadius: 1,
+                                                  },
+                                                }}
+                                              />
+                                            </Box>
+                                          </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                  </TableBody>
+                                </Table>
+                              </Box>
+                            </Collapse>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
           {/* Pagination */}
-          <TablePagination
-            component="div"
-            count={filteredTests.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25]}
-          />
+          {filteredTests.length > 0 && (
+            <TablePagination
+              component="div"
+              count={filteredTests.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+            />
+          )}
         </CardContent>
       </Card>
+
+      {/* Modal Create Test */}
+      <ModalCreateTest
+        open={isModalOpen}
+        onClose={closeModal}
+        onSuccess={handleCreateTest}
+      />
     </Box>
   );
 };

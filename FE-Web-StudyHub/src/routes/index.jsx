@@ -146,6 +146,10 @@ export const router = createBrowserRouter([
             path: "/attempt/:attemptId",
             element: <TestResultDisplay />,
           },
+          // {
+          //   path: "/attempt/:attemptId",
+          //   element: <TestResult />,
+          // },
           {
             path: "/lesson/:lessonId",
             element: <LessonContentViewer />,

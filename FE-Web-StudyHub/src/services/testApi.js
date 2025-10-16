@@ -224,6 +224,25 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["AttemptDetail"],
     }),
+
+    // 24. createTest
+    createTest: builder.mutation({
+      query: (testData) => ({
+        url: "/tests",
+        method: "POST",
+        body: testData,
+      }),
+      invalidatesTags: ["Test"],
+    }),
+
+    // 25. getTestStatistics
+    getTestStatistics: builder.query({
+      query: () => ({
+        url: "/tests/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Test"],
+    }),
   }),
 });
 
@@ -251,6 +270,8 @@ export const {
   useSaveAnswersMutation,
   useCheckExistTestPoolMutation,
   useGetAttemptDetailByUserAndTestMutation,
+  useCreateTestMutation,
+  useGetTestStatisticsQuery,
 } = testApi;
 
 export default testApi;
