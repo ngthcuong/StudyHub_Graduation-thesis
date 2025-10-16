@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Card,
@@ -24,6 +24,8 @@ import {
   FormControl,
   InputLabel,
   Tooltip,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -39,6 +41,7 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import ModalCreateTest from "../../components/ModalCreateTest";
+import { useGetTestStatisticsQuery } from "../../services/testApi";
 
 const Test = () => {
   const [page, setPage] = useState(0);
@@ -51,209 +54,28 @@ const Test = () => {
   const [filteredTests, setFilteredTests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Fetch test statistics from API
+  const {
+    data: testStatisticsData,
+    isLoading: testsLoading,
+    error: testsError,
+    refetch,
+  } = useGetTestStatisticsQuery();
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const handleCreateTest = (newTest) => {
-    setFilteredTests((prevTests) => [newTest, ...prevTests]);
+  const handleCreateTest = () => {
+    // Gọi lại API để lấy danh sách tests mới nhất
+    refetch();
     closeModal();
   };
 
-  // Mock data cho tests với levels
-  const tests = [
-    {
-      id: 1,
-      title: "TOEIC Reading Comprehension",
-      category: "TOEIC",
-      totalQuestions: 75,
-      totalParticipants: 456,
-      totalAttempts: 1042,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 25,
-          participants: 156,
-          totalAttempts: 342,
-          avgScore: 85,
-        },
-        {
-          level: "Medium",
-          questionCount: 30,
-          participants: 200,
-          totalAttempts: 450,
-          avgScore: 75,
-        },
-        {
-          level: "Hard",
-          questionCount: 20,
-          participants: 100,
-          totalAttempts: 250,
-          avgScore: 62,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "TOEIC Listening Practice",
-      category: "TOEIC",
-      totalQuestions: 60,
-      totalParticipants: 328,
-      totalAttempts: 789,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 20,
-          participants: 128,
-          totalAttempts: 289,
-          avgScore: 78,
-        },
-        {
-          level: "Medium",
-          questionCount: 25,
-          participants: 150,
-          totalAttempts: 350,
-          avgScore: 68,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 50,
-          totalAttempts: 150,
-          avgScore: 58,
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "IELTS Reading Test",
-      category: "IELTS",
-      totalQuestions: 55,
-      totalParticipants: 545,
-      totalAttempts: 1212,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 20,
-          participants: 245,
-          totalAttempts: 512,
-          avgScore: 82,
-        },
-        {
-          level: "Medium",
-          questionCount: 20,
-          participants: 200,
-          totalAttempts: 450,
-          avgScore: 72,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 100,
-          totalAttempts: 250,
-          avgScore: 65,
-        },
-      ],
-    },
-    {
-      id: 4,
-      title: "IELTS Writing Task Assessment",
-      category: "IELTS",
-      totalQuestions: 50,
-      totalParticipants: 298,
-      totalAttempts: 687,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 15,
-          participants: 98,
-          totalAttempts: 187,
-          avgScore: 80,
-        },
-        {
-          level: "Medium",
-          questionCount: 20,
-          participants: 120,
-          totalAttempts: 300,
-          avgScore: 71,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 80,
-          totalAttempts: 200,
-          avgScore: 63,
-        },
-      ],
-    },
-    {
-      id: 5,
-      title: "TOEIC Vocabulary Builder",
-      category: "TOEIC",
-      totalQuestions: 70,
-      totalParticipants: 612,
-      totalAttempts: 1478,
-      status: "Active",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 25,
-          participants: 312,
-          totalAttempts: 678,
-          avgScore: 88,
-        },
-        {
-          level: "Medium",
-          questionCount: 25,
-          participants: 200,
-          totalAttempts: 500,
-          avgScore: 85,
-        },
-        {
-          level: "Hard",
-          questionCount: 20,
-          participants: 100,
-          totalAttempts: 300,
-          avgScore: 75,
-        },
-      ],
-    },
-    {
-      id: 6,
-      title: "IELTS Speaking Practice",
-      category: "IELTS",
-      totalQuestions: 45,
-      totalParticipants: 187,
-      totalAttempts: 456,
-      status: "Draft",
-      levels: [
-        {
-          level: "Easy",
-          questionCount: 15,
-          participants: 87,
-          totalAttempts: 156,
-          avgScore: 70,
-        },
-        {
-          level: "Medium",
-          questionCount: 15,
-          participants: 60,
-          totalAttempts: 180,
-          avgScore: 62,
-        },
-        {
-          level: "Hard",
-          questionCount: 15,
-          participants: 40,
-          totalAttempts: 120,
-          avgScore: 55,
-        },
-      ],
-    },
-  ];
+  // Get tests data from API
+  const tests = useMemo(
+    () => testStatisticsData?.data || [],
+    [testStatisticsData]
+  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -294,11 +116,11 @@ const Test = () => {
   React.useEffect(() => {
     let filtered = tests.filter((test) => {
       const matchesSearch =
-        test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        test.category.toLowerCase().includes(searchTerm.toLowerCase());
+        test.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        test.examType?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory =
-        categoryFilter === "All" || test.category === categoryFilter;
+        categoryFilter === "All" || test.examType === categoryFilter;
 
       return matchesSearch && matchesCategory;
     });
@@ -307,13 +129,13 @@ const Test = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "title":
-          return a.title.localeCompare(b.title);
+          return a.title?.localeCompare(b.title) || 0;
         case "participants":
-          return b.totalParticipants - a.totalParticipants;
+          return (b.totalParticipants || 0) - (a.totalParticipants || 0);
         case "attempts":
-          return b.totalAttempts - a.totalAttempts;
+          return (b.totalAttempts || 0) - (a.totalAttempts || 0);
         case "questions":
-          return b.totalQuestions - a.totalQuestions;
+          return (b.totalQuestions || 0) - (a.totalQuestions || 0);
         default:
           return 0;
       }
@@ -321,8 +143,34 @@ const Test = () => {
 
     setFilteredTests(filtered);
     setPage(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, categoryFilter, sortBy]);
+  }, [searchTerm, categoryFilter, sortBy, tests]);
+
+  // Show loading state
+  if (testsLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress size={50} />
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (testsError) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">
+          Failed to load test statistics. Please try again later.
+        </Alert>
+      </Box>
+    );
+  }
 
   // Calculate total stats
   const totalTests = tests.length;
@@ -700,7 +548,7 @@ const Test = () => {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={test.category}
+                              label={test.examType}
                               size="small"
                               sx={{
                                 backgroundColor: "#f3f4f6",
@@ -738,17 +586,11 @@ const Test = () => {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={test.status}
+                              label="Active"
                               size="small"
                               sx={{
-                                backgroundColor:
-                                  test.status === "Active"
-                                    ? "#d1fae5"
-                                    : "#f3f4f6",
-                                color:
-                                  test.status === "Active"
-                                    ? "#10b981"
-                                    : "#6b7280",
+                                backgroundColor: "#d1fae5",
+                                color: "#10b981",
                                 fontWeight: 600,
                               }}
                             />
@@ -823,12 +665,12 @@ const Test = () => {
                                         Attempts
                                       </TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>
-                                        Avg Score
+                                        Question Percentage
                                       </TableCell>
                                     </TableRow>
                                   </TableHead>
                                   <TableBody>
-                                    {test.levels.map((level, index) => {
+                                    {test.levels?.map((level, index) => {
                                       const diffColor = getDifficultyColor(
                                         level.level
                                       );
@@ -847,7 +689,7 @@ const Test = () => {
                                           </TableCell>
                                           <TableCell align="center">
                                             <Chip
-                                              label={level.questionCount}
+                                              label={level.totalQuestions}
                                               size="small"
                                               sx={{
                                                 backgroundColor: "#dbeafe",
@@ -861,7 +703,7 @@ const Test = () => {
                                               variant="body2"
                                               sx={{ fontWeight: 600 }}
                                             >
-                                              {level.participants}
+                                              {level.totalParticipants}
                                             </Typography>
                                           </TableCell>
                                           <TableCell align="center">
@@ -887,21 +729,27 @@ const Test = () => {
                                                   variant="caption"
                                                   sx={{ fontWeight: 600 }}
                                                 >
-                                                  {level.avgScore}%
+                                                  {level.questionPercentage ||
+                                                    0}
+                                                  %
                                                 </Typography>
                                               </Box>
                                               <LinearProgress
                                                 variant="determinate"
-                                                value={level.avgScore}
+                                                value={
+                                                  level.questionPercentage || 0
+                                                }
                                                 sx={{
                                                   height: 6,
                                                   borderRadius: 1,
                                                   backgroundColor: "#e5e7eb",
                                                   "& .MuiLinearProgress-bar": {
                                                     backgroundColor:
-                                                      level.avgScore >= 80
+                                                      (level.questionPercentage ||
+                                                        0) >= 40
                                                         ? "#10b981"
-                                                        : level.avgScore >= 60
+                                                        : (level.questionPercentage ||
+                                                            0) >= 20
                                                         ? "#3b82f6"
                                                         : "#f59e0b",
                                                     borderRadius: 1,

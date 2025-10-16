@@ -234,6 +234,15 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Test"],
     }),
+
+    // 25. getTestStatistics
+    getTestStatistics: builder.query({
+      query: () => ({
+        url: "/tests/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Test"],
+    }),
   }),
 });
 
@@ -262,6 +271,7 @@ export const {
   useCheckExistTestPoolMutation,
   useGetAttemptDetailByUserAndTestMutation,
   useCreateTestMutation,
+  useGetTestStatisticsQuery,
 } = testApi;
 
 export default testApi;
