@@ -52,10 +52,12 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          maxHeight: "90vh",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 3,
+            maxHeight: "90vh",
+          },
         },
       }}
     >
@@ -75,7 +77,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
         </div>
       </DialogTitle>
 
-      <DialogContent className="bg-gray-50 p-6">
+      <DialogContent className="bg-gray-50 !p-3">
         <div className="space-y-5">
           {/* Certificate Information Section */}
           <div className="bg-white rounded-lg px-5 py-4 shadow-sm">
@@ -95,7 +97,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.certificateCode}
+                  {certificate?.certificateCode}
                 </Typography>
               </div>
 
@@ -107,7 +109,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {formatDate(certificate.validity.issueDate)}
+                  {formatDate(certificate?.validity.issueDate)}
                 </Typography>
               </div>
             </div>
@@ -142,10 +144,10 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                     variant="body2"
                     className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
                   >
-                    {certificate.blockchain.transactionHash}
+                    {certificate?.blockchain.transactionHash}
                   </Typography>
                   <CopyButton
-                    text={certificate.blockchain.transactionHash}
+                    text={certificate?.blockchain.transactionHash}
                     tooltip="Copy transaction hash"
                   />
                 </div>
@@ -162,10 +164,10 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                     variant="body2"
                     className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
                   >
-                    {certificate.ipfs.metadataURI}
+                    {certificate?.ipfs.metadataURI}
                   </Typography>
                   <CopyButton
-                    text={certificate.ipfs.metadataURI}
+                    text={certificate?.ipfs.metadataURI}
                     tooltip="Copy metadata URI"
                   />
                 </div>
@@ -177,7 +179,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                 Blockchain Network
               </Typography>
               <Chip
-                label={certificate.blockchain.network}
+                label={certificate?.blockchain.network}
                 className="bg-green-100 text-green-800 uppercase"
                 size="small"
                 icon={<div className="w-2 h-2 bg-green-500 rounded-full"></div>}
@@ -203,7 +205,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.student.name}
+                  {certificate?.student.name}
                 </Typography>
               </div>
 
@@ -215,7 +217,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.student.walletAddress}
+                  {certificate?.student.walletAddress}
                 </Typography>
               </div>
             </div>
@@ -239,7 +241,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.issuer.name}
+                  {certificate?.issuer.name}
                 </Typography>
               </div>
 
@@ -251,7 +253,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.issuer.walletAddress}
+                  {certificate?.issuer.walletAddress}
                 </Typography>
               </div>
             </div>
@@ -275,7 +277,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.course.title}
+                  {certificate?.course.title}
                 </Typography>
               </div>
 
