@@ -4,7 +4,7 @@ const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 const testController = require("../controllers/testController");
 
 // Admin creates test
-router.post("/", verifyToken, requireAdmin, testController.createTest);
+router.post("/", verifyToken, testController.createTest);
 
 // Get all tests
 router.get("/", testController.getAllTests);

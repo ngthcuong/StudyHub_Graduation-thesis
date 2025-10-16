@@ -4,12 +4,37 @@ const createTest = async (req, res) => {
   try {
     const testData = req.body;
 
+    console.log(testData);
+
     if (!testData)
       return res.status(400).json({ error: "Test data not found" });
 
     // attach creator if available
     if (req.user && req.user.userId) testData.createdBy = req.user.userId;
 
+    const requiredFields = [
+      "title",
+      "topic",
+      "skill",
+      "durationMin",
+      "courseId",
+      "createdBy",
+      "numQuestions",
+      "questionTypes",
+      "examType",
+      "passingScore",
+      // "maxAttempts",
+      "isTheLastTest",
+    ];
+    for (const field of requiredFields) {
+      if (testData[field] === undefined || testData[field] === null) {
+        return res
+          .status(400)
+          .json({ error: `Missing required field: ${field}` });
+      }
+    }
+
+    // Tạo test mới
     const savedTest = await testModel.createTest(testData);
     res
       .status(201)

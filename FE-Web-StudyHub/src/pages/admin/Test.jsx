@@ -16,9 +16,6 @@ import {
   TextField,
   InputAdornment,
   LinearProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Collapse,
   Button,
   Select,
@@ -26,6 +23,7 @@ import {
   Stack,
   FormControl,
   InputLabel,
+  Tooltip,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -38,7 +36,9 @@ import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   FilterAltOutlined,
   FilterAltOffOutlined,
+  Add as AddIcon,
 } from "@mui/icons-material";
+import ModalCreateTest from "../../components/ModalCreateTest";
 
 const Test = () => {
   const [page, setPage] = useState(0);
@@ -49,6 +49,15 @@ const Test = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sortBy, setSortBy] = useState("title");
   const [filteredTests, setFilteredTests] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleCreateTest = (newTest) => {
+    setFilteredTests((prevTests) => [newTest, ...prevTests]);
+    closeModal();
+  };
 
   // Mock data cho tests với levels
   const tests = [
@@ -330,15 +339,53 @@ const Test = () => {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: 700, color: "#1f2937", mb: 1 }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "center", sm: "flex-start" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
+            mb: 1,
+          }}
         >
-          Test Management
-        </Typography>
-        <Typography variant="body2" sx={{ color: "#6b7280" }}>
-          Manage all tests, questions, and participant statistics
-        </Typography>
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 700, color: "#1f2937", mb: 1 }}
+            >
+              Test Management
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#6b7280" }}>
+              Manage all tests, questions, and participant statistics
+            </Typography>
+          </Box>
+          <Tooltip title="Create a new test with custom questions and settings">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openModal}
+              sx={{
+                backgroundColor: "#1976d2",
+                "&:hover": { backgroundColor: "#1565c0" },
+                "&:disabled": { backgroundColor: "#ccc" },
+                textTransform: "none",
+                fontWeight: 600,
+                py: 1,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.25)",
+                minWidth: { xs: "auto", sm: 160 },
+              }}
+            >
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                Create New Test
+              </Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                Create Test
+              </Box>
+            </Button>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Stats Cards */}
@@ -567,282 +614,339 @@ const Test = () => {
           )}
 
           {/* Table */}
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-                  <TableCell sx={{ fontWeight: 600, width: 50 }}></TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Test Title</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Total Questions
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Total Participants
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Total Attempts
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }} align="center">
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredTests
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((test) => (
-                    <React.Fragment key={test.id}>
-                      {/* Main Row */}
-                      <TableRow hover>
-                        <TableCell>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleRowExpand(test.id)}
-                          >
-                            {expandedRows[test.id] ? (
-                              <KeyboardArrowUpIcon />
-                            ) : (
-                              <KeyboardArrowDownIcon />
-                            )}
-                          </IconButton>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {test.title}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={test.category}
-                            size="small"
-                            sx={{
-                              backgroundColor: "#f3f4f6",
-                              color: "#374151",
-                              fontWeight: 500,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            label={test.totalQuestions}
-                            size="small"
-                            sx={{
-                              backgroundColor: "#dbeafe",
-                              color: "#1976d2",
-                              fontWeight: 600,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {test.totalParticipants}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {test.totalAttempts}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={test.status}
-                            size="small"
-                            sx={{
-                              backgroundColor:
-                                test.status === "Active"
-                                  ? "#d1fae5"
-                                  : "#f3f4f6",
-                              color:
-                                test.status === "Active"
-                                  ? "#10b981"
-                                  : "#6b7280",
-                              fontWeight: 600,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            sx={{
-                              color: "#1976d2",
-                              "&:hover": { backgroundColor: "#dbeafe" },
-                              mr: 0.5,
-                            }}
-                          >
-                            <VisibilityIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            sx={{
-                              color: "#f59e0b",
-                              "&:hover": { backgroundColor: "#fef3c7" },
-                            }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
+          {filteredTests.length === 0 ? (
+            // Empty State
+            <Box sx={{ textAlign: "center", py: 8 }}>
+              <QuizIcon sx={{ fontSize: 80, color: "#d1d5db", mb: 2 }} />
+              <Typography variant="h6" sx={{ color: "#6b7280", mb: 1 }}>
+                {searchTerm || categoryFilter !== "All"
+                  ? "No tests found matching your criteria"
+                  : "No tests created yet"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#9ca3af", mb: 3 }}>
+                {searchTerm || categoryFilter !== "All"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Create your first test to get started with managing assessments"}
+              </Typography>
+              {!searchTerm && categoryFilter === "All" && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openModal}
+                  sx={{
+                    backgroundColor: "#1976d2",
+                    "&:hover": { backgroundColor: "#1565c0" },
+                    "&:disabled": { backgroundColor: "#ccc" },
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 2,
+                  }}
+                >
+                  {"Create Your First Test"}
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+                    <TableCell sx={{ fontWeight: 600, width: 50 }}></TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Test Title</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Total Questions
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Total Participants
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Total Attempts
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="center">
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredTests
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((test) => (
+                      <React.Fragment key={test.id}>
+                        {/* Main Row */}
+                        <TableRow hover>
+                          <TableCell>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRowExpand(test.id)}
+                            >
+                              {expandedRows[test.id] ? (
+                                <KeyboardArrowUpIcon />
+                              ) : (
+                                <KeyboardArrowDownIcon />
+                              )}
+                            </IconButton>
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {test.title}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={test.category}
+                              size="small"
+                              sx={{
+                                backgroundColor: "#f3f4f6",
+                                color: "#374151",
+                                fontWeight: 500,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={test.totalQuestions}
+                              size="small"
+                              sx={{
+                                backgroundColor: "#dbeafe",
+                                color: "#1976d2",
+                                fontWeight: 600,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {test.totalParticipants}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {test.totalAttempts}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={test.status}
+                              size="small"
+                              sx={{
+                                backgroundColor:
+                                  test.status === "Active"
+                                    ? "#d1fae5"
+                                    : "#f3f4f6",
+                                color:
+                                  test.status === "Active"
+                                    ? "#10b981"
+                                    : "#6b7280",
+                                fontWeight: 600,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              sx={{
+                                color: "#1976d2",
+                                "&:hover": { backgroundColor: "#dbeafe" },
+                                mr: 0.5,
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                color: "#f59e0b",
+                                "&:hover": { backgroundColor: "#fef3c7" },
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
 
-                      {/* Expanded Row - Levels Detail */}
-                      <TableRow>
-                        <TableCell
-                          style={{ paddingBottom: 0, paddingTop: 0 }}
-                          colSpan={8}
-                        >
-                          <Collapse
-                            in={expandedRows[test.id]}
-                            timeout="auto"
-                            unmountOnExit
+                        {/* Expanded Row - Levels Detail */}
+                        <TableRow>
+                          <TableCell
+                            style={{ paddingBottom: 0, paddingTop: 0 }}
+                            colSpan={8}
                           >
-                            <Box sx={{ margin: 2 }}>
-                              <Typography
-                                variant="h6"
-                                gutterBottom
-                                component="div"
-                                sx={{ fontWeight: 600, mb: 2 }}
-                              >
-                                Level Details
-                              </Typography>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-                                    <TableCell sx={{ fontWeight: 600 }}>
-                                      Level
-                                    </TableCell>
-                                    <TableCell
-                                      sx={{ fontWeight: 600 }}
-                                      align="center"
+                            <Collapse
+                              in={expandedRows[test.id]}
+                              timeout="auto"
+                              unmountOnExit
+                            >
+                              <Box sx={{ margin: 2 }}>
+                                <Typography
+                                  variant="h6"
+                                  gutterBottom
+                                  component="div"
+                                  sx={{ fontWeight: 600, mb: 2 }}
+                                >
+                                  Level Details
+                                </Typography>
+                                <Table size="small">
+                                  <TableHead>
+                                    <TableRow
+                                      sx={{ backgroundColor: "#f9fafb" }}
                                     >
-                                      Questions
-                                    </TableCell>
-                                    <TableCell
-                                      sx={{ fontWeight: 600 }}
-                                      align="center"
-                                    >
-                                      Participants
-                                    </TableCell>
-                                    <TableCell
-                                      sx={{ fontWeight: 600 }}
-                                      align="center"
-                                    >
-                                      Attempts
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>
-                                      Avg Score
-                                    </TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {test.levels.map((level, index) => {
-                                    const diffColor = getDifficultyColor(
-                                      level.level
-                                    );
-                                    return (
-                                      <TableRow key={index}>
-                                        <TableCell>
-                                          <Chip
-                                            label={level.level}
-                                            size="small"
-                                            sx={{
-                                              backgroundColor: diffColor.bg,
-                                              color: diffColor.color,
-                                              fontWeight: 600,
-                                            }}
-                                          />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Chip
-                                            label={level.questionCount}
-                                            size="small"
-                                            sx={{
-                                              backgroundColor: "#dbeafe",
-                                              color: "#1976d2",
-                                              fontWeight: 600,
-                                            }}
-                                          />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Typography
-                                            variant="body2"
-                                            sx={{ fontWeight: 600 }}
-                                          >
-                                            {level.participants}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Typography
-                                            variant="body2"
-                                            sx={{ fontWeight: 600 }}
-                                          >
-                                            {level.totalAttempts}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                          <Box sx={{ width: 120 }}>
-                                            <Box
+                                      <TableCell sx={{ fontWeight: 600 }}>
+                                        Level
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{ fontWeight: 600 }}
+                                        align="center"
+                                      >
+                                        Questions
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{ fontWeight: 600 }}
+                                        align="center"
+                                      >
+                                        Participants
+                                      </TableCell>
+                                      <TableCell
+                                        sx={{ fontWeight: 600 }}
+                                        align="center"
+                                      >
+                                        Attempts
+                                      </TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>
+                                        Avg Score
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {test.levels.map((level, index) => {
+                                      const diffColor = getDifficultyColor(
+                                        level.level
+                                      );
+                                      return (
+                                        <TableRow key={index}>
+                                          <TableCell>
+                                            <Chip
+                                              label={level.level}
+                                              size="small"
                                               sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                mb: 0.5,
-                                              }}
-                                            >
-                                              <Typography
-                                                variant="caption"
-                                                sx={{ fontWeight: 600 }}
-                                              >
-                                                {level.avgScore}%
-                                              </Typography>
-                                            </Box>
-                                            <LinearProgress
-                                              variant="determinate"
-                                              value={level.avgScore}
-                                              sx={{
-                                                height: 6,
-                                                borderRadius: 1,
-                                                backgroundColor: "#e5e7eb",
-                                                "& .MuiLinearProgress-bar": {
-                                                  backgroundColor:
-                                                    level.avgScore >= 80
-                                                      ? "#10b981"
-                                                      : level.avgScore >= 60
-                                                      ? "#3b82f6"
-                                                      : "#f59e0b",
-                                                  borderRadius: 1,
-                                                },
+                                                backgroundColor: diffColor.bg,
+                                                color: diffColor.color,
+                                                fontWeight: 600,
                                               }}
                                             />
-                                          </Box>
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </Box>
-                          </Collapse>
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Chip
+                                              label={level.questionCount}
+                                              size="small"
+                                              sx={{
+                                                backgroundColor: "#dbeafe",
+                                                color: "#1976d2",
+                                                fontWeight: 600,
+                                              }}
+                                            />
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Typography
+                                              variant="body2"
+                                              sx={{ fontWeight: 600 }}
+                                            >
+                                              {level.participants}
+                                            </Typography>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Typography
+                                              variant="body2"
+                                              sx={{ fontWeight: 600 }}
+                                            >
+                                              {level.totalAttempts}
+                                            </Typography>
+                                          </TableCell>
+                                          <TableCell>
+                                            <Box sx={{ width: 120 }}>
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  justifyContent:
+                                                    "space-between",
+                                                  mb: 0.5,
+                                                }}
+                                              >
+                                                <Typography
+                                                  variant="caption"
+                                                  sx={{ fontWeight: 600 }}
+                                                >
+                                                  {level.avgScore}%
+                                                </Typography>
+                                              </Box>
+                                              <LinearProgress
+                                                variant="determinate"
+                                                value={level.avgScore}
+                                                sx={{
+                                                  height: 6,
+                                                  borderRadius: 1,
+                                                  backgroundColor: "#e5e7eb",
+                                                  "& .MuiLinearProgress-bar": {
+                                                    backgroundColor:
+                                                      level.avgScore >= 80
+                                                        ? "#10b981"
+                                                        : level.avgScore >= 60
+                                                        ? "#3b82f6"
+                                                        : "#f59e0b",
+                                                    borderRadius: 1,
+                                                  },
+                                                }}
+                                              />
+                                            </Box>
+                                          </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                  </TableBody>
+                                </Table>
+                              </Box>
+                            </Collapse>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
           {/* Pagination */}
-          <TablePagination
-            component="div"
-            count={filteredTests.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25]}
-          />
+          {filteredTests.length > 0 && (
+            <TablePagination
+              component="div"
+              count={filteredTests.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+            />
+          )}
         </CardContent>
       </Card>
+
+      {/* Modal Create Test */}
+      <ModalCreateTest
+        open={isModalOpen}
+        onClose={closeModal}
+        onSuccess={handleCreateTest}
+      />
     </Box>
   );
 };

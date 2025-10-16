@@ -224,6 +224,16 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["AttemptDetail"],
     }),
+
+    // 24. createTest
+    createTest: builder.mutation({
+      query: (testData) => ({
+        url: "/tests",
+        method: "POST",
+        body: testData,
+      }),
+      invalidatesTags: ["Test"],
+    }),
   }),
 });
 
@@ -251,6 +261,7 @@ export const {
   useSaveAnswersMutation,
   useCheckExistTestPoolMutation,
   useGetAttemptDetailByUserAndTestMutation,
+  useCreateTestMutation,
 } = testApi;
 
 export default testApi;
