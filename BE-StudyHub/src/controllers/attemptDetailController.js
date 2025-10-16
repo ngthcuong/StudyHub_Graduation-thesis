@@ -276,6 +276,31 @@ const getAnswersByAttempt = async (req, res) => {
   }
 };
 
+const getAttemptDetailByUserAndTest = async (req, res) => {
+  const { userId, testId } = req.params;
+  try {
+    const detail = await attemptDetailModel.getAttemptDetailByUserAndTest(
+      userId,
+      testId
+    );
+
+    console.log("detail:", detail);
+
+    if (!detail) {
+      return res
+        .status(404)
+        .json({ message: "No attempt found for this user and test" });
+    }
+
+    res.status(200).json({
+      message: "Attempt detail retrieved",
+      data: detail,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
@@ -284,4 +309,5 @@ module.exports = {
   deleteAttemptDetailByAttemptId,
   getAllAttemptDetails,
   getAllAttemptDetailsByUserId,
+  getAttemptDetailByUserAndTest,
 };

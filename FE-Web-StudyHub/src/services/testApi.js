@@ -215,6 +215,15 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Attempt"],
     }),
+
+    // 23. getAttemptDetailByUserAndTest
+    getAttemptDetailByUserAndTest: builder.mutation({
+      query: ({ userId, testId }) => ({
+        url: `attempt-details/user/${userId}/test/${testId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["AttemptDetail"],
+    }),
   }),
 });
 
@@ -241,6 +250,7 @@ export const {
   useGetTestPoolsByCreatorIdMutation,
   useSaveAnswersMutation,
   useCheckExistTestPoolMutation,
+  useGetAttemptDetailByUserAndTestMutation,
 } = testApi;
 
 export default testApi;

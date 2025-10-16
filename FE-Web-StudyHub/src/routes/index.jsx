@@ -19,6 +19,7 @@ import Dashboard from "../pages/home/Dashboard";
 import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
 import UserInfo from "../pages/home/UserInfo";
+import TestResultDisplay from "../pages/test/TestResultDisplay";
 
 export const router = createBrowserRouter([
   {
@@ -110,6 +111,10 @@ export const router = createBrowserRouter([
                 element: <TestResult />,
               },
             ],
+          },
+          {
+            path: "/attempt/:attemptId",
+            element: <TestResultDisplay />,
           },
         ],
       },

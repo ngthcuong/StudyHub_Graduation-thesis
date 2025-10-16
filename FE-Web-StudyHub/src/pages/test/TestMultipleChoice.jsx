@@ -13,6 +13,8 @@ import {
   Chip,
   Stack,
   CircularProgress,
+  Skeleton,
+  Fade,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import { useParams, useNavigate } from "react-router-dom";
@@ -43,7 +45,8 @@ const TestMultipleChoice = () => {
 
   const [current, setCurrent] = useState(0);
   const [answersP, setAnswersP] = useState(Array(10).fill(null));
-  const [timeLeft, setTimeLeft] = useState(0); // thời gian làm bài tính bằng phút
+  const [timeLeft, setTimeLeft] = useState(null); // thời gian làm bài tính bằng phút
+  const [isPaused, setIsPaused] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false); // State để quản lý trạng thái loading khi submit
   const [loading, setLoading] = useState(false); // State để quản lý trạng thái loading khi load test
@@ -58,7 +61,7 @@ const TestMultipleChoice = () => {
   useEffect(() => {
     // Chỉ chạy khi test đã được load lần đầu và có durationMin
     const durationMin = test?.data?.durationMin;
-    if (durationMin && durationMin > 0 && timeLeft === 0) {
+    if (durationMin && durationMin > 0 && timeLeft === null) {
       setTimeLeft(durationMin * 60); // Đặt giá trị chính xác bằng giây (ví dụ: 30 * 60 = 1800)
     }
   }, [test, timeLeft]);
@@ -317,29 +320,25 @@ const TestMultipleChoice = () => {
 
   // Đếm ngược thời gian (giữ nguyên)
   useEffect(() => {
-    // 1. Điều kiện dừng:
-    if (timeLeft <= 0 && timeLeft !== 0) {
-      // Logic này chỉ nên chạy khi đồng hồ đã đếm từ > 0 xuống <= 0
+    // Nếu hết giờ → nộp bài
+    if (timeLeft === null) {
+      return;
+    }
+
+    if (timeLeft === 0) {
       handleSubmit();
       return;
     }
 
-    // 2. Thiết lập Timer (chỉ khi có thời gian)
-    if (timeLeft > 0) {
+    // Nếu chưa hết giờ và không tạm dừng → chạy timer
+    if (timeLeft > 0 && !isPaused) {
       const timer = setInterval(() => {
-        // Giảm 1 giây mỗi lần lặp
-        setTimeLeft((prevTime) => {
-          if (prevTime > 0) {
-            return prevTime - 1;
-          }
-          // Dọn dẹp timer nếu hết giờ
-          clearInterval(timer);
-          return 0;
-        });
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
-      return () => clearInterval(timer); // Dọn dẹp khi component unmount hoặc effect re-run
+
+      return () => clearInterval(timer);
     }
-  }, [timeLeft]);
+  }, [timeLeft, isPaused]);
 
   const handleChange = (e) => {
     const newAnswers = [...answersP];
@@ -357,7 +356,7 @@ const TestMultipleChoice = () => {
 
   function formatTime(s) {
     // console.log("Formatting time:", s); // Bỏ log này nếu lỗi NaN đã biến mất
-    if (isNaN(s) || s < 0) return "00:00";
+    if (s === null || isNaN(s) || s < 0) return "00:00";
     const m = Math.floor(s / 60);
     const sec = s % 60; // Thêm số 0 phía trước nếu cần
 
@@ -370,8 +369,9 @@ const TestMultipleChoice = () => {
   // --- HÀM SUBMIT GIẢ ---
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setIsPaused((prev) => !prev);
     const formattedAnswers = answersP.map((selectedOptionId, index) => ({
-      questionId: questions.data.data[index]._id,
+      questionId: questions?.data?.data[index]._id,
       selectedOptionId: selectedOptionId,
     }));
 
@@ -424,10 +424,111 @@ const TestMultipleChoice = () => {
     setIsSubmitting(false);
   };
 
+  const learningTips = [
+    "Did you know? 'Bookkeeper' has three consecutive double letters.",
+    "Quick Tip: Use flashcards to remember new vocabulary.",
+    "Getting your brain ready for a challenge...",
+    "Remember to read the entire question carefully before answering.",
+    "Fun Fact: 'I am' is the shortest complete sentence in English.",
+    "Almost there... Good luck!",
+  ];
+
+  // ...bên trong component của bạn
+
+  // ✅ BƯỚC 1: Di chuyển các hook ra ngoài và gọi chúng ở cấp cao nhất.
+  const [tipIndex, setTipIndex] = useState(0);
+
+  useEffect(() => {
+    // ✅ BƯỚC 2: Đặt điều kiện bên trong useEffect để chỉ chạy interval khi cần.
+    let intervalId = null;
+
+    if (loading || !questions) {
+      intervalId = setInterval(() => {
+        setTipIndex((prevIndex) => (prevIndex + 1) % learningTips.length);
+      }, 3000);
+    }
+
+    console.log("useEffect chạy lại", { loading, questions });
+
+    // Dọn dẹp interval khi component unmount hoặc khi loading kết thúc.
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [loading, questions]); // Thêm dependencies để useEffect chạy lại khi state thay đổi.
+
   if (loading || !questions) {
     return (
-      <Box className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Typography>Loading test...</Typography>
+      <Box
+        className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 4,
+        }}
+      >
+        <Stack
+          spacing={2}
+          sx={{
+            width: "100%",
+            maxWidth: "600px",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 600, color: "#34495e" }}>
+            Preparing Your Test
+          </Typography>
+
+          <Fade in={true} timeout={1000} key={tipIndex}>
+            <Typography
+              sx={{
+                color: "#7f8c8d",
+                minHeight: "48px",
+              }}
+            >
+              {learningTips[tipIndex]}
+            </Typography>
+          </Fade>
+
+          <Box sx={{ width: "100%", pt: 2 }}>
+            {/* ...Nội dung Skeleton giữ nguyên... */}
+            <Skeleton
+              variant="text"
+              sx={{ fontSize: "2rem", bgcolor: "grey.200" }}
+            />
+            <Skeleton
+              variant="rectangular"
+              height={50}
+              sx={{ borderRadius: 2, mt: 2, bgcolor: "grey.200" }}
+            />
+            <Skeleton
+              variant="rectangular"
+              height={50}
+              sx={{ borderRadius: 2, mt: 1, bgcolor: "grey.200" }}
+            />
+            <Skeleton
+              variant="rectangular"
+              height={50}
+              sx={{ borderRadius: 2, mt: 1, bgcolor: "grey.200" }}
+            />
+            <Skeleton
+              variant="rectangular"
+              height={50}
+              sx={{ borderRadius: 2, mt: 1, bgcolor: "grey.200" }}
+            />
+            <Box sx={{ display: "flex", justifyContent: "flex-end", pt: 3 }}>
+              <Skeleton
+                variant="rectangular"
+                width={100}
+                height={40}
+                sx={{ borderRadius: 2, bgcolor: "grey.200" }}
+              />
+            </Box>
+          </Box>
+        </Stack>
       </Box>
     );
   }
@@ -484,59 +585,62 @@ const TestMultipleChoice = () => {
                         scrollbarWidth: "thin",
                       }}
                     >
-                      {current + 1}. {questions.data.data[current].questionText}
+                      {current + 1}.{" "}
+                      {questions?.data?.data[current].questionText}
                     </Typography>
 
                     {/* Danh sách đáp án */}
                     <RadioGroup
                       value={
                         answersP[current]
-                          ? questions.data.data[current].options.find(
+                          ? questions?.data?.data[current].options.find(
                               (opt) => opt._id === answersP[current]
                             )?.optionText || ""
                           : ""
                       }
                       onChange={handleChange}
                     >
-                      {questions.data.data[current].options.map((opt, idx) => (
-                        <Box
-                          key={opt._id || idx}
-                          className="mb-3 border rounded-lg px-4 py-2 flex items-center hover:border-blue-400 transition"
-                          sx={{
-                            borderColor:
-                              answersP[current] === opt._id
-                                ? "#2563eb"
-                                : "#e5e7eb",
-                            background:
-                              answersP[current] === opt._id
-                                ? "#f0f7ff"
-                                : "#fff",
-                            height: 56,
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <FormControlLabel
-                            value={opt.optionText}
-                            control={<Radio color="primary" />}
-                            label={
-                              <Typography
-                                fontWeight={500}
-                                noWrap
-                                sx={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                  width: "100%",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {opt.optionText}
-                              </Typography>
-                            }
-                            className="w-full"
-                          />
-                        </Box>
-                      ))}
+                      {questions?.data?.data[current].options.map(
+                        (opt, idx) => (
+                          <Box
+                            key={opt._id || idx}
+                            className="mb-3 border rounded-lg px-4 py-2 flex items-center hover:border-blue-400 transition"
+                            sx={{
+                              borderColor:
+                                answersP[current] === opt._id
+                                  ? "#2563eb"
+                                  : "#e5e7eb",
+                              background:
+                                answersP[current] === opt._id
+                                  ? "#f0f7ff"
+                                  : "#fff",
+                              height: 56,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <FormControlLabel
+                              value={opt.optionText}
+                              control={<Radio color="primary" />}
+                              label={
+                                <Typography
+                                  fontWeight={500}
+                                  noWrap
+                                  sx={{
+                                    textOverflow: "ellipsis",
+                                    overflow: "hidden",
+                                    width: "100%",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {opt.optionText}
+                                </Typography>
+                              }
+                              className="w-full"
+                            />
+                          </Box>
+                        )
+                      )}
                     </RadioGroup>
                   </Box>
 

@@ -45,4 +45,9 @@ router.get(
 
 router.get("/attempt/:attemptId", attemptDetailController.getAnswersByAttempt);
 
+router.get(
+  "/user/:userId/test/:testId",
+  attemptDetailController.getAttemptDetailByUserAndTest
+);
+
 module.exports = router;

@@ -19,30 +19,31 @@ import {
   useGetTestByTestIdMutation,
   useGetAttemptByTestAndUserMutation,
   useGetAttemptInfoMutation,
+  useGetAttemptDetailByUserAndTestMutation,
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
 import Snackbar from "../../components/Snackbar";
 
-const fakeAttemptHistory = [
-  {
-    _id: "1",
-    startTime: "2025-10-01T09:00:00.000Z",
-    endTime: "2025-10-01T09:25:30.000Z",
-    score: 85,
-  },
-  {
-    _id: "2",
-    startTime: "2025-10-03T14:10:00.000Z",
-    endTime: "2025-10-03T14:35:10.000Z",
-    score: 92,
-  },
-  {
-    _id: "3",
-    startTime: "2025-10-05T16:48:18.698Z",
-    endTime: "2025-10-05T16:49:57.356Z",
-    score: 78,
-  },
-];
+// const fakeAttemptHistory = [
+//   {
+//     _id: "1",
+//     startTime: "2025-10-01T09:00:00.000Z",
+//     endTime: "2025-10-01T09:25:30.000Z",
+//     score: 85,
+//   },
+//   {
+//     _id: "2",
+//     startTime: "2025-10-03T14:10:00.000Z",
+//     endTime: "2025-10-03T14:35:10.000Z",
+//     score: 92,
+//   },
+//   {
+//     _id: "3",
+//     startTime: "2025-10-05T16:48:18.698Z",
+//     endTime: "2025-10-05T16:49:57.356Z",
+//     score: 78,
+//   },
+// ];
 
 const TestInformation = () => {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ const TestInformation = () => {
   const { id: testId } = useParams();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
   const [attempt, setAttempt] = useState();
+  const [history, setHistory] = useState([]);
 
   const user = useSelector((state) => state.auth.user);
 
@@ -59,6 +61,8 @@ const TestInformation = () => {
   const [getTestByTestId] = useGetTestByTestIdMutation();
   const [getAttemptInfo] = useGetAttemptInfoMutation();
   const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
+  const [getAttemptDetailByUserAndTest] =
+    useGetAttemptDetailByUserAndTestMutation();
 
   useEffect(() => {
     if (!user?._id || !testId) return;
@@ -70,6 +74,16 @@ const TestInformation = () => {
           testId,
         }).unwrap();
         setTestPool(res);
+
+        try {
+          const res = await getAttemptDetailByUserAndTest({
+            userId: user._id,
+            testId,
+          }).unwrap();
+          setHistory(res.data);
+        } catch (error) {
+          console.error("Failed to fetch attempt detail:", error);
+        }
       } catch (error) {
         if (error.status === 404) {
           const res = await getTestByTestId(testId).unwrap();
@@ -115,6 +129,18 @@ const TestInformation = () => {
         }
       })
       .join(", ");
+  };
+
+  const formatDuration = (startTime, endTime) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    const diffMs = end - start; // chênh lệch tính bằng milliseconds
+
+    const diffSec = Math.floor(diffMs / 1000); // giây
+    const diffMin = Math.floor(diffSec / 60); // phút
+
+    return `${diffMin} minutes ${diffSec % 60} seconds`;
   };
 
   return (
@@ -312,16 +338,33 @@ const TestInformation = () => {
           >
             Your Test Attempts
           </Typography>
-          {fakeAttemptHistory.length === 0 ? (
+          {history?.length === 0 ? (
             <Typography color="text.secondary" sx={{ mb: 2 }}>
               You have not taken this test yet.
             </Typography>
           ) : (
             <Box>
               <Grid container spacing={2}>
-                {fakeAttemptHistory.map((attempt, idx) => (
+                {history?.map((attempt, idx) => (
                   <Grid size={12} key={attempt._id || idx}>
-                    <Card variant="outlined" className="">
+                    <Card
+                      variant="outlined"
+                      onClick={() =>
+                        navigate(`/attempt/${attempt._id}`, {
+                          state: attempt,
+                        })
+                      }
+                      className=""
+                      sx={{
+                        cursor: "pointer", // 🖱️ hiển thị con trỏ khi hover
+                        transition: "0.2s ease-in-out",
+                        "&:hover": {
+                          boxShadow: 3, // hiệu ứng nổi nhẹ
+                          transform: "scale(1.02)", // phóng nhẹ
+                          backgroundColor: "#f9fafb", // nền sáng hơn
+                        },
+                      }}
+                    >
                       <CardContent
                         sx={{
                           display: "flex",
@@ -332,10 +375,15 @@ const TestInformation = () => {
                       >
                         <Box>
                           <Typography variant="body2" color="text.secondary">
-                            Date: {attempt.startTime}
+                            Date:{" "}
+                            {new Date(attempt.startTime).toLocaleString(
+                              "vi-VN",
+                              { timeZone: "Asia/Ho_Chi_Minh" }
+                            )}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Duration: {(attempt.startTime, attempt.endTime)}
+                            Duration:{" "}
+                            {formatDuration(attempt.startTime, attempt.endTime)}
                           </Typography>
                         </Box>
                         <Typography
@@ -343,7 +391,7 @@ const TestInformation = () => {
                           color="#22c55e"
                           fontWeight={700}
                         >
-                          Score: {attempt.score}
+                          Score: {attempt.attemptId.score}
                         </Typography>
                       </CardContent>
                     </Card>
