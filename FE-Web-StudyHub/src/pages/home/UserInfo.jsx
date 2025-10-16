@@ -33,21 +33,26 @@ import {
 } from "../../services/userApi";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
+import dayjs from "dayjs";
 
 const levelTOEIC = [
   { value: "0", label: "No level" },
-  { value: "450", label: "450 - Basic" },
-  { value: "600", label: "600 - Intermediate" },
-  { value: "750", label: "750 - Upper Intermediate" },
-  { value: "900", label: "900 - Advanced" },
+  { value: "10-250", label: "10-250 - Beginner" },
+  { value: "255-400", label: "255-400 - Elementary" },
+  { value: "405-600", label: "405-600 - Intermediate" },
+  { value: "605-780", label: "605-780 - Upper Intermediate" },
+  { value: "785-900", label: "785-900 - Advanced" },
+  { value: "905-990", label: "905-990 - Proficient" },
 ];
 
 const levelIELTS = [
   { value: "0", label: "No level" },
-  { value: "3.0", label: "3.0 - Basic" },
-  { value: "5.0", label: "5.0 - Intermediate" },
-  { value: "6.5", label: "6.5 - Upper Intermediate" },
-  { value: "8.0", label: "8.0 - Advanced" },
+  { value: "0-3.5", label: "0-3.5 - Beginner" },
+  { value: "4.0-5.0", label: "4.0-5.0 - Elementary" },
+  { value: "5.5-6.0", label: "5.5-6.0 - Intermediate" },
+  { value: "6.5-7.0", label: "6.5-7.0 - Upper Intermediate" },
+  { value: "7.5-8.0", label: "7.5-8.0 - Advanced" },
+  { value: "8.5-9.0", label: "8.5-9.0 - Expert" },
 ];
 
 const UserInfo = () => {
@@ -119,7 +124,15 @@ const UserInfo = () => {
         .nullable()
         .transform((value) => (value === "" ? null : value))
         .oneOf(
-          ["0", "450", "600", "750", "900"],
+          [
+            "0",
+            "10-250",
+            "255-400",
+            "405-600",
+            "605-780",
+            "785-900",
+            "905-990",
+          ],
           "Current level TOEIC is invalid"
         ),
       IELTS: yup
@@ -127,7 +140,7 @@ const UserInfo = () => {
         .nullable()
         .transform((value) => (value === "" ? null : value))
         .oneOf(
-          ["0", "3.0", "5.0", "6.5", "8.0"],
+          ["0", "0-3.5", "4.0-5.0", "5.5-6.0", "6.5-7.0", "7.5-8.0", "8.5-9.0"],
           "Current level IELTS is invalid"
         ),
     }),
@@ -153,9 +166,7 @@ const UserInfo = () => {
     fullName: userData.fullName || "",
     email: userData.email || "",
     phone: userData.phone || "",
-    dob: userData.dob
-      ? new Date(userData.dob).toISOString().slice(0, 10) // "yyyy-MM-dd"
-      : "",
+    dob: userData.dob ? dayjs(userData.dob).format("YYYY-MM-DD") : "",
     gender: userData.gender || "",
     organization: userData.organization || "",
     walletAddress: userData.walletAddress || "",
@@ -176,7 +187,7 @@ const UserInfo = () => {
     try {
       const payload = {
         ...data,
-        dob: data.dob,
+        dob: dayjs(data.dob).toISOString(),
         currentLevel: {
           IELTS: data.ielts,
           TOEIC: data.toeic,
