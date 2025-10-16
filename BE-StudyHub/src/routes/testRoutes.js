@@ -9,6 +9,9 @@ router.post("/", verifyToken, testController.createTest);
 // Get all tests
 router.get("/", testController.getAllTests);
 
+// Lấy thông tin của toàn bộ test trong db
+router.get("/statistics", testController.getTestStatistics);
+
 // Get test detail
 router.get("/:testId", testController.getTestById);
 
