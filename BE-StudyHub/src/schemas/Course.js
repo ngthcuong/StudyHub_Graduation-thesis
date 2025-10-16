@@ -49,6 +49,13 @@ const courseSchema = new mongoose.Schema(
     },
     durationHours: { type: Number, min: 0 },
     ratings: [ratingSchema],
+
+    grammarLessons: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "GrammarLesson",
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -132,9 +132,69 @@ const MultilExerciseScreen = ({ navigation, route }) => {
                     console.log("❌ Lỗi khi tạo attempt:", error);
                   }
                 }
-              } catch (error) {}
+              } catch (error) {
+                console.log("❌ Lỗi khi lấy attempt info:", error);
+              }
             } else {
-              console.log("❌ Test pool đã sử dụng tối đa.");
+              console.log("⚠️ Test pool đã đạt giới hạn sử dụng");
+              try {
+                const newTestPool = await testApi.createTestPool({
+                  testId,
+                  level: userLevel,
+                  userId: user?._id,
+                });
+                console.log("🆕 Created new test pool:", newTestPool);
+
+                try {
+                  const newQuestions = await testApi.generateTest({
+                    testId,
+                    exam_type: test?.data?.examType,
+                    topic: test?.data?.topic,
+                    question_types: test?.data?.questionTypes,
+                    num_questions: 10,
+                    score_range: user?.currentLevel?.[test?.data?.examType],
+                  });
+                  setQuestions(newQuestions);
+                  console.log("🧠 Created questions:", newQuestions);
+
+                  try {
+                    const attemptInfo = await testApi.getAttemptByTestAndUser(
+                      testId,
+                      user?._id
+                    );
+                    if (attemptInfo?.data?.length > 0) {
+                      setAttemptId(attemptInfo?.data[0]?._id);
+                      console.log("✅ Found existing attempt:", attemptInfo);
+                    } else {
+                      console.log("🚫 No existing attempt found");
+                    }
+                  } catch (error) {}
+
+                  try {
+                    const attempt = await testApi.startTestAttempt(
+                      newTestPool?.data?._id,
+                      testId
+                    );
+                    setAttemptId(attempt?.data?._id);
+                    console.log("🆕 Created attempt:", attempt);
+                  } catch (attemptError) {
+                    console.log(
+                      "❌ Lỗi khi tạo attempt:",
+                      attemptError.response?.data || attemptError.message
+                    );
+                  }
+                } catch (questionError) {
+                  console.log(
+                    "❌ Lỗi khi tạo questions:",
+                    questionError.response?.data || questionError.message
+                  );
+                }
+              } catch (createError) {
+                console.log(
+                  "❌ Lỗi khi tạo test pool mới:",
+                  createError.response?.data || createError.message
+                );
+              }
             }
           }
         }
@@ -241,95 +301,6 @@ const MultilExerciseScreen = ({ navigation, route }) => {
         }
       }
 
-      // Lấy level hiện tại của user dựa trên examType
-
-      // let attemptInfo = null;
-
-      // try {
-      //   // Thử lấy attempt info
-      //   const res = await testApi.getAttemptInfo(user?._id, testId);
-      //   const resLevel = await testApi.getTestPoolByLevel(user?._id);
-      //   attemptInfo = res;
-      // } catch (error) {
-      //   if (error.response?.status === 404) {
-      //     const test = await testApi.getTestById(testId);
-      //     console.log("Fetched test:", test.data);
-
-      //     try {
-      //       const generatedTest = await testApi.generrateTest({
-      //         testId,
-      //         exam_type: test.data.examType,
-      //         topic: test.data.topic,
-      //         question_types: test.data.questionTypes,
-      //         num_questions: test.data.numQuestions,
-      //         score_range: user.currentLevel[test.data.examType],
-      //       });
-      //       console.log("Generated test:", generatedTest);
-
-      //       const testPoolCreated = await testApi.createTestPool(
-      //         testId,
-      //         `${test.data.examType} ${user.currentLevel[test.data.examType]}`,
-      //         user?._id
-      //       );
-
-      //       console.log("Created test pool:", testPoolCreated);
-
-      //       setTestPool(testPoolCreated);
-      //       console.log("Created test pool:", testPoolCreated);
-      //     } catch (genError) {
-      //       console.error(
-      //         "Error while generating test:",
-      //         genError.response?.status,
-      //         genError.response?.data || genError.message
-      //       );
-      //       throw genError; // ném ra để catch bên ngoài
-      //     }
-      //   }
-      // }
-
-      // if (attemptInfo?.attemptInfo?.attemptNumber == 0) {
-      //   const test = await testApi.getTestById(testId);
-      //   const testPoolByLevel = await testApi.getTestPoolByLevel(
-      //     `${test.data.examType} ${user.currentLevel[test.data.examType]}`
-      //   );
-      //   console.log(
-      //     "Fetched test pool by level:",
-      //     testPoolByLevel?.data[0]?._id
-      //   );
-      //   if (testPoolByLevel?.data[0]?.baseTestId !== testId) {
-      //     setIdTestPool(testPoolByLevel?.data[0]?._id);
-      //   } else {
-      //     const createdTestPool = await testApi.createTestPool(
-      //       testId,
-      //       `${test.data.examType} ${user.currentLevel[test.data.examType]}`,
-      //       user?._id
-      //     );
-
-      //     setTestPool(createdTestPool?.data[0]?._id);
-
-      //     const generatedTest = await testApi.generrateTest({
-      //       testId,
-      //       exam_type: test.data.examType,
-      //       topic: test.data.topic,
-      //       question_types: test.data.questionTypes,
-      //       num_questions: test.data.numQuestions,
-      //       score_range: user.currentLevel[test.data.examType],
-      //     });
-      //   }
-      // }
-
-      // const [questionsResponse, attemptResponse] = await Promise.all([
-      //   testApi.getTestQuestions(testId),
-      //   testApi.startTestAttempt(
-      //     testPool?.data._id ||
-      //       attemptInfo?.attemptInfo?.testPoolId ||
-      //       idTestPool
-      //   ),
-      // ]);
-
-      // setQuestions(questionsResponse || []);
-      // setAttemptId(attemptResponse?.data?._id);
-
       // ⚠️ API questions không có durationMin => gọi getTestById
       const testResponse = await testApi.getTestById(testId);
       const duration = testResponse?.data?.durationMin || 60;
@@ -386,15 +357,15 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       console.log("Test submitted successfully:", result);
       setLoadingResult(false);
 
-      if (testPool.createdBy?._id !== user?._id) {
-        try {
-          await testApi.updateTestPool(testPool._id, {
-            usageCount: testPool.usageCount + 1,
-          });
-        } catch (error) {
-          console.log("Error updating test pool:", error);
-        }
-      }
+      // if (testPool.createdBy?._id !== user?._id) {
+      //   try {
+      //     await testApi.updateTestPool(testPool._id, {
+      //       usageCount: testPool.usageCount + 1,
+      //     });
+      //   } catch (error) {
+      //     console.log("Error updating test pool:", error);
+      //   }
+      // }
       setLoadingResult(false);
 
       navigation.navigate("TestResults", { resultData: result });
