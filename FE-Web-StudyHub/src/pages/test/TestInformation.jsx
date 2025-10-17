@@ -199,7 +199,7 @@ const TestInformation = () => {
   };
 
   const handleUpdateProfile = () => {
-    navigate("/profile");
+    navigate("/home/profile");
   };
 
   // Format question types for display

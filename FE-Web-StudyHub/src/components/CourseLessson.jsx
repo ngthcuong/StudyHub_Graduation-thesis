@@ -230,7 +230,7 @@ const CourseLessson = () => {
               sx={{
                 fontSize: 32,
               }}
-              onClick={() => navigate("/home")}
+              onClick={() => navigate("/home/courses")}
             />
           </div>
 
