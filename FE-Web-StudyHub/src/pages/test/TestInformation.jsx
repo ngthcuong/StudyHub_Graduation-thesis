@@ -190,12 +190,23 @@ const TestInformation = () => {
 
   // Kiểm tra xem user có thể làm bài test hay không
   const canTakeTest = () => {
-    if (!user?.currentLevel || !testInfor?.examType || !testInfoState?.examType)
+    if (
+      !user?.currentLevel ||
+      !testInfor?.examType ||
+      !testInfoState?.examType
+    ) {
       return false;
-    return Object.prototype.hasOwnProperty.call(
-      user.currentLevel,
-      testInfor?.examType || testInfoState?.examType
-    );
+    } else if (testInfor) {
+      return Object.prototype.hasOwnProperty.call(
+        user?.currentLevel,
+        testInfor?.examType
+      );
+    } else {
+      return Object.prototype.hasOwnProperty.call(
+        user?.currentLevel,
+        testInfoState?.examType
+      );
+    }
   };
 
   const handleUpdateProfile = () => {
@@ -505,8 +516,7 @@ const TestInformation = () => {
               color="primary"
               size="medium"
               disabled={
-                (attempt && attempt?.attemptNumber >= attempt?.maxAttempts) ||
-                canTakeTest()
+                attempt && attempt?.attemptNumber >= attempt?.maxAttempts
               }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
