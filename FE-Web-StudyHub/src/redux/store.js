@@ -22,7 +22,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  blacklist: ["certificate", "snackbar"],
+  blacklist: ["certificate", "snackbar", rootApi.reducerPath],
 };
 
 const persistedReducer = persistReducer(

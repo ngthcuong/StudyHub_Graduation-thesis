@@ -51,6 +51,46 @@ export const grammarLessonApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["GrammarLesson"],
     }),
+
+    // GET ALL COURSES
+    getAllCourses: builder.mutation({
+      query: () => ({
+        url: "/courses",
+        method: "GET",
+      }),
+      providesTags: ["Course"],
+    }),
+
+    // GET LESSONS BY COURSE ID
+    getLessonsByCourseId: builder.mutation({
+      query: (courseId) => ({
+        url: `/grammar-lessons/course/${courseId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, courseId) => [
+        { type: "GrammarLesson", id: `COURSE_${courseId}` },
+      ],
+    }),
+
+    // GET PART BY PART ID
+    getPartById: builder.mutation({
+      query: (partId) => ({
+        url: `/grammar-lessons/parts/${partId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, partId) => [
+        { type: "GrammarLesson", id: `PART_${partId}` },
+      ],
+    }),
+
+    // GET COURSE BY ID
+    getCourseById: builder.mutation({
+      query: (id) => ({
+        url: `/courses/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Course", id }],
+    }),
   }),
 });
 
@@ -60,6 +100,10 @@ export const {
   useCreateGrammarLessonMutation,
   useUpdateGrammarLessonMutation,
   useDeleteGrammarLessonMutation,
+  useGetAllCoursesMutation,
+  useGetLessonsByCourseIdMutation,
+  useGetPartByIdMutation,
+  useGetCourseByIdMutation,
 } = grammarLessonApi;
 
 export default grammarLessonApi;

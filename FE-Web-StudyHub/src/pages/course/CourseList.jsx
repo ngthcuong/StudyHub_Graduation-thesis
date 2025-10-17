@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -12,19 +12,35 @@ import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../components/CourseCard";
 import { mockCourses } from "../../mock/mockCourse";
+import { useGetAllCoursesMutation } from "../../services/grammarLessonApi";
 
 const CourseList = ({ variant = "market" }) => {
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [courses, setCourses] = useState([]);
+
+  const [getAllCourses] = useGetAllCoursesMutation();
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const result = await getAllCourses().unwrap();
+        setCourses(result);
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, [getAllCourses]);
 
   const pageSize = 6;
   const pageCount = Math.ceil(mockCourses.length / pageSize);
-  const pagedCourses = mockCourses.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+  // const pagedCourses = mockCourses.slice(
+  //   (page - 1) * pageSize,
+  //   page * pageSize
+  // );
 
   return (
     <Box className="min-h-fit bg-white py-8 px-6">
@@ -55,12 +71,12 @@ const CourseList = ({ variant = "market" }) => {
 
         {/* Course Grid */}
         <Grid container spacing={3}>
-          {pagedCourses.map((course, index) => (
+          {courses?.map((course, index) => (
             <Grid size={{ xs: 12, md: 3 }} key={course.id}>
               <div
                 onClick={() => {
                   if (variant === "owned")
-                    navigate(`/course/${course.id}/lesson/${course.id}`);
+                    navigate(`/course/${course._id}/lesson/${course.id}`);
                   else navigate(`/course/${course.id}`);
                 }}
               >

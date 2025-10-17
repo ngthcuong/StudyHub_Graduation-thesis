@@ -17,8 +17,9 @@ const createCourse = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const course = await courseModel.findCourseById(courseId);
+    const { id } = req.params;
+    console.log("Fetching course with ID:", id);
+    const course = await courseModel.findCourseById(id);
     res.status(200).json(course);
   } catch (error) {
     console.error("Error getting course by id:", error);
