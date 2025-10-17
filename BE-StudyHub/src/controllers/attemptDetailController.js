@@ -234,6 +234,8 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
         level: relatedAttempt?.testPoolId?.baseTestId?.level,
         examType: relatedAttempt?.testPoolId?.baseTestId?.examType,
         durationMin: relatedAttempt?.testPoolId?.baseTestId?.durationMin,
+        startTime: detail?.startTime,
+        endTime: detail?.endTime,
         // answers: detail.answers.map((a) => ({
         //   questionId: a.questionId?._id,
         //   questionText: a.questionText || a.questionId?.questionText,

@@ -26,30 +26,47 @@ def _build_prompt(payload: Dict[str, Any]) -> str:
     test_info = payload.get("test_info", {})
     answer_key = payload.get("answer_key", [])
     student_answers = payload.get("student_answers", {})
+    test_history = profile.get("test_history", [])
+    history_text = ""
+    if test_history:
+        history_text = "Student past test history (most recent first):\n"
+        for t in test_history:
+            # t should already include weak_topics and per_question if using new schema
+            history_text += f"- Date: {t.get('test_date')}, Level: {t.get('level_at_test')}, Weak Topics: {t.get('weak_topics', [])}\n"
 
      # Detailed TOEIC/IELTS scales
     scales_text = (
         "Use this TOEIC scale strictly:\n"
-        "10–250: Beginner (A1) -> very basic words/sentences\n"
-        "255–400: Elementary (A2) -> short conversations, simple past/present\n"
-        "405–600: Intermediate (B1) -> simple emails/reports, basic relative clauses\n"
-        "605–780: Upper-Intermediate (B2) -> contracts, conditionals, passive, reasoning\n"
-        "785–900: Advanced (C1) -> confident structures, professional vocab, tricky inference\n"
-        "905–990: Proficiency (C2) -> near-native, complex context, high-speed tests\n\n"
+        "10-250: Beginner (A1) -> very basic words/sentences\n"
+        "255-400: Elementary (A2) -> short conversations, simple past/present\n"
+        "405-600: Intermediate (B1) -> simple emails/reports, basic relative clauses\n"
+        "605-780: Upper-Intermediate (B2) -> contracts, conditionals, passive, reasoning\n"
+        "785-900: Advanced (C1) -> confident structures, professional vocab, tricky inference\n"
+        "905-990: Proficiency (C2) -> near-native, complex context, high-speed tests\n\n"
 
         "Use this IELTS scale strictly:\n"
-        "0–3.5: Beginner (A1–A2) -> basic communication, short reading/listening, simple writing\n"
-        "4.0–5.0: Elementary (B1 low) -> familiar situations, short reading passages\n"
-        "5.5–6.0: Intermediate (B1–B2) -> medium texts, basic essays, Reading 3–4 passages\n"
-        "6.5–7.0: Upper-Intermediate (B2–C1) -> good academic communication, few grammar errors\n"
-        "7.5–8.0: Advanced (C1) -> very good, occasional mistakes, academic journals\n"
-        "8.5–9.0: Expert (C2) -> near-native, any complex academic content\n\n"
+        "0-3.5: Beginner (A1-A2) -> basic communication, short reading/listening, simple writing\n"
+        "4.0-5.0: Elementary (B1 low) -> familiar situations, short reading passages\n"
+        "5.5-6.0: Intermediate (B1-B2) -> medium texts, basic essays, Reading 3-4 passages\n"
+        "6.5-7.0: Upper-Intermediate (B2-C1) -> good academic communication, few grammar errors\n"
+        "7.5-8.0: Advanced (C1) -> very good, occasional mistakes, academic journals\n"
+        "8.5-9.0: Expert (C2) -> near-native, any complex academic content\n\n"
+    )
+
+    scales_text += (
+        "// Valid TOEIC levels: '10-250', '255-400', '405-600', '605-780', '785-900', '905-990'\n"
+        "// Valid IELTS levels: '0-3.5', '4.0-5.0', '5.5-6.0', '6.5-7.0', '7.5-8.0', '8.5-9.0'\n"
+        "current_level and post_test_level must be exactly one of these strings.\n"
+        "Do NOT use words like 'Intermediate', 'B1', 'Upper-Intermediate', 'Beginner', etc.\n"
     )
 
     prompt = (
         "You are an expert English learning coach and exam grader.\n"
-        "Analyze the student's answers and produce JSON ONLY with the exact schema below.\n\n"
         f"{scales_text}\n"
+        f"{history_text}\n"
+        f"Student Profile (without test_history): {json.dumps({k:v for k,v in profile.items() if k != 'test_history'})}\n"
+        f"Student Test History: {json.dumps(test_history)}\n"
+        "Analyze the student's answers and produce JSON ONLY with the exact schema below...\n"
 
         "Rules:\n"
         "- current_level must use student's profile score and map exactly to the tables.\n"
@@ -80,6 +97,13 @@ def _build_prompt(payload: Dict[str, Any]) -> str:
         f"Test Info: {json.dumps(test_info)}\n"
         f"Answer Key: {json.dumps(answer_key)}\n"
         f"Student Answers: {json.dumps(student_answers)}\n\n"
+
+        "\nExample of correct fields:\n"
+        '{\n'
+        '  "current_level": "TOEIC 605-780",\n'
+        '  "post_test_level": "TOEIC 10-250"\n'
+        "}\n"
+        "Use exactly this format for these two fields, no substitution with B1/B2/A1, etc.\n"
 
         "Produce JSON exactly following the schema. No extra commentary."
     )
