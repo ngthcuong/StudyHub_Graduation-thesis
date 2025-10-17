@@ -120,45 +120,81 @@ const TestInformation = () => {
 
   const handleStartTest = () => {
     // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
-    if (!user?.currentLevel || !testInfor?.examType) {
-      dispatch(
-        openSnackbar({
-          message:
-            "Please update your profile with current level information before taking this test.",
-          severity: "error",
-        })
+    console.log("User currentLevel:", !user?.currentLevel, testInfor);
+    if (testInfor) {
+      if (!user?.currentLevel || !testInfor?.examType) {
+        dispatch(
+          openSnackbar({
+            message:
+              "Please update your profile with current level information before taking this test.",
+            severity: "error",
+          })
+        );
+        return;
+      }
+
+      // Kiểm tra xem examType của test có trong currentLevel của user hay không
+      const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
+        user.currentLevel,
+        testInfor?.examType
       );
-      return;
-    }
 
-    // Kiểm tra xem examType của test có trong currentLevel của user hay không
-    const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
-      user.currentLevel,
-      testInfor.examType
-    );
+      if (!hasMatchingLevel) {
+        dispatch(
+          openSnackbar({
+            message: `Please update your ${testInfor?.examType} level in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
 
-    if (!hasMatchingLevel) {
-      dispatch(
-        openSnackbar({
-          message: `Please update your ${testInfor.examType} level in your profile before taking this test.`,
-          severity: "error",
-        })
+      // Nếu có currentLevel phù hợp, bắt đầu làm bài
+      navigate(`/test/${testPool._id || testId}/attempt`, {
+        state: { testId: testPool._id || testId },
+      });
+    } else {
+      if (!user?.currentLevel || !testInfoState?.examType) {
+        dispatch(
+          openSnackbar({
+            message:
+              "Please update your profile with current level information before taking this test.",
+            severity: "error",
+          })
+        );
+        return;
+      }
+
+      // Kiểm tra xem examType của test có trong currentLevel của user hay không
+      const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
+        user.currentLevel,
+        testInfoState?.examType
       );
-      return;
-    }
 
-    // Nếu có currentLevel phù hợp, bắt đầu làm bài
-    navigate(`/test/${testPool._id || testId}/attempt`, {
-      state: { testId: testPool._id || testId },
-    });
+      if (!hasMatchingLevel) {
+        dispatch(
+          openSnackbar({
+            message: `Please update your ${testInfoState?.examType} level in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
+
+      // Nếu có currentLevel phù hợp, bắt đầu làm bài
+      navigate(`/test/${testPool._id || testId}/attempt`, {
+        state: { testId: testPool._id || testId },
+      });
+    }
   };
 
   // Kiểm tra xem user có thể làm bài test hay không
   const canTakeTest = () => {
-    if (!user?.currentLevel || !testInfor?.examType) return false;
+    if (!user?.currentLevel || !testInfor?.examType || !testInfoState?.examType)
+      return false;
     return Object.prototype.hasOwnProperty.call(
       user.currentLevel,
-      testInfor.examType
+      testInfor?.examType || testInfoState?.examType
     );
   };
 
@@ -320,7 +356,9 @@ const TestInformation = () => {
                   </Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={600} color="#111827">
-                  {formatQuestionTypes(testInfor.questionTypes)}
+                  {formatQuestionTypes(
+                    testInfor?.questionTypes || testInfoState?.questionTypes
+                  )}
                 </Typography>
               </Box>
             </Grid>
@@ -374,7 +412,10 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor.passingScore * 10 || 0}
+                  {testInfor ? testInfor.passScore : testInfoState?.passScore}{" "}
+                  {!testInfor?.passScore && !testInfoState?.passScore
+                    ? "70"
+                    : null}
                   <span className="text-base font-normal">%</span>
                 </Typography>
               </Box>
@@ -396,10 +437,16 @@ const TestInformation = () => {
                 <Typography
                   variant="h5"
                   fontWeight={700}
-                  color={testInfor.isFinalTest ? "#dc2626" : "#16a34a"}
+                  color={testInfor?.isFinalTest ? "#dc2626" : "#16a34a"}
                   noWrap
                 >
-                  {testInfor.isFinalTest ? "Yes" : "No"}
+                  {testInfor
+                    ? testInfor?.isFinalTest
+                      ? "Yes"
+                      : "No"
+                    : testInfoState?.isFinalTest
+                    ? "Yes"
+                    : "No"}{" "}
                 </Typography>
               </Box>
             </Grid>
@@ -458,8 +505,8 @@ const TestInformation = () => {
               color="primary"
               size="medium"
               disabled={
-                (attempt && attempt.attemptNumber >= attempt.maxAttempts) ||
-                !canTakeTest()
+                (attempt && attempt?.attemptNumber >= attempt?.maxAttempts) ||
+                canTakeTest()
               }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
