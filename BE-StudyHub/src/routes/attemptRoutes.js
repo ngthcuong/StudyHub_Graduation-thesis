@@ -16,7 +16,7 @@ router.post("/by-test-pool", attemptController.getAttemptsByTestPool); // Đặt
 
 // --- 2. Route Động (Có tham số /:...) ---
 // Submit attempt (by attemptId)
-router.post("/:attemptId/submit", attemptController.submitAttempt);
+router.post("/:attemptId/submit", verifyToken, attemptController.submitAttempt);
 
 // Get attempt by id
 router.get("/:attemptId", attemptController.getAttemptById); // Đặt route ĐỘNG này xuống dưới

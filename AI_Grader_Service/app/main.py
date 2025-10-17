@@ -82,7 +82,9 @@ async def grade_endpoint(req: GradeRequest):
             skill_summary=skill_summary,
             weak_topics=weak_topics,
             recommendations=recommendations,
-            personalized_plan=personalized_plan
+            personalized_plan=personalized_plan,
+            current_level=gemini_resp.get("current_level", req.profile.current_level if req.profile else "Unknown"),
+            post_test_level=gemini_resp.get("post_test_level", "Unknown")
         )
         return resp
 

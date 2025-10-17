@@ -131,17 +131,47 @@ const CourseLessson = () => {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
-  const handleLessonClick = async (lessonId) => {
-    setCurrentLessonId(lessonId?._id);
+  const handleLessonClick = async (lesson) => {
+    // Log thời gian cho lesson cũ trước khi chuyển
+    await logTimeForLesson(lessonPlay);
+
+    setCurrentLessonId(lesson._id);
+
     try {
-      const start = Date.now();
-      setStartTime(start);
-      const result = await getPartById(lessonId._id).unwrap();
+      const result = await getPartById(lesson._id).unwrap();
       setLessonPlay(result.data);
+      setStartTime(Date.now()); // reset thời gian bắt đầu cho lesson mới
     } catch (error) {
       console.error("Failed to fetch part data:", error);
     }
-    // setCurrentLessonId(lessonId);
+  };
+
+  const logTimeForLesson = async (lesson) => {
+    if (!startTime) return; // chưa có thời gian bắt đầu thì bỏ qua
+
+    const end = Date.now();
+    const durationMs = end - startTime;
+    let durationMinutes = durationMs / 60000;
+
+    durationMinutes =
+      durationMinutes >= 1
+        ? Math.floor(durationMinutes)
+        : parseFloat(durationMinutes.toFixed(1));
+
+    try {
+      await logStudySession({
+        lessonId: lesson._id,
+        durationMinutes,
+      }).unwrap();
+      console.log(
+        "Logged study session:",
+        lesson.title,
+        durationMinutes,
+        "minutes"
+      );
+    } catch (error) {
+      console.error("Failed to log study session:", error);
+    }
   };
 
   const findNextLesson = () => {
@@ -166,28 +196,9 @@ const CourseLessson = () => {
     return null;
   };
 
-  const handleContinueLesson = async (lesson) => {
-    const end = Date.now();
-    const durationMs = end - startTime;
-    let durationMinutes = durationMs / 60000; // ra số phút (có thể có thập phân)
-
-    // Làm tròn hợp lý:
-    // Nếu >= 1 phút → làm tròn xuống (floor)
-    // Nếu < 1 phút → lấy 1 chữ số thập phân
-    durationMinutes =
-      durationMinutes >= 1
-        ? Math.floor(durationMinutes)
-        : parseFloat(durationMinutes.toFixed(1));
-
-    try {
-      const result = await logStudySession({
-        lessonId: lesson._id,
-        durationMinutes,
-      }).unwrap();
-      console.log("Logged study session:", result);
-    } catch (error) {
-      console.error("Failed to log study session:", error);
-    }
+  const handleContinueLesson = async () => {
+    // Log thời gian cho lesson hiện tại
+    await logTimeForLesson(lessonPlay);
 
     const nextLesson = findNextLesson();
     if (nextLesson) {
