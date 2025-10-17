@@ -38,7 +38,7 @@ export const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
-        path: "/verify-cert",
+        path: "/verify-certificate",
         element: <VerifyCertificatePage />,
       },
       {
@@ -96,10 +96,6 @@ export const router = createBrowserRouter([
                 element: <AdminReview />,
               },
             ],
-          },
-          {
-            path: "/profile",
-            element: <UserInfo />,
           },
           {
             path: "/course",

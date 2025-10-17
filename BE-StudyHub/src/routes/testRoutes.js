@@ -4,10 +4,13 @@ const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 const testController = require("../controllers/testController");
 
 // Admin creates test
-router.post("/", verifyToken, requireAdmin, testController.createTest);
+router.post("/", verifyToken, testController.createTest);
 
 // Get all tests
 router.get("/", testController.getAllTests);
+
+// Lấy thông tin của toàn bộ test trong db
+router.get("/statistics", testController.getTestStatistics);
 
 // Get test detail
 router.get("/:testId", testController.getTestById);

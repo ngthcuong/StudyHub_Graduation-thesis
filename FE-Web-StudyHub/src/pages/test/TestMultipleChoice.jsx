@@ -30,7 +30,7 @@ import {
   useCreateTestPoolMutation,
   useGenerateTestQuestionsMutation,
   useSubmitTestMutation,
-  useUpdateTestPoolMutation,
+  // useUpdateTestPoolMutation,
 } from "../../services/testApi";
 
 const TestMultipleChoice = () => {
@@ -56,6 +56,7 @@ const TestMultipleChoice = () => {
 
   useEffect(() => {
     startTest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId]);
 
   useEffect(() => {
@@ -78,7 +79,7 @@ const TestMultipleChoice = () => {
   const [createTestPoolTrigger] = useCreateTestPoolMutation();
   const [generateTestQuestionsTrigger] = useGenerateTestQuestionsMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
-  const [updateTestPoolTrigger] = useUpdateTestPoolMutation();
+  // const [updateTestPoolTrigger] = useUpdateTestPoolMutation();
 
   const startTest = async () => {
     try {
@@ -338,6 +339,7 @@ const TestMultipleChoice = () => {
 
       return () => clearInterval(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, isPaused]);
 
   const handleChange = (e) => {
@@ -456,7 +458,7 @@ const TestMultipleChoice = () => {
         clearInterval(intervalId);
       }
     };
-  }, [loading, questions]); // Thêm dependencies để useEffect chạy lại khi state thay đổi.
+  }, [learningTips.length, loading, questions]); // Thêm dependencies để useEffect chạy lại khi state thay đổi.
 
   if (loading || !questions) {
     return (

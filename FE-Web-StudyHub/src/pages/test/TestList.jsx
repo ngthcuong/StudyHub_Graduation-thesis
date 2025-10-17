@@ -23,7 +23,7 @@ import { useEffect } from "react";
 
 const typeOptions = ["All Types", "Test", "Assignment"];
 const statusOptions = ["All Status", "Completed", "Not Completed"];
-const difficultyOptions = ["All Levels", "Easy", "Medium", "Hard"];
+// const difficultyOptions = ["All Levels", "Easy", "Medium", "Hard"];
 
 const TestList = () => {
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ const TestList = () => {
       }
     };
     fetchTests();
-  }, []);
+  }, [getAllTests]);
 
   // Lọc dữ liệu
   const filtered = useMemo(() => {
@@ -201,7 +201,7 @@ const TestList = () => {
                 </Select>
               </Box>
               {/* Level */}
-              <Box className="flex flex-col w-full md:w-auto">
+              {/* <Box className="flex flex-col w-full md:w-auto">
                 <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
                   Difficulty Level
                 </Typography>
@@ -217,7 +217,7 @@ const TestList = () => {
                     </MenuItem>
                   ))}
                 </Select>
-              </Box>
+              </Box> */}
             </Stack>
           )}
         </Box>
@@ -259,7 +259,7 @@ const TestList = () => {
                       {item.title}
                     </Typography>
                     {/* Độ khó */}
-                    <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                    {/* <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
                       <Typography
                         variant="subtitle2"
                         fontWeight={400}
@@ -275,7 +275,7 @@ const TestList = () => {
                           textTransform: "capitalize",
                         }}
                       />
-                    </Stack>
+                    </Stack> */}
                   </Box>
                   {/* Loại bài */}
                   <Chip

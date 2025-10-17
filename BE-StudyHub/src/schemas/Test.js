@@ -48,7 +48,8 @@ const testSchema = new mongoose.Schema(
       required: true,
     },
     passingScore: { type: Number, default: 7 }, // điểm đạt
-    maxAttempts: { type: Number, default: 3 }, // số lần được phép thi
+    maxAttempts: { type: Number }, // số lần được phép thi
+    isTheLastTest: { type: Boolean, default: false }, // bài test cuối cùng để phát hành chứng chỉ
   },
   { timestamps: true }
 );
