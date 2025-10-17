@@ -65,6 +65,7 @@ const TestInformation = () => {
 
       fetchTest();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId, testInfoState]);
 
   useEffect(() => {
@@ -367,17 +368,13 @@ const TestInformation = () => {
                     Pass Score
                   </Typography>
                 </Box>
-                <Typography variant="body1" fontWeight={600} color="#111827">
-                  {formatQuestionTypes(
-                    testInfor?.questionTypes || testInfoState?.questionTypes
-                  )}
                 <Typography
                   variant="h5"
                   fontWeight={700}
                   color="#111827"
                   noWrap
                 >
-                  {testInfor.passScore || 0}
+                  {testInfor.passingScore * 10 || 0}
                   <span className="text-base font-normal">%</span>
                 </Typography>
               </Box>
