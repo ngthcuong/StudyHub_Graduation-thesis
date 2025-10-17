@@ -10,6 +10,7 @@ const testModel = require("../models/testModel");
 const StudyLog = require("../schemas/studyLog");
 const dayjs = require("dayjs");
 
+const userModel = require("../models/userModel");
 //  For calling external grading service
 const axios = require("axios");
 // const userAnswerModel = require("../models/userAnswerModel");
@@ -145,32 +146,69 @@ const submitAttempt = async (req, res) => {
         studentAnswersMap[String(index + 1)] = a.selectedOptionText || "";
       });
 
+      // lấy thời gian học hằng tuần
+      let timeWeekly = {};
+      try {
+        const timedata = await getStudyStats(userId);
+        console.log("Study stats data sent to grading service:", timedata);
+        const result = getWeekWithMaxHours(dailyStats);
+        // { maxWeek: "42", maxHours: 0.167 }
+        console.log(result);
+        timeWeekly = result;
+      } catch (error) {
+        console.error("Error submitting answers to grading service:", error);
+      }
+
       // --- Lấy thông tin học sinh ---
       const userInfo = await attemptModel.findAttemptById(attemptId);
       const formattedUser = {
         student_id: userInfo?.userId._id.toString(),
         name: userInfo?.userId.fullName,
-        current_level: "Intermediate",
-        study_hours_per_week: 12,
-        learning_goals: "Đạt TOEIC 750 trong vòng 6 tháng",
-        learning_preferences: userInfo?.userId.learningPreferences || [],
-        study_methods: userInfo?.userId.studyMethods || [],
+        current_level: `TOEIC ${userInfo?.userId?.currentLevel?.TOEIC}`,
+        study_hours_per_week: timeWeekly.maxHours || 2,
+        learning_goals:
+          userInfo?.userId?.learningGoals || "Đạt TOEIC 750 trong vòng 6 tháng",
+        learning_preferences: userInfo?.userId?.learningPreferences || [],
+        study_methods: userInfo?.userId?.studyMethods || [],
       };
 
       // --- Lịch sử làm bài ---
-      const history = await attemptModel.findAttemptsByUser(
+      // const history = await attemptModel.findAttemptsByUser(
+      //   userInfo?.userId._id
+      // );
+      // const testHistory = history.map((a) => ({
+      //   test_date: a.startTime
+      //     ? new Date(a.startTime).toISOString().split("T")[0] // yyyy-mm-dd
+      //     : "1970-01-01", // nếu null, gán ngày mặc định hợp lệ
+      //   level_at_test: a.level || "Unknown",
+      //   score: a.score != null ? a.score : 0, // nếu score undefined/null -> 0
+      //   notes: a.feedback || "",
+      // }));
+
+      const history = await attemptDetailModel.getAllAttemptDetailsByUserId(
         userInfo?.userId._id
       );
-      const testHistory = history.map((a) => ({
-        test_date: a.startTime
-          ? new Date(a.startTime).toISOString().split("T")[0] // yyyy-mm-dd
-          : "1970-01-01", // nếu null, gán ngày mặc định hợp lệ
-        level_at_test: a.level || "Unknown",
-        score: a.score != null ? a.score : 0, // nếu score undefined/null -> 0
-        notes: a.feedback || "",
+
+      console.log("Full test history:", history);
+
+      const simplifiedResults = history.slice(0, 3).map((item) => ({
+        test_date:
+          item.startTime instanceof Date
+            ? item.startTime.toISOString().split("T")[0] // chuyển Date → ISO string → lấy ngày
+            : item.startTime?.split("T")[0] || null, // nếu là string
+        level_at_test: item.analysisResult.current_level,
+        per_question: item.analysisResult.per_question,
+        weak_topics: item.analysisResult.weak_topics || [],
       }));
 
+      console.log("Simplified test history:", simplifiedResults);
+
       formattedUser.test_history = [];
+
+      console.log(
+        "Formatted user data sent to grading service:",
+        formattedUser
+      );
 
       // --- Ghép thành object cuối cùng ---
       const gradingPayload = {
@@ -192,6 +230,8 @@ const submitAttempt = async (req, res) => {
       );
 
       resForTestResult = response?.data || {};
+
+      console.log("Grading response:", resForTestResult);
 
       // console.log("Grading response:", response.data);
 
@@ -280,6 +320,18 @@ const submitAttempt = async (req, res) => {
       score: totalScore,
       attemptNumber: newAttemptNumber,
     });
+
+    const updateData = {
+      currentLevel: {
+        TOEIC:
+          extractLevel(resForTestResult?.post_test_level) ||
+          extractLevel(resForTestResult?.current_level),
+      },
+    };
+
+    if (resForTestResult?.post_test_level) {
+      await userModel.updateUserById(userId, updateData);
+    }
 
     res.status(200).json({
       message: "Submitted successfully",
@@ -443,9 +495,9 @@ const getAttemptsByTestIdAndUser = async (req, res) => {
 
 const getStudyStats = async (userId) => {
   try {
-    // 🗓 Nhận month & year từ query (VD: /study/stats?month=10&year=2025)
-    const month = parseInt(req.query.month);
-    const year = parseInt(req.query.year);
+    const now = new Date();
+    const month = now.getMonth() + 1; // getMonth() trả về 0-11, nên +1
+    const year = now.getFullYear();
 
     // Nếu không có query, mặc định là tháng hiện tại
     const targetMonth = !isNaN(month) ? month : dayjs().month() + 1; // month trong dayjs là 0-index
@@ -559,6 +611,49 @@ const getStudyStats = async (userId) => {
     res.status(500).json({ error: "Failed to get study stats" });
   }
 };
+
+const dailyStats = [
+  /* dữ liệu dailyStats bạn đã đưa */
+];
+
+// Hàm lấy tuần cao nhất
+function getWeekWithMaxHours(stats) {
+  const weeks = {};
+  stats.forEach((day) => {
+    const date = new Date(day.date);
+    const week = `${getWeekNumber(date)}`; // dùng số tuần trong năm
+    if (!weeks[week]) weeks[week] = 0;
+    weeks[week] += day.studyTimeMinutes;
+  });
+
+  // Tìm tuần có số phút cao nhất
+  let maxWeek = null;
+  let maxMinutes = 0;
+  for (const [week, minutes] of Object.entries(weeks)) {
+    if (minutes > maxMinutes) {
+      maxMinutes = minutes;
+      maxWeek = week;
+    }
+  }
+
+  return { maxWeek, maxHours: maxMinutes / 60 };
+}
+
+// Hàm tính số tuần trong năm từ date
+function getWeekNumber(d) {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dayNum = date.getDay() || 7;
+  date.setDate(date.getDate() + 4 - dayNum);
+  const yearStart = new Date(date.getFullYear(), 0, 1);
+  return Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
+}
+
+function extractLevel(levelStr) {
+  if (!levelStr) return null;
+  // Dùng regex lấy 2 số cách nhau dấu -
+  const match = levelStr.match(/(\d+\s*-\s*\d+)/);
+  return match ? match[1] : levelStr; // nếu ko match thì giữ nguyên
+}
 
 module.exports = {
   startAttempt,

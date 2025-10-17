@@ -95,6 +95,78 @@ const getAttemptDetailByUserAndTest = async (userId, testId) => {
   }
 };
 
+const getAllAttemptDetailsByUserId = async (userId) => {
+  try {
+    // Lấy tất cả các attempt của user này
+    const attempts = await TestAttempt.find({ userId })
+      .populate({
+        path: "testPoolId",
+        populate: {
+          path: "baseTestId",
+          model: "Test",
+          select: "title skill level examType durationMin",
+        },
+      })
+      .lean();
+
+    if (!attempts.length) {
+      return res
+        .status(404)
+        .json({ message: "No attempts found for this user" });
+    }
+
+    // Lấy danh sách attemptId
+    const attemptIds = attempts.map((a) => a._id);
+
+    // Lấy tất cả attempt details tương ứng
+    const attemptDetails = await AttemptDetail.find({
+      attemptId: { $in: attemptIds },
+    })
+      .populate({
+        path: "answers.questionId",
+        model: "Question",
+        select: "questionText options points skill topic",
+      })
+      .lean();
+
+    // Ghép dữ liệu attempt + detail
+    const mergedData = attemptDetails.map((detail) => {
+      const relatedAttempt = attempts.find(
+        (a) => a._id.toString() === detail.attemptId.toString()
+      );
+
+      console.log(detail);
+
+      return {
+        attemptId: detail.attemptId,
+        testTitle: relatedAttempt?.testPoolId?.baseTestId?.title,
+        skill: relatedAttempt?.testPoolId?.baseTestId?.skill,
+        level: relatedAttempt?.testPoolId?.baseTestId?.level,
+        examType: relatedAttempt?.testPoolId?.baseTestId?.examType,
+        durationMin: relatedAttempt?.testPoolId?.baseTestId?.durationMin,
+        startTime: detail?.startTime,
+        endTime: detail?.endTime,
+        // answers: detail.answers.map((a) => ({
+        //   questionId: a.questionId?._id,
+        //   questionText: a.questionText || a.questionId?.questionText,
+        //   selectedOptionText: a.selectedOptionText,
+        //   isCorrect: a.isCorrect,
+        //   score: a.score,
+        // })),
+        analysisResult: detail.analysisResult || {},
+      };
+    });
+
+    return mergedData;
+  } catch (error) {
+    console.error("Error fetching attempt details:", error);
+    res.status(500).json({
+      message: "Error fetching attempt details",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createAttemptDetail,
   getAttemptDetailByAttemptId,
@@ -103,4 +175,5 @@ module.exports = {
   getAllAttemptDetails,
   findAnswersByAttempt,
   getAttemptDetailByUserAndTest,
+  getAllAttemptDetailsByUserId,
 };
