@@ -147,6 +147,11 @@ const ProfileStackNavigator = () => (
       component={CompletedTestsScreen}
       options={{ title: "Completed Tests" }}
     />
+    <ProfileStack.Screen
+      name="TestResults"
+      component={TestResultsScreen}
+      options={{ title: "Test Results" }}
+    />
   </ProfileStack.Navigator>
 );
 
