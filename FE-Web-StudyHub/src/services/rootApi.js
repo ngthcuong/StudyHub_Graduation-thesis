@@ -56,6 +56,8 @@ export const rootApi = createApi({
     "TestPool",
     "Certificate",
     "StudyStats",
+    "GrammarLesson",
+    "Course",
   ],
   keepUnusedDataFor: 20, // instead of default 60s
   endpoints: () => ({}),

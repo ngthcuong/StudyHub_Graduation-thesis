@@ -52,8 +52,8 @@ const courseSchema = new mongoose.Schema(
 
     grammarLessons: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "GrammarLesson",
+        type: mongoose.Schema.Types.ObjectId, // Kiểu dữ liệu là ID của Mongoose
+        ref: "GrammarLesson", // Quan trọng: Đây là tên model bạn đã export
       },
     ],
   },

@@ -15,14 +15,12 @@ const CourseCard = ({ course, variant = "market" }) => {
       className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
     >
       {/* Course Image */}
-      <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="">
-          <img
-            src={course.image}
-            alt={course.title}
-            className="w-10 h-10 rounded-full"
-          />
-        </div>
+      <div className="h-48 w-full relative">
+        <img
+          src={course.thumbnailUrl}
+          alt={course.title}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       <CardContent className="p-6">

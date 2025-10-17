@@ -40,6 +40,7 @@ const TestInformation = () => {
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
   const [attempt, setAttempt] = useState();
   const [history, setHistory] = useState([]);
+  const [testInfoState, setTestInfoState] = useState(testInfor);
 
   const user = useSelector((state) => state.auth.user);
 
@@ -50,6 +51,21 @@ const TestInformation = () => {
   const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
   const [getAttemptDetailByUserAndTest] =
     useGetAttemptDetailByUserAndTestMutation();
+
+  useEffect(() => {
+    if (!testInfoState && testId) {
+      const fetchTest = async () => {
+        try {
+          const res = await getTestByTestId(testId).unwrap();
+          setTestInfoState(res?.data); // thay vì res.data
+        } catch (err) {
+          console.error("Failed to fetch test by id:", err);
+        }
+      };
+
+      fetchTest();
+    }
+  }, [testId, testInfoState]);
 
   useEffect(() => {
     if (!user?._id || !testId) return;
@@ -152,7 +168,7 @@ const TestInformation = () => {
   // Format question types for display
   const formatQuestionTypes = (types) => {
     return types
-      .map((type) => {
+      ?.map((type) => {
         switch (type) {
           case "multiple_choice":
             return "Multi Choice";
@@ -209,7 +225,7 @@ const TestInformation = () => {
             color="#111827"
             gutterBottom
           >
-            {testInfor?.title}
+            {testInfor?.title || testInfoState?.title}
           </Typography>
           <Divider
             sx={{
@@ -232,7 +248,7 @@ const TestInformation = () => {
             color="#6b7280"
             sx={{ mb: 2, textAlign: "justify" }}
           >
-            {testInfor.description}
+            {testInfor?.description || testInfoState?.description}
           </Typography>
 
           {/* Các thông tin khác: 2 dòng 3 cột */}
@@ -258,7 +274,7 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor.numQuestions}
+                  {testInfor?.numQuestions || testInfoState?.numQuestions}{" "}
                 </Typography>
               </Box>
             </Grid>
@@ -282,7 +298,7 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor.durationMin}{" "}
+                  {testInfor?.durationMin || testInfoState?.durationMin}{" "}
                   <span className="text-base font-normal">minutes</span>
                 </Typography>
               </Box>
@@ -351,6 +367,10 @@ const TestInformation = () => {
                     Pass Score
                   </Typography>
                 </Box>
+                <Typography variant="body1" fontWeight={600} color="#111827">
+                  {formatQuestionTypes(
+                    testInfor?.questionTypes || testInfoState?.questionTypes
+                  )}
                 <Typography
                   variant="h5"
                   fontWeight={700}

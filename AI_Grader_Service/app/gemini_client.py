@@ -27,62 +27,63 @@ def _build_prompt(payload: Dict[str, Any]) -> str:
     answer_key = payload.get("answer_key", [])
     student_answers = payload.get("student_answers", {})
 
-    prompt = (
-        "You are an expert English learning coach and exam grader. "
-        "Your task: analyze the student's answers, grade the test, and produce a detailed,"
-        " teacher-style explanation for each question (why the expected answer is correct"
-        " and why any incorrect student answer is incorrect). Also produce skill-level"
-        " predictions, monitoring alerts and a detailed personalized study plan for the"
-        " next several weeks. RETURN ONLY VALID JSON (no extra text) with the EXACT fields below.\n\n"
+     # Detailed TOEIC/IELTS scales
+    scales_text = (
+        "Use this TOEIC scale strictly:\n"
+        "10–250: Beginner (A1) -> very basic words/sentences\n"
+        "255–400: Elementary (A2) -> short conversations, simple past/present\n"
+        "405–600: Intermediate (B1) -> simple emails/reports, basic relative clauses\n"
+        "605–780: Upper-Intermediate (B2) -> contracts, conditionals, passive, reasoning\n"
+        "785–900: Advanced (C1) -> confident structures, professional vocab, tricky inference\n"
+        "905–990: Proficiency (C2) -> near-native, complex context, high-speed tests\n\n"
 
-        "REQUIRED OUTPUT SCHEMA (exact keys):\n"
+        "Use this IELTS scale strictly:\n"
+        "0–3.5: Beginner (A1–A2) -> basic communication, short reading/listening, simple writing\n"
+        "4.0–5.0: Elementary (B1 low) -> familiar situations, short reading passages\n"
+        "5.5–6.0: Intermediate (B1–B2) -> medium texts, basic essays, Reading 3–4 passages\n"
+        "6.5–7.0: Upper-Intermediate (B2–C1) -> good academic communication, few grammar errors\n"
+        "7.5–8.0: Advanced (C1) -> very good, occasional mistakes, academic journals\n"
+        "8.5–9.0: Expert (C2) -> near-native, any complex academic content\n\n"
+    )
+
+    prompt = (
+        "You are an expert English learning coach and exam grader.\n"
+        "Analyze the student's answers and produce JSON ONLY with the exact schema below.\n\n"
+        f"{scales_text}\n"
+
+        "Rules:\n"
+        "- current_level must use student's profile score and map exactly to the tables.\n"
+        "- post_test_level must be determined from the test score percentage and map exactly to the tables.\n"
+        "- Do not use vague words like 'Intermediate'; always provide exact range string.\n\n"
+
+        "REQUIRED OUTPUT SCHEMA:\n"
         "{\n"
-        "  \"total_score\": int,            // number of correct answers\n"
+        "  \"total_score\": int,\n"
         "  \"total_questions\": int,\n"
-        "  \"per_question\": [              // list of objects, one per question\n"
-        "    {\n"
-        "      \"id\": int,\n"
-        "      \"question\": string or null,\n"
-        "      \"correct\": boolean,\n"
-        "      \"expected_answer\": string,\n"
-        "      \"user_answer\": string or null,\n"
-        "      \"skill\": string or null,\n"
-        "      \"topic\": string or null,\n"
-        "      \"explain\": string   // 1-3 sentences: identify grammar pattern, explain why expected is correct, why student answer is wrong (if wrong), give a short example\n"
-        "    }\n"
-        "  ],\n"
-        "  \"skill_summary\": [            // aggregated by skill\n"
-        "    {\"skill\": string, \"total\": int, \"correct\": int, \"accuracy\": float}\n"
-        "  ],\n"
-        "  \"weak_topics\": [string],      // top 3 weak topics\n"
-        "  \"recommendations\": [string],  // short list of suggestions\n"
-        "  \"personalized_plan\": {        // structured plan for next weeks\n"
-        "    \"progress_speed\": string,   // e.g. 'Slow', 'Moderate', 'Fast'\n"
-        "    \"weekly_goals\": [\n"
-        "      {\"week\": int, \"topic\": string, \"description\": string, \"study_methods\": [string], \"materials\": [string], \"hours\": int}\n"
-        "    ]\n"
-        "  },\n"
-        "  \"proficiency_prediction\": {   // per-skill estimated current mastery and predicted improvement rate\n"
-        "    \"skill_estimates\": [{\"skill\": string, \"current_level\": string, \"confidence\": string, \"predicted_gain_weeks\": int}]\n"
-        "  },\n"
-        "  \"monitoring_alerts\": [string] // e.g. 'Significant drop in listening compared to last test', or empty list\n"
+        "  \"per_question\": [{\n"
+        "    \"id\": int, \"question\": string|null, \"correct\": bool, "
+        "\"expected_answer\": string, \"user_answer\": string|null, "
+        "\"skill\": string|null, \"topic\": string|null, \"explain\": string\n"
+        "  }],\n"
+        "  \"skill_summary\": [{\"skill\": string, \"total\": int, \"correct\": int, \"accuracy\": float}],\n"
+        "  \"weak_topics\": [string],\n"
+        "  \"recommendations\": [string],\n"
+        "  \"personalized_plan\": {\"progress_speed\": string, \"weekly_goals\": [{\"week\": int, \"topic\": string, \"description\": string, \"study_methods\": [string], \"materials\": [string], \"hours\": int}]},\n"
+        "  \"proficiency_prediction\": {\"skill_estimates\": [{\"skill\": string, \"current_level\": string, \"confidence\": string, \"predicted_gain_weeks\": int}]},\n"
+        "  \"monitoring_alerts\": [string],\n"
+        "  \"current_level\": string,       // from profile score\n"
+        "  \"post_test_level\": string      // determined from test result\n"
         "}\n\n"
 
-        "Rules for 'explain' field (VERY IMPORTANT):\n"
-        "- Must be 1-3 clear sentences in English (unless otherwise requested).\n"
-        "- Explain the underlying grammar pattern (e.g. 'tag question: negative main clause -> positive tag', 'present perfect vs simple past', 'subject-verb agreement').\n"
-        "- State specifically why the expected answer is correct and why the student's answer is incorrect if wrong (e.g. 'double negative', 'wrong auxiliary', 'pronoun mismatch', 'tense mismatch').\n"
-        "- Provide a single short example sentence showing correct usage.\n\n"
-
-        "Context (JSON):\n"
+        "Context:\n"
         f"Student Profile: {json.dumps(profile)}\n"
         f"Test Info: {json.dumps(test_info)}\n"
         f"Answer Key: {json.dumps(answer_key)}\n"
         f"Student Answers: {json.dumps(student_answers)}\n\n"
 
-        "Produce JSON that exactly follows the schema above. Do not add any commentary, titles, or code fences. "
-        "If some optional fields are not relevant, still include them but use empty lists or nulls as appropriate."
+        "Produce JSON exactly following the schema. No extra commentary."
     )
+
     return prompt
 
 def _extract_text_from_response(data: Dict[str, Any]) -> Optional[str]:

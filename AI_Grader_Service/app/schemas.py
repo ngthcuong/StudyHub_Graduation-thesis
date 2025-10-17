@@ -66,3 +66,5 @@ class GradeResponse(BaseModel):
     weak_topics: List[str]
     recommendations: Optional[List[str]] = None
     personalized_plan: Optional[Any] = None
+    current_level: str 
+    post_test_level: str
