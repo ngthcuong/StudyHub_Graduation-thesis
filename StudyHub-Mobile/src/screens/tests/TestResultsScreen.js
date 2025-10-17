@@ -41,12 +41,11 @@ const TestResultsScreen = ({ navigation }) => {
 
   // --- Xử lý dữ liệu (Data Handling) ---
 
-  // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi
-  if (
-    !resultData ||
-    !resultData.attemptDetail ||
-    !resultData.attemptDetail.analysisResult
-  ) {
+  // Kiểm tra và xử lý dữ liệu từ cả hai nguồn khác nhau
+  let analysisResult,
+    timeTaken = 0;
+
+  if (!resultData) {
     return (
       <SafeAreaView
         style={{ flex: 1, backgroundColor: theme.colors.background }}
@@ -60,12 +59,34 @@ const TestResultsScreen = ({ navigation }) => {
     );
   }
 
-  const startTime = new Date(resultData.attemptDetail.startTime);
-  const endTime = new Date(resultData.attemptDetail.endTime);
-  const timeTaken = Math.floor((endTime - startTime) / 1000);
+  // Case 1: Dữ liệu từ test submission (có attemptDetail)
+  if (resultData.attemptDetail && resultData.attemptDetail.analysisResult) {
+    analysisResult = resultData.attemptDetail.analysisResult;
+    const startTime = new Date(resultData.attemptDetail.startTime);
+    const endTime = new Date(resultData.attemptDetail.endTime);
+    timeTaken = Math.floor((endTime - startTime) / 1000);
+  }
+  // Case 2: Dữ liệu từ CompletedTestsScreen (có analysisResult trực tiếp)
+  else if (resultData.analysisResult) {
+    analysisResult = resultData.analysisResult;
+    // Tính thời gian từ durationMin nếu có
+    timeTaken = (resultData.durationMin || 0) * 60;
+  } else {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: theme.colors.text }}>
+            Invalid test result data format.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-  const analysisResult = resultData.attemptDetail.analysisResult;
-  const answers = resultData.attemptDetail.answers;
+  // Lấy answers từ dữ liệu (có thể không có trong case CompletedTestsScreen)
+  const answers = resultData.attemptDetail?.answers || [];
 
   // Destructuring với giá trị mặc định để tránh lỗi
   const {
@@ -88,7 +109,10 @@ const TestResultsScreen = ({ navigation }) => {
     const answerItem = answers[index] || {};
     return {
       ...analysisItem,
-      question: answerItem.questionText || `Question ${analysisItem.id}`,
+      question:
+        answerItem.questionText ||
+        analysisItem.question ||
+        `Question ${analysisItem.id}`,
       user_answer: answerItem.selectedOptionText || analysisItem.user_answer,
     };
   });
