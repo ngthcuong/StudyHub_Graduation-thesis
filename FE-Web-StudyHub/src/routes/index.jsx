@@ -38,7 +38,7 @@ export const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
-        path: "/verify-cert",
+        path: "/verify-certificate",
         element: <VerifyCertificatePage />,
       },
       {
@@ -98,10 +98,6 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "/profile",
-            element: <UserInfo />,
-          },
-          {
             path: "/course",
             element: <CourseList variant="market" />,
           },
@@ -146,10 +142,6 @@ export const router = createBrowserRouter([
             path: "/attempt/:attemptId",
             element: <TestResultDisplay />,
           },
-          // {
-          //   path: "/attempt/:attemptId",
-          //   element: <TestResult />,
-          // },
           {
             path: "/lesson/:lessonId",
             element: <LessonContentViewer />,

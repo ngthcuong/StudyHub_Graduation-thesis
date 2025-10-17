@@ -17,6 +17,7 @@ import {
   LogoutOutlined,
   PersonOutline,
   SettingsOutlined,
+  Verified,
 } from "@mui/icons-material";
 import { logout } from "../redux/slices/auth";
 
@@ -100,6 +101,14 @@ const Header = () => {
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
+                      navigate("/verify-certificate");
+                      setAnchorEl(null);
+                    }}
+                  >
+                    <Verified sx={{ mr: 1 }} /> Verify Certificate
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
                       navigate("/home/settings");
                       setAnchorEl(null);
                     }}
@@ -134,11 +143,17 @@ const Header = () => {
       >
         <div className="font-bold text-2xl">Logo</div>
         <nav className="flex items-center gap-8">
-          <a href="#" className="text-gray-700 hover:text-blue-600">
+          <a href="/" className="text-gray-700 hover:text-blue-600">
             Home
           </a>
-          <a href="#" className="text-gray-700 hover:text-blue-600">
+          <a href="/course" className="text-gray-700 hover:text-blue-600">
             Courses
+          </a>
+          <a
+            href="/verify-certificate"
+            className="text-gray-700 hover:text-blue-600"
+          >
+            Verify Certificate
           </a>
           <a href="#" className="text-gray-700 hover:text-blue-600">
             Contact
