@@ -10,6 +10,7 @@ export const authApi = rootApi.injectEndpoints({
         method: "POST",
         body: userData,
       }),
+      invalidatesTags: ["User"],
     }),
 
     // Đăng nhập
@@ -27,6 +28,7 @@ export const authApi = rootApi.injectEndpoints({
           console.error("Login failed: ", error);
         }
       },
+      invalidatesTags: ["User"],
     }),
 
     // RefreshToken
@@ -36,6 +38,7 @@ export const authApi = rootApi.injectEndpoints({
         method: "POST",
         body: { refreshToken },
       }),
+      invalidatesTags: ["User"],
     }),
 
     // Thay đổi mật khẩu

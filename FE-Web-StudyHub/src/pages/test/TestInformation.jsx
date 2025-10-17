@@ -163,7 +163,7 @@ const TestInformation = () => {
   };
 
   const handleUpdateProfile = () => {
-    navigate("/profile");
+    navigate("/home/profile");
   };
 
   // Format question types for display
@@ -375,7 +375,7 @@ const TestInformation = () => {
                   noWrap
                 >
                   {testInfor.passingScore * 10 || 0}
-                  <span className="text-base font-normal">%</span>
+                  <span className="text-base font-normal"> %</span>
                 </Typography>
               </Box>
             </Grid>

@@ -34,6 +34,7 @@ import {
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
 import dayjs from "dayjs";
+import { updateUser } from "../../redux/slices/auth";
 
 const levelTOEIC = [
   { value: "0", label: "No level" },
@@ -177,8 +178,6 @@ const UserInfo = () => {
   useEffect(() => {
     if (userData) {
       const formattedData = formatUserData(userData);
-      console.log(formattedData);
-
       reset(formattedData);
     }
   }, [userData, reset]);
@@ -193,11 +192,12 @@ const UserInfo = () => {
           TOEIC: data.toeic,
         },
       };
-      console.log("payload: ", payload);
 
       const response = await updateUserInfo(payload);
       if (!response) return;
 
+      console.log("res: ", response);
+      dispatch(updateUser(response.data.data));
       dispatch(
         openSnackbar({
           message: response.data.message,
@@ -207,7 +207,6 @@ const UserInfo = () => {
 
       // Cập nhật form với dữ liệu mới
       const updatedData = formatUserData(response.data.data);
-      console.log(updatedData);
 
       reset(updatedData);
       setIsEditing(false);
