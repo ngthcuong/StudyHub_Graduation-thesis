@@ -125,6 +125,7 @@ const EditInfoScreen = () => {
   };
 
   const handleSave = async () => {
+    console.log(formData);
     await userApi.updateProfile(formData);
     setIsEditing(false);
   };

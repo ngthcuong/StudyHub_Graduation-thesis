@@ -321,17 +321,17 @@ const submitAttempt = async (req, res) => {
       attemptNumber: newAttemptNumber,
     });
 
-    const updateData = {
-      currentLevel: {
-        TOEIC:
-          extractLevel(resForTestResult?.post_test_level) ||
-          extractLevel(resForTestResult?.current_level),
-      },
-    };
+    // const updateData = {
+    //   currentLevel: {
+    //     TOEIC:
+    //       extractLevel(resForTestResult?.post_test_level) ||
+    //       extractLevel(resForTestResult?.current_level),
+    //   },
+    // };
 
-    if (resForTestResult?.post_test_level) {
-      await userModel.updateUserById(userId, updateData);
-    }
+    // if (resForTestResult?.post_test_level) {
+    //   await userModel.updateUserById(userId, updateData);
+    // }
 
     res.status(200).json({
       message: "Submitted successfully",
