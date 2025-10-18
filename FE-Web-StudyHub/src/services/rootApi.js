@@ -58,6 +58,7 @@ export const rootApi = createApi({
     "StudyStats",
     "GrammarLesson",
     "Course",
+    "Review",
   ],
   keepUnusedDataFor: 20, // instead of default 60s
   endpoints: () => ({}),
