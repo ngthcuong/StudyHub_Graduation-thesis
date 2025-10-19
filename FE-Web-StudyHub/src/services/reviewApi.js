@@ -21,6 +21,42 @@ export const reviewApi = rootApi.injectEndpoints({
       providesTags: ["Review"],
     }),
 
+    // Lấy thống kê rating của khóa học
+    getCourseRatingStats: builder.query({
+      query: (courseId) => ({
+        url: `/reviews/course/${courseId}/stats`,
+        method: "GET",
+      }),
+      providesTags: ["Review"],
+    }),
+
+    // Lấy thống kê tổng quan reviews cho admin
+    getAdminReviewStats: builder.query({
+      query: () => ({
+        url: "/reviews/admin/stats",
+        method: "GET",
+      }),
+      providesTags: ["Review"],
+    }),
+
+    // Lấy danh sách đánh giá của user
+    getReviewsByUser: builder.query({
+      query: (userId) => ({
+        url: `/reviews/user/${userId}`,
+        method: "GET",
+      }),
+      providesTags: ["Review"],
+    }),
+
+    // Lấy đánh giá theo ID
+    getReviewById: builder.query({
+      query: (reviewId) => ({
+        url: `/reviews/${reviewId}`,
+        method: "GET",
+      }),
+      providesTags: ["Review"],
+    }),
+
     // Cập nhật đánh giá
     updateReview: builder.mutation({
       query: ({ id, reviewData }) => ({
@@ -45,6 +81,10 @@ export const reviewApi = rootApi.injectEndpoints({
 export const {
   useCreateReviewMutation,
   useGetReviewsByCourseQuery,
+  useGetCourseRatingStatsQuery,
+  useGetAdminReviewStatsQuery,
+  useGetReviewsByUserQuery,
+  useGetReviewByIdQuery,
   useUpdateReviewMutation,
   useDeleteReviewMutation,
 } = reviewApi;
