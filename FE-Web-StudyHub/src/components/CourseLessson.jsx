@@ -40,8 +40,8 @@ import { useParams } from "react-router-dom";
 import {
   useGetLessonsByCourseIdMutation,
   useGetPartByIdMutation,
-  useGetCourseByIdMutation,
 } from "../services/grammarLessonApi";
+import { useGetCourseByIdQuery } from "../services/courseApi";
 import { useGetTestByTestIdMutation } from "../services/testApi";
 import { useLogStudySessionMutation } from "../services/StudyStatsApi";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
@@ -59,9 +59,9 @@ const CourseLessson = () => {
   const [startTime, setStartTime] = useState(null);
 
   const [getLessonsByCourseId] = useGetLessonsByCourseIdMutation();
-  const [logStudySession, { isLoading, error }] = useLogStudySessionMutation();
+  const [logStudySession] = useLogStudySessionMutation();
   const [getPartById] = useGetPartByIdMutation();
-  const [getCourseById] = useGetCourseByIdMutation();
+  const { data: courseData } = useGetCourseByIdQuery(courseId);
   const [getTestByTestId] = useGetTestByTestIdMutation();
 
   useEffect(() => {
@@ -71,9 +71,10 @@ const CourseLessson = () => {
         const result = await getLessonsByCourseId(courseId).unwrap();
         setData(result.data); // cập nhật state, nhưng đừng dùng ngay
 
-        // 2. Lấy course
-        const courseResult = await getCourseById(courseId).unwrap();
-        setCourse(courseResult);
+        // 2. Set course data from query
+        if (courseData) {
+          setCourse(courseData);
+        }
 
         // 3. Lấy tests dựa trên result.data chứ không phải state data
         const chaptersWithTests = await Promise.all(
@@ -109,7 +110,7 @@ const CourseLessson = () => {
     };
 
     fetchLessons();
-  }, [courseId]);
+  }, [courseId, courseData, getLessonsByCourseId, getTestByTestId]);
 
   // Find current lesson object
   const findCurrentLesson = () => {
@@ -125,11 +126,11 @@ const CourseLessson = () => {
   const currentLesson = findCurrentLesson();
 
   // Format time from seconds to MM:SS
-  const formatTime = (timeInSeconds) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
+  // const formatTime = (timeInSeconds) => {
+  //   const minutes = Math.floor(timeInSeconds / 60);
+  //   const seconds = Math.floor(timeInSeconds % 60);
+  //   return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  // };
 
   const handleLessonClick = async (lesson) => {
     // Log thời gian cho lesson cũ trước khi chuyển

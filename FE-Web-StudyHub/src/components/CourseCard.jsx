@@ -1,18 +1,70 @@
-import { AccessTime } from "@mui/icons-material";
+import {
+  AccessTime,
+  MoreVert,
+  RateReview,
+  Info,
+  Close,
+} from "@mui/icons-material";
 import {
   Box,
   Card,
   CardContent,
   LinearProgress,
   Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ModalCreateReview from "./ModalCreateReview";
+import CourseRatingSummary from "./CourseRatingSummary";
 
 const CourseCard = ({ course, variant = "market" }) => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+  const handleMenuClick = (event) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleReviewClick = (event) => {
+    event?.stopPropagation();
+    setReviewModalOpen(true);
+    handleMenuClose();
+  };
+
+  const handleDetailsClick = (event) => {
+    event?.stopPropagation();
+    navigate(`/course/${course._id}`);
+    handleMenuClose();
+  };
+
+  const handleReviewModalClose = (event) => {
+    event?.stopPropagation();
+    setReviewModalOpen(false);
+  };
+
+  const handleCardClick = () => {
+    // Only navigate if modal is not open and no menu is open
+    if (!reviewModalOpen && !anchorEl) {
+      navigate(`/course/${course._id}`);
+    }
+  };
+
   return (
     <Card
       key={course.id}
       className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
+      onClick={handleCardClick}
     >
       {/* Course Image */}
       <div className="h-48 w-full relative">
@@ -21,6 +73,28 @@ const CourseCard = ({ course, variant = "market" }) => {
           alt={course.title}
           className="w-full h-full object-cover"
         />
+
+        {/* Menu Button for owned variant */}
+        {variant === "owned" && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              borderRadius: "50%",
+              "&:hover": { backgroundColor: "rgba(255, 255, 255, 1)" },
+            }}
+          >
+            <IconButton
+              size="small"
+              onClick={handleMenuClick}
+              sx={{ padding: "4px" }}
+            >
+              <MoreVert fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
       </div>
 
       <CardContent className="p-6">
@@ -47,6 +121,15 @@ const CourseCard = ({ course, variant = "market" }) => {
         >
           {course.title}
         </Typography>
+
+        {/* Course Rating Summary */}
+        <Box className="mb-2">
+          <CourseRatingSummary
+            courseId={course.id || course._id}
+            variant="compact"
+            showCount={true}
+          />
+        </Box>
 
         {/* Course Description */}
         {/* <Typography variant="body2" className="text-gray-600 ">
@@ -96,6 +179,91 @@ const CourseCard = ({ course, variant = "market" }) => {
           </div>
         )}
       </CardContent>
+
+      {/* Menu Dropdown */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        onClick={(e) => e.stopPropagation()}
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              overflow: "visible",
+              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+              mt: 1.5,
+              "& .MuiAvatar-root": {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              "&::before": {
+                content: '""',
+                display: "block",
+                position: "absolute",
+                top: 0,
+                right: 14,
+                width: 10,
+                height: 10,
+                bgcolor: "background.paper",
+                transform: "translateY(-50%) rotate(45deg)",
+                zIndex: 0,
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handleReviewClick(e);
+          }}
+        >
+          <ListItemIcon>
+            <RateReview fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Rate Course</ListItemText>
+        </MenuItem>
+
+        <MenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDetailsClick(e);
+          }}
+        >
+          <ListItemIcon>
+            <Info fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>View Details</ListItemText>
+        </MenuItem>
+
+        <MenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handleMenuClose();
+          }}
+        >
+          <ListItemIcon>
+            <Close fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Close Menu</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* Review Modal */}
+      <ModalCreateReview
+        open={reviewModalOpen}
+        onClose={handleReviewModalClose}
+        course={{
+          id: course._id,
+          name: course.title,
+        }}
+        isUpdate={false}
+      />
     </Card>
   );
 };

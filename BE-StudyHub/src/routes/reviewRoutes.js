@@ -6,7 +6,7 @@ const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 // Tạo review mới
 router.post("/", verifyToken, reviewController.createReview);
 
-// Lấy thống kê tổng quan reviews cho admin
+// Lấy thống kê tổng quan reviews
 router.get(
   "/statistics",
   verifyToken,
@@ -18,7 +18,6 @@ router.get(
 router.get(
   "/course/:courseId/statistics",
   verifyToken,
-  requireAdmin,
   reviewController.getCourseRatingStats
 );
 

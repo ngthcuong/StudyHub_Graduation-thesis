@@ -18,25 +18,25 @@ export const reviewApi = rootApi.injectEndpoints({
         url: `/reviews/course/${courseId}`,
         method: "GET",
       }),
-      providesTags: ["Review"],
+      providesTags: ["Review", "Course"],
     }),
 
     // Lấy thống kê rating của khóa học
     getCourseRatingStats: builder.query({
       query: (courseId) => ({
-        url: `/reviews/course/${courseId}/stats`,
+        url: `/reviews/course/${courseId}/statistics`,
         method: "GET",
       }),
-      providesTags: ["Review"],
+      providesTags: ["Review", "Course"],
     }),
 
     // Lấy thống kê tổng quan reviews cho admin
     getAdminReviewStats: builder.query({
       query: () => ({
-        url: "/reviews/admin/stats",
+        url: "/reviews/admin/statistics",
         method: "GET",
       }),
-      providesTags: ["Review"],
+      providesTags: ["Review", "Course"],
     }),
 
     // Lấy danh sách đánh giá của user
@@ -45,7 +45,7 @@ export const reviewApi = rootApi.injectEndpoints({
         url: `/reviews/user/${userId}`,
         method: "GET",
       }),
-      providesTags: ["Review"],
+      providesTags: ["Review", "Course", "User"],
     }),
 
     // Lấy đánh giá theo ID

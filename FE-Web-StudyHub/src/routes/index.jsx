@@ -101,19 +101,13 @@ export const router = createBrowserRouter([
             path: "/course",
             element: <CourseList variant="market" />,
           },
-
           {
-            path: "/course",
-            children: [
-              {
-                path: ":id",
-                element: <CourseDetail />,
-              },
-              {
-                path: ":courseId/lesson/:lessonId",
-                element: <CourseLessson />,
-              },
-            ],
+            path: "/course/:courseId",
+            element: <CourseDetail />,
+          },
+          {
+            path: "/course/:courseId/lesson/:lessonId",
+            element: <CourseLessson />,
           },
 
           {

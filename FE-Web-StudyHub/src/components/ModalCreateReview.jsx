@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Modal,
   Button,
   TextField,
   Rating,
@@ -12,7 +9,7 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  Backdrop,
+  Paper,
 } from "@mui/material";
 import { Star, StarBorder, Close } from "@mui/icons-material";
 import {
@@ -82,14 +79,17 @@ const ModalCreateReview = ({
         content: reviewContent.trim(),
       };
 
+      let result;
       if (isUpdate && existingReview) {
-        await updateReview({
+        result = await updateReview({
           id: existingReview.id,
           reviewData,
         }).unwrap();
       } else {
-        await createReview(reviewData).unwrap();
+        result = await createReview(reviewData).unwrap();
       }
+
+      console.log("Review operation result:", result);
 
       setSnackbar({
         open: true,
@@ -127,162 +127,195 @@ const ModalCreateReview = ({
 
   return (
     <>
-      <Dialog
+      <Modal
         open={open}
         onClose={handleClose}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          className: "rounded-xl shadow-2xl",
+        onClick={(e) => e.stopPropagation()}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
         }}
       >
-        {/* Loading Backdrop */}
-        <Backdrop
+        <Paper
           sx={{
-            color: "#fff",
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            position: "absolute",
+            position: "relative",
+            width: "100%",
+            maxWidth: 600,
+            maxHeight: "calc(100vh - 64px)",
+            bgcolor: "background.paper",
+            borderRadius: "12px",
+            boxShadow: 24,
+            outline: 0,
+            overflow: "auto",
           }}
-          open={isLoading}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex flex-col items-center gap-3">
-            <CircularProgress color="inherit" size={40} />
-            <Typography variant="body2">
-              {isUpdate ? "Updating review..." : "Creating review..."}
-            </Typography>
-          </div>
-        </Backdrop>
-
-        <DialogTitle className="flex items-center justify-between p-6 border-b border-gray-200">
-          <Typography variant="h5" className="font-semibold text-gray-800">
-            {isUpdate ? "Update Review" : "Course Review"}
-          </Typography>
-          <Button
-            onClick={handleClose}
-            className="min-w-0 p-1 text-gray-400 hover:text-gray-600"
-            disabled={isLoading}
-          >
-            <Close />
-          </Button>
-        </DialogTitle>
-
-        <DialogContent className="p-6 space-y-6">
-          {/* Thông báo đã đánh giá */}
-          {hasReviewedBefore && !isUpdate && (
-            <Alert severity="info" className="mb-4">
-              You have already reviewed this course. You can update your review.
-            </Alert>
+          {/* Loading Overlay */}
+          {isLoading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                zIndex: 1000,
+                borderRadius: "12px",
+              }}
+            >
+              <div className="flex flex-col items-center gap-3">
+                <CircularProgress color="primary" size={40} />
+                <Typography variant="body2">
+                  {isUpdate ? "Updating review..." : "Creating review..."}
+                </Typography>
+              </div>
+            </Box>
           )}
 
-          {/* Tên khóa học */}
-          <Box className="bg-gray-50 p-4 rounded-lg">
-            <Typography variant="subtitle2" className="text-gray-600 mb-1">
-              Course Name
+          {/* Header */}
+          <Box className="flex items-center justify-between p-6 border-b border-gray-200">
+            <Typography variant="h5" className="font-semibold text-gray-800">
+              {isUpdate ? "Update Review" : "Course Review"}
             </Typography>
-            <Typography variant="body1" className="font-medium text-gray-800">
-              {course?.name || "Loading..."}
-            </Typography>
+            <Button
+              onClick={handleClose}
+              className="min-w-0 p-1 text-gray-400 hover:text-gray-600"
+              disabled={isLoading}
+            >
+              <Close />
+            </Button>
           </Box>
 
-          {/* Đánh giá sao */}
-          <Box>
-            <Typography
-              variant="subtitle1"
-              className="font-medium text-gray-800 mb-3"
-            >
-              Star Rating
-            </Typography>
-            <Box className="flex items-center gap-2">
-              <Rating
-                value={rating}
-                onChange={(event, newValue) => {
-                  setRating(newValue || 1);
-                }}
-                size="large"
-                icon={<Star fontSize="inherit" />}
-                emptyIcon={<StarBorder fontSize="inherit" />}
-                disabled={isLoading}
-                className="text-yellow-500"
-              />
-              <Typography variant="body2" className="text-gray-600 ml-2">
-                ({rating}/5 stars)
+          {/* Content */}
+          <Box className="p-6 space-y-4 w-full">
+            {/* Previous review notification */}
+            {hasReviewedBefore && !isUpdate && (
+              <Alert severity="info" className="mb-4">
+                You have already reviewed this course. You can update your
+                review.
+              </Alert>
+            )}
+
+            {/* Course name */}
+            <Box className="bg-gray-50 p-4 rounded-lg">
+              <Typography variant="subtitle2" className="text-gray-600 mb-1">
+                Course Name
               </Typography>
+              <Typography variant="body1" className="font-medium text-gray-800">
+                {course?.name || "Loading..."}
+              </Typography>
+            </Box>
+
+            {/* Star rating */}
+            <Box>
+              <Typography
+                variant="subtitle1"
+                className="font-medium text-gray-800 mb-3"
+              >
+                Star Rating
+              </Typography>
+              <Box className="flex items-center gap-2">
+                <Rating
+                  value={rating}
+                  onChange={(event, newValue) => {
+                    setRating(newValue || 1);
+                  }}
+                  size="large"
+                  icon={<Star fontSize="inherit" />}
+                  emptyIcon={<StarBorder fontSize="inherit" />}
+                  disabled={isLoading}
+                  className="text-yellow-500"
+                />
+                <Typography variant="body2" className="text-gray-600 ml-2">
+                  ({rating}/5 stars)
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Review content */}
+            <Box>
+              <Typography
+                variant="subtitle1"
+                className="font-medium text-gray-800 mb-3"
+              >
+                Review Content
+              </Typography>
+              <TextField
+                multiline
+                rows={4}
+                fullWidth
+                placeholder="Share your experience about this course..."
+                value={reviewContent}
+                onChange={(e) => setReviewContent(e.target.value)}
+                disabled={isLoading}
+                inputProps={{ maxLength: 500 }}
+                helperText={`${reviewContent.length}/500 characters`}
+                variant="outlined"
+                className="bg-white"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "&:hover fieldset": {
+                      borderColor: "#3b82f6",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#3b82f6",
+                    },
+                  },
+                }}
+              />
             </Box>
           </Box>
 
-          {/* Nội dung đánh giá */}
-          <Box>
-            <Typography
-              variant="subtitle1"
-              className="font-medium text-gray-800 mb-3"
-            >
-              Review Content
-            </Typography>
-            <TextField
-              multiline
-              rows={4}
-              fullWidth
-              placeholder="Share your experience about this course..."
-              value={reviewContent}
-              onChange={(e) => setReviewContent(e.target.value)}
-              disabled={isLoading}
-              inputProps={{ maxLength: 500 }}
-              helperText={`${reviewContent.length}/500 characters`}
+          {/* Actions */}
+          <Box
+            className="p-6 pt-0 gap-3 w-full"
+            sx={{ display: "flex", justifyContent: "flex-end" }}
+          >
+            <Button
+              onClick={handleClose}
               variant="outlined"
-              className="bg-white"
+              disabled={isLoading}
+              className="px-6 py-2 text-gray-600 border-gray-300 hover:bg-gray-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              disabled={isLoading || reviewContent.trim().length === 0}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
               sx={{
-                "& .MuiOutlinedInput-root": {
-                  "&:hover fieldset": {
-                    borderColor: "#3b82f6",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#3b82f6",
-                  },
+                backgroundColor: "#2563eb",
+                "&:hover": {
+                  backgroundColor: "#1d4ed8",
+                },
+                "&:disabled": {
+                  backgroundColor: "#9ca3af",
                 },
               }}
-            />
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <CircularProgress size={16} color="inherit" />
+                  {isUpdate ? "Updating..." : "Creating..."}
+                </div>
+              ) : isUpdate ? (
+                "Update Review"
+              ) : (
+                "Create Review"
+              )}
+            </Button>
           </Box>
-        </DialogContent>
+        </Paper>
+      </Modal>
 
-        <DialogActions className="p-6 pt-0 gap-3">
-          <Button
-            onClick={handleClose}
-            variant="outlined"
-            disabled={isLoading}
-            className="px-6 py-2 text-gray-600 border-gray-300 hover:bg-gray-50"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            disabled={isLoading || reviewContent.trim().length === 0}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
-            sx={{
-              backgroundColor: "#2563eb",
-              "&:hover": {
-                backgroundColor: "#1d4ed8",
-              },
-              "&:disabled": {
-                backgroundColor: "#9ca3af",
-              },
-            }}
-          >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <CircularProgress size={16} color="inherit" />
-                {isUpdate ? "Updating..." : "Creating..."}
-              </div>
-            ) : isUpdate ? (
-              "Update Review"
-            ) : (
-              "Create Review"
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar thông báo */}
+      {/* Notification snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
