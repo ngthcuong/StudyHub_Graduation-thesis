@@ -341,9 +341,9 @@ const submitAttempt = async (req, res) => {
         testDetail?.passingScore * 10 &&
       testDetail.isTheLastTest
     ) {
-      certifate = await certificateController.issueCertificate(
-        testDetail.courseId
-      );
+      certifate = await certificateController.issueCertificate({
+        courseId: testDetail.courseId,
+      });
     }
 
     res.status(200).json({
