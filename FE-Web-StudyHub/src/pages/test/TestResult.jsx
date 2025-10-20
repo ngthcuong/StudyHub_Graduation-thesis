@@ -111,6 +111,8 @@ const TestResult = () => {
     time: timeTaken,
   };
 
+  console.log(resultStats);
+
   // Tạo correctAnswers từ mảng `per_question` đã được kết hợp
   const correctAnswers = per_question
     .filter((q) => q && q.correct === true)

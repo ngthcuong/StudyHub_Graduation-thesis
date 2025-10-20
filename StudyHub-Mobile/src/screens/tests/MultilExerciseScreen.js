@@ -151,7 +151,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
                     exam_type: test?.data?.examType,
                     topic: test?.data?.topic,
                     question_types: test?.data?.questionTypes,
-                    num_questions: 10,
+                    num_questions: test?.data?.numQuestions,
                     score_range: user?.currentLevel?.[test?.data?.examType],
                   });
                   setQuestions(newQuestions);
@@ -225,7 +225,7 @@ const MultilExerciseScreen = ({ navigation, route }) => {
                         exam_type: test?.data?.examType,
                         topic: test?.data?.topic,
                         question_types: test?.data?.questionTypes,
-                        num_questions: 10,
+                        num_questions: test?.data?.numQuestions,
                         score_range: user?.currentLevel?.[test?.data?.examType],
                       });
                       setQuestions(newQuestions);

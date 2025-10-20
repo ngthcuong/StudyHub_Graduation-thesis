@@ -38,7 +38,7 @@ const ProfileScreen = ({ navigation }) => {
       }
     };
     fetchData();
-  }, []);
+  }, [userInfo]);
 
   useEffect(() => {
     loadUserStats();
