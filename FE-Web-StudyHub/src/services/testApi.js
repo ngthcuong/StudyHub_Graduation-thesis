@@ -243,6 +243,25 @@ export const testApi = rootApi.injectEndpoints({
       }),
       providesTags: ["Test"],
     }),
+
+    // 26. getMyTests
+    getMyTests: builder.mutation({
+      query: () => ({
+        url: "/tests/my-tests",
+        method: "GET",
+      }),
+      invalidatesTags: ["Test"],
+    }),
+
+    // 27. generateCustomTest
+    generateCustomTest: builder.mutation({
+      query: (payload) => ({
+        url: "/generate-test/custom",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: ["Question"],
+    }),
   }),
 });
 
@@ -272,6 +291,8 @@ export const {
   useGetAttemptDetailByUserAndTestMutation,
   useCreateTestMutation,
   useGetTestStatisticsQuery,
+  useGetMyTestsMutation,
+  useGenerateCustomTestMutation,
 } = testApi;
 
 export default testApi;

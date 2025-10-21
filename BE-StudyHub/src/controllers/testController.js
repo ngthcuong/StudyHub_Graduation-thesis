@@ -320,6 +320,38 @@ const getLevelStatistics = async (testId, examType) => {
   }
 };
 
+const getTestsByCreatorId = async (req, res) => {
+  try {
+    console.log("Getting tests by creatorId");
+    // Lấy userId từ req.user (được gán bởi verifyToken middleware)
+    const creatorId = req.user && req.user.userId;
+
+    if (!creatorId) {
+      // Trường hợp này không nên xảy ra nếu đã có verifyToken, nhưng vẫn kiểm tra
+      return res
+        .status(401)
+        .json({ error: "User not authenticated or ID missing." });
+    }
+
+    const tests = await testModel.getTestsByCreatorId(creatorId);
+
+    if (!tests || tests.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No tests found created by this user." });
+    }
+
+    res.status(200).json({
+      message: "Tests created by user retrieved successfully",
+      data: tests,
+      total: tests.length,
+    });
+  } catch (error) {
+    console.error("Error getting tests by creatorId:", error);
+    res.status(500).json({ error: "Failed to get tests created by user." });
+  }
+};
+
 module.exports = {
   createTest,
   getTestById,
@@ -328,4 +360,5 @@ module.exports = {
   deleteTestById,
   getTestsByCourseId,
   getTestStatistics,
+  getTestsByCreatorId,
 };

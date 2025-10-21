@@ -120,7 +120,6 @@ const TestInformation = () => {
 
   const handleStartTest = () => {
     // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
-    console.log("User currentLevel:", !user?.currentLevel, testInfor);
     if (testInfor) {
       if (!user?.currentLevel || !testInfor?.examType) {
         dispatch(
@@ -132,13 +131,11 @@ const TestInformation = () => {
         );
         return;
       }
-
       // Kiểm tra xem examType của test có trong currentLevel của user hay không
       const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
         user.currentLevel,
         testInfor?.examType
       );
-
       if (!hasMatchingLevel) {
         dispatch(
           openSnackbar({
@@ -148,7 +145,6 @@ const TestInformation = () => {
         );
         return;
       }
-
       // Nếu có currentLevel phù hợp, bắt đầu làm bài
       navigate(`/test/${testPool._id || testId}/attempt`, {
         state: { testId: testPool._id || testId },
@@ -164,13 +160,11 @@ const TestInformation = () => {
         );
         return;
       }
-
       // Kiểm tra xem examType của test có trong currentLevel của user hay không
       const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
         user.currentLevel,
         testInfoState?.examType
       );
-
       if (!hasMatchingLevel) {
         dispatch(
           openSnackbar({
@@ -180,7 +174,6 @@ const TestInformation = () => {
         );
         return;
       }
-
       // Nếu có currentLevel phù hợp, bắt đầu làm bài
       navigate(`/test/${testPool._id || testId}/attempt`, {
         state: { testId: testPool._id || testId },

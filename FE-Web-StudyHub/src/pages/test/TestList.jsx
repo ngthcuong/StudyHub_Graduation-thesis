@@ -12,13 +12,19 @@ import {
   List,
   ListItem,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import {
+  FilterAltOutlined,
+  FilterAltOffOutlined,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useGetAllTestsMutation } from "../../services/testApi";
+import { useGetMyTestsMutation } from "../../services/testApi";
+import ModalCreateCustomTest from "../../components/ModalCreateCustomTest";
 import { useEffect } from "react";
 
 const typeOptions = ["All Types", "Test", "Assignment"];
@@ -35,25 +41,30 @@ const TestList = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [tests, setTests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [dataCreatedTest, setDataCreatedTest] = useState(null);
+  // const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
 
-  const [getAllTests] = useGetAllTestsMutation();
-  useEffect(() => {
-    const fetchTests = async () => {
-      try {
-        setIsLoading(true);
-        const res = await getAllTests().unwrap();
-        console.log("Fetched tests:", res);
-        setTests(res);
-      } catch (error) {
-        console.error("Error fetching tests:", error);
-        setError(error);
-      } finally {
-        setIsLoading(false);
+  const [getMyTests] = useGetMyTestsMutation();
+
+  const fetchTests = async () => {
+    try {
+      setIsLoading(true);
+      const res = await getMyTests().unwrap();
+      console.log("Fetched tests:", res);
+      setTests(res);
+    } catch (error) {
+      if (error.status === 404) {
+        setTests({ data: [], total: 0 });
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchTests();
-  }, [getAllTests]);
+  }, [getMyTests]);
 
   // Lọc dữ liệu
   const filtered = useMemo(() => {
@@ -85,24 +96,69 @@ const TestList = () => {
   }
 
   // TODO: Cập nhật UI hiển thị thông báo lỗi
-  if (error) {
-    return <div>Thong bao loi</div>;
-  }
+  // if (error) {
+  //   return <div>{error}</div>;
+  // }
+
+  const openModal = () => {
+    setOpen(true);
+  };
+
+  console.log("Data created test in TestList:", dataCreatedTest);
 
   return (
     <Box className="min-h-fit bg-white py-8 px-6 rounded-xl">
       <Box className="max-w-6xl mx-auto">
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          color="#22223b"
-          sx={{ mb: 1 }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "center", sm: "flex-start" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
+            mb: 1,
+          }}
         >
-          Assignments & Tests
-        </Typography>
-        <Typography variant="subtitle1" color="#64748b" sx={{ mb: 2 }}>
-          Track your progress and complete your learning tasks
-        </Typography>
+          <Box>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              color="#22223b"
+              sx={{ mb: 1 }}
+            >
+              Assignments & Tests
+            </Typography>
+            <Typography variant="subtitle1" color="#64748b" sx={{ mb: 2 }}>
+              Track your progress and complete your learning tasks
+            </Typography>
+          </Box>
+          <Tooltip title="Create a new test with custom questions and settings">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openModal}
+              sx={{
+                backgroundColor: "#1976d2",
+                "&:hover": { backgroundColor: "#1565c0" },
+                "&:disabled": { backgroundColor: "#ccc" },
+                textTransform: "none",
+                fontWeight: 600,
+                py: 1,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.25)",
+                minWidth: { xs: "auto", sm: 160 },
+              }}
+            >
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                Create New Test
+              </Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                Create Test
+              </Box>
+            </Button>
+          </Tooltip>
+        </Box>
+
         {/* Thanh search và filter trigger */}
         <Box className="bg-white rounded-xl shadow p-4 mb-6">
           <Stack
@@ -232,6 +288,7 @@ const TestList = () => {
                 navigate(`/test/${item._id}`, {
                   state: {
                     testInfor: item,
+                    dataCreatedTest: dataCreatedTest,
                   },
                 });
               }}
@@ -290,6 +347,16 @@ const TestList = () => {
           ))}
         </List>
       </Box>
+      <ModalCreateCustomTest
+        open={open}
+        handleClose={() => setOpen(false)}
+        onSuccess={(newTestData) => {
+          // ✅ newTestData chính là payload_form
+          fetchTests();
+          setOpen(false);
+          setDataCreatedTest(newTestData);
+        }}
+      />
     </Box>
   );
 };

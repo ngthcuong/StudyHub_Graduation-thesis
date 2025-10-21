@@ -187,6 +187,8 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
   try {
     const userId = req.user?.userId || req.params.userId; // lấy từ JWT hoặc params
 
+    console.log("Fetching attempt details for userId:", userId);
+
     // Lấy tất cả các attempt của user này
     const attempts = await TestAttempt.find({ userId })
       .populate({
