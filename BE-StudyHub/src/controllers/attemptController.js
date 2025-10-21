@@ -336,14 +336,36 @@ const submitAttempt = async (req, res) => {
     // }
 
     let certifate;
+    console.log("courseId:", testDetail?.courseId);
+
     if (
-      (totalScore / testDetail?.numQuestions) * 10 >
+      (totalScore / testDetail?.numQuestions) * 100 >
         testDetail?.passingScore * 10 &&
-      testDetail.isTheLastTest
+      testDetail.isTheLastTest &&
+      testDetail?.courseId
     ) {
-      certifate = await certificateController.issueCertificate({
-        courseId: testDetail.courseId,
-      });
+      const fakeReq = {
+        body: {
+          courseId: testDetail.courseId,
+        },
+        user: {
+          userId,
+        },
+      };
+
+      const fakeRes = {
+        status: () => ({
+          json: () => {},
+        }),
+      };
+
+      certifate = await certificateController.issueCertificate(
+        fakeReq,
+        fakeRes,
+        () => {}
+      );
+    } else if (!testDetail?.courseId) {
+      console.warn("Cannot issue certificate: courseId is missing.");
     }
 
     res.status(200).json({
