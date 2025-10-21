@@ -17,6 +17,15 @@ const courseSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    courseType: {
+      type: String,
+      enum: ["TOEIC", "IELTS"],
+      required: true,
+    },
+    courseLevel: {
+      type: String,
+      required: true,
+    },
     thumbnailUrl: { type: String, trim: true },
     category: { type: String, trim: true },
     tags: { type: [String], trim: true },
