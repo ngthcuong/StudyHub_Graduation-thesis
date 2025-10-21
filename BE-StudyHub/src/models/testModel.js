@@ -13,7 +13,7 @@ const createTest = async (testData) => {
 
 const findTestById = async (id) => {
   try {
-    return await Test.findById(id).populate("createdBy", "fullName email");
+    return await Test.findById(id);
   } catch (error) {
     console.error("Error finding test by id:", error);
     throw new Error("Failed to find test by id");
@@ -56,6 +56,16 @@ const deleteTestById = async (id) => {
   }
 };
 
+const getTestsByCreatorId = async (creatorId) => {
+  try {
+    // Tìm tất cả các bài test có trường createdBy khớp với creatorId
+    return await Test.find({ createdBy: creatorId }).sort({ createdAt: -1 });
+  } catch (error) {
+    console.error("Error getting tests by creatorId:", error);
+    throw new Error("Failed to get tests by creatorId");
+  }
+};
+
 module.exports = {
   createTest,
   findTestById,
@@ -63,4 +73,5 @@ module.exports = {
   updateTestById,
   deleteTestById,
   getTestsByCourseId,
+  getTestsByCreatorId,
 };

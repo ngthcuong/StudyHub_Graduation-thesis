@@ -3,24 +3,9 @@ from pydantic import BaseModel, Field
 from datetime import date
 
 
-class TestHistoryItem(BaseModel):
-    test_date: date
-    level_at_test: str
-    score: int
-    notes: Optional[str]
-
-class LearningProfile(BaseModel):
-    student_id: str
-    name: str
-    current_level: str
-    study_hours_per_week: int
-    learning_goals: str
-    learning_preferences: List[str]
-    study_methods: List[str]
-    test_history: List[TestHistoryItem]
-
 class QuestionKey(BaseModel):
     id: int
+    question: Optional[str] = None 
     answer: str
     skill: Optional[str] = None
     topic: Optional[str] = None
@@ -31,16 +16,9 @@ class TestInfo(BaseModel):
     total_questions: Optional[int] = None
 
 
-class GradeRequest(BaseModel):
-    test_info: Optional[TestInfo] = None
-    answer_key: List[QuestionKey]
-    student_answers: Dict[int, str]
-    use_gemini: Optional[bool] = False
-    profile: Optional[LearningProfile]
-
-
 class PerQuestionResult(BaseModel):
     id: int
+    question: Optional[str] = None 
     correct: bool
     expected_answer: str
     user_answer: Optional[str] = None
@@ -64,3 +42,30 @@ class GradeResponse(BaseModel):
     weak_topics: List[str]
     recommendations: Optional[List[str]] = None
     personalized_plan: Optional[Any] = None
+    current_level: str 
+    post_test_level: str
+
+
+class TestHistoryItem(BaseModel):
+    test_date: date
+    level_at_test: str
+    per_question: List[PerQuestionResult] = []
+    weak_topics: List[str] = []
+
+class LearningProfile(BaseModel):
+    student_id: str
+    name: str
+    current_level: str
+    study_hours_per_week: int
+    learning_goals: str
+    learning_preferences: List[str]
+    study_methods: List[str]
+    test_history: List[TestHistoryItem]
+
+
+class GradeRequest(BaseModel):
+    test_info: Optional[TestInfo] = None
+    answer_key: List[QuestionKey]
+    student_answers: Dict[str, str]
+    use_gemini: Optional[bool] = False
+    profile: Optional[LearningProfile]

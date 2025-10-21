@@ -15,6 +15,6 @@ router.get("/search", verifyToken, searchCertificates);
 router.post("/issue", verifyToken, issueCertificate);
 router.get("/student/:address", verifyToken, getStudentCertificatesHybrid);
 router.get("/hash/:hash", getCertificateByHash);
-router.get("/code/:code", getCertificateByCode);
+router.get("/code/:certificateCode", getCertificateByCode);
 
 module.exports = router;

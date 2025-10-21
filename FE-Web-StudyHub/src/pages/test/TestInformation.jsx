@@ -13,117 +13,249 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import { InfoOutline } from "@mui/icons-material";
+import {
+  ArrowBack,
+  InfoOutline,
+  GradeOutlined,
+  FlagOutlined,
+} from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  useCheckExistTestPoolMutation,
-  useCreateAttemptMutation,
-  useCreateTestPoolMutation,
-  useGenerateTestQuestionsMutation,
-  useGetQuestionsByTestIdQuery,
+  useGetTestByTestIdMutation,
+  useGetAttemptByTestAndUserMutation,
+  useGetAttemptInfoMutation,
+  useGetAttemptDetailByUserAndTestMutation,
 } from "../../services/testApi";
 import { useSelector } from "react-redux";
+import Snackbar from "../../components/Snackbar";
+import { useDispatch } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
 
 const TestInformation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const { testInfor } = location.state || {};
   const { id: testId } = useParams();
-
-  const [testPool, setTestPool] = useState();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+  const [attempt, setAttempt] = useState();
+  const [history, setHistory] = useState([]);
+  const [testInfoState, setTestInfoState] = useState(testInfor);
 
   const user = useSelector((state) => state.auth.user);
 
-  const [checkTestPool, { isLoading: isLoadingCheckTesPool }] =
-    useCheckExistTestPoolMutation();
+  const [testPool, setTestPool] = useState();
 
-  let { data: testQuestions, isLoading: isLoadingGetTest } =
-    useGetQuestionsByTestIdQuery(testId);
-
-  const [createTestPool, { isLoading: isLoadingCreateTestPool }] =
-    useCreateTestPoolMutation();
-
-  const [generateTestQuestions, { isLoading: isLoadingTestQuestion }] =
-    useGenerateTestQuestionsMutation();
-
-  const [createAttempt, { isLoading: isLoadingAttempt }] =
-    useCreateAttemptMutation();
+  const [getTestByTestId] = useGetTestByTestIdMutation();
+  const [getAttemptInfo] = useGetAttemptInfoMutation();
+  const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
+  const [getAttemptDetailByUserAndTest] =
+    useGetAttemptDetailByUserAndTestMutation();
 
   useEffect(() => {
-    const checkExistTestPool = async () => {
-      const res = await checkTestPool({ userId: user.id, testId });
-      setTestPool(res);
-    };
-    checkExistTestPool();
-  }, [user.id, testId, checkTestPool]);
-
-  const handleStartTest = async () => {
-    try {
-      const testData = {
-        testId: testInfor._id,
-        topic: testInfor.topic,
-        num_questions: testInfor.numQuestions,
-        difficulty: testInfor.difficulty,
-        question_types: testInfor.questionTypes,
-        exam_type: "TOEIC",
-        score_range: "405-600",
+    if (!testInfoState && testId) {
+      const fetchTest = async () => {
+        try {
+          const res = await getTestByTestId(testId).unwrap();
+          setTestInfoState(res?.data); // thay vì res.data
+        } catch (err) {
+          console.error("Failed to fetch test by id:", err);
+        }
       };
 
-      let attempt;
-      if (testPool.data.attemptInfo.testPoolId) {
-        attempt = await createAttempt({
-          testPoolId: testPool.data.attemptInfo.testPoolId,
-          evaluationModel: "gemini",
-        });
-        if (!attempt) {
-          return;
-        }
-        navigate(`/test/${testInfor._id}/attempt`, {
-          state: {
-            questions: testQuestions?.data?.data?.data,
-            testTitle: testInfor.title,
-            testDuration: testInfor.durationMin,
-            testId: testInfor._id,
-            attemptId: attempt?.data.data._id,
-          },
-        });
-      } else {
-        testQuestions = await generateTestQuestions(testData);
-        const newTestPool = await createTestPool({
-          baseTestId: testId,
-          level: "TOEIC 550-650",
-          createdBy: user.id,
-          expiresAt: "2025-12-31T23:59:59.000Z",
-        });
-        console.log(newTestPool.data.data._id);
+      fetchTest();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testId, testInfoState]);
 
-        attempt = await createAttempt({
-          testPoolId: newTestPool.data.data._id,
-          evaluationModel: "gemini",
-        });
+  useEffect(() => {
+    if (!user?._id || !testId) return;
 
-        if (!attempt) {
-          return;
+    const fetchData = async () => {
+      try {
+        const res = await getAttemptInfo({
+          userId: user._id,
+          testId,
+        }).unwrap();
+        setTestPool(res);
+
+        try {
+          const res = await getAttemptDetailByUserAndTest({
+            userId: user._id,
+            testId,
+          }).unwrap();
+          setHistory(res.data);
+        } catch (error) {
+          console.error("Failed to fetch attempt detail:", error);
         }
-        navigate(`/test/${testInfor._id}/attempt`, {
-          state: {
-            questions: testQuestions?.data,
-            testTitle: testInfor.title,
-            testDuration: testInfor.durationMin,
-            testId: testInfor._id,
-            attemptId: attempt?.data.data._id,
-          },
-        });
+      } catch (error) {
+        if (error.status === 404) {
+          const res = await getTestByTestId(testId).unwrap();
+          setTestPool(res.data);
+        } else {
+          throw error;
+        }
       }
-    } catch (error) {
-      console.log(error);
+
+      try {
+        const res = await getAttemptByTestAndUser({
+          testId,
+          userId: user._id,
+        }).unwrap();
+        setAttempt(res.data[0]);
+      } catch (err) {
+        console.error("Failed to fetch attempt:", err);
+      }
+    };
+
+    fetchData();
+  }, [
+    user._id,
+    testId,
+    getAttemptInfo,
+    getAttemptDetailByUserAndTest,
+    getTestByTestId,
+    getAttemptByTestAndUser,
+  ]);
+
+  const handleStartTest = () => {
+    // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
+    if (testInfor) {
+      if (!user?.currentLevel || !testInfor?.examType) {
+        dispatch(
+          openSnackbar({
+            message:
+              "Please update your profile with current level information before taking this test.",
+            severity: "error",
+          })
+        );
+        return;
+      }
+      // Kiểm tra xem examType của test có trong currentLevel của user hay không
+      const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
+        user.currentLevel,
+        testInfor?.examType
+      );
+      if (!hasMatchingLevel) {
+        dispatch(
+          openSnackbar({
+            message: `Please update your ${testInfor?.examType} level in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
+      // Nếu có currentLevel phù hợp, bắt đầu làm bài
+      navigate(`/test/${testPool._id || testId}/attempt`, {
+        state: { testId: testPool._id || testId },
+      });
+    } else {
+      if (!user?.currentLevel || !testInfoState?.examType) {
+        dispatch(
+          openSnackbar({
+            message:
+              "Please update your profile with current level information before taking this test.",
+            severity: "error",
+          })
+        );
+        return;
+      }
+      // Kiểm tra xem examType của test có trong currentLevel của user hay không
+      const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
+        user.currentLevel,
+        testInfoState?.examType
+      );
+      if (!hasMatchingLevel) {
+        dispatch(
+          openSnackbar({
+            message: `Please update your ${testInfoState?.examType} level in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
+      // Nếu có currentLevel phù hợp, bắt đầu làm bài
+      navigate(`/test/${testPool._id || testId}/attempt`, {
+        state: { testId: testPool._id || testId },
+      });
     }
   };
 
+  // Kiểm tra xem user có thể làm bài test hay không
+  const canTakeTest = () => {
+    if (
+      !user?.currentLevel ||
+      !testInfor?.examType ||
+      !testInfoState?.examType
+    ) {
+      return false;
+    } else if (testInfor) {
+      return Object.prototype.hasOwnProperty.call(
+        user?.currentLevel,
+        testInfor?.examType
+      );
+    } else {
+      return Object.prototype.hasOwnProperty.call(
+        user?.currentLevel,
+        testInfoState?.examType
+      );
+    }
+  };
+
+  const handleUpdateProfile = () => {
+    navigate("/home/profile");
+  };
+
+  // Format question types for display
+  const formatQuestionTypes = (types) => {
+    return types
+      ?.map((type) => {
+        switch (type) {
+          case "multiple_choice":
+            return "Multi Choice";
+          case "fill_in_blank":
+            return "Fill in the Blank";
+          case "true_false":
+            return "True / False";
+          default:
+            return type;
+        }
+      })
+      .join(", ");
+  };
+
+  const formatDuration = (startTime, endTime) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    const diffMs = end - start; // chênh lệch tính bằng milliseconds
+
+    const diffSec = Math.floor(diffMs / 1000); // giây
+    const diffMin = Math.floor(diffSec / 60); // phút
+
+    return `${diffMin} minutes ${diffSec % 60} seconds`;
+  };
+
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50">
+    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
+      <Box className="w-full max-w-3xl ">
+        <Button
+          startIcon={<ArrowBack />}
+          variant="text"
+          onClick={() => navigate(-1)}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: 24,
+            color: "#2563eb",
+          }}
+        >
+          Back
+        </Button>
+      </Box>
+
       <Card
-        className="w-full max-w-2xl"
+        className="w-full max-w-3xl"
         sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
       >
         <CardContent>
@@ -134,7 +266,7 @@ const TestInformation = () => {
             color="#111827"
             gutterBottom
           >
-            {testInfor?.title}
+            {testInfor?.title || testInfoState?.title}
           </Typography>
           <Divider
             sx={{
@@ -157,12 +289,13 @@ const TestInformation = () => {
             color="#6b7280"
             sx={{ mb: 2, textAlign: "justify" }}
           >
-            {testInfor.description}
+            {testInfor?.description || testInfoState?.description}
           </Typography>
 
-          {/* Các thông tin khác: số câu hỏi, thời gian, số lần làm lại, loại câu hỏi */}
+          {/* Các thông tin khác: 2 dòng 3 cột */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            {/* Dòng 1 */}
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <DescriptionOutlinedIcon />
@@ -182,11 +315,11 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor.numQuestions}
+                  {testInfor?.numQuestions || testInfoState?.numQuestions}{" "}
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-blue-600">
                   <AccessTimeOutlinedIcon />
@@ -206,12 +339,35 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor.durationMin}{" "}
+                  {testInfor?.durationMin || testInfoState?.durationMin}{" "}
                   <span className="text-base font-normal">minutes</span>
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
+                <Box className="flex items-center gap-2 text-blue-600">
+                  <AssignmentOutlinedIcon />
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    color="#2563eb"
+                    whiteSpace="nowrap"
+                    textTransform={"uppercase"}
+                  >
+                    Test type
+                  </Typography>
+                </Box>
+                <Typography variant="body1" fontWeight={600} color="#111827">
+                  {formatQuestionTypes(
+                    testInfor?.questionTypes || testInfoState?.questionTypes
+                  )}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
                 <Box className="flex items-center gap-2 text-green-600">
                   <ReplayOutlinedIcon />
@@ -231,33 +387,115 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testPool?.data?.attemptInfo.attemptNumber || 0} /
-                  {testPool?.data?.attemptInfo.maxAttempts || 0}
+                  {attempt
+                    ? `${attempt.attemptNumber || 0}/${
+                        attempt.maxAttempts || 3
+                      }`
+                    : "0/3"}
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
-                <Box className="flex items-center gap-2 text-blue-600">
-                  <AssignmentOutlinedIcon />
+                <Box className="flex items-center gap-2 text-orange-600">
+                  <GradeOutlined />
                   <Typography
                     variant="caption"
                     fontWeight={600}
-                    color="#2563eb"
+                    color="#ea580c"
                     whiteSpace="nowrap"
                     textTransform={"uppercase"}
                   >
-                    Test type
+                    Pass Score
                   </Typography>
                 </Box>
-                <Typography variant="body1" fontWeight={600} color="#111827">
-                  {testInfor.questionTypes.join(", ")}
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  color="#111827"
+                  noWrap
+                >
+                  {testInfor ? testInfor.passScore : testInfoState?.passScore}{" "}
+                  {!testInfor?.passScore && !testInfoState?.passScore
+                    ? "70"
+                    : null}
+                  <span className="text-base font-normal">%</span>
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box className="border rounded-lg bg-white p-4 flex flex-col items-start gap-2 h-full shadow-sm">
+                <Box className="flex items-center gap-2 text-purple-600">
+                  <FlagOutlined />
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    color="#7c3aed"
+                    whiteSpace="nowrap"
+                    textTransform={"uppercase"}
+                  >
+                    Final Test
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  color={testInfor?.isFinalTest ? "#dc2626" : "#16a34a"}
+                  noWrap
+                >
+                  {testInfor
+                    ? testInfor?.isFinalTest
+                      ? "Yes"
+                      : "No"
+                    : testInfoState?.isFinalTest
+                    ? "Yes"
+                    : "No"}{" "}
                 </Typography>
               </Box>
             </Grid>
           </Grid>
 
           <Box className="flex justify-center items-center w-full flex-col">
+            {/* Kiểm tra và hiển thị thông báo nếu user chưa có currentLevel phù hợp */}
+            {!canTakeTest() && testInfor?.examType && (
+              <Box
+                sx={{
+                  backgroundColor: "#fff3cd",
+                  borderColor: "#ffeaa7",
+                  color: "#856404",
+                  p: 2,
+                  borderRadius: 1,
+                  border: "1px solid #ffeaa7",
+                  mb: 2,
+                  width: "100%",
+                  textAlign: "center",
+                }}
+              >
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  ⚠️ You need to update your{" "}
+                  <strong>{testInfor.examType}</strong> level in your profile
+                  before taking this test.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleUpdateProfile}
+                  sx={{
+                    textTransform: "none",
+                    borderColor: "#856404",
+                    color: "#856404",
+                    "&:hover": {
+                      backgroundColor: "#856404",
+                      color: "white",
+                    },
+                  }}
+                >
+                  Update Profile
+                </Button>
+              </Box>
+            )}
+
             <Typography
               variant="caption"
               color="#6b7280"
@@ -271,11 +509,7 @@ const TestInformation = () => {
               color="primary"
               size="medium"
               disabled={
-                isLoadingAttempt ||
-                isLoadingTestQuestion ||
-                isLoadingGetTest ||
-                isLoadingCreateTestPool ||
-                isLoadingCheckTesPool
+                attempt && attempt?.attemptNumber >= attempt?.maxAttempts
               }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
@@ -285,18 +519,88 @@ const TestInformation = () => {
               }}
               onClick={() => handleStartTest()}
             >
-              {isLoadingTestQuestion ||
-              isLoadingAttempt ||
-              isLoadingGetTest ||
-              isLoadingCreateTestPool ||
-              isLoadingCheckTesPool ? (
+              {!testPool ? (
                 <CircularProgress size={24} color="white" />
               ) : (
                 "Start test"
               )}
             </Button>
           </Box>
+
+          <Divider sx={{ my: 3 }} />
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            color="#2563eb"
+            gutterBottom
+          >
+            Your Test Attempts
+          </Typography>
+          {history?.length === 0 ? (
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              You have not taken this test yet.
+            </Typography>
+          ) : (
+            <Box>
+              <Grid container spacing={2}>
+                {history?.map((attempt, idx) => (
+                  <Grid size={12} key={attempt._id || idx}>
+                    <Card
+                      variant="outlined"
+                      onClick={() =>
+                        navigate(`/attempt/${attempt._id}`, {
+                          state: attempt,
+                        })
+                      }
+                      className=""
+                      sx={{
+                        cursor: "pointer", // 🖱️ hiển thị con trỏ khi hover
+                        transition: "0.2s ease-in-out",
+                        "&:hover": {
+                          boxShadow: 3, // hiệu ứng nổi nhẹ
+                          transform: "scale(1.02)", // phóng nhẹ
+                          backgroundColor: "#f9fafb", // nền sáng hơn
+                        },
+                      }}
+                    >
+                      <CardContent
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                        className=""
+                      >
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Date:{" "}
+                            {new Date(attempt.startTime).toLocaleString(
+                              "vi-VN",
+                              { timeZone: "Asia/Ho_Chi_Minh" }
+                            )}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Duration:{" "}
+                            {formatDuration(attempt.startTime, attempt.endTime)}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="h6"
+                          color="#22c55e"
+                          fontWeight={700}
+                        >
+                          Score: {attempt.attemptId.score}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
         </CardContent>
+
+        <Snackbar isOpen={isOpen} message={message} severity={severity} />
       </Card>
     </Box>
   );

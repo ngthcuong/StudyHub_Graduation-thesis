@@ -17,7 +17,6 @@ import {
   Paper,
   IconButton,
   Typography,
-  Chip,
   TablePagination,
   Dialog,
   DialogActions,
@@ -33,14 +32,13 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import SearchIcon from "@mui/icons-material/Search";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 
 const statusOptions = ["All", "Pending", "Active", "Rejected"];
 
-export default function Certificate() {
+export default function Certificate({ item }) {
+  console.log("Certificate item prop:", item);
   const [filteredCertificates, setFilteredCertificates] = useState([]);
 
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -389,13 +387,13 @@ export default function Certificate() {
                         page * rowsPerPage + rowsPerPage
                       )
                       .map((certificate) => (
-                        <TableRow key={certificate.certHash} hover>
+                        <TableRow key={certificate.id} hover>
                           <TableCell className="font-medium">
-                            {certificate.certCode}
+                            {certificate.certificateCode}
                           </TableCell>
-                          <TableCell>{certificate.courseName}</TableCell>
+                          <TableCell>{certificate.course.title}</TableCell>
                           <TableCell>
-                            {formatDate(certificate.issueDate)}
+                            {formatDate(certificate.validity.issueDate)}
                           </TableCell>
                           {/* <TableCell>
                             <Chip

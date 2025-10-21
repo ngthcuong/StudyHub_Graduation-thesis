@@ -70,14 +70,15 @@ const login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successfully!",
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken,
+      refreshToken,
       user: {
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
         role: user.role,
         walletAddress: user.walletAddress,
+        currentLevel: user.currentLevel,
       },
     });
   } catch (error) {

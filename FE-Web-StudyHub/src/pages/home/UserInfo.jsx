@@ -1,0 +1,482 @@
+import React, { useEffect, useState } from "react";
+import {
+  Avatar,
+  Button,
+  IconButton,
+  Box,
+  Paper,
+  Grid,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
+import {
+  AccountBalanceWallet,
+  CalendarMonth,
+  CorporateFare,
+  Edit,
+  Email,
+  Lock,
+  Person,
+  PhoneIphone,
+  School,
+  Transgender,
+} from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import FormField from "../../components/FormField";
+import ModalChangePassword from "../../components/ModalChangePassword";
+import {
+  useGetUserInfoQuery,
+  useUpdateUserInfoMutation,
+} from "../../services/userApi";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import SnackBar from "../../components/Snackbar";
+import dayjs from "dayjs";
+import { updateUser } from "../../redux/slices/auth";
+
+const levelTOEIC = [
+  { value: "0", label: "No level" },
+  { value: "10-250", label: "10-250 - Beginner" },
+  { value: "255-400", label: "255-400 - Elementary" },
+  { value: "405-600", label: "405-600 - Intermediate" },
+  { value: "605-780", label: "605-780 - Upper Intermediate" },
+  { value: "785-900", label: "785-900 - Advanced" },
+  { value: "905-990", label: "905-990 - Proficient" },
+];
+
+const levelIELTS = [
+  { value: "0", label: "No level" },
+  { value: "0-3.5", label: "0-3.5 - Beginner" },
+  { value: "4.0-5.0", label: "4.0-5.0 - Elementary" },
+  { value: "5.5-6.0", label: "5.5-6.0 - Intermediate" },
+  { value: "6.5-7.0", label: "6.5-7.0 - Upper Intermediate" },
+  { value: "7.5-8.0", label: "7.5-8.0 - Advanced" },
+  { value: "8.5-9.0", label: "8.5-9.0 - Expert" },
+];
+
+const UserInfo = () => {
+  const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isShowModal, setIsShowModal] = useState(false);
+
+  const { data } = useGetUserInfoQuery();
+  const userData = data?.data;
+
+  console.log(userData);
+
+  const [updateUserInfo, { isLoading }] = useUpdateUserInfoMutation();
+
+  const formSchema = yup.object({
+    fullName: yup
+      .string()
+      .required("Full name is required")
+      .min(2, "Full name must have at least 2 characters")
+      .matches(
+        /^[A-Za-zÀ-ỹ][A-Za-zÀ-ỹ\s]{0,48}[A-Za-zÀ-ỹ]$/,
+        "Fullname is invalid"
+      )
+      .trim(),
+
+    dob: yup
+      .date()
+      .required("Birthday is required")
+      .typeError("Birthday is invalid")
+      .max(new Date(), "Birthday is invalid"),
+
+    gender: yup
+      .string()
+      .required("Please select one gender")
+      .oneOf(["male", "female", "other"], "Gender is invalid"),
+
+    email: yup.string().required("Email is required").email("Email is invalid"),
+
+    phone: yup
+      .string()
+      .required("Phone number is required")
+      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Phone number is invalid"),
+
+    organization: yup
+      .string()
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("organization-format", "Organization is invalid", (value) => {
+        if (!value) return true;
+        return /^[A-Za-zÀ-ỹ0-9][A-Za-zÀ-ỹ0-9\s]{0,48}[A-Za-zÀ-ỹ0-9]$/.test(
+          value.trim()
+        );
+      }),
+
+    walletAddress: yup
+      .string()
+      .nullable()
+      .transform((value) => (value === "" ? null : value))
+      .test("wallet-format", "Wallet Address is invalid", (value) => {
+        if (!value) return true;
+        return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
+      }),
+
+    currentLevel: yup.object({
+      TOEIC: yup
+        .string()
+        .nullable()
+        .transform((value) => (value === "" ? null : value))
+        .oneOf(
+          [
+            "0",
+            "10-250",
+            "255-400",
+            "405-600",
+            "605-780",
+            "785-900",
+            "905-990",
+          ],
+          "Current level TOEIC is invalid"
+        ),
+      IELTS: yup
+        .string()
+        .nullable()
+        .transform((value) => (value === "" ? null : value))
+        .oneOf(
+          ["0", "0-3.5", "4.0-5.0", "5.5-6.0", "6.5-7.0", "7.5-8.0", "8.5-9.0"],
+          "Current level IELTS is invalid"
+        ),
+    }),
+  });
+
+  const { control, handleSubmit, reset, clearErrors } = useForm({
+    resolver: yupResolver(formSchema),
+    defaultValues: {
+      fullName: "",
+      dob: "",
+      gender: "",
+      email: "",
+      phone: "",
+      organization: "",
+      walletAddress: "",
+      toeic: "0",
+      ielts: "0",
+    },
+    mode: "onChange",
+  });
+
+  const formatUserData = (userData) => ({
+    fullName: userData.fullName || "",
+    email: userData.email || "",
+    phone: userData.phone || "",
+    dob: userData.dob ? dayjs(userData.dob).format("YYYY-MM-DD") : "",
+    gender: userData.gender || "",
+    organization: userData.organization || "",
+    walletAddress: userData.walletAddress || "",
+    toeic: userData.currentLevel?.TOEIC || "0",
+    ielts: userData.currentLevel?.IELTS || "0",
+  });
+
+  useEffect(() => {
+    if (userData) {
+      const formattedData = formatUserData(userData);
+      reset(formattedData);
+    }
+  }, [userData, reset]);
+
+  const onSubmit = async (data) => {
+    try {
+      const payload = {
+        ...data,
+        dob: dayjs(data.dob).toISOString(),
+        currentLevel: {
+          IELTS: data.ielts,
+          TOEIC: data.toeic,
+        },
+      };
+
+      const response = await updateUserInfo(payload);
+      if (!response) return;
+
+      console.log("res: ", response);
+      dispatch(updateUser(response.data.data));
+      dispatch(
+        openSnackbar({
+          message: response.data.message,
+          severity: "success",
+        })
+      );
+
+      // Cập nhật form với dữ liệu mới
+      const updatedData = formatUserData(response.data.data);
+
+      reset(updatedData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Lỗi thay đổi thông tin người dùng: ", error);
+      dispatch(
+        openSnackbar({
+          message: "Cannot update user information",
+          severity: "error",
+        })
+      );
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    clearErrors();
+    setIsEditing(!isEditing);
+  };
+
+  return (
+    <Box className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-5xl mx-auto">
+        <Paper elevation={8} className="overflow-hidden">
+          {/* Header với background gradient */}
+          <div className="h-32 bg-gradient-to-r from-purple-500 to-blue-500 relative">
+            <div className="absolute -bottom-16 left-8">
+              <div className="relative">
+                <Avatar
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    bgcolor: "gray",
+                  }}
+                  className="border-4 border-white"
+                >
+                  User
+                </Avatar>
+                <IconButton
+                  size="small"
+                  className="absolute bottom-8 left-18 bg-orange-500 hover:bg-orange-600"
+                  sx={{
+                    bgcolor: "#f97316",
+                    "&:hover": { bgcolor: "#ea580c" },
+                    width: 24,
+                    height: 24,
+                  }}
+                >
+                  <Edit sx={{ fontSize: 14, color: "white" }} />
+                </IconButton>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-12 pb-6 px-8">
+            <Grid className="mb-6" container spacing={2}>
+              <Grid size={12} className="flex gap-3 mt-1">
+                <Button
+                  variant="contained"
+                  startIcon={<Edit />}
+                  onClick={handleEdit}
+                  className="py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontSize: 16,
+                    fontWeight: 500,
+                  }}
+                >
+                  Update your information
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<Lock />}
+                  className="py-3  from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  onClick={() => setIsShowModal(!isShowModal)}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontSize: 16,
+                    fontWeight: 400,
+                  }}
+                >
+                  Change password
+                </Button>
+              </Grid>
+            </Grid>
+
+            {/* Form thông tin */}
+            <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <Typography variant="h6" fontWeight={"600"} mb={-1}>
+                    User Information
+                  </Typography>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <FormField
+                    name={"fullName"}
+                    control={control}
+                    label={"Full Name"}
+                    disable={!isEditing}
+                    startIcon={<Person className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Email và Số điện thoại */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="email"
+                    control={control}
+                    label="Email"
+                    type="email"
+                    disable={true}
+                    startIcon={<Email className="text-gray-400" />}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="phone"
+                    control={control}
+                    label="Phone Number"
+                    type="tel"
+                    disable={!isEditing}
+                    startIcon={<PhoneIphone className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Ngày sinh */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="dob"
+                    control={control}
+                    label="Birthday"
+                    type="date"
+                    disable={!isEditing}
+                    startIcon={<CalendarMonth className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Giới tính */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="gender"
+                    control={control}
+                    label="Gender"
+                    type="select"
+                    options={[
+                      { value: "male", label: "Male" },
+                      { value: "female", label: "Female" },
+                      { value: "other", label: "Other" },
+                    ]}
+                    disable={!isEditing}
+                    startIcon={<Transgender className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Tổ chức */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="organization"
+                    control={control}
+                    label="Organization"
+                    type="text"
+                    disable={!isEditing}
+                    startIcon={<CorporateFare className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Ví điện tử */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="walletAddress"
+                    control={control}
+                    label="Wallet Address"
+                    type="text"
+                    disable={!isEditing}
+                    startIcon={
+                      <AccountBalanceWallet className="text-gray-400" />
+                    }
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <Typography variant="h6" fontWeight={"600"} mb={-1}>
+                    Current Level
+                  </Typography>
+                </Grid>
+
+                {/* Current Level IELTS */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="toeic"
+                    control={control}
+                    label="TOEIC"
+                    type="select"
+                    options={levelTOEIC}
+                    disable={!isEditing}
+                    startIcon={<School className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Current Level TOEIC */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormField
+                    name="ielts"
+                    control={control}
+                    label="IELTS"
+                    type="select"
+                    options={levelIELTS}
+                    disable={!isEditing}
+                    startIcon={<School className="text-gray-400" />}
+                  />
+                </Grid>
+              </Grid>
+
+              {/* Nút lưu khi đang chỉnh sửa */}
+              {isEditing && (
+                <div className="flex gap-3 mt-6 justify-end">
+                  <Button
+                    variant="outlined"
+                    type="button"
+                    onClick={handleCancel}
+                    className="normal-case"
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: 16,
+                      fontWeight: 400,
+                    }}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    disabled={isLoading}
+                    // onClick={() => handleSubmit(onSubmit)}
+                    className="py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: 16,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {isLoading ? <CircularProgress size={20} /> : "Save"}
+                  </Button>
+                </div>
+              )}
+            </Box>
+          </div>
+        </Paper>
+
+        {isShowModal && (
+          <ModalChangePassword
+            open={isShowModal}
+            onClose={() => setIsShowModal(!isShowModal)}
+          />
+        )}
+
+        <SnackBar isOpen={isOpen} message={message} severity={severity} />
+      </div>
+    </Box>
+  );
+};
+
+export default UserInfo;

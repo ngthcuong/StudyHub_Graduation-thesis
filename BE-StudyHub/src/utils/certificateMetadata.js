@@ -1,29 +1,44 @@
-// src/utils/certificateMetadata.js
 const buildCertificateMetadata = ({
-  issuer,
-  issuerName,
-  studentAddress,
-  studentName,
-  courseName,
   certCode,
+  issuer,
+  student,
+  course,
+  issueDate,
+  expireDate = null,
+  isRevoked = false,
+  // certificateHash = null,
+  network = "Sepolia",
   extra, //optional
 }) => {
   return {
     version: "1.0",
     type: "studyhub-certificate",
-    issuer: {
-      address: issuer,
-      name: issuerName,
-    },
+    certCode: certCode,
     student: {
-      address: studentAddress,
-      name: studentName,
+      id: student._id,
+      walletAddress: student.walletAddress,
+      name: student.fullName,
     },
     course: {
-      name: courseName,
+      id: course._id,
+      title: course.title,
     },
-    certCode: certCode, // thêm certCode
-    issuedAt: Date.now(),
+    issuer: {
+      walletAddress: issuer.walletAddress,
+      name: issuer.name,
+    },
+    validity: {
+      issueDate: issueDate || Date.now(),
+      // issueDate: issueDate
+      //   ? new Date(issueDate).toISOString()
+      //   : new Date().toISOString(),
+      expireDate: typeof expireDate !== "undefined" ? expireDate : null,
+      isRevoked: typeof isRevoked !== "undefined" ? isRevoked : false,
+    },
+    blockchain: {
+      // certificateHash,
+      network,
+    },
     ...extra,
   };
 };

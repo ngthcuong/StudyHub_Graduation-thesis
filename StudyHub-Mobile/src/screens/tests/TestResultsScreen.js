@@ -1,370 +1,946 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
-  Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  Alert,
+  StyleSheet,
+  SafeAreaView,
+  Text,
+  Alert, // Dùng để mô phỏng hành động Button
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { testApi } from "../../services/testApi";
+import {
+  Appbar,
+  Card,
+  Title,
+  Paragraph,
+  Button,
+  Chip,
+  Divider,
+  ProgressBar,
+  List,
+  useTheme,
+} from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Hoặc bất kỳ bộ icon nào bạn thích
+import { useRoute } from "@react-navigation/native";
 
-const TestResultsScreen = ({ navigation, route }) => {
-  const { attemptId } = route.params;
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(true);
+// --- Hàm tiện ích (Utility Functions) ---
 
-  useEffect(() => {
-    loadResults();
-  }, [attemptId]);
+const formatTime = (s) => {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}m ${sec}s`;
+};
 
-  const loadResults = async () => {
-    try {
-      setLoading(true);
-      const response = await testApi.getTestResults(attemptId);
-      setResults(response.data);
-    } catch (error) {
-      console.error("Error loading results:", error);
-      Alert.alert("Error", "Failed to load test results");
-    } finally {
-      setLoading(false);
-    }
-  };
+// --- Component Chính (Main Component) ---
 
-  const handleRetakeTest = () => {
-    navigation.navigate("Assessment", { testId: results.testId });
-  };
+const TestResultsScreen = ({ navigation }) => {
+  const route = useRoute();
+  const theme = useTheme(); // Lấy theme để custom style
+  const resultData = route.params?.resultData; // Lấy dữ liệu từ route params
 
-  const handleBackToTests = () => {
-    navigation.navigate("AssessmentList");
-  };
+  const [tab, setTab] = useState(0);
 
-  if (loading) {
+  // --- Xử lý dữ liệu (Data Handling) ---
+
+  // Kiểm tra và xử lý dữ liệu từ cả hai nguồn khác nhau
+  let analysisResult,
+    timeTaken = 0;
+
+  if (!resultData) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading results...</Text>
-      </View>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: theme.colors.text }}>
+            Loading test result or data is missing...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  if (!results) {
+  // Case 1: Dữ liệu từ test submission (có attemptDetail)
+  if (resultData.attemptDetail && resultData.attemptDetail.analysisResult) {
+    analysisResult = resultData.attemptDetail.analysisResult;
+    const startTime = new Date(resultData.attemptDetail.startTime);
+    const endTime = new Date(resultData.attemptDetail.endTime);
+    timeTaken = Math.floor((endTime - startTime) / 1000);
+  }
+  // Case 2: Dữ liệu từ CompletedTestsScreen (có analysisResult trực tiếp)
+  else if (resultData.analysisResult) {
+    analysisResult = resultData.analysisResult;
+    // Tính thời gian từ durationMin nếu có
+    timeTaken = (resultData.durationMin || 0) * 60;
+  } else {
     return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={64} color="#EF4444" />
-        <Text style={styles.errorText}>Results not found</Text>
-      </View>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: theme.colors.text }}>
+            Invalid test result data format.
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  const isPassed = results.attempt.score >= results.passingScore;
-  const scoreColor = isPassed ? "#10B981" : "#EF4444";
-  const scoreIcon = isPassed ? "checkmark-circle" : "close-circle";
+  // Lấy answers từ dữ liệu (có thể không có trong case CompletedTestsScreen)
+  const answers = resultData.attemptDetail?.answers || [];
 
-  const correctAnswers = results.answers.filter((a) => a.isCorrect).length;
-  const totalQuestions = results.answers.length;
+  // Destructuring với giá trị mặc định để tránh lỗi
+  const {
+    total_questions = 0,
+    per_question: analysisPerQuestion = [],
+    skill_summary = [],
+    weak_topics = [],
+    recommendations = [],
+    personalized_plan = {
+      overall_goal: "No goal specified",
+      progress_speed: "Not determined",
+      weekly_goals: [],
+      study_methods: [],
+      notes: null,
+    },
+  } = analysisResult;
 
-  // Tính thời gian làm bài
-  const startTime = "2025-09-25T09:11:34.856Z";
-  const endTime = "2025-09-25T09:12:04.420Z";
+  // Kết hợp dữ liệu từ `analysisPerQuestion` và `answers`
+  const per_question = analysisPerQuestion.map((analysisItem, index) => {
+    const answerItem = answers[index] || {};
+    return {
+      ...analysisItem,
+      question:
+        answerItem.questionText ||
+        analysisItem.question ||
+        `Question ${analysisItem.id}`,
+      user_answer: answerItem.selectedOptionText || analysisItem.user_answer,
+    };
+  });
 
-  // Chuyển sang Date
-  const start = new Date(results.attempt.startTime);
-  const end = new Date(results.attempt.endTime);
+  // Tính toán stats
+  const correctCount = per_question.filter(
+    (q) => q && q.correct === true
+  ).length;
+  const incorrectCount = total_questions - correctCount;
+  const scorePercent =
+    total_questions > 0
+      ? Math.round((correctCount / total_questions) * 100)
+      : 0;
 
-  // Tính chênh lệch mili-giây
-  const diffMs = end - start;
+  const resultStats = {
+    score: scorePercent,
+    correct: correctCount,
+    incorrect: incorrectCount,
+    total: total_questions,
+    time: timeTaken,
+  };
 
-  // Đổi sang phút, giây
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const correctAnswers = per_question
+    .filter((q) => q && q.correct === true)
+    .map((q) => ({
+      question: q.question,
+      answer: q.expected_answer || "No answer",
+      type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
+      explain: q.explain || "No explanation",
+    }));
 
-  console.log("Chênh lệch (giây):", diffSeconds);
-  console.log("Chênh lệch (phút):", diffMinutes);
-  console.log("Chênh lệch (giờ):", diffHours);
+  const incorrectAnswers = per_question
+    .filter((q) => q && q.correct === false)
+    .map((q) => ({
+      question: q.question,
+      yourAnswer: q.user_answer || "No answer",
+      correctAnswer: q.expected_answer || "No answer",
+      type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
+      explain: q.explain || "No explanation",
+    }));
+
+  const avgTime =
+    resultStats.total > 0
+      ? Math.round(resultStats.time / resultStats.total)
+      : 0;
+
+  // --- Components con (Sub Components) ---
+
+  const StatCard = ({ title, value, subtitle, icon, color }) => (
+    <Card style={[styles.statCard, { borderTopColor: color }]}>
+      <Card.Content>
+        <View style={styles.statContent}>
+          <Text style={[styles.statValue, { color }]}>{value}</Text>
+          <Icon name={icon} size={24} color={color} />
+        </View>
+        <Paragraph style={styles.statSubtitle}>{subtitle}</Paragraph>
+      </Card.Content>
+    </Card>
+  );
+
+  const getProgressBarColor = (accuracy) => {
+    if (accuracy >= 70) return theme.colors.success; // green
+    if (accuracy >= 40) return theme.colors.warning; // orange/yellow
+    return theme.colors.error; // red
+  };
+
+  // Custom colors cho Paper v5 theme
+  const customColors = {
+    success: "#22c55e",
+    error: "#ef4444",
+    warning: "#f59e0b",
+    info: "#3b82f6",
+  };
+
+  // --- JSX Rendering ---
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Results Header */}
-      <View style={styles.header}>
-        <View
-          style={[styles.resultIcon, { backgroundColor: scoreColor + "20" }]}
-        >
-          <Ionicons name={scoreIcon} size={60} color={scoreColor} />
-        </View>
-        <Text style={styles.resultTitle}>
-          {isPassed ? "Congratulations!" : "Better luck next time!"}
-        </Text>
-        <Text style={styles.resultSubtitle}>
-          {isPassed ? "You passed the test!" : "You need to improve your score"}
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <Title style={styles.title}>Test Results</Title>
+        <Paragraph style={styles.subtitle}>
+          Here's how you performed on your recent test
+        </Paragraph>
 
-      {/* Score Card */}
-      <View style={styles.scoreCard}>
-        <Text style={styles.scoreLabel}>Your Score</Text>
-        <Text style={[styles.scoreValue, { color: scoreColor }]}>
-          {results.attempt.score}
-        </Text>
-        <Text style={styles.scoreDetails}>
-          {correctAnswers} out of {totalQuestions} questions correct
-        </Text>
-      </View>
-
-      {/* Test Details */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Test Details</Text>
-
-        <View style={styles.detailItem}>
-          <Ionicons name="clipboard" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Test:</Text>
-          <Text style={styles.detailValue}>{results.attempt.testId.title}</Text>
-        </View>
-
-        <View style={styles.detailItem}>
-          <Ionicons name="time" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Time Taken:</Text>
-          <Text style={styles.detailValue}>
-            {` ${diffMinutes}:${diffSeconds}`}
-          </Text>
+        {/* Thông tin tổng quan (Overall Stats) */}
+        <View style={styles.statsGrid}>
+          <StatCard
+            value={`${resultStats.score}%`}
+            subtitle={`${resultStats.correct} out of ${resultStats.total} correct`}
+            icon="check-circle"
+            color={customColors.success}
+          />
+          <StatCard
+            value={resultStats.correct}
+            subtitle="Questions answered correctly"
+            icon="check-circle"
+            color={customColors.success}
+          />
+          <StatCard
+            value={resultStats.incorrect}
+            subtitle="Questions answered incorrectly"
+            icon="close-circle"
+            color={customColors.error}
+          />
+          <StatCard
+            value={formatTime(resultStats.time)}
+            subtitle={`${avgTime}s average per question`}
+            icon="clock-time-four"
+            color={customColors.info}
+          />
         </View>
 
-        <View style={styles.detailItem}>
-          <Ionicons name="trophy" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Passing Score:</Text>
-          <Text style={styles.detailValue}>{results.passingScore}%</Text>
-        </View>
-
-        <View style={styles.detailItem}>
-          <Ionicons name="calendar" size={20} color="#6B7280" />
-          <Text style={styles.detailLabel}>Completed:</Text>
-          <Text style={styles.detailValue}>
-            {new Date(results.completedAt).toLocaleDateString()}
-          </Text>
-        </View>
-      </View>
-
-      {/* Performance Breakdown */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Performance Breakdown</Text>
-
-        <View style={styles.breakdownItem}>
-          <View style={styles.breakdownLeft}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={styles.breakdownLabel}>Correct Answers</Text>
-          </View>
-          <Text style={styles.breakdownValue}>{correctAnswers}</Text>
-        </View>
-
-        <View style={styles.breakdownItem}>
-          <View style={styles.breakdownLeft}>
-            <Ionicons name="close-circle" size={20} color="#EF4444" />
-            <Text style={styles.breakdownLabel}>Incorrect Answers</Text>
-          </View>
-          <Text style={styles.breakdownValue}>
-            {totalQuestions - correctAnswers}
-          </Text>
-        </View>
-
-        <View style={styles.breakdownItem}>
-          <View style={styles.breakdownLeft}>
-            <Ionicons name="help-circle" size={20} color="#6B7280" />
-            <Text style={styles.breakdownLabel}>Total Questions</Text>
-          </View>
-          <Text style={styles.breakdownValue}>{totalQuestions}</Text>
-        </View>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.actionSection}>
-        {!isPassed && (
-          <TouchableOpacity
-            style={styles.retakeButton}
-            onPress={handleRetakeTest}
-          >
-            <Ionicons name="refresh" size={20} color="#FFFFFF" />
-            <Text style={styles.retakeButtonText}>Retake Test</Text>
-          </TouchableOpacity>
+        {/* Skill Summary */}
+        {skill_summary.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Title style={styles.cardTitle}>Skill Performance</Title>
+              {skill_summary.map((skill, idx) => (
+                <View key={idx} style={styles.skillItem}>
+                  <View style={styles.skillHeader}>
+                    <Text style={styles.skillText}>
+                      {skill.skill || "Unknown Skill"}
+                    </Text>
+                    <Text style={styles.skillAccuracy}>
+                      {skill.correct || 0}/{skill.total || 0} (
+                      {skill.accuracy || 0}%)
+                    </Text>
+                  </View>
+                  <ProgressBar
+                    progress={(skill.accuracy || 0) / 100}
+                    color={getProgressBarColor(skill.accuracy || 0)}
+                    style={styles.progressBar}
+                  />
+                </View>
+              ))}
+            </Card.Content>
+          </Card>
         )}
 
-        <TouchableOpacity style={styles.backButton} onPress={handleBackToTests}>
-          <Ionicons name="list" size={20} color="#3B82F6" />
-          <Text style={styles.backButtonText}>Back to Tests</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        {/* Weak Topics */}
+        {weak_topics.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Title style={styles.cardTitle}>Areas for Improvement</Title>
+              <View style={styles.chipContainer}>
+                {weak_topics.map((topic, idx) => (
+                  <Chip
+                    key={idx}
+                    icon="alert-octagon"
+                    style={{ margin: 4 }}
+                    textStyle={{ color: customColors.warning }}
+                    mode="outlined"
+                    theme={{ colors: { outline: customColors.warning } }}
+                  >
+                    {topic}
+                  </Chip>
+                ))}
+              </View>
+            </Card.Content>
+          </Card>
+        )}
+
+        {/* Tabs - Sử dụng Buttons để mô phỏng Tabs */}
+        <Card style={styles.card}>
+          <View style={styles.tabBar}>
+            {["Correct Answers", "Incorrect Answers", "Learning Plan"].map(
+              (label, index) => (
+                <Button
+                  key={index}
+                  mode={tab === index ? "contained" : "text"}
+                  onPress={() => setTab(index)}
+                  style={styles.tabButton}
+                  labelStyle={styles.tabLabel}
+                  compact
+                >
+                  {label}
+                </Button>
+              )
+            )}
+          </View>
+          <Divider />
+          <Card.Content>
+            {/* Tab 0: Correct Answers */}
+            {tab === 0 && (
+              <View>
+                <Title style={styles.tabContentTitle}>
+                  Questions You Got Right
+                </Title>
+                <Paragraph style={styles.tabContentSubtitle}>
+                  Great job on these questions! You demonstrated strong
+                  knowledge in these areas.
+                </Paragraph>
+                {correctAnswers.length > 0 ? (
+                  correctAnswers.map((item, idx) => (
+                    <Card
+                      key={idx}
+                      style={[
+                        styles.answerCard,
+                        {
+                          borderLeftColor: customColors.success,
+                          backgroundColor: "#e8f5e9",
+                        },
+                      ]}
+                    >
+                      <Card.Content>
+                        <View style={styles.answerHeader}>
+                          <Chip
+                            icon="check-circle"
+                            textStyle={{ color: customColors.success }}
+                            style={{ backgroundColor: "transparent" }}
+                          >
+                            CORRECT
+                          </Chip>
+                          <Chip
+                            icon="information"
+                            style={{ marginLeft: 8, flexShrink: 1 }}
+                            textStyle={{ flexShrink: 1 }}
+                            compact
+                          >
+                            {item.type}
+                          </Chip>
+                        </View>
+                        <Paragraph style={styles.questionText}>
+                          {item.question}
+                        </Paragraph>
+                        <Paragraph style={styles.answerDetail}>
+                          <Text style={{ fontWeight: "bold" }}>
+                            YOUR ANSWER:{" "}
+                          </Text>
+                          <Text
+                            style={{
+                              color: customColors.success,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {item.answer}
+                          </Text>
+                        </Paragraph>
+                        <Paragraph style={styles.answerDetail}>
+                          <Text style={{ fontWeight: "bold" }}>EXPLAIN: </Text>
+                          <Text>{item.explain}</Text>
+                        </Paragraph>
+                      </Card.Content>
+                    </Card>
+                  ))
+                ) : (
+                  <Paragraph style={styles.emptyText}>
+                    No correct answers in this test. Keep practicing!
+                  </Paragraph>
+                )}
+              </View>
+            )}
+
+            {/* Tab 1: Incorrect Answers */}
+            {tab === 1 && (
+              <View>
+                <Title style={styles.tabContentTitle}>
+                  Questions to Review
+                </Title>
+                <Paragraph style={styles.tabContentSubtitle}>
+                  These questions need some attention. Review the correct
+                  answers to improve your understanding.
+                </Paragraph>
+                {incorrectAnswers.length > 0 ? (
+                  incorrectAnswers.map((item, idx) => (
+                    <Card
+                      key={idx}
+                      style={[
+                        styles.answerCard,
+                        {
+                          borderLeftColor: customColors.error,
+                          backgroundColor: "#fbeaea",
+                        },
+                      ]}
+                    >
+                      <Card.Content>
+                        <View style={styles.answerHeader}>
+                          <Chip
+                            icon="close-circle"
+                            textStyle={{ color: customColors.error }}
+                            style={{ backgroundColor: "transparent" }}
+                          >
+                            INCORRECT
+                          </Chip>
+                          <Chip
+                            icon="information"
+                            style={{ marginLeft: 8, flexShrink: 1 }}
+                            textStyle={{ flexShrink: 1 }}
+                            compact
+                          >
+                            {item.type}
+                          </Chip>
+                        </View>
+                        <Paragraph style={styles.questionText}>
+                          {item.question}
+                        </Paragraph>
+                        <Paragraph style={styles.answerDetail}>
+                          <Text style={{ fontWeight: "bold" }}>
+                            YOUR ANSWER:{" "}
+                          </Text>
+                          <Text
+                            style={{
+                              color: customColors.error,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {item.yourAnswer}
+                          </Text>
+                        </Paragraph>
+                        <Paragraph style={styles.answerDetail}>
+                          <Text style={{ fontWeight: "bold" }}>
+                            CORRECT ANSWER:{" "}
+                          </Text>
+                          <Text
+                            style={{
+                              color: customColors.success,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {item.correctAnswer}
+                          </Text>
+                        </Paragraph>
+                        <Paragraph style={styles.answerDetail}>
+                          <Text style={{ fontWeight: "bold" }}>EXPLAIN: </Text>
+                          <Text>{item.explain}</Text>
+                        </Paragraph>
+                      </Card.Content>
+                    </Card>
+                  ))
+                ) : (
+                  <Paragraph style={styles.emptyText}>
+                    All questions were answered correctly!
+                  </Paragraph>
+                )}
+              </View>
+            )}
+
+            {/* Tab 2: Learning Plan */}
+            {tab === 2 && (
+              <View>
+                <Title style={styles.tabContentTitle}>
+                  Personalized Learning Plan
+                </Title>
+
+                {/* Overall Goal */}
+                <Card
+                  style={[
+                    styles.planCard,
+                    { backgroundColor: "#e3f2fd", borderColor: "#90caf9" },
+                  ]}
+                >
+                  <Card.Content>
+                    <View style={styles.planHeader}>
+                      <Icon
+                        name="trending-up"
+                        size={24}
+                        color={theme.colors.primary}
+                      />
+                      <View style={{ marginLeft: 8 }}>
+                        <Text style={styles.planTitle}>Overall Goal</Text>
+                        <Paragraph style={styles.planSubtitle}>
+                          {personalized_plan.overall_goal}
+                        </Paragraph>
+                      </View>
+                    </View>
+                  </Card.Content>
+                </Card>
+
+                {/* Progress Speed */}
+                <Card
+                  style={[
+                    styles.planCard,
+                    { backgroundColor: "#e8f5e9", borderColor: "#a5d6a7" },
+                  ]}
+                >
+                  <Card.Content>
+                    <View style={styles.planHeader}>
+                      <Icon
+                        name="calendar-clock"
+                        size={24}
+                        color={customColors.success}
+                      />
+                      <View style={{ marginLeft: 8 }}>
+                        <Text style={styles.planTitle}>Progress Speed</Text>
+                        <Paragraph style={styles.planSubtitle}>
+                          {personalized_plan.progress_speed}
+                        </Paragraph>
+                      </View>
+                    </View>
+                  </Card.Content>
+                </Card>
+
+                {/* General Recommendations */}
+                {recommendations.length > 0 && (
+                  <Card style={styles.planCard}>
+                    <Card.Content>
+                      <Title style={styles.planTitle}>
+                        General Recommendations
+                      </Title>
+                      <List.Section>
+                        {recommendations.map((rec, idx) => (
+                          <List.Item
+                            key={idx}
+                            title={rec}
+                            left={() => (
+                              <List.Icon
+                                icon="book-open-page-variant"
+                                color={theme.colors.primary}
+                              />
+                            )}
+                            style={{ paddingVertical: 0 }}
+                            titleNumberOfLines={2}
+                          />
+                        ))}
+                      </List.Section>
+                    </Card.Content>
+                  </Card>
+                )}
+
+                {/* Weekly Study Plan (Accordion) */}
+                {personalized_plan.weekly_goals &&
+                  personalized_plan.weekly_goals.length > 0 && (
+                    <View style={{ marginTop: 16 }}>
+                      <Title style={styles.cardTitle}>
+                        Weekly Study Plan (
+                        {personalized_plan.weekly_goals.length} weeks)
+                      </Title>
+                      {personalized_plan.weekly_goals.map((week, idx) => (
+                        <List.Accordion
+                          key={idx}
+                          title={week.topic || "No topic specified"}
+                          description={`Week ${week.week || idx + 1}`}
+                          left={(props) => (
+                            <List.Icon {...props} icon="calendar-outline" />
+                          )}
+                          right={() => (
+                            <Chip style={{ marginRight: 10 }} compact>
+                              {week.hours || 0}h
+                            </Chip>
+                          )}
+                          style={styles.accordion}
+                          titleStyle={styles.accordionTitle}
+                          descriptionStyle={styles.accordionDesc}
+                        >
+                          {/* Activities/Study Methods */}
+                          {week.study_methods &&
+                            week.study_methods.length > 0 && (
+                              <View style={styles.accordionDetail}>
+                                <Text style={styles.detailHeader}>
+                                  Activities:
+                                </Text>
+                                {week.study_methods.map((method, methodIdx) => (
+                                  <List.Item
+                                    key={methodIdx}
+                                    title={method}
+                                    left={() => (
+                                      <List.Icon icon="file-document-outline" />
+                                    )}
+                                    titleStyle={styles.listItemTitle}
+                                    style={{
+                                      paddingVertical: 0,
+                                      paddingLeft: 20,
+                                    }}
+                                  />
+                                ))}
+                              </View>
+                            )}
+
+                          {/* Materials */}
+                          {week.materials && week.materials.length > 0 && (
+                            <View style={styles.accordionDetail}>
+                              <Text style={styles.detailHeader}>
+                                Recommended Materials:
+                              </Text>
+                              <View style={styles.chipContainer}>
+                                {week.materials.map((material, matIdx) => (
+                                  <Chip
+                                    key={matIdx}
+                                    icon="video-library"
+                                    style={{ margin: 4 }}
+                                    mode="outlined"
+                                    compact
+                                  >
+                                    {material}
+                                  </Chip>
+                                ))}
+                              </View>
+                            </View>
+                          )}
+                        </List.Accordion>
+                      ))}
+                    </View>
+                  )}
+
+                {/* Recommended Study Methods */}
+                {personalized_plan.study_methods &&
+                  personalized_plan.study_methods.length > 0 && (
+                    <Card style={styles.planCard}>
+                      <Card.Content>
+                        <Title style={styles.cardTitle}>
+                          Recommended Study Methods
+                        </Title>
+                        {personalized_plan.study_methods.map((method, idx) => (
+                          <View key={idx} style={styles.methodItem}>
+                            <Icon
+                              name="play-circle-outline"
+                              size={20}
+                              color={theme.colors.primary}
+                            />
+                            <Paragraph style={{ marginLeft: 8, flex: 1 }}>
+                              {method}
+                            </Paragraph>
+                          </View>
+                        ))}
+                      </Card.Content>
+                    </Card>
+                  )}
+
+                {/* Notes */}
+                {personalized_plan.notes && (
+                  <Card
+                    style={[
+                      styles.planCard,
+                      { backgroundColor: "#fffde7", borderColor: "#ffe082" },
+                    ]}
+                  >
+                    <Card.Content>
+                      <Title style={styles.planTitle}>Important Notes</Title>
+                      <Paragraph style={styles.planSubtitle}>
+                        {personalized_plan.notes}
+                      </Paragraph>
+                    </Card.Content>
+                  </Card>
+                )}
+              </View>
+            )}
+          </Card.Content>
+        </Card>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <Button
+            mode="contained"
+            onPress={() =>
+              Alert.alert("Action", "Retake Test functionality triggered.")
+            }
+            style={styles.actionButton}
+            labelStyle={styles.actionButtonLabel}
+            icon="redo"
+          >
+            Retake Test
+          </Button>
+          <Button
+            mode="outlined"
+            onPress={() => navigation.navigate("AssessmentList")}
+            style={styles.actionButton}
+            labelStyle={styles.actionButtonLabel}
+            icon="format-list-bulleted"
+          >
+            View All Tests
+          </Button>
+          <Button
+            mode="contained"
+            color={customColors.success} // Màu xanh lá cây
+            onPress={() =>
+              Alert.alert(
+                "Action",
+                "Start Learning Plan functionality triggered."
+              )
+            }
+            style={[
+              styles.actionButton,
+              { backgroundColor: customColors.success },
+            ]}
+            labelStyle={styles.actionButtonLabel}
+            icon="rocket"
+          >
+            Start Learning Plan
+          </Button>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
+// --- Stylesheet ---
+
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f9fafb", // Giống bg-gray-50
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+  },
+  contentContainer: {
+    padding: 16,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
   },
-  loadingText: {
-    fontSize: 16,
-    color: "#6B7280",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-  },
-  errorText: {
-    fontSize: 18,
-    color: "#EF4444",
-    marginTop: 16,
-  },
-  header: {
-    backgroundColor: "#FFFFFF",
-    padding: 20,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  resultIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  resultTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#1F2937",
-    textAlign: "center",
-    marginBottom: 8,
+    color: "#22223b", // Giống #22223b
+    marginBottom: 4,
   },
-  resultSubtitle: {
+  subtitle: {
     fontSize: 16,
-    color: "#6B7280",
-    textAlign: "center",
+    color: "#64748b", // Giống #64748b
+    marginBottom: 20,
   },
-  scoreCard: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 20,
-    borderRadius: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+
+  // Stats Grid
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
-  scoreLabel: {
-    fontSize: 16,
-    color: "#6B7280",
-    marginBottom: 8,
-  },
-  scoreValue: {
-    fontSize: 48,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  scoreDetails: {
-    fontSize: 14,
-    color: "#6B7280",
-  },
-  section: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 20,
+  statCard: {
+    width: "48%", // 2 cột trên mobile
+    marginBottom: 10,
     borderRadius: 12,
+    borderTopWidth: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1F2937",
-    marginBottom: 16,
-  },
-  detailItem: {
+  statContent: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    justifyContent: "space-between",
   },
-  detailLabel: {
-    fontSize: 16,
-    color: "#6B7280",
-    marginLeft: 12,
+  statValue: {
+    fontSize: 24,
+    fontWeight: "bold",
   },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F2937",
+  statSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#64748b",
   },
-  breakdownItem: {
+
+  // General Card
+  card: {
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  // Skill Summary
+  skillItem: {
+    marginBottom: 15,
+  },
+  skillHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    marginBottom: 4,
   },
-  breakdownLeft: {
+  skillText: {
+    fontWeight: "600",
+  },
+  skillAccuracy: {
+    color: "#64748b",
+    fontSize: 12,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+  },
+
+  // Weak Topics
+  chipContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
+    margin: -4,
+  },
+
+  // Tabs
+  tabBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingHorizontal: 8,
+    backgroundColor: "#fff",
+  },
+  tabButton: {
     flex: 1,
+    marginHorizontal: 2,
+    borderRadius: 0,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
   },
-  breakdownLabel: {
-    fontSize: 16,
-    color: "#1F2937",
-    marginLeft: 12,
+  tabLabel: {
+    textTransform: "none",
+    fontSize: 13,
   },
-  breakdownValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F2937",
+  tabContentTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
   },
-  actionSection: {
-    padding: 20,
+  tabContentSubtitle: {
+    fontSize: 14,
+    color: "#64748b",
+    marginBottom: 16,
   },
-  retakeButton: {
-    backgroundColor: "#EF4444",
+  emptyText: {
+    textAlign: "center",
+    paddingVertical: 30,
+    color: "#64748b",
+  },
+
+  // Answer Card
+  answerCard: {
+    marginBottom: 10,
+    borderLeftWidth: 4,
+    shadowOpacity: 0, // Bỏ shadow cho card chi tiết câu hỏi để trông nhẹ nhàng hơn
+    elevation: 0,
+  },
+  answerHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
+    marginBottom: 4,
+    flexWrap: "wrap",
+  },
+  questionText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  answerDetail: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+
+  // Learning Plan
+  planCard: {
     marginBottom: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  retakeButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  backButton: {
-    backgroundColor: "#F3F4F6",
+  planHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#3B82F6",
   },
-  backButtonText: {
-    color: "#3B82F6",
+  planTitle: {
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  planSubtitle: {
+    fontSize: 14,
+    color: "#64748b",
+  },
+
+  // Accordion (Weekly Plan)
+  accordion: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  accordionTitle: {
     fontWeight: "600",
-    marginLeft: 8,
+    fontSize: 15,
+  },
+  accordionDesc: {
+    fontSize: 12,
+  },
+  accordionDetail: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    paddingTop: 4,
+    backgroundColor: "#f7f7f7",
+  },
+  detailHeader: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  listItemTitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    flexShrink: 1,
+  },
+  methodItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    flexWrap: "wrap",
+  },
+
+  // Action Buttons
+  actionButtons: {
+    flexDirection: "column", // Thay đổi thành column trên mobile để tránh tràn
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  actionButton: {
+    marginVertical: 4,
+    borderRadius: 8,
+  },
+  actionButtonLabel: {
+    fontWeight: "600",
+    textTransform: "none",
   },
 });
 

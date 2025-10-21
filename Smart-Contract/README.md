@@ -16,12 +16,12 @@ npx hardhat ignition deploy ./ignition/modules/Cetificate.js
 
 ```
 Contract: CertificateRegistry
-Address: 0xdDD8585206D51f17Ea82c5767FeA5f7805015f0E
+Address: 0xe64F9A583b57F985bB0c1F495366019E53328CF1
 Network: Sepolia (Chain ID: 11155111)
 Deployed: 05/08/2025
 Block:
 Deployer: 0xB71327c4D0A7916c7874a025C766B4e482008db3
-Etherscan: https://sepolia.etherscan.io/address/0xdDD8585206D51f17Ea82c5767FeA5f7805015f0E
+Etherscan: https://sepolia.etherscan.io/address/0xe64F9A583b57F985bB0c1F495366019E53328CF1
 ```
 
 ### Local Development
@@ -61,4 +61,4 @@ npx hardhat run scripts/check-balance.js --network sepolia
 
 # 3. Deploy!
 
-npx hardhat ignition deploy ignition/modules/Certificate.js --network sepolia
+npx hardhat ignition deploy ignition/modules/Certificate.js --network sepolia --reset

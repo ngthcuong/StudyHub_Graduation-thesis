@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const questionModel = require("../models/questionModel");
+const testPoolModel = require("../models/testPoolModel");
 
 // Create question (optionally with options array)
 const createQuestion = async (req, res) => {
@@ -11,6 +13,7 @@ const createQuestion = async (req, res) => {
       topic,
       points,
       options,
+      level,
     } = req.body;
 
     if (!testId || !questionText || !questionType) {
@@ -24,6 +27,8 @@ const createQuestion = async (req, res) => {
       return res.status(400).json({ error: "MCQ must include options" });
     }
 
+    const createdBy = req.user ? req.user.userId : null;
+
     const newQuestion = await questionModel.createQuestion({
       testId,
       questionText,
@@ -32,6 +37,8 @@ const createQuestion = async (req, res) => {
       topic,
       points,
       options,
+      level,
+      createdBy,
     });
 
     res.status(201).json({
@@ -46,23 +53,28 @@ const createQuestion = async (req, res) => {
 
 const createManyQuestions = async (req, res) => {
   try {
-    let { questions } = req.body;
+    let { questions, createdBy, exam_type, score_range } = req.body;
 
     if (!questions || !Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ error: "Questions array is required" });
     }
 
-    // Validate nhanh
-    for (let q of questions) {
+    const level = {};
+    if (exam_type && score_range) {
+      if (exam_type.toUpperCase() === "TOEIC") level.TOEIC = score_range;
+      else if (exam_type.toUpperCase() === "IELTS") level.IELTS = score_range;
+    }
+
+    // Validate nhanh gọn
+    questions = questions.map((q) => {
       if (!q.testId || !q.questionText || !q.questionType) {
-        return res
-          .status(400)
-          .json({ error: "Missing required fields in some questions" });
+        throw new Error("Missing required fields in some questions");
       }
       if (q.questionType && (!q.options || q.options.length === 0)) {
-        return res.status(400).json({ error: "MCQ must include options" });
+        throw new Error("MCQ must include options");
       }
-    }
+      return { ...q, createdBy, level };
+    });
 
     // Lưu vào DB (nếu questionModel là mongoose model thì dùng insertMany)
     const newQuestions = await questionModel.createManyQuestions(questions);
@@ -150,6 +162,73 @@ const deleteQuestionById = async (req, res) => {
   }
 };
 
+const getQuestionsByTestLevelAndCreator = async (req, res) => {
+  try {
+    const { testId, exam_type, score_range, createdBy } = req.body;
+
+    if (!testId) {
+      return res.status(400).json({ error: "Test ID is required" });
+    }
+
+    // 1. TÌM TEST POOL DỰA TRÊN baseTestId VÀ createdBy (Nếu createdBy được cung cấp)
+    let testPoolId = null;
+
+    // Xác thực ID trước khi tìm kiếm để tránh lỗi BSONError
+    const isValidTestId = mongoose.Types.ObjectId.isValid(testId);
+    const isValidCreatorId =
+      createdBy && mongoose.Types.ObjectId.isValid(createdBy);
+
+    if (isValidCreatorId && isValidTestId) {
+      // Sử dụng hàm model mới
+      const pools = await testPoolModel.findTestPoolByBaseTestIdAndCreator(
+        testId, // baseTestId
+        createdBy // creatorId
+      );
+
+      // Lấy pool đầu tiên nếu có
+      if (pools && pools.length > 0) {
+        testPoolId = pools[0]._id;
+      }
+    }
+
+    // 🎯 Tạo điều kiện lọc động
+    const filter = { testId };
+
+    // Nếu có exam_type + score_range thì lọc theo level tương ứng
+    if (exam_type && score_range) {
+      if (exam_type.toUpperCase() === "TOEIC")
+        filter["level.TOEIC"] = score_range;
+      else if (exam_type.toUpperCase() === "IELTS")
+        filter["level.IELTS"] = score_range;
+      else filter[`level.${exam_type}`] = score_range;
+    }
+
+    // Nếu có người tạo thì thêm vào filter
+    if (createdBy) filter.createdBy = createdBy;
+
+    const questions = await questionModel.findQuestionsByTestLevelAndCreator(
+      filter
+    );
+
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({ message: "No questions found" });
+    }
+
+    res.status(200).json({
+      message: "Questions retrieved successfully",
+      total: questions.length,
+      testPoolId: testPoolId,
+      data: questions,
+    });
+  } catch (error) {
+    console.error(
+      "❌ Error getting questions by test, level, and creator:",
+      error
+    );
+    res.status(500).json({ error: "Failed to get questions" });
+  }
+};
+
 module.exports = {
   createQuestion,
   createManyQuestions,
@@ -157,4 +236,5 @@ module.exports = {
   updateQuestionById,
   deleteQuestionById,
   getQuestionById,
+  getQuestionsByTestLevelAndCreator,
 };

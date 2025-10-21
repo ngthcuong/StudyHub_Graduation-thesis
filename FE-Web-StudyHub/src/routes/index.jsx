@@ -5,7 +5,6 @@ import AuthLayout from "../layouts/AuthLayout";
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
-import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
 import TestInformation from "../pages/test/TestInformation";
@@ -19,6 +18,18 @@ import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
 import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
+import UserInfo from "../pages/home/UserInfo";
+
+import TestResultDisplay from "../pages/test/TestResultDisplay";
+import LessonContentViewer from "../pages/course/LessonContentViewer";
+
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/Dashboard";
+import AdminCertificate from "../pages/admin/Certificate";
+import AdminTest from "../pages/admin/Test";
+import AdminReview from "../pages/admin/Review";
+
+import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 
 export const router = createBrowserRouter([
   {
@@ -29,7 +40,7 @@ export const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
-        path: "/verify-cert",
+        path: "/verify-certificate",
         element: <VerifyCertificatePage />,
       },
       {
@@ -58,7 +69,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "profile",
-                element: <UserInfoPage />,
+                element: <UserInfo />,
               },
               {
                 path: "settings",
@@ -67,26 +78,38 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "/profile",
-            element: <UserInfoPage />,
+            path: "/admin",
+            element: <AdminLayout />,
+            children: [
+              {
+                path: "dashboard",
+                element: <AdminDashboard />,
+              },
+              {
+                path: "certificate",
+                element: <AdminCertificate />,
+              },
+              {
+                path: "test",
+                element: <AdminTest />,
+              },
+              {
+                path: "review",
+                element: <AdminReview />,
+              },
+            ],
           },
           {
             path: "/course",
             element: <CourseList variant="market" />,
           },
-
           {
-            path: "/course",
-            children: [
-              {
-                path: ":id",
-                element: <CourseDetail />,
-              },
-              {
-                path: ":id/lesson/:id",
-                element: <CourseLessson />,
-              },
-            ],
+            path: "/course/:courseId",
+            element: <CourseDetail />,
+          },
+          {
+            path: "/course/:courseId/lesson/:lessonId",
+            element: <CourseLessson />,
           },
 
           {
@@ -106,10 +129,22 @@ export const router = createBrowserRouter([
                 element: <TestMultipleChoice />,
               },
               {
+                path: "custom",
+                element: <TestMultipleChoiceCustom />,
+              },
+              {
                 path: "result",
                 element: <TestResult />,
               },
             ],
+          },
+          {
+            path: "/attempt/:attemptId",
+            element: <TestResultDisplay />,
+          },
+          {
+            path: "/lesson/:lessonId",
+            element: <LessonContentViewer />,
           },
         ],
       },

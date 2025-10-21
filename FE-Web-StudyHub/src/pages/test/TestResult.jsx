@@ -40,16 +40,37 @@ function formatTime(s) {
 
 const TestResult = () => {
   const location = useLocation();
-  const { resultData } = location.state || {};
+  const resultData = location?.state?.resultData;
   const [tab, setTab] = useState(0);
 
-  console.log("Location state:", resultData);
+  // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi
+  if (
+    !resultData ||
+    !resultData.attemptDetail ||
+    !resultData.attemptDetail.analysisResult
+  ) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Loading test result or data is missing...</Typography>
+      </Box>
+    );
+  }
 
-  // Destructuring với giá trị mặc định để tránh undefined
+  console.log("Result Data:", resultData);
+
+  const startTime = new Date(resultData.attemptDetail.startTime);
+  const endTime = new Date(resultData.attemptDetail.endTime);
+  const timeTaken = Math.floor((endTime - startTime) / 1000);
+
+  // Lấy đối tượng analysisResult từ đúng vị trí của nó
+  const analysisResult = resultData.attemptDetail.analysisResult;
+  const answers = resultData.attemptDetail.answers;
+
+  // Destructuring với giá trị mặc định để tránh lỗi
   const {
     total_score = 0,
     total_questions = 0,
-    per_question = [],
+    per_question: analysisPerQuestion = [],
     skill_summary = [],
     weak_topics = [],
     recommendations = [],
@@ -60,7 +81,17 @@ const TestResult = () => {
       study_methods: [],
       notes: null,
     },
-  } = resultData;
+  } = analysisResult;
+
+  // Kết hợp dữ liệu từ `analysisPerQuestion` và `answers` để có đủ thông tin
+  const per_question = analysisPerQuestion.map((analysisItem, index) => {
+    const answerItem = answers[index] || {};
+    return {
+      ...analysisItem,
+      question: answerItem.questionText || `Question ${analysisItem.id}`, // Lấy văn bản câu hỏi thật
+      user_answer: answerItem.selectedOptionText || analysisItem.user_answer, // Lấy câu trả lời của người dùng
+    };
+  });
 
   // Tính toán stats với safe checks
   const correctCount = per_question.filter(
@@ -68,33 +99,37 @@ const TestResult = () => {
   ).length;
   const incorrectCount = total_questions - correctCount;
   const scorePercent =
-    total_questions > 0 ? Math.round((total_score / total_questions) * 100) : 0;
+    total_questions > 0
+      ? Math.round((correctCount / total_questions) * 100)
+      : 0; // Tính % dựa trên số câu đúng
 
   const resultStats = {
     score: scorePercent,
     correct: correctCount,
     incorrect: incorrectCount,
     total: total_questions,
-    time: 300, // GIẢ LẬP 5 PHÚT - SAU NÀY SẼ THAY LẠI
+    time: timeTaken,
   };
 
-  // Tạo correctAnswers từ per_question với safe checks
+  console.log(resultStats);
+
+  // Tạo correctAnswers từ mảng `per_question` đã được kết hợp
   const correctAnswers = per_question
     .filter((q) => q && q.correct === true)
     .map((q) => ({
-      question: `Question ${q.id || "N/A"}`,
+      question: q.question, // Sử dụng văn bản câu hỏi thật
       answer: q.expected_answer || "No answer",
       time: 0,
       type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
       explain: q.explain || "No explanation",
     }));
 
-  // Tạo incorrectAnswers từ per_question với safe checks
+  // Tạo incorrectAnswers từ mảng `per_question` đã được kết hợp
   const incorrectAnswers = per_question
     .filter((q) => q && q.correct === false)
     .map((q) => ({
-      question: `Question ${q.id || "N/A"}`,
-      yourAnswer: q.user_answer || "No answer",
+      question: q.question, // Sử dụng văn bản câu hỏi thật
+      yourAnswer: q.user_answer || "No answer", // Sử dụng câu trả lời thật
       correctAnswer: q.expected_answer || "No answer",
       time: 0,
       type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
@@ -504,31 +539,34 @@ const TestResult = () => {
                             </Stack>
                           </AccordionSummary>
                           <AccordionDetails>
-                            {/* Activities */}
-                            {week.activities && week.activities.length > 0 && (
-                              <Box sx={{ mb: 3 }}>
-                                <Typography
-                                  variant="subtitle2"
-                                  fontWeight={600}
-                                  sx={{ mb: 1 }}
-                                >
-                                  Activities:
-                                </Typography>
-                                <List dense>
-                                  {week.activities.map((activity, actIdx) => (
-                                    <ListItem key={actIdx}>
-                                      <ListItemIcon>
-                                        <AssignmentIcon
-                                          fontSize="small"
-                                          color="action"
-                                        />
-                                      </ListItemIcon>
-                                      <ListItemText primary={activity} />
-                                    </ListItem>
-                                  ))}
-                                </List>
-                              </Box>
-                            )}
+                            {/* Study Methods renamed from "Activities" */}
+                            {week.study_methods &&
+                              week.study_methods.length > 0 && (
+                                <Box sx={{ mb: 3 }}>
+                                  <Typography
+                                    variant="subtitle2"
+                                    fontWeight={600}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    Activities:
+                                  </Typography>
+                                  <List dense>
+                                    {week.study_methods.map(
+                                      (method, methodIdx) => (
+                                        <ListItem key={methodIdx}>
+                                          <ListItemIcon>
+                                            <AssignmentIcon
+                                              fontSize="small"
+                                              color="action"
+                                            />
+                                          </ListItemIcon>
+                                          <ListItemText primary={method} />
+                                        </ListItem>
+                                      )
+                                    )}
+                                  </List>
+                                </Box>
+                              )}
 
                             {/* Materials */}
                             {week.materials && week.materials.length > 0 && (
@@ -637,7 +675,7 @@ const TestResult = () => {
             color="inherit"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
             LinkComponent={"a"}
-            href="/home"
+            href="/home/exercises"
           >
             View All Tests
           </Button>

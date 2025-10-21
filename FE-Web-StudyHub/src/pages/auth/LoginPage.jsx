@@ -30,7 +30,7 @@ import SnackBar from "../../components/Snackbar";
 const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { isOpen, message } = useSelector((state) => state.snackbar);
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
   const [loginUser, { isLoading }] = useLoginMutation();
 
@@ -88,7 +88,7 @@ const LoginPage = () => {
 
   return (
     <Box className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-10 px-4 sm:px-6 lg:px-8">
-      <SnackBar isOpen={isOpen} message={message} />
+      <SnackBar isOpen={isOpen} message={message} severity={severity} />
 
       <Paper
         elevation={8}

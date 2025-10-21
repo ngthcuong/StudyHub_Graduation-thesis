@@ -35,8 +35,6 @@ const LoginScreen = ({ navigation }) => {
       if (loginUser.fulfilled.match(resultAction)) {
         const data = resultAction.payload;
 
-        console.log("User info:", data.user);
-
         // navigation.replace("Home");
       } else {
         Alert.alert(

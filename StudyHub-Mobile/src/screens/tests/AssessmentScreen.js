@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   View,
   Text,
@@ -13,7 +14,9 @@ import { testApi } from "../../services/testApi";
 const AssessmentScreen = ({ navigation, route }) => {
   const { testId } = route.params;
   const [test, setTest] = useState(null);
+  const [attemptInfo, setAttemptInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     loadTest();
@@ -22,8 +25,29 @@ const AssessmentScreen = ({ navigation, route }) => {
   const loadTest = async () => {
     try {
       setLoading(true);
-      const response = await testApi.getTestById(testId);
-      setTest(response.data);
+      try {
+        // Gọi API attemptInfo trước
+        const res = await testApi.getAttemptInfo(user?._id, testId);
+        console.log("Found attempt info:", res);
+        setTest(res); // nếu thành công thì dùng res
+      } catch (error) {
+        if (error.response?.status === 404) {
+          // Nếu là 404 thì fallback sang getTestById
+          const response = await testApi.getTestById(testId);
+          console.log("Fetched test details:", response);
+          setTest(response.data);
+        } else {
+          // Các lỗi khác vẫn throw để nhảy xuống catch ngoài
+          throw error;
+        }
+      }
+
+      try {
+        const res = await testApi.getAttemptByTestAndUser(testId, user?._id);
+        setAttemptInfo(res.data[0]);
+      } catch (error) {
+        console.log("No attempt info found:", error);
+      }
     } catch (error) {
       console.error("Error loading test:", error);
       Alert.alert("Error", "Failed to load test details");
@@ -70,8 +94,12 @@ const AssessmentScreen = ({ navigation, route }) => {
         <View style={styles.testIcon}>
           <Ionicons name="clipboard" size={60} color="#10B981" />
         </View>
-        <Text style={styles.testTitle}>{test.title}</Text>
-        <Text style={styles.testDescription}>{test.description}</Text>
+        <Text style={styles.testTitle}>
+          {test.title || test.testInfo.title}
+        </Text>
+        <Text style={styles.testDescription}>
+          {test.description || test.testInfo.description}
+        </Text>
       </View>
 
       {/* Test Information */}
@@ -82,7 +110,7 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="time-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Duration:</Text>
           <Text style={styles.infoValue}>
-            {test.durationMin || "N/A"} minutes
+            {test.durationMin || test.testInfo.durationMin || "N/A"} minutes
           </Text>
         </View>
 
@@ -90,7 +118,7 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="help-circle-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Questions:</Text>
           <Text style={styles.infoValue}>
-            {test.numQuestions || 0} questions
+            {test.numQuestions || test.testInfo.numQuestions || 0} questions
           </Text>
         </View>
 
@@ -104,9 +132,11 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="repeat-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Attempts:</Text>
           <Text style={styles.infoValue}>
-            {test.maxAttempts
-              ? `${test.attempts || 0}/${test.maxAttempts}`
-              : "Unlimited"}
+            {attemptInfo
+              ? `${attemptInfo?.attemptNumber || 0}/${
+                  attemptInfo?.maxAttempts || 3
+                }`
+              : "0/3"}
           </Text>
         </View>
       </View>
@@ -143,8 +173,19 @@ const AssessmentScreen = ({ navigation, route }) => {
       </View>
 
       {/* Start Button */}
+
       <View style={styles.actionSection}>
-        <TouchableOpacity style={styles.startButton} onPress={handleStartTest}>
+        <TouchableOpacity
+          style={[
+            styles.startButton,
+            // 3. Thay đổi style dựa trên trạng thái disabled
+            attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts &&
+              styles.startButtonDisabled,
+          ]}
+          onPress={handleStartTest}
+          // 2. Áp dụng thuộc tính disabled
+          disabled={attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts}
+        >
           <Ionicons name="play" size={20} color="#FFFFFF" />
           <Text style={styles.startButtonText}>Start Test</Text>
         </TouchableOpacity>
@@ -255,18 +296,36 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   startButton: {
-    backgroundColor: "#10B981",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    minWidth: 150,
   },
   startButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
+  },
+  startButtonDisabled: {
+    backgroundColor: "#adb5bd",
+    opacity: 0.7,
+  },
+  startButtonText: {
+    color: "#FFFFFF",
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  limitText: {
+    marginTop: 10,
+    color: "red",
+    textAlign: "center",
+    fontSize: 14,
   },
 });
 
