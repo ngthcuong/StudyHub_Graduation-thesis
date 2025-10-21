@@ -16,10 +16,8 @@ export default function DailyStudyTimeChart({ data }) {
   // ✨ Chuyển dữ liệu từ API → Recharts
   const chartData = data.map((item) => ({
     day: new Date(item.date).getDate().toString(),
-    studyTimeMinutes: item.studyTimeMinutes,
+    studyTimeMinutes: Math.floor(item.studyTimeSeconds / 60),
   }));
-
-  console.log("📊 studyTimeChartData:", chartData);
 
   return (
     <div className="flex justify-center">

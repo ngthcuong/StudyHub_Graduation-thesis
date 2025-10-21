@@ -6,6 +6,8 @@ const testController = require("../controllers/testController");
 // Admin creates test
 router.post("/", verifyToken, testController.createTest);
 
+router.get("/my-tests", verifyToken, testController.getTestsByCreatorId);
+
 // Get all tests
 router.get("/", testController.getAllTests);
 

@@ -1,5 +1,4 @@
 // models/StudyLog.js
-
 const mongoose = require("mongoose");
 
 const studyLogSchema = new mongoose.Schema(
@@ -13,15 +12,25 @@ const studyLogSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    // Thời lượng học trong phiên (tính bằng phút)
-    durationMinutes: {
+    // 👉 Đổi từ phút sang giây
+    durationSeconds: {
       type: Number,
       required: true,
       min: 1,
     },
+    // Có thể là bài học hoặc bài test
     lesson: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Lesson", // Hoặc bất kỳ model bài học nào của bạn
+      ref: "Lesson",
+    },
+    test: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Test",
+    },
+    type: {
+      type: String,
+      enum: ["lesson", "test"],
+      required: true,
     },
   },
   { timestamps: true }

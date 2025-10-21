@@ -4,6 +4,7 @@ const testModel = require("../models/testModel");
 const questionModel = require("../models/questionModel");
 const attemptModel = require("../models/testAttemptModel");
 const attemptDetailModel = require("../models/attemptDetailModel");
+const certificateController = require("../controllers/certificateController");
 
 const submitAnswers = async (req, res) => {
   try {
@@ -145,11 +146,21 @@ const submitAnswers = async (req, res) => {
       gradingPayload
     );
 
+    if (
+      (response.data.total_score / response.data.total_questions) * 10 >
+      testDetail?.passingScore * 10
+    ) {
+      const certifate = await certificateController.issueCertificate(
+        testDetail.courseId
+      );
+    }
+
     // console.log("Grading response:", response.data);
 
     res.status(201).json({
       message: "Answers submitted successfully",
       data: response?.data,
+      certifate,
     });
   } catch (error) {
     console.error("Error submitting answers:", error);

@@ -29,6 +29,8 @@ import AdminCertificate from "../pages/admin/Certificate";
 import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
 
+import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -101,19 +103,13 @@ export const router = createBrowserRouter([
             path: "/course",
             element: <CourseList variant="market" />,
           },
-
           {
-            path: "/course",
-            children: [
-              {
-                path: ":id",
-                element: <CourseDetail />,
-              },
-              {
-                path: ":courseId/lesson/:lessonId",
-                element: <CourseLessson />,
-              },
-            ],
+            path: "/course/:courseId",
+            element: <CourseDetail />,
+          },
+          {
+            path: "/course/:courseId/lesson/:lessonId",
+            element: <CourseLessson />,
           },
 
           {
@@ -131,6 +127,10 @@ export const router = createBrowserRouter([
               {
                 path: "attempt",
                 element: <TestMultipleChoice />,
+              },
+              {
+                path: "custom",
+                element: <TestMultipleChoiceCustom />,
               },
               {
                 path: "result",

@@ -22,6 +22,23 @@ export default function Dashboard() {
     }
   );
 
+  function normalizeTimeString(str) {
+    const match = str.match(/(\d+)h\s*(\d+)m\s*(\d+)s/);
+    if (!match) return str; // không đúng format thì trả lại nguyên
+
+    let hours = parseInt(match[1]);
+    let minutes = parseInt(match[2]);
+    let seconds = parseInt(match[3]);
+
+    // Chuẩn hóa lại thời gian
+    minutes += Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
+
+    return `${hours}h ${minutes}m`; // bỏ giây luôn
+  }
+
   useEffect(() => {
     if (data) {
       console.log("✅ Dữ liệu mới nhất:", data);
@@ -76,7 +93,7 @@ export default function Dashboard() {
             <AccessTimeIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Study Time This Month</h3>
             <p className="text-lg font-bold text-gray-800">
-              {data?.data?.studyTimeThisMonth || "0h 0m"}
+              {normalizeTimeString(data?.data?.studyTimeThisMonth) || "0h 0m"}
             </p>
           </div>
         </div>

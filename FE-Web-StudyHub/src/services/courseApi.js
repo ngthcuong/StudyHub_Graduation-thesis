@@ -23,7 +23,7 @@ export const courseApi = rootApi.injectEndpoints({
     // Tạo mới một khóa học
     createCourse: builder.mutation({
       query: (newCourse) => ({
-        url: "/courses",
+        url: "/courses/create",
         method: "POST",
         body: newCourse,
       }),
@@ -33,7 +33,7 @@ export const courseApi = rootApi.injectEndpoints({
     // Cập nhật thông tin khóa học
     updateCourse: builder.mutation({
       query: ({ id, updatedCourse }) => ({
-        url: `/courses/${id}`,
+        url: `/courses/update/${id}`,
         method: "PUT",
         body: updatedCourse,
       }),

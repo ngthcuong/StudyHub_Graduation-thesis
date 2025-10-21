@@ -5,6 +5,7 @@ const attemptDetailModel = require("../models/attemptDetailModel");
 const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
+const certificateController = require("../controllers/certificateController");
 
 // const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
@@ -47,10 +48,11 @@ const submitAttempt = async (req, res) => {
 
     let resForTestResult = {};
 
+    let testDetail;
     // TEST RESULT CONTROLLER
     try {
       // --- Lấy thông tin test ---
-      const testDetail = await testModel.findTestById(testId);
+      testDetail = await testModel.findTestById(testId);
 
       const questionIds = answers.map((a) => a.questionId);
       const questionsByTest = await questionModel.findQuestionsByIds(
@@ -333,9 +335,21 @@ const submitAttempt = async (req, res) => {
     //   await userModel.updateUserById(userId, updateData);
     // }
 
+    let certifate;
+    if (
+      (totalScore / testDetail?.numQuestions) * 10 >
+        testDetail?.passingScore * 10 &&
+      testDetail.isTheLastTest
+    ) {
+      certifate = await certificateController.issueCertificate({
+        courseId: testDetail.courseId,
+      });
+    }
+
     res.status(200).json({
       message: "Submitted successfully",
       attempt: updatedAttempt,
+      certifate,
       attemptDetail,
       summary: { totalScore, answered: processedAnswers.length },
     });
