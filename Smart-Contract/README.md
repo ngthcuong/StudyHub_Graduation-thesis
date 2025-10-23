@@ -278,7 +278,7 @@ await contract.issueCertificate(
 
 ```javascript
 // 1. Install required packages
-// npm install ethers hardhat
+npm install ethers hardhat
 
 // 2. Import ABI and setup
 const { ethers } = require("ethers");
