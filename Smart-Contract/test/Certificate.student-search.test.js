@@ -21,6 +21,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
       await certificateRegistry
@@ -31,6 +33,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
       await certificateRegistry
@@ -41,6 +45,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -53,6 +59,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 4",
+          "Business",
+          "Beginner",
           "ipfs://4"
         );
 
@@ -111,6 +119,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Blockchain Development",
+          "Technology",
+          "Advanced",
           "ipfs://1"
         );
       await certificateRegistry
@@ -121,6 +131,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Smart Contract Programming",
+          "Technology",
+          "Advanced",
           "ipfs://2"
         );
       await certificateRegistry
@@ -131,6 +143,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Web Development",
+          "Technology",
+          "Intermediate",
           "ipfs://3"
         );
       await certificateRegistry
@@ -141,6 +155,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Mobile Development",
+          "Technology",
+          "Intermediate",
           "ipfs://4"
         );
     });
@@ -221,6 +237,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -236,6 +254,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -252,6 +272,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -316,6 +338,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -349,6 +373,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "First Course",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -362,6 +388,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Second Course",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -375,6 +403,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Third Course",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -419,6 +449,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course A",
+          "Technology",
+          "Beginner",
           "ipfs://a"
         );
 
@@ -433,6 +465,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course B",
+          "Business",
+          "Intermediate",
           "ipfs://b"
         );
 
@@ -447,6 +481,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Course C",
+          "Technology",
+          "Advanced",
           "ipfs://c"
         );
 
@@ -499,6 +535,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -526,6 +564,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
           issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 

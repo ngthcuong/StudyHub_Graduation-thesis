@@ -1,0 +1,178 @@
+[
+  {
+    "name": "ADMIN_ROLE",
+    "selector": "0x75b238fc",
+    "signature": "function ADMIN_ROLE() view returns (bytes32)",
+    "type": "view",
+    "inputs": 0,
+    "outputs": 1
+  },
+  {
+    "name": "DEFAULT_ADMIN_ROLE",
+    "selector": "0xa217fddf",
+    "signature": "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
+    "type": "view",
+    "inputs": 0,
+    "outputs": 1
+  },
+  {
+    "name": "adminSearchByCourse",
+    "selector": "0x86258d34",
+    "signature": "function adminSearchByCourse(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 2
+  },
+  {
+    "name": "adminSearchByCourseLevel",
+    "selector": "0xb24633f4",
+    "signature": "function adminSearchByCourseLevel(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 2
+  },
+  {
+    "name": "adminSearchByCourseType",
+    "selector": "0x58f0d1ec",
+    "signature": "function adminSearchByCourseType(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 2
+  },
+  {
+    "name": "adminSearchByDate",
+    "selector": "0x6e964e9c",
+    "signature": "function adminSearchByDate(uint256 _fromDate, uint256 _toDate) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 2,
+    "outputs": 2
+  },
+  {
+    "name": "adminSearchByStudentName",
+    "selector": "0xbc7eb259",
+    "signature": "function adminSearchByStudentName(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 2
+  },
+  {
+    "name": "getAllCertificates",
+    "selector": "0x13fcfe80",
+    "signature": "function getAllCertificates() view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 0,
+    "outputs": 2
+  },
+  {
+    "name": "getCertificateByHash",
+    "selector": "0x90ab95cb",
+    "signature": "function getCertificateByHash(bytes32 _certHash) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI))",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 1
+  },
+  {
+    "name": "getRoleAdmin",
+    "selector": "0x248a9ca3",
+    "signature": "function getRoleAdmin(bytes32 role) view returns (bytes32)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 1
+  },
+  {
+    "name": "getStudentCertificateByCourseLevel",
+    "selector": "0x6cd93f7a",
+    "signature": "function getStudentCertificateByCourseLevel(address _student, string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 2,
+    "outputs": 2
+  },
+  {
+    "name": "getStudentCertificateByCourseName",
+    "selector": "0x9726879c",
+    "signature": "function getStudentCertificateByCourseName(address _student, string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 2,
+    "outputs": 2
+  },
+  {
+    "name": "getStudentCertificateByCourseType",
+    "selector": "0x74c7b8e7",
+    "signature": "function getStudentCertificateByCourseType(address _student, string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 2,
+    "outputs": 2
+  },
+  {
+    "name": "getStudentCertificateByDate",
+    "selector": "0x66914f29",
+    "signature": "function getStudentCertificateByDate(address _student, uint256 _fromDate, uint256 _toDate) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 3,
+    "outputs": 2
+  },
+  {
+    "name": "getStudentCertificateByHash",
+    "selector": "0x1506a24c",
+    "signature": "function getStudentCertificateByHash(address _student, bytes32 _certHash) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI) certificate)",
+    "type": "view",
+    "inputs": 2,
+    "outputs": 1
+  },
+  {
+    "name": "getStudentCertificatesByStudent",
+    "selector": "0x20c7e945",
+    "signature": "function getStudentCertificatesByStudent(address _student) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 2
+  },
+  {
+    "name": "grantRole",
+    "selector": "0x2f2ff15d",
+    "signature": "function grantRole(bytes32 role, address account)",
+    "type": "nonpayable",
+    "inputs": 2,
+    "outputs": 0
+  },
+  {
+    "name": "hasRole",
+    "selector": "0x91d14854",
+    "signature": "function hasRole(bytes32 role, address account) view returns (bool)",
+    "type": "view",
+    "inputs": 2,
+    "outputs": 1
+  },
+  {
+    "name": "issueCertificate",
+    "selector": "0xd45069a9",
+    "signature": "function issueCertificate(address _student, string _studentName, address _issuer, string _issuerName, string _courseName, string _courseType, string _courseLevel, string _metadataURI) returns (bytes32)",
+    "type": "nonpayable",
+    "inputs": 8,
+    "outputs": 1
+  },
+  {
+    "name": "renounceRole",
+    "selector": "0x36568abe",
+    "signature": "function renounceRole(bytes32 role, address callerConfirmation)",
+    "type": "nonpayable",
+    "inputs": 2,
+    "outputs": 0
+  },
+  {
+    "name": "revokeRole",
+    "selector": "0xd547741f",
+    "signature": "function revokeRole(bytes32 role, address account)",
+    "type": "nonpayable",
+    "inputs": 2,
+    "outputs": 0
+  },
+  {
+    "name": "supportsInterface",
+    "selector": "0x01ffc9a7",
+    "signature": "function supportsInterface(bytes4 interfaceId) view returns (bool)",
+    "type": "view",
+    "inputs": 1,
+    "outputs": 1
+  }
+]

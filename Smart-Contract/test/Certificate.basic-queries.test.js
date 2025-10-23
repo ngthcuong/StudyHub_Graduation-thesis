@@ -19,6 +19,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "Test Issuer",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -33,6 +35,8 @@ describe("CertificateRegistry - Basic Queries", function () {
       expect(certificate.issuer).to.equal(issuer.address);
       expect(certificate.issuerName).to.equal("Test Issuer");
       expect(certificate.courseName).to.equal("Test Course");
+      expect(certificate.courseType).to.equal("Technology");
+      expect(certificate.courseLevel).to.equal("Beginner");
     });
 
     it("Should revert when getting non-existent certificate", async function () {
@@ -76,6 +80,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -87,6 +93,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -102,12 +110,16 @@ describe("CertificateRegistry - Basic Queries", function () {
       // Verify certificate data
       expect(certificates[0].studentName).to.equal("Student 1");
       expect(certificates[0].courseName).to.equal("Course 1");
+      expect(certificates[0].courseType).to.equal("Technology");
+      expect(certificates[0].courseLevel).to.equal("Beginner");
       expect(certificates[0].student).to.equal(student1.address);
       expect(certificates[0].issuer).to.equal(issuer.address);
       expect(certificates[0].issuerName).to.equal("IUH");
 
       expect(certificates[1].studentName).to.equal("Student 2");
       expect(certificates[1].courseName).to.equal("Course 2");
+      expect(certificates[1].courseType).to.equal("Business");
+      expect(certificates[1].courseLevel).to.equal("Intermediate");
       expect(certificates[1].student).to.equal(student2.address);
       expect(certificates[1].issuer).to.equal(issuer.address);
       expect(certificates[1].issuerName).to.equal("IUH");
@@ -126,6 +138,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "First Course",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -137,6 +151,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "Second Course",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -148,6 +164,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "Third Course",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -178,6 +196,8 @@ describe("CertificateRegistry - Basic Queries", function () {
             issuer.address,
             "IUH",
             `Course ${i}`,
+            i % 2 === 0 ? "Technology" : "Business",
+            i < 3 ? "Beginner" : i < 7 ? "Intermediate" : "Advanced",
             `ipfs://${i}`
           );
       }
@@ -224,6 +244,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -235,6 +257,8 @@ describe("CertificateRegistry - Basic Queries", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
