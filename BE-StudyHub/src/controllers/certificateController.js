@@ -1,30 +1,19 @@
-const axios = require("axios");
 const certificateModel = require("../models/certificateModel");
 const {
-  uploadJSON,
   searchMetadataByKeyvalues,
-  updatePinataKeyvalues,
-  ipfsUriToGatewayUrl,
   getPinataMetadataByCID,
 } = require("../services/ipfs.service");
 const {
-  issueCertificate: issueOnChain,
   getCertificateByHash: readByHash,
   getStudentCertificatesByStudent: readByStudent,
 } = require("../services/ethers.service");
 const config = require("../configs/config");
-const { buildCertificateMetadata } = require("../utils/certificateMetadata");
 const {
   toPlain,
   structureCertificateData,
   structureCertificateList,
-  generateCertCode,
   isCertificateConsistent,
 } = require("../utils/helper");
-const Certificate = require("../schemas/Certificate");
-const userModel = require("../models/userModel");
-const courseModel = require("../models/courseModel");
-const { ethers } = require("ethers");
 
 /**
  * Tạo bản ghi chứng chỉ trong cơ sở dữ liệu (KHÔNG phát hành on-chain).
@@ -54,7 +43,7 @@ const createCertificate = async (req, res) => {
 /**
  * Phát hành chứng chỉ: upload metadata JSON lên Pinata/IPFS,
  * gọi smart contract để phát hành với metadataURI, sau đó lưu chứng chỉ vào DB
- * @param {import('express').Request} req - JSON body: { student, studentName, issuer, courseName, learnerId?, courseId? }
+ * @param {import('express').Request} req - JSON body: { courseId }
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  * @returns {Promise<void>}
@@ -63,6 +52,8 @@ const issueCertificate = async (req, res, next) => {
   try {
     const { courseId } = req.body;
     const studentId = req.user.userId;
+
+    // Input validation
     if (!studentId || !courseId) {
       return res.status(400).json({
         error: "Missing required fields",
@@ -71,164 +62,20 @@ const issueCertificate = async (req, res, next) => {
       });
     }
 
-    // let fileInfo = null;
-    // if (req.file) {
-    //   fileInfo = await uploadFileBuffer(
-    //     req.file.originalname,
-    //     req.file.buffer,
-    //     req.file.mimetype
-    //   );
-    // }
-
-    const certCode = generateCertCode(new Date(), studentId, courseId);
-
-    const [student, course] = await Promise.all([
-      userModel.findUserById(studentId),
-      courseModel.findCourseById(courseId),
-    ]);
-
-    if (!student) {
-      return res.status(404).json({
-        error: "Student not found",
-        studentId,
-      });
-    }
-
-    if (!student.walletAddress || !ethers.isAddress(student.walletAddress)) {
-      return res.status(400).json({
-        error: "Invalid student wallet address format",
-        address: student.walletAddress,
-      });
-    }
-
-    if (!course) {
-      return res.status(404).json({
-        error: "Course not found",
-        courseId,
-      });
-    }
-
-    const defaultIssuer = {
-      walletAddress: config.adminAddress,
-      name: "StudyHub",
-    };
-    const issueDate = new Date();
-
-    // Build JSON metadata
-    const metadata = buildCertificateMetadata({
-      certCode,
-      student,
-      issuer: defaultIssuer,
-      course,
-      issueDate,
-    });
-
-    // Lưu JSON lên IPFS (Pinata)
-    const meta = await uploadJSON(metadata, {
-      name: "studyhub-certificate.json",
-      keyvalues: {
-        type: "studyhub-certificate",
-        studentWalletAddress: String(student.walletAddress),
-        issuerWalletAddress: String(defaultIssuer.walletAddress),
-        certificateCode: String(certCode),
-      },
-    });
-
-    // Gọi on-chain với metadataURI (ipfs://CID) - Lưu chứng chỉ lên blockchain
-    let certHash, txHash;
-    try {
-      const result = await issueOnChain(
-        student.walletAddress,
-        student.fullName,
-        defaultIssuer.walletAddress,
-        defaultIssuer.name,
-        course.title,
-        meta.uri
-      );
-
-      certHash = result.certHash;
-      txHash = result.txHash;
-    } catch (contractError) {
-      console.error(
-        "Blockchain failed, metadata uploaded but unused:",
-        meta.cid
-      );
-
-      return res.status(500).json({
-        error: "Blockchain transaction failed",
-        details: contractError.message,
-        metadata: { cid: meta.cid, uri: meta.uri },
-      });
-    }
-
-    // Cập nhật keyvalues trên Pinata với thông tin blockchain
-    await updatePinataKeyvalues(meta.cid, {
-      certificateHash: String(certHash),
-      studentWalletAddress: String(student.walletAddress),
-      issuerWalletAddress: String(defaultIssuer.walletAddress),
-      network: "Sepolia",
-    });
-
-    // Tạo và lưu chứng chỉ vào database
-    const savedCertificate = await Certificate.create({
-      certificateCode: certCode,
-      student: {
-        id: studentId,
-        name: student.fullName,
-        walletAddress: student.walletAddress,
-      },
-      course: {
-        id: courseId,
-        title: course.title,
-      },
-      issuer: {
-        walletAddress: defaultIssuer.walletAddress,
-        name: defaultIssuer.name,
-      },
-      validity: {
-        issueDate,
-        expireDate: null,
-        isRevoked: false,
-      },
-      blockchain: {
-        transactionHash: txHash,
-        certificateHash: certHash,
-        network: "Sepolia",
-      },
-      ipfs: {
-        metadataURI: ipfsUriToGatewayUrl(meta.uri),
-        metadataCID: meta.cid,
-        fileCID: "",
-      },
-    });
+    // Use the complete issuance function from model
+    const result = await certificateModel.issueCertificate(studentId, courseId);
 
     return res.status(201).json({
       success: true,
       message: "Certificate issued successfully",
-      data: {
-        certificateId: savedCertificate._id,
-        certCode,
-        certHash,
-        txHash,
-        metadataURI: meta.uri,
-        metadataCID: meta.cid,
-        network: "Sepolia",
-        issuer: defaultIssuer,
-        student: {
-          id: studentId,
-          name: student.fullName,
-          walletAddress: student.walletAddress,
-        },
-        course: {
-          id: courseId,
-          name: course.title,
-        },
-        issueDate: new Date().toISOString(),
-      },
+      data: result,
     });
   } catch (error) {
-    console.error("Can not issue certificate: ", error);
-    next(error);
+    console.error("Error issuing certificate:", error);
+    return res.status(500).json({
+      error: "Failed to issue certificate",
+      details: error.message,
+    });
   }
 };
 
