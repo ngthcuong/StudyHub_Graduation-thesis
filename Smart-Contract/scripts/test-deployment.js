@@ -65,8 +65,8 @@ async function main() {
   console.log("- Issuer:", certificate.issuer);
   console.log("- Issuer Name:", certificate.issuerName);
   console.log("- Course Name:", certificate.courseName);
-  console.log("- Course Type:", certificate.courseType); // New field
-  console.log("- Course Level:", certificate.courseLevel); // New field
+  console.log("- Course Type:", certificate.courseType);
+  console.log("- Course Level:", certificate.courseLevel);
   console.log(
     "- Issued Date:",
     new Date(Number(certificate.issuedDate) * 1000).toISOString()
