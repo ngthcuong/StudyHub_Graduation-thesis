@@ -373,6 +373,30 @@ const searchCertificates = async (req, res, next) => {
   }
 };
 
+/**
+ * Lấy tất cả chứng chỉ từ database
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ * @returns {Promise<void>}
+ */
+const getAllCertificates = async (req, res, next) => {
+  try {
+    const certificates = await certificateModel.getAllCertificates();
+
+    return res.json({
+      total: certificates.length,
+      certificates: certificates,
+    });
+  } catch (error) {
+    console.error("Can not get all certificates: ", error);
+    return res.status(500).json({
+      error: "Failed to get all certificates",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   createCertificate,
   issueCertificate,
@@ -381,4 +405,5 @@ module.exports = {
   getStudentCertificatesByStudent,
   getStudentCertificatesHybrid,
   searchCertificates,
+  getAllCertificates,
 };

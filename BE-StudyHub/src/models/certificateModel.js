@@ -363,6 +363,22 @@ const issueCertificate = async (studentId, courseId) => {
   }
 };
 
+/**
+ * Get all certificates from database
+ * @returns {Promise<Array>} All certificates
+ */
+const getAllCertificates = async () => {
+  try {
+    const certificates = await Certificate.find()
+      .sort({ createdAt: -1 })
+      .lean();
+    return certificates;
+  } catch (error) {
+    console.error("Error getting all certificates:", error);
+    throw new Error("Failed to get all certificates");
+  }
+};
+
 module.exports = {
   createCertificate,
   findCertificateById,
@@ -376,4 +392,5 @@ module.exports = {
   updateMetadataWithBlockchainInfo,
   saveCertificateToDatabase,
   issueCertificate,
+  getAllCertificates,
 };
