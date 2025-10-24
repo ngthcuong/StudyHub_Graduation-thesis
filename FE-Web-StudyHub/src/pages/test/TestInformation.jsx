@@ -416,8 +416,10 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor ? testInfor.passScore : testInfoState?.passScore}{" "}
-                  {!testInfor?.passScore && !testInfoState?.passScore
+                  {testInfor
+                    ? testInfor.passingScore * 10
+                    : testInfoState?.passingScore * 10}{" "}
+                  {!testInfor?.passingScore && !testInfoState?.passingScore
                     ? "70"
                     : null}
                   <span className="text-base font-normal">%</span>
@@ -441,14 +443,14 @@ const TestInformation = () => {
                 <Typography
                   variant="h5"
                   fontWeight={700}
-                  color={testInfor?.isFinalTest ? "#dc2626" : "#16a34a"}
+                  color={testInfor?.isTheLastTest ? "#dc2626" : "#16a34a"}
                   noWrap
                 >
                   {testInfor
-                    ? testInfor?.isFinalTest
+                    ? testInfor?.isTheLastTest
                       ? "Yes"
                       : "No"
-                    : testInfoState?.isFinalTest
+                    : testInfoState?.isTheLastTest
                     ? "Yes"
                     : "No"}{" "}
                 </Typography>
