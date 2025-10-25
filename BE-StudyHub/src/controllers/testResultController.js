@@ -146,10 +146,11 @@ const submitAnswers = async (req, res) => {
       gradingPayload
     );
 
-    let certifate;
+    let certifate = null;
     if (
       (response.data.total_score / response.data.total_questions) * 100 >
-      testDetail?.passingScore * 10
+        testDetail?.passingScore * 10 &&
+      testDetail.isTheLastTest
     ) {
       certifate = await issueCertificate(testDetail.courseId);
     }
