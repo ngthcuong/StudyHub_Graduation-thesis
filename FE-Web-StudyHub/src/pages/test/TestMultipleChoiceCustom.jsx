@@ -23,6 +23,7 @@ import {
   useGetTestByIdMutation,
   useCreateAttemptMutation,
   useSubmitTestMutation,
+  useGetQuestionsByAttemptIdMutation,
 } from "../../services/testApi";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -354,54 +355,76 @@ const TestMultipleChoiceCustom = () => {
   const [data, setData] = useState(null);
   const [date, setDate] = useState(null);
 
-  const { payloadForm } = location.state || {};
+  const { payloadForm, attemptDetail } = location.state || {};
   const routeTestId = payloadForm?.testId;
 
   const [generateCustomTest] = useGenerateCustomTestMutation();
   const [getTestById] = useGetTestByIdMutation();
   const [createAttempt] = useCreateAttemptMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
+  const [getQuestionsByAttemptId] = useGetQuestionsByAttemptIdMutation();
 
   const start = async () => {
-    try {
-      setLoading(true);
-      const attemptRes = await createAttempt({
-        testPoolId: "000000000000000000000000",
-        testId: payloadForm?.testId,
-      }).unwrap();
-
-      setAttemptId(attemptRes?.data?._id);
+    if (
+      attemptDetail &&
+      attemptDetail?.attemptNumber < attemptDetail?.maxAttempts
+    ) {
       try {
-        const testRes = await getTestById(routeTestId).unwrap();
-        setTest(testRes);
-        try {
-          const now = new Date();
-          const isoString = now.toISOString();
-          setDate(isoString);
+        const now = new Date();
+        const isoString = now.toISOString();
+        setDate(isoString);
 
-          const res = await generateCustomTest({
-            testId: payloadForm?.testId,
-            level: payloadForm?.level,
-            toeicScore: payloadForm?.toeicScore,
-            weakSkills: payloadForm?.weakSkills,
-            exam_type: "TOEIC",
-            topics: payloadForm?.topics,
-            difficulty: payloadForm?.difficulty,
-            question_ratio: "MCQ",
-            numQuestions: payloadForm?.numQuestions,
-            timeLimit: payloadForm?.timeLimit,
-          }).unwrap();
-          setData(res);
-          setQuestions(res);
-          setLoading(false);
+        const res = await getQuestionsByAttemptId(attemptDetail?._id).unwrap();
+        setQuestions({ data: res });
+        setData({ data: res });
+        console.log("Fetched questions for existing attempt:", res);
+        setTest(attemptDetail?.testId);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error resuming existing attempt:", error);
+      }
+    } else {
+      try {
+        setLoading(true);
+        const attemptRes = await createAttempt({
+          testPoolId: "000000000000000000000000",
+          testId: payloadForm?.testId,
+        }).unwrap();
+
+        setAttemptId(attemptRes?.data?._id);
+        try {
+          const testRes = await getTestById(routeTestId).unwrap();
+          setTest(testRes);
+          try {
+            const now = new Date();
+            const isoString = now.toISOString();
+            setDate(isoString);
+
+            const res = await generateCustomTest({
+              testId: payloadForm?.testId,
+              testAttemptId: attemptRes?.data?._id,
+              level: payloadForm?.level,
+              toeicScore: payloadForm?.toeicScore,
+              weakSkills: payloadForm?.weakSkills,
+              exam_type: "TOEIC",
+              topics: payloadForm?.topics,
+              difficulty: payloadForm?.difficulty,
+              question_ratio: "MCQ",
+              numQuestions: payloadForm?.numQuestions,
+              timeLimit: payloadForm?.timeLimit,
+            }).unwrap();
+            setData(res);
+            setQuestions(res);
+            setLoading(false);
+          } catch (error) {
+            console.error("Error setting test data:", error);
+          }
         } catch (error) {
-          console.error("Error setting test data:", error);
+          console.error("Error fetching test by ID:", error);
         }
       } catch (error) {
-        console.error("Error fetching test by ID:", error);
+        console.error("Error generating custom test:", error);
       }
-    } catch (error) {
-      console.error("Error generating custom test:", error);
     }
   };
 
@@ -486,7 +509,6 @@ const TestMultipleChoiceCustom = () => {
     return `${formattedM} : ${formattedSec}`;
   }
 
-  // --- HÀM SUBMIT MÔ PHỎNG ---
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
@@ -497,6 +519,8 @@ const TestMultipleChoiceCustom = () => {
       questionId: questions?.data?.data[index]._id,
       selectedOptionId: selectedOptionId,
     }));
+
+    console.log("Submitting answers:", formattedAnswers);
 
     try {
       const answers = formattedAnswers;
@@ -528,7 +552,7 @@ const TestMultipleChoiceCustom = () => {
   // -------------------------------------------------------------------
 
   // Dòng code này sẽ KHÔNG bao giờ chạy vì payloadForm có sẵn
-  if (!payloadForm) {
+  if (!payloadForm && !attemptDetail) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <Alert severity="error" variant="filled">

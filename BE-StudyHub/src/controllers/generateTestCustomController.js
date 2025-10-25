@@ -52,6 +52,7 @@ const generateTestCustomController = async (req, res) => {
       level, // Cấp độ (A1, B1, C2,...)
       difficulty, // Độ khó (Easier, Moderate, Harder)
       weakSkills, // Mảng các kỹ năng yếu (Grammar, Vocabulary)
+      testAttemptId, // ID lần làm bài (nếu cần)
       // Các trường khác: goals, description, title...
     } = req.body;
 
@@ -122,6 +123,7 @@ const generateTestCustomController = async (req, res) => {
       {
         ...dbPayload,
         createdBy,
+        testAttemptId, // Nếu cần lưu liên kết với lần làm bài
         exam_type: "TOEIC", // Hoặc level
         score_range: `${toeic_score - 100}-${toeic_score + 100}`, // Ví dụ tạo score_range để lưu
       }

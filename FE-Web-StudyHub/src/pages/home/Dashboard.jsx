@@ -23,6 +23,7 @@ export default function Dashboard() {
   );
 
   function normalizeTimeString(str) {
+    console.log("Original time string:", str);
     const match = str.match(/(\d+)h\s*(\d+)m\s*(\d+)s/);
     if (!match) return str; // không đúng format thì trả lại nguyên
 

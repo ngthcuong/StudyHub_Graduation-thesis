@@ -529,6 +529,32 @@ const getAttemptsByTestIdAndUser = async (req, res) => {
   }
 };
 
+const getCustomTestAttemptsByUser = async (req, res) => {
+  try {
+    const userId = req.user?.userId; // lấy từ token hoặc query
+
+    // Tìm tất cả attempt của user có testPoolId là customPoolId
+    const attempts = await attemptModel.findCustomTestAttemptsByUser(userId);
+
+    if (attempts.length === 0) {
+      return res.status(200).json({
+        message: "No custom test attempts found for this user.",
+        data: [],
+        total: 0,
+      });
+    }
+
+    res.status(200).json({
+      message: "Custom test attempts retrieved successfully",
+      data: attempts,
+      total: attempts.length,
+    });
+  } catch (error) {
+    console.error("Error fetching custom test attempts:", error);
+    res.status(500).json({ error: "Failed to fetch test attempts" });
+  }
+};
+
 const getStudyStats = async (userId) => {
   try {
     const now = new Date();
@@ -700,4 +726,5 @@ module.exports = {
   getAttemptInfo,
   getAttemptsByTestPool,
   getAttemptsByTestIdAndUser,
+  getCustomTestAttemptsByUser,
 };

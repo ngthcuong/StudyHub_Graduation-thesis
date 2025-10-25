@@ -89,6 +89,25 @@ const findAttemptsByTestIdAndUser = async (testId, userId) => {
   }
 };
 
+const findCustomTestAttemptsByUser = async (userId) => {
+  try {
+    const attempts = await TestAttempt.find({
+      userId,
+      testPoolId: "000000000000000000000000",
+    })
+      .populate(
+        "testId",
+        "title skill topic description durationMin courseId createdBy numQuestions questionTypes examType passingScore maxAttempts isTheLastTest"
+      ) // lấy thông tin test
+      .lean();
+
+    return attempts;
+  } catch (error) {
+    console.error("Error finding custom test attempts by user:", error);
+    throw new Error("Failed to find custom test attempts by user");
+  }
+};
+
 module.exports = {
   createAttempt,
   findAttemptById,
@@ -98,4 +117,5 @@ module.exports = {
   findAttemptByTestId,
   findAttemptByUserAndPool,
   findAttemptsByTestPool,
+  findCustomTestAttemptsByUser,
 };
