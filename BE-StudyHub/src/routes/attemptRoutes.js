@@ -33,4 +33,11 @@ router.get(
   attemptController.getAttemptsByTestIdAndUser
 );
 
+// GET /attempts/custom/user
+router.get(
+  "/custom/user",
+  verifyToken,
+  attemptController.getCustomTestAttemptsByUser
+);
+
 module.exports = router;

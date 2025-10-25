@@ -8,6 +8,12 @@ const questionSchema = new mongoose.Schema(
       required: true,
     },
 
+    attemptId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TestAttempt",
+      required: false,
+    },
+
     questionText: { type: String, required: true }, // nội dung câu hỏi
 
     questionType: {

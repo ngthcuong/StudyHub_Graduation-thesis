@@ -30,6 +30,7 @@ import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
 
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
+import TestInformationCustom from "../pages/test/TestInformationCustom";
 
 export const router = createBrowserRouter([
   {
@@ -135,6 +136,10 @@ export const router = createBrowserRouter([
               {
                 path: "result",
                 element: <TestResult />,
+              },
+              {
+                path: "custom-info",
+                element: <TestInformationCustom />,
               },
             ],
           },
