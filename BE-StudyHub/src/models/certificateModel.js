@@ -329,7 +329,6 @@ const issueCertificate = async (studentId, courseId) => {
 
     // Return complete result
     return {
-      success: true,
       certificate: savedCertificate,
       blockchain: {
         certHash,

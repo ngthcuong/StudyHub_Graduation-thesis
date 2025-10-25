@@ -66,7 +66,7 @@ const issueCertificate = async (req, res, next) => {
     const result = await certificateModel.issueCertificate(studentId, courseId);
 
     return res.status(201).json({
-      success: true,
+      isSuccess: true,
       message: "Certificate issued successfully",
       data: result,
     });
