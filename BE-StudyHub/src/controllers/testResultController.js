@@ -146,21 +146,21 @@ const submitAnswers = async (req, res) => {
       gradingPayload
     );
 
-    let certifate = null;
-    if (
-      (response.data.total_score / response.data.total_questions) * 100 >
-        testDetail?.passingScore * 10 &&
-      testDetail.isTheLastTest
-    ) {
-      certifate = await issueCertificate(testDetail.courseId);
-    }
+    // let certifate = null;
+    // if (
+    //   (response.data.total_score / response.data.total_questions) * 100 >
+    //     testDetail?.passingScore * 10 &&
+    //   testDetail.isTheLastTest
+    // ) {
+    //   certifate = await issueCertificate(testDetail.courseId);
+    // }
 
     // console.log("Grading response:", response.data);
 
     res.status(201).json({
       message: "Answers submitted successfully",
       data: response?.data,
-      certifate,
+      // certifate,
     });
   } catch (error) {
     console.error("Error submitting answers:", error);
