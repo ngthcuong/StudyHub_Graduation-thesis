@@ -42,6 +42,8 @@ const TestInformation = () => {
   const [history, setHistory] = useState([]);
   const [testInfoState, setTestInfoState] = useState(testInfor);
 
+  console.log("testInfo: ", testInfor);
+
   const user = useSelector((state) => state.auth.user);
 
   const [testPool, setTestPool] = useState();
@@ -391,7 +393,7 @@ const TestInformation = () => {
                     ? `${attempt.attemptNumber || 0}/${
                         attempt.maxAttempts || 3
                       }`
-                    : "0/3"}
+                    : ""}
                 </Typography>
               </Box>
             </Grid>

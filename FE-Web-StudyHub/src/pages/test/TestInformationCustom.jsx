@@ -296,14 +296,14 @@ const TestInformationCustom = () => {
                 <Typography
                   variant="h5"
                   fontWeight={700}
-                  color={testInfor?.isFinalTest ? "#dc2626" : "#16a34a"}
+                  color={testInfor?.isTheLastTest ? "#dc2626" : "#16a34a"}
                   noWrap
                 >
                   {testInfor
-                    ? testInfor?.isFinalTest
+                    ? testInfor?.isTheLastTest
                       ? "Yes"
                       : "No"
-                    : testInfoState?.isFinalTest
+                    : testInfoState?.isTheLastTest
                     ? "Yes"
                     : "No"}{" "}
                 </Typography>
