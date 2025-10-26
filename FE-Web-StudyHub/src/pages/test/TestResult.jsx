@@ -71,7 +71,7 @@ const TestResult = () => {
     );
   }
 
-  console.log("Result Data:", resultData);
+  console.log("Result Data:", resultData.certificate);
 
   const startTime = new Date(resultData.attemptDetail.startTime);
   const endTime = new Date(resultData.attemptDetail.endTime);
@@ -124,8 +124,6 @@ const TestResult = () => {
     total: total_questions,
     time: timeTaken,
   };
-
-  console.log(resultStats);
 
   // Tạo correctAnswers từ mảng `per_question` đã được kết hợp
   const correctAnswers = per_question
@@ -744,7 +742,7 @@ const TestResult = () => {
         <CertificateDetailModal
           open={certificateModalOpen}
           onClose={() => setCertificateModalOpen(false)}
-          certificate={resultData?.certificate}
+          certificate={resultData?.certificate.certificate}
         />
       </Box>
     </Box>

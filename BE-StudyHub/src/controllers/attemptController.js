@@ -335,7 +335,7 @@ const submitAttempt = async (req, res) => {
     //   await userModel.updateUserById(userId, updateData);
     // }
 
-    let certifate = null;
+    let certificate = null;
     console.log("courseId:", testDetail?.courseId);
 
     if (
@@ -344,9 +344,7 @@ const submitAttempt = async (req, res) => {
       testDetail.isTheLastTest &&
       testDetail?.courseId
     ) {
-      console.log("Issuing certificate...");
-      certifate = await issueCertificate(userId, testDetail.courseId);
-      console.log("Issued certificate:", certifate);
+      certificate = await issueCertificate(userId, testDetail.courseId);
     } else if (!testDetail?.courseId) {
       console.warn("Cannot issue certificate: courseId is missing.");
     }
@@ -354,7 +352,7 @@ const submitAttempt = async (req, res) => {
     res.status(200).json({
       message: "Submitted successfully",
       attempt: updatedAttempt,
-      certifate,
+      certificate,
       attemptDetail,
       summary: { totalScore, answered: processedAnswers.length },
     });
