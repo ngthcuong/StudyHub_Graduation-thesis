@@ -7,6 +7,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
+import CoursePayment from "../pages/course/CoursePayment";
 import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
@@ -103,6 +104,10 @@ export const router = createBrowserRouter([
           {
             path: "/course",
             element: <CourseList variant="market" />,
+          },
+          {
+            path: "/course/payment",
+            element: <CoursePayment />,
           },
           {
             path: "/course/:courseId",
