@@ -32,6 +32,8 @@ import AdminReview from "../pages/admin/Review";
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 import TestInformationCustom from "../pages/test/TestInformationCustom";
 
+import FillInBlankTest from "../pages/test/FillInBlankTest";
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -132,6 +134,10 @@ export const router = createBrowserRouter([
               {
                 path: "custom",
                 element: <TestMultipleChoiceCustom />,
+              },
+              {
+                path: "fill-in-blank",
+                element: <FillInBlankTest />,
               },
               {
                 path: "result",

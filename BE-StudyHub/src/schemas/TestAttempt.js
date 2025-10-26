@@ -22,6 +22,10 @@ const testAttemptSchema = new mongoose.Schema(
     score: { type: Number, default: 0 },
     feedback: { type: String, trim: true },
     evaluationModel: { type: String, default: "gemini" },
+    isPassed: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

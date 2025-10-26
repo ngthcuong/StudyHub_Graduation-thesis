@@ -279,16 +279,27 @@ export default function ModalCreateCustomTest({
     // Gọi API tạo Test với payload_DB
     let apiSuccess = false;
 
+    console.log(payload_form.questionType);
+
     try {
       const response = await createTest(payload_DB);
       console.log("API Response:", response);
       apiSuccess = true;
-
-      navigate(`/test/${response?.data?.data?._id}/custom`, {
-        state: {
-          payloadForm: { ...payload_form, testId: response?.data?.data?._id },
-        },
-      });
+      if (payload_form.questionType === "FIB") {
+        navigate(`/test/${response?.data?.data?._id}/fill-in-blank`, {
+          state: {
+            payloadForm: { ...payload_form, testId: response?.data?.data?._id },
+          },
+        });
+      } else if (payload_form.questionType === "MCQ") {
+        navigate(`/test/${response?.data?.data?._id}/custom`, {
+          state: {
+            payloadForm: { ...payload_form, testId: response?.data?.data?._id },
+          },
+        });
+      } else {
+        console.error("NO QUESTION TYPE SELECTED");
+      }
     } catch (error) {
       console.error("Error creating test:", error);
     }
@@ -576,6 +587,31 @@ export default function ModalCreateCustomTest({
                     value="harder"
                     control={<Radio />}
                     label="Harder"
+                  />
+                </RadioGroup>
+              )}
+            />
+          </div>
+
+          {/* Type of Questions */}
+          <div className="mb-8">
+            <Typography className="mb-3 text-sm font-medium text-gray-700">
+              Type of Questions
+            </Typography>
+            <Controller
+              name="questionType"
+              control={control}
+              render={({ field }) => (
+                <RadioGroup {...field} row className="gap-4">
+                  <FormControlLabel
+                    value="MCQ"
+                    control={<Radio />}
+                    label="Multiple Choice"
+                  />
+                  <FormControlLabel
+                    value="FIB"
+                    control={<Radio />}
+                    label="Fill in the Blanks"
                   />
                 </RadioGroup>
               )}

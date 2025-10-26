@@ -150,9 +150,9 @@ const submitAnswers = async (req, res) => {
       (response.data.total_score / response.data.total_questions) * 10 >
       testDetail?.passingScore * 10
     ) {
-      const certifate = await certificateController.issueCertificate(
-        testDetail.courseId
-      );
+      // const certifate = await certificateController.issueCertificate(
+      //   testDetail.courseId
+      // );
     }
 
     // console.log("Grading response:", response.data);

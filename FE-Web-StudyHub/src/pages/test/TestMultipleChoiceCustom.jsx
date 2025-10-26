@@ -377,8 +377,8 @@ const TestMultipleChoiceCustom = () => {
         const res = await getQuestionsByAttemptId(attemptDetail?._id).unwrap();
         setQuestions({ data: res });
         setData({ data: res });
-        console.log("Fetched questions for existing attempt:", res);
         setTest(attemptDetail?.testId);
+        setAttemptId(attemptDetail?._id);
         setLoading(false);
       } catch (error) {
         console.error("Error resuming existing attempt:", error);
@@ -520,12 +520,10 @@ const TestMultipleChoiceCustom = () => {
       selectedOptionId: selectedOptionId,
     }));
 
-    console.log("Submitting answers:", formattedAnswers);
-
     try {
       const answers = formattedAnswers;
       const startTime = date;
-      const testId = payloadForm?.testId;
+      const testId = payloadForm?.testId || attemptDetail?.testId?._id;
 
       const response = await submitTestTrigger({
         attemptId,

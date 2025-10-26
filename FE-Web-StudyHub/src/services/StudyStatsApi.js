@@ -13,11 +13,14 @@ export const studyApi = rootApi.injectEndpoints({
 
     // 🕒 Ghi log học
     logStudySession: builder.mutation({
-      query: ({ lessonId, durationMinutes }) => ({
-        url: "/study/log",
-        method: "POST",
-        body: { lessonId, durationMinutes },
-      }),
+      query: ({ lessonId, durationSeconds }) => {
+        console.log("🧠 Sending to backend:", { lessonId, durationSeconds }); // 👈 LOG tại đây
+        return {
+          url: "/study/log",
+          method: "POST",
+          body: { lessonId, durationSeconds },
+        };
+      },
       invalidatesTags: ["StudyStats"],
     }),
   }),
