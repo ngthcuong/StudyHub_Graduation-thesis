@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -19,6 +19,9 @@ import {
   AccordionSummary,
   AccordionDetails,
   LinearProgress,
+  Snackbar,
+  Alert,
+  IconButton,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -31,6 +34,9 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import { useLocation } from "react-router-dom";
+import CertificateDetailModal from "../../components/CertificateDetailModal";
+
+import { CloseOutlined } from "@mui/icons-material";
 
 function formatTime(s) {
   const m = Math.floor(s / 60);
@@ -42,6 +48,15 @@ const TestResult = () => {
   const location = useLocation();
   const resultData = location?.state?.resultData;
   const [tab, setTab] = useState(0);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
+
+  // Check if certificate exists and show snackbar
+  useEffect(() => {
+    if (resultData?.certificate) {
+      setSnackbarOpen(true);
+    }
+  }, [resultData]);
 
   // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi
   if (
@@ -68,7 +83,6 @@ const TestResult = () => {
 
   // Destructuring với giá trị mặc định để tránh lỗi
   const {
-    total_score = 0,
     total_questions = 0,
     per_question: analysisPerQuestion = [],
     skill_summary = [],
@@ -687,6 +701,51 @@ const TestResult = () => {
             Start Learning Plan
           </Button>
         </Box>
+
+        {/* Certificate Snackbar */}
+        {resultData?.certificate && (
+          <Snackbar
+            open={snackbarOpen}
+            onClose={() => setSnackbarOpen(false)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          >
+            <Alert
+              onClose={() => setSnackbarOpen(false)}
+              severity="success"
+              sx={{ width: "100%" }}
+              action={
+                <div className="flex items-center">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      setSnackbarOpen(false);
+                      setCertificateModalOpen(true);
+                    }}
+                  >
+                    Open
+                  </Button>
+                  <IconButton
+                    color="inherit"
+                    size="small"
+                    onClick={() => setSnackbarOpen(false)}
+                  >
+                    <CloseOutlined />
+                  </IconButton>
+                </div>
+              }
+            >
+              You have earned a certificate for this course!
+            </Alert>
+          </Snackbar>
+        )}
+
+        {/* Certificate Detail Modal */}
+        <CertificateDetailModal
+          open={certificateModalOpen}
+          onClose={() => setCertificateModalOpen(false)}
+          certificate={resultData?.certificate}
+        />
       </Box>
     </Box>
   );
