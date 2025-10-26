@@ -698,6 +698,21 @@ function extractLevel(levelStr) {
   return match ? match[1] : levelStr; // nếu ko match thì giữ nguyên
 }
 
+const updateAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const updateData = req.body;
+    const updatedAttempt = await attemptModel.updateAttemptById(
+      attemptId,
+      updateData
+    );
+    res.status(200).json({ message: "Attempt updated", data: updatedAttempt });
+  } catch (error) {
+    console.error("Error updating attempt:", error);
+    res.status(500).json({ error: "Failed to update attempt" });
+  }
+};
+
 module.exports = {
   startAttempt,
   submitAttempt,
@@ -708,4 +723,5 @@ module.exports = {
   getAttemptsByTestPool,
   getAttemptsByTestIdAndUser,
   getCustomTestAttemptsByUser,
+  updateAttempt,
 };

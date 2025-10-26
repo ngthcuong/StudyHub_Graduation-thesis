@@ -13,6 +13,7 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
 import {
   ArrowBack,
   InfoOutline,
@@ -383,18 +384,23 @@ const TestInformation = () => {
                     Retakes Allowed
                   </Typography>
                 </Box>
-                <Typography
-                  variant="h5"
-                  fontWeight={700}
-                  color="#111827"
-                  noWrap
-                >
-                  {attempt
-                    ? `${attempt.attemptNumber || 0}/${
-                        attempt.maxAttempts || 3
-                      }`
-                    : ""}
-                </Typography>
+
+                {!attempt?.maxAttempts ? (
+                  <AllInclusiveIcon />
+                ) : (
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color="#111827"
+                    noWrap
+                  >
+                    {attempt
+                      ? `${attempt.attemptNumber || 0}/${
+                          attempt.maxAttempts || 3
+                        }`
+                      : ""}
+                  </Typography>
+                )}
               </Box>
             </Grid>
 

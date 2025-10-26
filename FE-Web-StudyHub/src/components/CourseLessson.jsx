@@ -33,6 +33,7 @@ import {
   AccessTime,
   ImportContacts,
   BookmarkBorder,
+  CheckCircle,
 } from "@mui/icons-material";
 import { lessons } from "../mock/mockLession";
 import { useNavigate } from "react-router-dom";
@@ -42,17 +43,24 @@ import {
   useGetPartByIdMutation,
 } from "../services/grammarLessonApi";
 import { useGetCourseByIdQuery } from "../services/courseApi";
-import { useGetTestByTestIdMutation } from "../services/testApi";
+import {
+  useGetTestByTestIdMutation,
+  useGetAttemptByTestAndUserMutation,
+} from "../services/testApi";
 import { useLogStudySessionMutation } from "../services/StudyStatsApi";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import { useSelector } from "react-redux";
 
 const CourseLessson = () => {
   const navigate = useNavigate();
+
+  const user = useSelector((state) => state.auth.user);
 
   const { courseId } = useParams();
   const [data, setData] = useState([]);
   const [course, setCourse] = useState(null);
   const [lessonsWithTests, setLessonsWithTests] = useState([]);
+  const [finalTest, setFinalTest] = useState(null);
 
   const [currentLessonId, setCurrentLessonId] = useState("1-1");
   const [lessonPlay, setLessonPlay] = useState(data[0]?.parts[0]);
@@ -63,6 +71,7 @@ const CourseLessson = () => {
   const [getPartById] = useGetPartByIdMutation();
   const { data: courseData } = useGetCourseByIdQuery(courseId);
   const [getTestByTestId] = useGetTestByTestIdMutation();
+  const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
 
   useEffect(() => {
     const fetchLessons = async () => {
@@ -103,7 +112,30 @@ const CourseLessson = () => {
           })
         );
 
-        setLessonsWithTests(chaptersWithTests);
+        const newLessons = await attachIsPassedToLessons(
+          chaptersWithTests,
+          user._id
+        );
+        const allTests = lessonsWithTests
+          .flatMap((ch) => ch.tests || [])
+          .map((t) => t?.data)
+          .filter(Boolean);
+
+        // Kiểm tra có test nào chưa pass không
+        const allPassed =
+          allTests.length > 0 &&
+          allTests.every((test) => test.isPassed === true);
+
+        setFinalTest(allPassed);
+        console.log("Tổng số test:", allTests.length);
+        console.log(
+          "Số test đã pass:",
+          allTests.filter((t) => t.isPassed).length
+        );
+        console.log("Đã pass hết chưa:", allPassed);
+
+        // cập nhật lessons với thông tin isPassed
+        setLessonsWithTests(newLessons);
       } catch (error) {
         console.error("Failed to fetch lessons or tests:", error);
       }
@@ -152,24 +184,14 @@ const CourseLessson = () => {
 
     const end = Date.now();
     const durationMs = end - startTime;
-    let durationMinutes = durationMs / 60000;
-
-    durationMinutes =
-      durationMinutes >= 1
-        ? Math.floor(durationMinutes)
-        : parseFloat(durationMinutes.toFixed(1));
+    let durationSeconds = durationMs / 1000;
 
     try {
-      await logStudySession({
+      const res = await logStudySession({
         lessonId: lesson._id,
-        durationMinutes,
+        durationSeconds,
       }).unwrap();
-      console.log(
-        "Logged study session:",
-        lesson.title,
-        durationMinutes,
-        "minutes"
-      );
+      console.log("✅ Response from backend:", res);
     } catch (error) {
       console.error("Failed to log study session:", error);
     }
@@ -219,6 +241,66 @@ const CourseLessson = () => {
   const handleTestClick = (test) => {
     navigate(`/test/${test._id}`);
   };
+
+  const attachIsPassedToLessons = async (lessons, userId) => {
+    const updatedLessons = await Promise.all(
+      lessons.map(async (lesson) => {
+        if (!lesson.tests || lesson.tests.length === 0) {
+          return lesson; // bỏ qua nếu lesson chưa có bài test
+        }
+
+        const updatedTests = await Promise.all(
+          lesson.tests.map(async (testObj) => {
+            const testId = testObj?.data?._id;
+            if (!testId) return testObj;
+
+            try {
+              // const res = await axios.get(
+              //   `http://localhost:3000/api/v1/attempts/test/${testId}/user/${userId}`
+              // );
+              const res = await getAttemptByTestAndUser({
+                testId,
+                userId,
+              }).unwrap();
+
+              const attemptData = res.data[0];
+
+              const isPassed = attemptData?.isPassed || false;
+
+              return {
+                ...testObj,
+                data: {
+                  ...testObj.data,
+                  isPassed, // thêm field này
+                },
+              };
+            } catch (err) {
+              console.error(
+                `❌ Lỗi khi gọi API cho test ${testId}:`,
+                err.message
+              );
+              return {
+                ...testObj,
+                data: {
+                  ...testObj.data,
+                  isPassed: false, // nếu lỗi, gán false
+                },
+              };
+            }
+          })
+        );
+
+        return {
+          ...lesson,
+          tests: updatedTests,
+        };
+      })
+    );
+
+    return updatedLessons;
+  };
+
+  console.log("LESSONS WITH TESTS:", lessonsWithTests);
 
   return (
     <div className="flex h-screen bg-white">
@@ -347,27 +429,55 @@ const CourseLessson = () => {
 
                     {/* Tests */}
                     {chapter?.tests?.length > 0 &&
-                      chapter.tests.map((test) => (
-                        <li
-                          key={test?.data._id}
-                          className="flex items-center p-3 cursor-pointer bg-yellow-50 border-l-4 border-yellow-400 hover:bg-yellow-100"
-                          onClick={() => handleTestClick(test?.data)}
-                        >
-                          <div className="mr-2">
-                            <AssignmentOutlinedIcon
-                              sx={{ fontSize: 20, color: "#F59E0B" }}
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <Typography className="!text-sm font-medium">
-                              {test?.data.title}
-                            </Typography>
-                            <Typography className="!text-xs text-gray-500">
-                              {test?.data.description}
-                            </Typography>
-                          </div>
-                        </li>
-                      ))}
+                      chapter.tests.map((test) => {
+                        const isLastTest =
+                          test?.data?.isTheLastTest && !finalTest;
+
+                        const isPassed = test?.data?.isPassed;
+
+                        return (
+                          <li
+                            key={test?.data._id}
+                            className={`flex items-center p-3 border-l-4 hover:bg-yellow-100
+          ${
+            isLastTest
+              ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-70"
+              : "bg-yellow-50 border-yellow-400 cursor-pointer"
+          }
+        `}
+                            onClick={
+                              !isLastTest
+                                ? () => handleTestClick(test?.data)
+                                : undefined
+                            }
+                          >
+                            <div className="mr-2">
+                              <AssignmentOutlinedIcon
+                                sx={{
+                                  fontSize: 20,
+                                  color: isLastTest ? "#9CA3AF" : "#F59E0B",
+                                }}
+                              />
+                            </div>
+
+                            <div className="flex-1">
+                              <Typography className="!text-sm font-medium">
+                                {test?.data.title}
+                              </Typography>
+                              <Typography className="!text-xs text-gray-500">
+                                {test?.data.description}
+                              </Typography>
+                            </div>
+
+                            {/* Nếu test đã pass thì hiện icon ✅ */}
+                            {isPassed && (
+                              <span className="ml-2 text-green-600 text-xs font-semibold flex items-center">
+                                <CheckCircleIcon sx={{ fontSize: 16 }} />
+                              </span>
+                            )}
+                          </li>
+                        );
+                      })}
                   </ul>
                 </AccordionDetails>
               </Accordion>

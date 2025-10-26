@@ -40,4 +40,7 @@ router.get(
   attemptController.getCustomTestAttemptsByUser
 );
 
+// PATCH /attempts/:attemptId
+router.patch("/:attemptId", attemptController.updateAttempt);
+
 module.exports = router;

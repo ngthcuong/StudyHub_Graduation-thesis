@@ -5,8 +5,8 @@ function mapQuestionTypeToDb(aiType) {
   switch (aiType?.toLowerCase()) {
     case "mcq":
       return "multiple_choice";
-    case "fill_in_blank":
-      return "fill_in_blank";
+    case "gap-fill":
+      return "fill_blank";
     // Thêm các trường hợp khác nếu AI trả về các loại câu hỏi khác
     default:
       return "multiple_choice"; // Giá trị mặc định an toàn
@@ -53,6 +53,7 @@ const generateTestCustomController = async (req, res) => {
       difficulty, // Độ khó (Easier, Moderate, Harder)
       weakSkills, // Mảng các kỹ năng yếu (Grammar, Vocabulary)
       testAttemptId, // ID lần làm bài (nếu cần)
+      question_ratio, // Tỷ lệ loại câu hỏi (nếu có)
       // Các trường khác: goals, description, title...
     } = req.body;
 
@@ -84,7 +85,7 @@ const generateTestCustomController = async (req, res) => {
       topics: topics, // Truyền trực tiếp mảng topics
       difficulty: difficulty.toLowerCase(), // 'easier', 'moderate', 'harder'
       // Giả định question_ratio là MCQ vì frontend chỉ có MCQ
-      question_ratio: "MCQ",
+      question_ratio: question_ratio,
       num_questions: num_questions,
       time_limit: time_limit,
     };

@@ -1,4 +1,5 @@
 const courseModel = require("../models/courseModel");
+const userModel = require("../models/userModel");
 
 /** Hàm tạo khóa học mới */
 const createCourse = async (req, res) => {
@@ -103,6 +104,20 @@ const addRatingToCourse = async (req, res) => {
   }
 };
 
+const getMyCourses = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await userModel.getMyCourses(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    return res.json({ courses: user.courses });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createCourse,
   getCourseById,
@@ -110,4 +125,5 @@ module.exports = {
   getAllCourses,
   updateCourseById,
   addRatingToCourse,
+  getMyCourses,
 };

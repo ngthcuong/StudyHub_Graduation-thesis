@@ -11,7 +11,8 @@ import { Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../components/CourseCard";
 import { mockCourses } from "../../mock/mockCourse";
-import { useGetAllCoursesMutation } from "../../services/grammarLessonApi";
+import { useGetMyCoursesMutation } from "../../services/grammarLessonApi";
+import { useSelector } from "react-redux";
 
 const CourseList = ({ variant = "market" }) => {
   const navigate = useNavigate();
@@ -20,19 +21,22 @@ const CourseList = ({ variant = "market" }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [courses, setCourses] = useState([]);
 
-  const [getAllCourses] = useGetAllCoursesMutation();
+  const user = useSelector((state) => state.auth.user);
+
+  const [getMyCourses] = useGetMyCoursesMutation();
+
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const result = await getAllCourses().unwrap();
-        setCourses(result);
+        const result = await getMyCourses(user._id).unwrap();
+        setCourses(result.courses || []);
       } catch (error) {
         console.error("Failed to fetch courses:", error);
       }
     };
 
     fetchCourses();
-  }, [getAllCourses]);
+  }, [getMyCourses]);
 
   const pageSize = 6;
   const pageCount = Math.ceil(mockCourses.length / pageSize);
