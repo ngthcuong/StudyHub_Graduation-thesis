@@ -356,6 +356,7 @@ const TestMultipleChoiceCustom = () => {
   const [date, setDate] = useState(null);
 
   const { payloadForm, attemptDetail } = location.state || {};
+  console.log("Payload Form:", attemptDetail);
   const routeTestId = payloadForm?.testId;
 
   const [generateCustomTest] = useGenerateCustomTestMutation();

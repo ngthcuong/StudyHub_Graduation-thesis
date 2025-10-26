@@ -5,7 +5,6 @@ const attemptDetailModel = require("../models/attemptDetailModel");
 const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
-const certificateController = require("../controllers/certificateController");
 
 // const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
@@ -14,6 +13,7 @@ const dayjs = require("dayjs");
 const userModel = require("../models/userModel");
 //  For calling external grading service
 const axios = require("axios");
+const { issueCertificate } = require("../models/certificateModel");
 // const userAnswerModel = require("../models/userAnswerModel");
 
 const startAttempt = async (req, res) => {
@@ -339,12 +339,14 @@ const submitAttempt = async (req, res) => {
     console.log("courseId:", testDetail?.courseId);
 
     if (
-      (totalScore / testDetail?.numQuestions) * 100 >
+      (totalScore / testDetail?.numQuestions) * 100 >=
         testDetail?.passingScore * 10 &&
       testDetail.isTheLastTest &&
       testDetail?.courseId
     ) {
-      certifate = await issueCertificate(testDetail.courseId);
+      console.log("Issuing certificate...");
+      certifate = await issueCertificate(userId, testDetail.courseId);
+      console.log("Issued certificate:", certifate);
     } else if (!testDetail?.courseId) {
       console.warn("Cannot issue certificate: courseId is missing.");
     }
