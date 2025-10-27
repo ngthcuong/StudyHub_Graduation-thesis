@@ -10,9 +10,19 @@ import {
   Chip,
   Stack,
   CircularProgress,
+  Fade,
+  Skeleton,
   TextField,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useCreateAttemptMutation,
+  useGenerateCustomTestMutation,
+  useGetQuestionsByAttemptIdMutation,
+  useGetTestByIdMutation,
+  useSubmitTestMutation,
+} from "../../services/testApi";
 
 // -------------------------------------------------------------------
 // MOCK DATA FIB
@@ -55,22 +65,99 @@ const learningTips = [
 // -------------------------------------------------------------------
 
 const FillInBlankTest = () => {
-  const [questions, setQuestions] = useState(MOCK_QUESTIONS);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [date, setDate] = useState(null);
+
+  const { payloadForm, attemptDetail } = location.state || {};
+
+  const [generateCustomTest] = useGenerateCustomTestMutation();
+  const [getTestById] = useGetTestByIdMutation();
+  const [createAttempt] = useCreateAttemptMutation();
+  const [submitTestTrigger] = useSubmitTestMutation();
+  const [getQuestionsByAttemptId] = useGetQuestionsByAttemptIdMutation();
+
+  const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
-  const [answersP, setAnswersP] = useState(
-    MOCK_QUESTIONS.map((q) =>
-      q.questionText
-        .split("____")
-        .slice(0, -1)
-        .map(() => "")
-    )
-  );
+  const [answersP, setAnswersP] = useState([]);
+
   const [timeLeft, setTimeLeft] = useState(MOCK_PAYLOAD_FORM.timeLimit * 60);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [attemptId, setAttemptId] = useState(null);
+  const [test, setTest] = useState(null);
+  const [data, setData] = useState(null);
 
-  const actualQuestionCount = questions.length;
-  const completedCount = answersP.filter((blanks) =>
+  const routeTestId = payloadForm?.testId;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        console.log("Generating test with payload:", payloadForm);
+
+        const attemptRes = await createAttempt({
+          testPoolId: "000000000000000000000000",
+          testId: payloadForm?.testId,
+        }).unwrap();
+        console.log("Created attempt:", attemptRes);
+        setAttemptId(attemptRes?.data?._id);
+        try {
+          const testRes = await getTestById(routeTestId).unwrap();
+          setTest(testRes);
+          try {
+            const now = new Date();
+            const isoString = now.toISOString();
+            setDate(isoString);
+
+            let typeQuestion = "MCQ";
+            if (payloadForm?.questionType === "FIB") {
+              typeQuestion = "Gap-fill";
+            }
+
+            const res = await generateCustomTest({
+              testId: payloadForm?.testId,
+              testAttemptId: attemptRes?.data?._id,
+              level: payloadForm?.level,
+              toeicScore: payloadForm?.toeicScore,
+              weakSkills: payloadForm?.weakSkills,
+              exam_type: "TOEIC",
+              topics: payloadForm?.topics,
+              difficulty: payloadForm?.difficulty,
+              question_ratio: typeQuestion,
+              numQuestions: payloadForm?.numQuestions,
+              timeLimit: payloadForm?.timeLimit,
+            }).unwrap();
+            console.log("Generated custom test:", res);
+            setQuestions(res?.data?.data);
+            setAnswersP(
+              res?.data?.data?.map((q) =>
+                q.questionText
+                  .split(/_+/g)
+                  .slice(0, -1)
+                  .map(() => "")
+              )
+            );
+            setLoading(false);
+          } catch (error) {
+            console.error("Error setting test data:", error);
+          }
+        } catch (error) {
+          console.error("Error fetching questions by attempt ID:", error);
+        }
+      } catch (error) {
+        console.error("Error generating test:", error);
+      }
+    };
+
+    fetchData();
+  }, [payloadForm]);
+
+  const actualQuestionCount = questions?.length;
+  const completedCount = answersP?.filter((blanks) =>
     blanks.every((b) => b.trim() !== "")
   ).length;
   const percent = Math.round((completedCount / actualQuestionCount) * 100);
@@ -102,13 +189,120 @@ const FillInBlankTest = () => {
     return `${String(m).padStart(2, "0")} : ${String(sec).padStart(2, "0")}`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
-    console.log("Submitted Answers:", answersP);
+
+    const formattedAnswers = questions.map((question, index) => {
+      const userAnswer = (answersP[index]?.[0] || "").trim().toLowerCase();
+
+      const matchedOption = question.options.find(
+        (opt) => opt.optionText.trim().toLowerCase() === userAnswer
+      );
+
+      return {
+        questionId: question._id,
+        selectedOptionId: matchedOption ? matchedOption._id : null,
+        userAnswerText: matchedOption ? null : userAnswer || "",
+      };
+    });
+
+    try {
+      const answers = formattedAnswers.map((item) => {
+        const { userAnswerText: _userAnswerText, ...rest } = item;
+        return rest;
+      });
+
+      const startTime = date;
+      const testId = payloadForm?.testId || attemptDetail?.testId?._id;
+
+      const response = await submitTestTrigger({
+        attemptId,
+        answers,
+        testId,
+        startTime,
+      }).unwrap();
+
+      if (response) {
+        navigate(`/test/${testId}/result`, {
+          state: { resultData: response, formattedAnswers: formattedAnswers },
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting test:", error);
+    }
+
     setTimeout(() => setIsSubmitting(false), 1000);
   };
 
   const currentQuestion = questions[current];
+
+  // console.log("Rendered FillInBlankTest with questions:", questions);
+  // console.log("Current answers:", answersP);
+  // console.log("Current question:", currentQuestion);
+
+  if (loading || !questions || !test) {
+    return (
+      <Box
+        className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 4,
+        }}
+      >
+        <Stack
+          spacing={2}
+          sx={{
+            width: "100%",
+            maxWidth: "600px",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 600, color: "#34495e" }}>
+            Preparing Your Test
+          </Typography>
+
+          <Fade in={true} timeout={1000} key={tipIndex}>
+            <Typography
+              sx={{
+                color: "#7f8c8d",
+                minHeight: "48px",
+              }}
+            >
+              {learningTips[tipIndex]}
+            </Typography>
+          </Fade>
+
+          <Box sx={{ width: "100%", pt: 2 }}>
+            <Skeleton
+              variant="text"
+              sx={{ fontSize: "2rem", bgcolor: "grey.200" }}
+            />
+            {Array(4)
+              .fill(0)
+              .map((_, i) => (
+                <Skeleton
+                  key={i}
+                  variant="rectangular"
+                  height={50}
+                  sx={{ borderRadius: 2, mt: 1, bgcolor: "grey.200" }}
+                />
+              ))}
+            <Box sx={{ display: "flex", justifyContent: "flex-end", pt: 3 }}>
+              <Skeleton
+                variant="rectangular"
+                width={100}
+                height={40}
+                sx={{ borderRadius: 2, bgcolor: "grey.200" }}
+              />
+            </Box>
+          </Box>
+        </Stack>
+      </Box>
+    );
+  }
 
   return (
     <Box className="min-h-screen bg-gray-50 px-4 py-6">
@@ -129,19 +323,21 @@ const FillInBlankTest = () => {
         <Card className="rounded-xl shadow p-4 mb-4">
           <Typography variant="subtitle1" fontWeight={600}>
             {current + 1}.{" "}
-            {currentQuestion.questionText.split("____").map((part, i, arr) => (
-              <React.Fragment key={i}>
-                {part}
-                {i < arr.length - 1 && (
-                  <TextField
-                    size="small"
-                    value={answersP[current]?.[i] || ""}
-                    onChange={(e) => handleChange(e.target.value, i)}
-                    sx={{ width: 140, mx: 1 }}
-                  />
-                )}
-              </React.Fragment>
-            ))}
+            {currentQuestion?.questionText
+              ?.split(/_+/g)
+              ?.map((part, i, arr) => (
+                <React.Fragment key={i}>
+                  {part}
+                  {i < arr.length - 1 && (
+                    <TextField
+                      size="small"
+                      value={answersP[current]?.[i] || ""}
+                      onChange={(e) => handleChange(e.target.value, i)}
+                      sx={{ width: 140, mx: 1 }}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
           </Typography>
         </Card>
 

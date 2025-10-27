@@ -47,6 +47,7 @@ function formatTime(s) {
 const TestResult = () => {
   const location = useLocation();
   const resultData = location?.state?.resultData;
+  const formattedAnswers = location?.state?.formattedAnswers;
   const [tab, setTab] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [certificateModalOpen, setCertificateModalOpen] = useState(false);
@@ -742,7 +743,7 @@ const TestResult = () => {
         <CertificateDetailModal
           open={certificateModalOpen}
           onClose={() => setCertificateModalOpen(false)}
-          certificate={resultData?.certificate.certificate}
+          certificate={resultData?.certificate?.certificate}
         />
       </Box>
     </Box>

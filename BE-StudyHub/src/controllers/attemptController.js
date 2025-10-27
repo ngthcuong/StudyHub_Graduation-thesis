@@ -44,6 +44,8 @@ const submitAttempt = async (req, res) => {
     const { answers, testId, startTime } = req.body;
     const userId = req.user.userId;
 
+    console.log("Submitting attempt:", { attemptId, userId, testId, answers });
+
     const endTime = new Date();
 
     let resForTestResult = {};
