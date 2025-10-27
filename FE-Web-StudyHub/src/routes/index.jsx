@@ -34,6 +34,7 @@ import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 import TestInformationCustom from "../pages/test/TestInformationCustom";
 
 import FillInBlankTest from "../pages/test/FillInBlankTest";
+import CourseRecommend from "../pages/course/CourseRecommend";
 
 export const router = createBrowserRouter([
   {

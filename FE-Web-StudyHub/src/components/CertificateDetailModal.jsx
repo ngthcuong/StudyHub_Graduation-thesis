@@ -281,17 +281,29 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                 </Typography>
               </div>
 
-              {/* <div>
+              <div>
                 <Typography variant="body2" className="text-gray-500 mb-1">
-                  Duration
+                  Type
                 </Typography>
                 <Typography
                   variant="body1"
                   className="font-medium text-gray-800"
                 >
-                  {certificate.duration}
+                  {certificate?.course.type || "No Type"}
                 </Typography>
-              </div> */}
+              </div>
+
+              <div>
+                <Typography variant="body2" className="text-gray-500 mb-1">
+                  Level
+                </Typography>
+                <Typography
+                  variant="body1"
+                  className="font-medium text-gray-800"
+                >
+                  {certificate?.course.level || "No Level"}
+                </Typography>
+              </div>
             </div>
           </div>
         </div>
