@@ -69,9 +69,17 @@ const TestInformationCustom = () => {
   const handleStartTest = () => {
     console.log("Start custom test clicked", attemptDetail);
 
-    navigate(`/test/${testId}/custom`, {
-      state: { attemptDetail: attemptDetail },
-    });
+    console.log("Test Info:", testInfor.questionTypes[0]);
+
+    if (testInfor.questionTypes[0] == "multiple_choice") {
+      navigate(`/test/${testId}/custom`, {
+        state: { attemptDetail: attemptDetail },
+      });
+    } else if (testInfor.questionTypes[0] == "fill_in_blank") {
+      navigate(`/test/${testId}/fill-in-blank`, {
+        state: { attemptDetail: attemptDetail },
+      });
+    }
   };
 
   const formatQuestionTypes = (types) => {

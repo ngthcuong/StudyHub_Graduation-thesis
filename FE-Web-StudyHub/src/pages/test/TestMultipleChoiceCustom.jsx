@@ -346,6 +346,15 @@ const learningTips = [
   "Almost there... Good luck!",
 ];
 
+const submissionTips = [
+  "Analyzing your answers...",
+  "Calculating your score...",
+  "Generating personalized recommendations...",
+  "Creating your study plan...",
+  "Almost done! Preparing your results...",
+  "Great job! Finalizing your test results...",
+];
+
 // -------------------------------------------------------------------
 
 const TestMultipleChoiceCustom = () => {
@@ -356,7 +365,6 @@ const TestMultipleChoiceCustom = () => {
   const [date, setDate] = useState(null);
 
   const { payloadForm, attemptDetail } = location.state || {};
-  console.log("Payload Form:", attemptDetail);
   const routeTestId = payloadForm?.testId;
 
   const [generateCustomTest] = useGenerateCustomTestMutation();
@@ -390,6 +398,7 @@ const TestMultipleChoiceCustom = () => {
         const attemptRes = await createAttempt({
           testPoolId: "000000000000000000000000",
           testId: payloadForm?.testId,
+          maxAttempts: 3,
         }).unwrap();
 
         setAttemptId(attemptRes?.data?._id);
@@ -453,6 +462,8 @@ const TestMultipleChoiceCustom = () => {
   const [loading, setLoading] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
 
+  const [submissionTipIndex, setSubmissionTipIndex] = useState(0);
+
   const actualQuestionCount = numQuestionsInTest;
 
   const completedCount = answersP.filter((a) => a !== null).length;
@@ -485,11 +496,7 @@ const TestMultipleChoiceCustom = () => {
   const handleChange = (e) => {
     const newAnswers = [...answersP];
     const selectedOptionText = e.target.value;
-
-    const currentQuestion = questions?.data?.data[current];
-    if (!currentQuestion) return;
-
-    const selectedOption = currentQuestion.options.find(
+    const selectedOption = questions.data.data[current].options.find(
       (opt) => opt.optionText === selectedOptionText
     );
     newAnswers[current] = selectedOption?._id || null;
@@ -545,6 +552,25 @@ const TestMultipleChoiceCustom = () => {
       setIsPaused(false);
     }
   };
+
+  // for submit tips
+  useEffect(() => {
+    let submissionIntervalId = null;
+
+    if (isSubmitting) {
+      submissionIntervalId = setInterval(() => {
+        setSubmissionTipIndex(
+          (prevIndex) => (prevIndex + 1) % submissionTips.length
+        );
+      }, 2000); // Thay đổi tip mỗi 2 giây cho submission
+    }
+
+    return () => {
+      if (submissionIntervalId) {
+        clearInterval(submissionIntervalId);
+      }
+    };
+  }, [submissionTips.length, isSubmitting]);
 
   // -------------------------------------------------------------------
   // GIAO DIỆN RENDERING
@@ -621,6 +647,85 @@ const TestMultipleChoiceCustom = () => {
                 sx={{ borderRadius: 2, bgcolor: "grey.200" }}
               />
             </Box>
+          </Box>
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (isSubmitting) {
+    return (
+      <Box
+        className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 4,
+        }}
+      >
+        <Stack
+          spacing={3}
+          sx={{
+            width: "100%",
+            maxWidth: "600px",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "#059669" }}>
+            Submitting Your Test
+          </Typography>
+
+          <CircularProgress
+            size={60}
+            sx={{
+              color: "#059669",
+              animation: "pulse 2s infinite",
+            }}
+          />
+
+          <Fade in={true} timeout={1000} key={submissionTipIndex}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#047857",
+                minHeight: "48px",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {submissionTips[submissionTipIndex]}
+            </Typography>
+          </Fade>
+
+          <Box sx={{ width: "100%", pt: 2 }}>
+            <Card
+              sx={{ p: 3, bgcolor: "white", borderRadius: 3, boxShadow: 3 }}
+            >
+              <Stack spacing={2}>
+                <Typography variant="body1" color="#374151" fontWeight={600}>
+                  Your test is being processed...
+                </Typography>
+                <LinearProgress
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: "#d1fae5",
+                    "& .MuiLinearProgress-bar": {
+                      bgcolor: "#059669",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    },
+                  }}
+                />
+                <Typography variant="body2" color="#6b7280">
+                  Please wait while we analyze your answers and prepare your
+                  personalized results.
+                </Typography>
+              </Stack>
+            </Card>
           </Box>
         </Stack>
       </Box>
@@ -816,47 +921,45 @@ const TestMultipleChoiceCustom = () => {
                     sx={{ flexShrink: 0 }}
                   >
                     {/* Render các nút câu hỏi dựa trên số lượng câu hỏi thực tế */}
-                    {Array(actualQuestionCount)
-                      .fill(0)
-                      .map((_, idx) => {
-                        let color = "#e5e7eb";
-                        if (answersP[idx] !== null) color = "#22c55e";
-                        if (idx === current) color = "#2563eb";
+                    {questions.data.data.map((q, idx) => {
+                      let color = "#e5e7eb";
+                      if (answersP[idx] !== null) color = "#22c55e";
+                      if (idx === current) color = "#2563eb";
 
-                        return (
-                          <Button
-                            key={idx}
-                            variant="contained"
-                            size="small"
-                            onClick={() => handleJump(idx)}
-                            sx={{
-                              minWidth: 0,
-                              width: 38,
-                              height: 38,
-                              borderRadius: "50%",
-                              lineHeight: "normal",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 700,
+                      return (
+                        <Button
+                          key={idx}
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleJump(idx)}
+                          sx={{
+                            minWidth: 0,
+                            width: 38,
+                            height: 38,
+                            borderRadius: "50%",
+                            lineHeight: "normal",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 700,
+                            background: color,
+                            color: color === "#e5e7eb" ? "#22223b" : "#fff",
+                            boxShadow: "none",
+                            border: "1px solid transparent",
+                            borderColor:
+                              color === "#e5e7eb" ? "#cbd5e1" : "transparent",
+                            transition:
+                              "background 0.2s ease, opacity 0.2s ease, border-color 0.2s ease",
+                            "&:hover": {
                               background: color,
-                              color: color === "#e5e7eb" ? "#22223b" : "#fff",
-                              boxShadow: "none",
-                              border: "1px solid transparent",
-                              borderColor:
-                                color === "#e5e7eb" ? "#cbd5e1" : "transparent",
-                              transition:
-                                "background 0.2s ease, opacity 0.2s ease, border-color 0.2s ease",
-                              "&:hover": {
-                                background: color,
-                                opacity: 0.9,
-                              },
-                            }}
-                          >
-                            {idx + 1}
-                          </Button>
-                        );
-                      })}
+                              opacity: 0.9,
+                            },
+                          }}
+                        >
+                          {idx + 1}
+                        </Button>
+                      );
+                    })}
                   </Box>
 
                   {/* Thanh tiến độ và Legend giữ nguyên */}
