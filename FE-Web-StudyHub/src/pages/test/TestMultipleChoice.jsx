@@ -132,6 +132,7 @@ const TestMultipleChoice = () => {
                 const attempt = await createAttemptTrigger({
                   testPoolId: testPool?.testPoolId,
                   testId: testId,
+                  maxAttempts: 10000,
                 }).unwrap();
                 setAttemptId(attempt?.data?._id);
                 console.log("🆕 Created attempt:", attempt);
@@ -170,6 +171,7 @@ const TestMultipleChoice = () => {
                     const attempt = await createAttemptTrigger({
                       testPoolId: testByLevel?._id,
                       testId: testId,
+                      maxAttempts: 10000,
                     }).unwrap();
                     setAttemptId(attempt?.data?._id);
                     console.log("🆕 Created attempt:", attempt);
@@ -223,6 +225,7 @@ const TestMultipleChoice = () => {
                     const attempt = await createAttemptTrigger({
                       testPoolId: newTestPool?.data?._id,
                       testId: testId,
+                      maxAttempts: 10000,
                     }).unwrap();
                     console.log("🆕 Created attempt:", attempt);
                     setAttemptId(attempt?.data?._id);
@@ -294,6 +297,7 @@ const TestMultipleChoice = () => {
                     const attempt = await createAttemptTrigger({
                       testPoolId: newTestPool?.data?._id,
                       testId: testId,
+                      maxAttempts: 10000,
                     }).unwrap();
                     setAttemptId(attempt?.data?._id);
                     console.log("🆕 Created attempt:", attempt);

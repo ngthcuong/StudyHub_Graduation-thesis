@@ -688,14 +688,15 @@ const TestResult = () => {
             color="inherit"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
             LinkComponent={"a"}
-            href="/home/exercises"
+            href={formattedAnswers ? "/home/exercises" : "/home/courses"}
           >
-            View All Tests
+            {formattedAnswers ? "View All Tests" : "Back to Courses"}
           </Button>
           <Button
             variant="contained"
             color="success"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
+            href="/home/courses"
           >
             Start Learning Plan
           </Button>

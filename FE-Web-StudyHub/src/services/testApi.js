@@ -54,10 +54,10 @@ export const testApi = rootApi.injectEndpoints({
 
     // 6. createAttempt
     createAttempt: builder.mutation({
-      query: ({ testPoolId, testId }) => ({
+      query: ({ testPoolId, testId, maxAttempts }) => ({
         url: "/attempts",
         method: "POST",
-        body: { testPoolId, testId, evaluationModel: "gemini" },
+        body: { testPoolId, testId, evaluationModel: "gemini", maxAttempts },
       }),
       invalidatesTags: ["Attempt"],
     }),

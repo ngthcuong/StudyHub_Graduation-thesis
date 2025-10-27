@@ -62,6 +62,15 @@ const learningTips = [
   "Tip: Use flashcards to remember new words.",
 ];
 
+const submissionTips = [
+  "Analyzing your answers...",
+  "Calculating your score...",
+  "Generating personalized recommendations...",
+  "Creating your study plan...",
+  "Almost done! Preparing your results...",
+  "Great job! Finalizing your test results...",
+];
+
 // -------------------------------------------------------------------
 
 const FillInBlankTest = () => {
@@ -88,68 +97,96 @@ const FillInBlankTest = () => {
   const [loading, setLoading] = useState(false);
   const [attemptId, setAttemptId] = useState(null);
   const [test, setTest] = useState(null);
-  const [data, setData] = useState(null);
+  const [submissionTipIndex, setSubmissionTipIndex] = useState(0);
 
   const routeTestId = payloadForm?.testId;
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        console.log("Generating test with payload:", payloadForm);
-
-        const attemptRes = await createAttempt({
-          testPoolId: "000000000000000000000000",
-          testId: payloadForm?.testId,
-        }).unwrap();
-        console.log("Created attempt:", attemptRes);
-        setAttemptId(attemptRes?.data?._id);
+      if (
+        attemptDetail &&
+        attemptDetail?.attemptNumber < attemptDetail?.maxAttempts
+      ) {
         try {
-          const testRes = await getTestById(routeTestId).unwrap();
-          setTest(testRes);
+          const now = new Date();
+          const isoString = now.toISOString();
+          setDate(isoString);
+
+          const res = await getQuestionsByAttemptId(
+            attemptDetail?._id
+          ).unwrap();
+          console.log("Fetched questions for existing attempt:", res);
+          setQuestions(res?.data);
+          setAnswersP(
+            res?.data?.map((q) =>
+              q.questionText
+                .split(/_+/g)
+                .slice(0, -1)
+                .map(() => "")
+            )
+          );
+          setTest(attemptDetail?.testId);
+          setAttemptId(attemptDetail?._id);
+          setLoading(false);
+        } catch (error) {
+          console.error("Error resuming existing attempt:", error);
+        }
+      } else {
+        try {
+          setLoading(true);
+
+          const attemptRes = await createAttempt({
+            testPoolId: "000000000000000000000000",
+            testId: payloadForm?.testId,
+            maxAttempts: 3,
+          }).unwrap();
+          setAttemptId(attemptRes?.data?._id);
           try {
-            const now = new Date();
-            const isoString = now.toISOString();
-            setDate(isoString);
+            const testRes = await getTestById(routeTestId).unwrap();
+            setTest(testRes);
+            try {
+              const now = new Date();
+              const isoString = now.toISOString();
+              setDate(isoString);
 
-            let typeQuestion = "MCQ";
-            if (payloadForm?.questionType === "FIB") {
-              typeQuestion = "Gap-fill";
+              let typeQuestion = "MCQ";
+              if (payloadForm?.questionType === "FIB") {
+                typeQuestion = "Gap-fill";
+              }
+
+              const res = await generateCustomTest({
+                testId: payloadForm?.testId,
+                testAttemptId: attemptRes?.data?._id,
+                level: payloadForm?.level,
+                toeicScore: payloadForm?.toeicScore,
+                weakSkills: payloadForm?.weakSkills,
+                exam_type: "TOEIC",
+                topics: payloadForm?.topics,
+                difficulty: payloadForm?.difficulty,
+                question_ratio: typeQuestion,
+                numQuestions: payloadForm?.numQuestions,
+                timeLimit: payloadForm?.timeLimit,
+              }).unwrap();
+              console.log("Generated custom test:", res);
+              setQuestions(res?.data?.data);
+              setAnswersP(
+                res?.data?.data?.map((q) =>
+                  q.questionText
+                    .split(/_+/g)
+                    .slice(0, -1)
+                    .map(() => "")
+                )
+              );
+              setLoading(false);
+            } catch (error) {
+              console.error("Error setting test data:", error);
             }
-
-            const res = await generateCustomTest({
-              testId: payloadForm?.testId,
-              testAttemptId: attemptRes?.data?._id,
-              level: payloadForm?.level,
-              toeicScore: payloadForm?.toeicScore,
-              weakSkills: payloadForm?.weakSkills,
-              exam_type: "TOEIC",
-              topics: payloadForm?.topics,
-              difficulty: payloadForm?.difficulty,
-              question_ratio: typeQuestion,
-              numQuestions: payloadForm?.numQuestions,
-              timeLimit: payloadForm?.timeLimit,
-            }).unwrap();
-            console.log("Generated custom test:", res);
-            setQuestions(res?.data?.data);
-            setAnswersP(
-              res?.data?.data?.map((q) =>
-                q.questionText
-                  .split(/_+/g)
-                  .slice(0, -1)
-                  .map(() => "")
-              )
-            );
-            setLoading(false);
           } catch (error) {
-            console.error("Error setting test data:", error);
+            console.error("Error fetching questions by attempt ID:", error);
           }
         } catch (error) {
-          console.error("Error fetching questions by attempt ID:", error);
+          console.error("Error generating test:", error);
         }
-      } catch (error) {
-        console.error("Error generating test:", error);
       }
     };
 
@@ -170,6 +207,25 @@ const FillInBlankTest = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft]);
+
+  // for submit tips
+  useEffect(() => {
+    let submissionIntervalId = null;
+
+    if (isSubmitting) {
+      submissionIntervalId = setInterval(() => {
+        setSubmissionTipIndex(
+          (prevIndex) => (prevIndex + 1) % submissionTips.length
+        );
+      }, 2000); // Thay đổi tip mỗi 2 giây cho submission
+    }
+
+    return () => {
+      if (submissionIntervalId) {
+        clearInterval(submissionIntervalId);
+      }
+    };
+  }, [submissionTips.length, isSubmitting]);
 
   // Handle FIB input
   const handleChange = (value, blankIndex) => {
@@ -212,6 +268,8 @@ const FillInBlankTest = () => {
         return rest;
       });
 
+      console.log("Submitting answers:", answers);
+
       const startTime = date;
       const testId = payloadForm?.testId || attemptDetail?.testId?._id;
 
@@ -231,14 +289,89 @@ const FillInBlankTest = () => {
       console.error("Error submitting test:", error);
     }
 
-    setTimeout(() => setIsSubmitting(false), 1000);
+    setIsSubmitting(false);
   };
 
-  const currentQuestion = questions[current];
+  if (isSubmitting) {
+    return (
+      <Box
+        className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 4,
+        }}
+      >
+        <Stack
+          spacing={3}
+          sx={{
+            width: "100%",
+            maxWidth: "600px",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "#059669" }}>
+            Submitting Your Test
+          </Typography>
 
-  // console.log("Rendered FillInBlankTest with questions:", questions);
-  // console.log("Current answers:", answersP);
-  // console.log("Current question:", currentQuestion);
+          <CircularProgress
+            size={60}
+            sx={{
+              color: "#059669",
+              animation: "pulse 2s infinite",
+            }}
+          />
+
+          <Fade in={true} timeout={1000} key={submissionTipIndex}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#047857",
+                minHeight: "48px",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {submissionTips[submissionTipIndex]}
+            </Typography>
+          </Fade>
+
+          <Box sx={{ width: "100%", pt: 2 }}>
+            <Card
+              sx={{ p: 3, bgcolor: "white", borderRadius: 3, boxShadow: 3 }}
+            >
+              <Stack spacing={2}>
+                <Typography variant="body1" color="#374151" fontWeight={600}>
+                  Your test is being processed...
+                </Typography>
+                <LinearProgress
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: "#d1fae5",
+                    "& .MuiLinearProgress-bar": {
+                      bgcolor: "#059669",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    },
+                  }}
+                />
+                <Typography variant="body2" color="#6b7280">
+                  Please wait while we analyze your answers and prepare your
+                  personalized results.
+                </Typography>
+              </Stack>
+            </Card>
+          </Box>
+        </Stack>
+      </Box>
+    );
+  }
+
+  const currentQuestion = questions[current];
 
   if (loading || !questions || !test) {
     return (

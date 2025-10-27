@@ -305,7 +305,7 @@ const TestList = () => {
                 className="w-full"
               >
                 {/* Hiện trạng thái completion */}
-                {item.testId.completed ? (
+                {item?.attemptNumber === item?.maxAttempts ? (
                   <CheckCircleIcon color="success" />
                 ) : (
                   <RadioButtonUncheckedIcon color="disabled" />

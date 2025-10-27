@@ -18,17 +18,22 @@ const { issueCertificate } = require("../models/certificateModel");
 
 const startAttempt = async (req, res) => {
   try {
-    const { testPoolId, testId, evaluationModel } = req.body;
+    const { testPoolId, testId, evaluationModel, maxAttempts } = req.body;
     if (!testPoolId)
       return res.status(400).json({ error: "testPoolId is required" });
+
+    console.log("maxAttempts received:", maxAttempts);
 
     const attemptData = {
       testPoolId,
       userId: req.user?.userId || req.body.userId,
       evaluationModel: evaluationModel || "gemini",
       feedback: "",
+      maxAttempts: maxAttempts || 3,
       testId,
     };
+
+    console.log("Starting attempt with data:", attemptData);
 
     const savedAttempt = await attemptModel.createAttempt(attemptData);
     res.status(201).json({ message: "Attempt started", data: savedAttempt });
