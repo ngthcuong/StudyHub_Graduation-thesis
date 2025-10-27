@@ -343,7 +343,6 @@ const submitAttempt = async (req, res) => {
     // }
 
     let certificate = null;
-    console.log("courseId:", testDetail?.courseId);
 
     if (
       (totalScore / testDetail?.numQuestions) * 100 >=
