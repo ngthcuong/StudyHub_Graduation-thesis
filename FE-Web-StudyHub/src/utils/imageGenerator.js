@@ -77,6 +77,20 @@ export const downloadCertificateAsImage = async (certificate) => {
         certificate.course.title
       }</h4>
       
+      <!-- Course Details -->
+      <div style="display: flex; justify-content: center; gap: 20px; width: 100%; margin-bottom: 32px;">
+        <p style="text-align: center; font-size: 18px; color: #475569; margin: 0;">
+          <span style="font-weight: 700;">Type:</span> ${
+            certificate.course.type || "N/A"
+          }
+        </p>
+        <p style="text-align: center; font-size: 18px; color: #475569; margin: 0;">
+          <span style="font-weight: 700;">Level:</span> ${
+            certificate.course.level || "N/A"
+          }
+        </p>
+      </div>
+      
       <!-- Footer -->
       <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 64px; margin-bottom: 8px;">
         <div style="display: flex; flex-direction: column; align-items: center; width: 160px;">
