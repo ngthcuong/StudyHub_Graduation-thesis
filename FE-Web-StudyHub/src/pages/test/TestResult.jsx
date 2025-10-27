@@ -47,6 +47,7 @@ function formatTime(s) {
 const TestResult = () => {
   const location = useLocation();
   const resultData = location?.state?.resultData;
+  const formattedAnswers = location?.state?.formattedAnswers;
   const [tab, setTab] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [certificateModalOpen, setCertificateModalOpen] = useState(false);
@@ -687,14 +688,15 @@ const TestResult = () => {
             color="inherit"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
             LinkComponent={"a"}
-            href="/home/exercises"
+            href={formattedAnswers ? "/home/exercises" : "/home/courses"}
           >
-            View All Tests
+            {formattedAnswers ? "View All Tests" : "Back to Courses"}
           </Button>
           <Button
             variant="contained"
             color="success"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
+            href="/home/courses"
           >
             Start Learning Plan
           </Button>
@@ -742,7 +744,7 @@ const TestResult = () => {
         <CertificateDetailModal
           open={certificateModalOpen}
           onClose={() => setCertificateModalOpen(false)}
-          certificate={resultData?.certificate.certificate}
+          certificate={resultData?.certificate?.certificate}
         />
       </Box>
     </Box>

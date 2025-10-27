@@ -235,11 +235,19 @@ export default function ModalCreateCustomTest({
     const examType = "TOEIC";
 
     // 2. Điền các trường BẮT BUỘC THIẾU cho DB (Cần giá trị giả định hoặc thực tế)
+    let type = ["multiple_choice"];
+    if (payload_form.questionType === "FIB") {
+      type = ["fill_in_blank"];
+    } else if (payload_form.questionType === "MCQ") {
+      type = ["multiple_choice"];
+    } else {
+      type = ["multiple_choice"];
+    }
     const REQUIRED_DB_FIELDS = {
       // ⚠️ CẦN THAY BẰNG ID COURSE THỰC TẾ
       courseId: "000000000000000000000000",
       // Mặc định Question Type
-      questionTypes: ["multiple_choice"],
+      questionTypes: type,
       // Giá trị mặc định
       passingScore: 7,
       isTheLastTest: false,

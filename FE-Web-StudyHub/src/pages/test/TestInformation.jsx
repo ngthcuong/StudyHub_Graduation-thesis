@@ -385,7 +385,7 @@ const TestInformation = () => {
                   </Typography>
                 </Box>
 
-                {!attempt?.maxAttempts ? (
+                {/* {!attempt?.maxAttempts > 3 ? (
                   <AllInclusiveIcon />
                 ) : (
                   <Typography
@@ -400,7 +400,8 @@ const TestInformation = () => {
                         }`
                       : ""}
                   </Typography>
-                )}
+                )} */}
+                <AllInclusiveIcon />
               </Box>
             </Grid>
 

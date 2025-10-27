@@ -172,7 +172,7 @@ const CourseRecommend = () => {
               Based on your current level and goals
             </Typography>
 
-            <Grid container spacing={4}>
+            {/* <Grid container spacing={4}>
               {recommendedCourses.length > 0 ? (
                 recommendedCourses.map((course) => (
                   <Grid item xs={12} sm={6} lg={4} key={course._id}>
@@ -184,6 +184,57 @@ const CourseRecommend = () => {
                   <CircularProgress size={40} />
                 </Box>
               )}
+            </Grid> */}
+            <Grid item xs={12} sm={6} lg={4} key={"fdasjfasfsa"}>
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
+              <CourseCard
+                course={{
+                  title: "Sample Course",
+                  description: "This is a sample course description.",
+                }}
+                variant="market"
+              />
             </Grid>
 
             {recommendedCourses.length > 0 && (
