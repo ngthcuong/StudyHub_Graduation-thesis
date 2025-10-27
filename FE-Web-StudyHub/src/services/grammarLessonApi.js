@@ -91,6 +91,17 @@ export const grammarLessonApi = rootApi.injectEndpoints({
       }),
       providesTags: (result, error, id) => [{ type: "Course", id }],
     }),
+
+    // GET MY COURSES
+    getMyCourses: builder.mutation({
+      query: (userId) => ({
+        url: `courses/my-courses/${userId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, userId) => [
+        { type: "Course", id: `USER_${userId}` },
+      ],
+    }),
   }),
 });
 
@@ -104,6 +115,7 @@ export const {
   useGetLessonsByCourseIdMutation,
   useGetPartByIdMutation,
   useGetCourseByIdMutation,
+  useGetMyCoursesMutation,
 } = grammarLessonApi;
 
 export default grammarLessonApi;

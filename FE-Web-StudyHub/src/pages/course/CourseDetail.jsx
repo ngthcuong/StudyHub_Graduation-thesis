@@ -229,7 +229,9 @@ const CourseDetail = () => {
                   textTransform: "none",
                 }}
                 size="large"
-                onClick={() => navigate("/home")}
+                onClick={() =>
+                  navigate("/course/payment", { state: { course } })
+                }
               >
                 Buy now
               </Button>

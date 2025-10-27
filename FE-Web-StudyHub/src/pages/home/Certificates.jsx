@@ -34,6 +34,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
+import CertificateTemplate from "../../components/CertificateTemplate";
 
 const statusOptions = ["All", "Pending", "Active", "Rejected"];
 
@@ -497,6 +498,12 @@ export default function Certificate({ item }) {
         onClose={handleCloseDetailModal}
         certificate={selectedCertificate}
       />
+      {/* 
+      <CertificateTemplate
+        open={openDetailModal}
+        onClose={handleCloseDetailModal}
+        certificate={selectedCertificate}
+      /> */}
     </div>
   );
 }

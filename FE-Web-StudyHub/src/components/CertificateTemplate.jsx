@@ -76,6 +76,15 @@ const CertificateTemplate = ({ open, onClose, certificate }) => {
           {certificate.course.title}
         </h4>
 
+        <div className="flex justify-center gap-2.5 w-full">
+          <p className="text-center text-base md:text-lg text-slate-600 mb-8">
+            <span className="font-bold">Type:</span> {certificate.course.level}
+          </p>
+          <p className="text-center text-base md:text-lg text-slate-600 mb-8">
+            <span className="font-bold">Level:</span> {certificate.course.level}
+          </p>
+        </div>
+
         {/* Seal & Signature Row */}
         <div className="flex items-end justify-between mt-16 mb-2">
           {/* Seal */}

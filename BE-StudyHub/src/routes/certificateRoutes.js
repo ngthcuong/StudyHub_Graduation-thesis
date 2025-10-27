@@ -6,11 +6,13 @@ const {
   searchCertificates,
   getCertificateByCode,
   getStudentCertificatesHybrid,
+  getAllCertificates,
 } = require("../controllers/certificateController");
-const { verifyToken } = require("../middlewares/authMiddleware");
+const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.post("/", verifyToken, createCertificate);
+router.get("/", verifyToken, requireAdmin, getAllCertificates);
 router.get("/search", verifyToken, searchCertificates);
 router.post("/issue", verifyToken, issueCertificate);
 router.get("/student/:address", verifyToken, getStudentCertificatesHybrid);

@@ -18,10 +18,14 @@ const testAttemptSchema = new mongoose.Schema(
       required: true,
     },
     attemptNumber: { type: Number, default: 0 }, // lần attempt cho cùng 1 đề
-    maxAttempts: { type: Number, default: 3 }, // mặc định 3
+    maxAttempts: { type: Number, default: 3 },
     score: { type: Number, default: 0 },
     feedback: { type: String, trim: true },
     evaluationModel: { type: String, default: "gemini" },
+    isPassed: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

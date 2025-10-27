@@ -23,7 +23,10 @@ import {
 } from "@mui/icons-material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import { useNavigate } from "react-router-dom";
-import { useGetMyTestsMutation } from "../../services/testApi";
+import {
+  useGetMyTestsMutation,
+  useGetAttemptDetailByUserMutation,
+} from "../../services/testApi";
 import ModalCreateCustomTest from "../../components/ModalCreateCustomTest";
 import { useEffect } from "react";
 
@@ -46,11 +49,12 @@ const TestList = () => {
   const [open, setOpen] = useState(false);
 
   const [getMyTests] = useGetMyTestsMutation();
+  const [getAttemptDetailByUser] = useGetAttemptDetailByUserMutation();
 
   const fetchTests = async () => {
     try {
       setIsLoading(true);
-      const res = await getMyTests().unwrap();
+      const res = await getAttemptDetailByUser().unwrap();
       console.log("Fetched tests:", res);
       setTests(res);
     } catch (error) {
@@ -69,17 +73,17 @@ const TestList = () => {
   // Lọc dữ liệu
   const filtered = useMemo(() => {
     if (!tests?.data) return [];
-    return tests?.data.filter((item) => {
-      const matchTitle = item.title
+    return tests?.data?.filter((item) => {
+      const matchTitle = item?.testId?.title
         .toLowerCase()
         .includes(search.toLowerCase());
-      const matchType = type === "All Types" || item.type === type;
+      const matchType = type === "All Types" || item.testId.type === type;
       const matchStatus =
         status === "All Status" ||
-        (status === "Completed" && item.completed) ||
-        (status === "Not Completed" && !item.completed);
+        (status === "Completed" && item.testId.completed) ||
+        (status === "Not Completed" && !item.testId.completed);
       const matchDifficulty =
-        difficulty === "All Levels" || item.difficulty === difficulty;
+        difficulty === "All Levels" || item.testId.difficulty === difficulty;
       return matchTitle && matchType && matchStatus && matchDifficulty;
     });
   }, [search, type, status, difficulty, tests?.data]);
@@ -104,7 +108,7 @@ const TestList = () => {
     setOpen(true);
   };
 
-  console.log("Data created test in TestList:", dataCreatedTest);
+  console.log("Data created test in TestList:", filtered);
 
   return (
     <Box className="min-h-fit bg-white py-8 px-6 rounded-xl">
@@ -282,13 +286,14 @@ const TestList = () => {
         <List className="rounded-xl">
           {filtered.map((item) => (
             <ListItem
-              key={item._id}
+              key={item.testId._id}
               className="flex items-center justify-between !py-4  border rounded-xl mb-5 !shadow-md !bg-white cursor-pointer"
               onClick={() => {
-                navigate(`/test/${item._id}`, {
+                navigate(`/test/${item.testId._id}/custom-info`, {
                   state: {
-                    testInfor: item,
+                    testInfor: item.testId,
                     dataCreatedTest: dataCreatedTest,
+                    attemptDetail: item,
                   },
                 });
               }}
@@ -300,7 +305,7 @@ const TestList = () => {
                 className="w-full"
               >
                 {/* Hiện trạng thái completion */}
-                {item.completed ? (
+                {item.testId.completed ? (
                   <CheckCircleIcon color="success" />
                 ) : (
                   <RadioButtonUncheckedIcon color="disabled" />
@@ -313,7 +318,7 @@ const TestList = () => {
                       fontWeight={600}
                       color="#22223b"
                     >
-                      {item.title}
+                      {item.testId.title}
                     </Typography>
                     {/* Độ khó */}
                     {/* <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
@@ -336,8 +341,10 @@ const TestList = () => {
                   </Box>
                   {/* Loại bài */}
                   <Chip
-                    label={item.examType}
-                    color={item.examType === "TOEIC" ? "warning" : "info"}
+                    label={item.testId.examType}
+                    color={
+                      item.testId.examType === "TOEIC" ? "warning" : "info"
+                    }
                     size="small"
                     sx={{ textTransform: "capitalize" }}
                   />

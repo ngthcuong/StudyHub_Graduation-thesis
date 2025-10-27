@@ -36,6 +36,13 @@ const certificateSchema = new mongoose.Schema(
         type: String,
         require: true,
       },
+      type: {
+        type: String,
+        enum: ["TOEIC", "IELTS"],
+      },
+      level: {
+        type: String,
+      },
     },
     issuer: {
       walletAddress: {

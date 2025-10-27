@@ -13,203 +13,67 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
 import {
   ArrowBack,
-  InfoOutline,
+  InfoOutlined as InfoOutline,
   GradeOutlined,
   FlagOutlined,
 } from "@mui/icons-material";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import {
-  useGetTestByTestIdMutation,
-  useGetAttemptByTestAndUserMutation,
-  useGetAttemptInfoMutation,
-  useGetAttemptDetailByUserAndTestMutation,
-} from "../../services/testApi";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import Snackbar from "../../components/Snackbar";
-import { useDispatch } from "react-redux";
-import { openSnackbar } from "../../redux/slices/snackbar";
+import { useGetAttemptDetailByUserAndTestMutation } from "../../services/testApi";
 
-const TestInformation = () => {
+const TestInformationCustom = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { testInfor } = location.state || {};
+  const { testInfor, attemptDetail } = location.state || {};
   const { id: testId } = useParams();
-  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
-  const [attempt, setAttempt] = useState();
-  const [history, setHistory] = useState([]);
-  const [testInfoState, setTestInfoState] = useState(testInfor);
-
-  console.log("testInfo: ", testInfor);
 
   const user = useSelector((state) => state.auth.user);
 
-  const [testPool, setTestPool] = useState();
-
-  const [getTestByTestId] = useGetTestByTestIdMutation();
-  const [getAttemptInfo] = useGetAttemptInfoMutation();
-  const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
   const [getAttemptDetailByUserAndTest] =
     useGetAttemptDetailByUserAndTestMutation();
 
+  const testInfoState = {
+    title: "Grammar Level 2 Practice Test",
+    description:
+      "Evaluate your grammar knowledge with 20 randomly generated questions.",
+    numQuestions: 20,
+    durationMin: 25,
+    questionTypes: ["Grammar"],
+    passScore: 75,
+    examType: "grammar",
+    isFinalTest: false,
+  };
+
+  const [history, setHistory] = useState([]);
+
+  const testPool = true;
+
   useEffect(() => {
-    if (!testInfoState && testId) {
-      const fetchTest = async () => {
-        try {
-          const res = await getTestByTestId(testId).unwrap();
-          setTestInfoState(res?.data); // thay vì res.data
-        } catch (err) {
-          console.error("Failed to fetch test by id:", err);
-        }
-      };
-
-      fetchTest();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testId, testInfoState]);
-
-  useEffect(() => {
-    if (!user?._id || !testId) return;
-
     const fetchData = async () => {
       try {
-        const res = await getAttemptInfo({
+        const res = await getAttemptDetailByUserAndTest({
           userId: user._id,
           testId,
         }).unwrap();
-        setTestPool(res);
-
-        try {
-          const res = await getAttemptDetailByUserAndTest({
-            userId: user._id,
-            testId,
-          }).unwrap();
-          setHistory(res.data);
-        } catch (error) {
-          console.error("Failed to fetch attempt detail:", error);
-        }
+        setHistory(res.data);
       } catch (error) {
-        if (error.status === 404) {
-          const res = await getTestByTestId(testId).unwrap();
-          setTestPool(res.data);
-        } else {
-          throw error;
-        }
-      }
-
-      try {
-        const res = await getAttemptByTestAndUser({
-          testId,
-          userId: user._id,
-        }).unwrap();
-        setAttempt(res.data[0]);
-      } catch (err) {
-        console.error("Failed to fetch attempt:", err);
+        console.error("Failed to fetch attempt detail:", error);
       }
     };
-
     fetchData();
-  }, [
-    user._id,
-    testId,
-    getAttemptInfo,
-    getAttemptDetailByUserAndTest,
-    getTestByTestId,
-    getAttemptByTestAndUser,
-  ]);
+  }, [history]);
 
+  // 🧠 HÀM HỖ TRỢ
   const handleStartTest = () => {
-    // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
-    if (testInfor) {
-      if (!user?.currentLevel || !testInfor?.examType) {
-        dispatch(
-          openSnackbar({
-            message:
-              "Please update your profile with current level information before taking this test.",
-            severity: "error",
-          })
-        );
-        return;
-      }
-      // Kiểm tra xem examType của test có trong currentLevel của user hay không
-      const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
-        user.currentLevel,
-        testInfor?.examType
-      );
-      if (!hasMatchingLevel) {
-        dispatch(
-          openSnackbar({
-            message: `Please update your ${testInfor?.examType} level in your profile before taking this test.`,
-            severity: "error",
-          })
-        );
-        return;
-      }
-      // Nếu có currentLevel phù hợp, bắt đầu làm bài
-      navigate(`/test/${testPool._id || testId}/attempt`, {
-        state: { testId: testPool._id || testId },
-      });
-    } else {
-      if (!user?.currentLevel || !testInfoState?.examType) {
-        dispatch(
-          openSnackbar({
-            message:
-              "Please update your profile with current level information before taking this test.",
-            severity: "error",
-          })
-        );
-        return;
-      }
-      // Kiểm tra xem examType của test có trong currentLevel của user hay không
-      const hasMatchingLevel = Object.prototype.hasOwnProperty.call(
-        user.currentLevel,
-        testInfoState?.examType
-      );
-      if (!hasMatchingLevel) {
-        dispatch(
-          openSnackbar({
-            message: `Please update your ${testInfoState?.examType} level in your profile before taking this test.`,
-            severity: "error",
-          })
-        );
-        return;
-      }
-      // Nếu có currentLevel phù hợp, bắt đầu làm bài
-      navigate(`/test/${testPool._id || testId}/attempt`, {
-        state: { testId: testPool._id || testId },
-      });
-    }
+    console.log("Start custom test clicked", attemptDetail);
+
+    navigate(`/test/${testId}/custom`, {
+      state: { attemptDetail: attemptDetail },
+    });
   };
 
-  // Kiểm tra xem user có thể làm bài test hay không
-  const canTakeTest = () => {
-    if (
-      !user?.currentLevel ||
-      !testInfor?.examType ||
-      !testInfoState?.examType
-    ) {
-      return false;
-    } else if (testInfor) {
-      return Object.prototype.hasOwnProperty.call(
-        user?.currentLevel,
-        testInfor?.examType
-      );
-    } else {
-      return Object.prototype.hasOwnProperty.call(
-        user?.currentLevel,
-        testInfoState?.examType
-      );
-    }
-  };
-
-  const handleUpdateProfile = () => {
-    navigate("/home/profile");
-  };
-
-  // Format question types for display
   const formatQuestionTypes = (types) => {
     return types
       ?.map((type) => {
@@ -228,15 +92,8 @@ const TestInformation = () => {
   };
 
   const formatDuration = (startTime, endTime) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-
-    const diffMs = end - start; // chênh lệch tính bằng milliseconds
-
-    const diffSec = Math.floor(diffMs / 1000); // giây
-    const diffMin = Math.floor(diffSec / 60); // phút
-
-    return `${diffMin} minutes ${diffSec % 60} seconds`;
+    const diff = (new Date(endTime) - new Date(startTime)) / 1000 / 60;
+    return `${Math.round(diff)} minutes`;
   };
 
   return (
@@ -363,9 +220,7 @@ const TestInformation = () => {
                   </Typography>
                 </Box>
                 <Typography variant="body1" fontWeight={600} color="#111827">
-                  {formatQuestionTypes(
-                    testInfor?.questionTypes || testInfoState?.questionTypes
-                  )}
+                  {formatQuestionTypes(testInfor?.questionTypes)}
                 </Typography>
               </Box>
             </Grid>
@@ -384,23 +239,18 @@ const TestInformation = () => {
                     Retakes Allowed
                   </Typography>
                 </Box>
-
-                {!attempt?.maxAttempts ? (
-                  <AllInclusiveIcon />
-                ) : (
-                  <Typography
-                    variant="h5"
-                    fontWeight={700}
-                    color="#111827"
-                    noWrap
-                  >
-                    {attempt
-                      ? `${attempt.attemptNumber || 0}/${
-                          attempt.maxAttempts || 3
-                        }`
-                      : ""}
-                  </Typography>
-                )}
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  color="#111827"
+                  noWrap
+                >
+                  {attemptDetail
+                    ? `${attemptDetail.attemptNumber || 0}/${
+                        attemptDetail.maxAttempts || 3
+                      }`
+                    : "0/3"}
+                </Typography>
               </Box>
             </Grid>
 
@@ -424,12 +274,7 @@ const TestInformation = () => {
                   color="#111827"
                   noWrap
                 >
-                  {testInfor
-                    ? testInfor.passingScore * 10
-                    : testInfoState?.passingScore * 10}{" "}
-                  {!testInfor?.passingScore && !testInfoState?.passingScore
-                    ? "70"
-                    : null}
+                  {testInfor.passingScore * 10}{" "}
                   <span className="text-base font-normal">%</span>
                 </Typography>
               </Box>
@@ -467,45 +312,6 @@ const TestInformation = () => {
           </Grid>
 
           <Box className="flex justify-center items-center w-full flex-col">
-            {/* Kiểm tra và hiển thị thông báo nếu user chưa có currentLevel phù hợp */}
-            {!canTakeTest() && testInfor?.examType && (
-              <Box
-                sx={{
-                  backgroundColor: "#fff3cd",
-                  borderColor: "#ffeaa7",
-                  color: "#856404",
-                  p: 2,
-                  borderRadius: 1,
-                  border: "1px solid #ffeaa7",
-                  mb: 2,
-                  width: "100%",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  ⚠️ You need to update your{" "}
-                  <strong>{testInfor.examType}</strong> level in your profile
-                  before taking this test.
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleUpdateProfile}
-                  sx={{
-                    textTransform: "none",
-                    borderColor: "#856404",
-                    color: "#856404",
-                    "&:hover": {
-                      backgroundColor: "#856404",
-                      color: "white",
-                    },
-                  }}
-                >
-                  Update Profile
-                </Button>
-              </Box>
-            )}
-
             <Typography
               variant="caption"
               color="#6b7280"
@@ -519,7 +325,8 @@ const TestInformation = () => {
               color="primary"
               size="medium"
               disabled={
-                attempt && attempt?.attemptNumber >= attempt?.maxAttempts
+                attemptDetail &&
+                attemptDetail?.attemptNumber >= attemptDetail?.maxAttempts
               }
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
               sx={{
@@ -610,10 +417,32 @@ const TestInformation = () => {
           )}
         </CardContent>
 
-        <Snackbar isOpen={isOpen} message={message} severity={severity} />
+        {/* <Snackbar isOpen={isOpen} message={message} severity={severity} /> */}
       </Card>
     </Box>
   );
 };
 
-export default TestInformation;
+// 🧩 COMPONENT PHỤ: InfoCard
+const InfoCard = ({ icon, label, value, color }) => (
+  <Box
+    className="border rounded-lg bg-white p-4 flex flex-col gap-2 h-full shadow-sm"
+    sx={{ borderColor: "#e5e7eb" }}
+  >
+    <Box className="flex items-center gap-2" sx={{ color }}>
+      {icon}
+      <Typography
+        variant="caption"
+        fontWeight={600}
+        sx={{ color, textTransform: "uppercase" }}
+      >
+        {label}
+      </Typography>
+    </Box>
+    <Typography variant="h6" fontWeight={700}>
+      {value}
+    </Typography>
+  </Box>
+);
+
+export default TestInformationCustom;

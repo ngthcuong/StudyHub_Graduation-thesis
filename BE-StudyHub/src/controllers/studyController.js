@@ -145,6 +145,13 @@ const logStudySession = async (req, res) => {
     const userId = req.user.userId;
     const { lessonId, testId, durationSeconds } = req.body;
 
+    console.log("Logging study session:", {
+      userId,
+      lessonId,
+      testId,
+      durationSeconds,
+    });
+
     if (!durationSeconds) {
       return res.status(400).json({ error: "durationSeconds is required" });
     }

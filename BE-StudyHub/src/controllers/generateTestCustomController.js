@@ -5,8 +5,8 @@ function mapQuestionTypeToDb(aiType) {
   switch (aiType?.toLowerCase()) {
     case "mcq":
       return "multiple_choice";
-    case "fill_in_blank":
-      return "fill_in_blank";
+    case "gap-fill":
+      return "fill_blank";
     // Thêm các trường hợp khác nếu AI trả về các loại câu hỏi khác
     default:
       return "multiple_choice"; // Giá trị mặc định an toàn
@@ -52,6 +52,8 @@ const generateTestCustomController = async (req, res) => {
       level, // Cấp độ (A1, B1, C2,...)
       difficulty, // Độ khó (Easier, Moderate, Harder)
       weakSkills, // Mảng các kỹ năng yếu (Grammar, Vocabulary)
+      testAttemptId, // ID lần làm bài (nếu cần)
+      question_ratio, // Tỷ lệ loại câu hỏi (nếu có)
       // Các trường khác: goals, description, title...
     } = req.body;
 
@@ -83,7 +85,7 @@ const generateTestCustomController = async (req, res) => {
       topics: topics, // Truyền trực tiếp mảng topics
       difficulty: difficulty.toLowerCase(), // 'easier', 'moderate', 'harder'
       // Giả định question_ratio là MCQ vì frontend chỉ có MCQ
-      question_ratio: "MCQ",
+      question_ratio: question_ratio,
       num_questions: num_questions,
       time_limit: time_limit,
     };
@@ -122,6 +124,7 @@ const generateTestCustomController = async (req, res) => {
       {
         ...dbPayload,
         createdBy,
+        testAttemptId, // Nếu cần lưu liên kết với lần làm bài
         exam_type: "TOEIC", // Hoặc level
         score_range: `${toeic_score - 100}-${toeic_score + 100}`, // Ví dụ tạo score_range để lưu
       }

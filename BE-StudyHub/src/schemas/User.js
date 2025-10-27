@@ -57,6 +57,13 @@ const userSchema = new mongoose.Schema(
     learningGoals: { type: String, trim: true },
     learningPreferences: { type: [String], trim: true }, // vd: ["Vocabulary", "Listening"]
     studyMethods: { type: [String], trim: true }, // vd: ["Flashcards", "Listening practice"]
+
+    courses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
   },
   { timestamps: true }
 );

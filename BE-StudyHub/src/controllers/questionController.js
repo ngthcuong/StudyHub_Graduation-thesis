@@ -53,7 +53,8 @@ const createQuestion = async (req, res) => {
 
 const createManyQuestions = async (req, res) => {
   try {
-    let { questions, createdBy, exam_type, score_range } = req.body;
+    let { questions, createdBy, testAttemptId, exam_type, score_range } =
+      req.body;
 
     if (!questions || !Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ error: "Questions array is required" });
@@ -73,7 +74,7 @@ const createManyQuestions = async (req, res) => {
       if (q.questionType && (!q.options || q.options.length === 0)) {
         throw new Error("MCQ must include options");
       }
-      return { ...q, createdBy, level };
+      return { ...q, createdBy, attemptId: testAttemptId || null, level };
     });
 
     // Lưu vào DB (nếu questionModel là mongoose model thì dùng insertMany)
@@ -229,6 +230,33 @@ const getQuestionsByTestLevelAndCreator = async (req, res) => {
   }
 };
 
+const getQuestionsByAttemptId = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    if (!attemptId) {
+      return res.status(400).json({ error: "attemptId is required" });
+    }
+
+    // Tìm tất cả câu hỏi thuộc về attemptId
+    const questions = await questionModel.findQuestionsByAttemptId(attemptId);
+
+    if (!questions.length) {
+      return res
+        .status(404)
+        .json({ message: "No questions found for this attempt" });
+    }
+
+    res.status(200).json({
+      message: `Found ${questions.length} questions for attempt ${attemptId}`,
+      data: questions,
+    });
+  } catch (error) {
+    console.error("Error fetching questions by attemptId:", error);
+    res.status(500).json({ error: "Failed to fetch questions" });
+  }
+};
+
 module.exports = {
   createQuestion,
   createManyQuestions,
@@ -237,4 +265,5 @@ module.exports = {
   deleteQuestionById,
   getQuestionById,
   getQuestionsByTestLevelAndCreator,
+  getQuestionsByAttemptId,
 };

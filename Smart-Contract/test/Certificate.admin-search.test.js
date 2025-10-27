@@ -26,6 +26,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Blockchain Development",
+          "Technology",
+          "Advanced",
           "ipfs://1"
         );
       await certificateRegistry
@@ -36,6 +38,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Smart Contract Programming",
+          "Technology",
+          "Advanced",
           "ipfs://2"
         );
       await certificateRegistry
@@ -46,6 +50,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Web Development",
+          "Technology",
+          "Intermediate",
           "ipfs://3"
         );
       await certificateRegistry
@@ -56,6 +62,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Mobile App Development",
+          "Technology",
+          "Intermediate",
           "ipfs://4"
         );
       await certificateRegistry
@@ -66,6 +74,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Data Science",
+          "Technology",
+          "Advanced",
           "ipfs://5"
         );
     });
@@ -148,6 +158,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
       await certificateRegistry
@@ -158,6 +170,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
       await certificateRegistry
@@ -168,6 +182,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
       await certificateRegistry
@@ -178,6 +194,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 4",
+          "Business",
+          "Intermediate",
           "ipfs://4"
         );
       await certificateRegistry
@@ -188,6 +206,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 5",
+          "Technology",
+          "Beginner",
           "ipfs://5"
         );
     });
@@ -272,6 +292,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -286,6 +308,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -299,6 +323,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -365,6 +391,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -397,6 +425,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "First Course",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -410,6 +440,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Second Course",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -423,6 +455,8 @@ describe("CertificateRegistry - Admin Search Functions", function () {
           issuer.address,
           "IUH",
           "Third Course",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 

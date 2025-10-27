@@ -5,7 +5,6 @@ const attemptDetailModel = require("../models/attemptDetailModel");
 const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
-const certificateController = require("../controllers/certificateController");
 
 // const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
@@ -14,6 +13,7 @@ const dayjs = require("dayjs");
 const userModel = require("../models/userModel");
 //  For calling external grading service
 const axios = require("axios");
+const { issueCertificate } = require("../models/certificateModel");
 // const userAnswerModel = require("../models/userAnswerModel");
 
 const startAttempt = async (req, res) => {
@@ -335,35 +335,16 @@ const submitAttempt = async (req, res) => {
     //   await userModel.updateUserById(userId, updateData);
     // }
 
-    let certifate;
+    let certificate = null;
     console.log("courseId:", testDetail?.courseId);
 
     if (
-      (totalScore / testDetail?.numQuestions) * 100 >
+      (totalScore / testDetail?.numQuestions) * 100 >=
         testDetail?.passingScore * 10 &&
       testDetail.isTheLastTest &&
       testDetail?.courseId
     ) {
-      const fakeReq = {
-        body: {
-          courseId: testDetail.courseId,
-        },
-        user: {
-          userId,
-        },
-      };
-
-      const fakeRes = {
-        status: () => ({
-          json: () => {},
-        }),
-      };
-
-      certifate = await certificateController.issueCertificate(
-        fakeReq,
-        fakeRes,
-        () => {}
-      );
+      certificate = await issueCertificate(userId, testDetail.courseId);
     } else if (!testDetail?.courseId) {
       console.warn("Cannot issue certificate: courseId is missing.");
     }
@@ -371,7 +352,7 @@ const submitAttempt = async (req, res) => {
     res.status(200).json({
       message: "Submitted successfully",
       attempt: updatedAttempt,
-      certifate,
+      certificate,
       attemptDetail,
       summary: { totalScore, answered: processedAnswers.length },
     });
@@ -526,6 +507,32 @@ const getAttemptsByTestIdAndUser = async (req, res) => {
   } catch (error) {
     console.error("Error getting attempts by testId and user:", error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+const getCustomTestAttemptsByUser = async (req, res) => {
+  try {
+    const userId = req.user?.userId; // lấy từ token hoặc query
+
+    // Tìm tất cả attempt của user có testPoolId là customPoolId
+    const attempts = await attemptModel.findCustomTestAttemptsByUser(userId);
+
+    if (attempts.length === 0) {
+      return res.status(200).json({
+        message: "No custom test attempts found for this user.",
+        data: [],
+        total: 0,
+      });
+    }
+
+    res.status(200).json({
+      message: "Custom test attempts retrieved successfully",
+      data: attempts,
+      total: attempts.length,
+    });
+  } catch (error) {
+    console.error("Error fetching custom test attempts:", error);
+    res.status(500).json({ error: "Failed to fetch test attempts" });
   }
 };
 
@@ -691,6 +698,21 @@ function extractLevel(levelStr) {
   return match ? match[1] : levelStr; // nếu ko match thì giữ nguyên
 }
 
+const updateAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const updateData = req.body;
+    const updatedAttempt = await attemptModel.updateAttemptById(
+      attemptId,
+      updateData
+    );
+    res.status(200).json({ message: "Attempt updated", data: updatedAttempt });
+  } catch (error) {
+    console.error("Error updating attempt:", error);
+    res.status(500).json({ error: "Failed to update attempt" });
+  }
+};
+
 module.exports = {
   startAttempt,
   submitAttempt,
@@ -700,4 +722,6 @@ module.exports = {
   getAttemptInfo,
   getAttemptsByTestPool,
   getAttemptsByTestIdAndUser,
+  getCustomTestAttemptsByUser,
+  updateAttempt,
 };

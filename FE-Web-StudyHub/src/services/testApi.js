@@ -262,6 +262,34 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Question"],
     }),
+
+    // 28. get attempt detail by user
+    getAttemptDetailByUser: builder.mutation({
+      query: () => ({
+        url: `/attempts/custom/user`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 29. get question by attempt id
+    getQuestionsByAttemptId: builder.mutation({
+      query: (attemptId) => ({
+        url: `/questions/attempt/${attemptId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Question"],
+    }),
+
+    // 30. updateAttempt
+    updateAttempt: builder.mutation({
+      query: ({ attemptId, updateData }) => ({
+        url: `/attempts/${attemptId}`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
   }),
 });
 
@@ -293,6 +321,9 @@ export const {
   useGetTestStatisticsQuery,
   useGetMyTestsMutation,
   useGenerateCustomTestMutation,
+  useGetAttemptDetailByUserMutation,
+  useGetQuestionsByAttemptIdMutation,
+  useUpdateAttemptMutation,
 } = testApi;
 
 export default testApi;

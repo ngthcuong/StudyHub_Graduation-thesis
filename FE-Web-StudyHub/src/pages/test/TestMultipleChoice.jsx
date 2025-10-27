@@ -435,10 +435,20 @@ const TestMultipleChoice = () => {
     "Almost there... Good luck!",
   ];
 
+  const submissionTips = [
+    "Analyzing your answers...",
+    "Calculating your score...",
+    "Generating personalized recommendations...",
+    "Creating your study plan...",
+    "Almost done! Preparing your results...",
+    "Great job! Finalizing your test results...",
+  ];
+
   // ...bên trong component của bạn
 
   // ✅ BƯỚC 1: Di chuyển các hook ra ngoài và gọi chúng ở cấp cao nhất.
   const [tipIndex, setTipIndex] = useState(0);
+  const [submissionTipIndex, setSubmissionTipIndex] = useState(0);
 
   useEffect(() => {
     // ✅ BƯỚC 2: Đặt điều kiện bên trong useEffect để chỉ chạy interval khi cần.
@@ -459,6 +469,25 @@ const TestMultipleChoice = () => {
       }
     };
   }, [learningTips.length, loading, questions]); // Thêm dependencies để useEffect chạy lại khi state thay đổi.
+
+  // useEffect cho submission tips
+  useEffect(() => {
+    let submissionIntervalId = null;
+
+    if (isSubmitting) {
+      submissionIntervalId = setInterval(() => {
+        setSubmissionTipIndex(
+          (prevIndex) => (prevIndex + 1) % submissionTips.length
+        );
+      }, 2000); // Thay đổi tip mỗi 2 giây cho submission
+    }
+
+    return () => {
+      if (submissionIntervalId) {
+        clearInterval(submissionIntervalId);
+      }
+    };
+  }, [submissionTips.length, isSubmitting]);
 
   if (loading || !questions) {
     return (
@@ -529,6 +558,86 @@ const TestMultipleChoice = () => {
                 sx={{ borderRadius: 2, bgcolor: "grey.200" }}
               />
             </Box>
+          </Box>
+        </Stack>
+      </Box>
+    );
+  }
+
+  // Loading screen for submission
+  if (isSubmitting) {
+    return (
+      <Box
+        className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 4,
+        }}
+      >
+        <Stack
+          spacing={3}
+          sx={{
+            width: "100%",
+            maxWidth: "600px",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "#059669" }}>
+            Submitting Your Test
+          </Typography>
+
+          <CircularProgress
+            size={60}
+            sx={{
+              color: "#059669",
+              animation: "pulse 2s infinite",
+            }}
+          />
+
+          <Fade in={true} timeout={1000} key={submissionTipIndex}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#047857",
+                minHeight: "48px",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {submissionTips[submissionTipIndex]}
+            </Typography>
+          </Fade>
+
+          <Box sx={{ width: "100%", pt: 2 }}>
+            <Card
+              sx={{ p: 3, bgcolor: "white", borderRadius: 3, boxShadow: 3 }}
+            >
+              <Stack spacing={2}>
+                <Typography variant="body1" color="#374151" fontWeight={600}>
+                  Your test is being processed...
+                </Typography>
+                <LinearProgress
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: "#d1fae5",
+                    "& .MuiLinearProgress-bar": {
+                      bgcolor: "#059669",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    },
+                  }}
+                />
+                <Typography variant="body2" color="#6b7280">
+                  Please wait while we analyze your answers and prepare your
+                  personalized results.
+                </Typography>
+              </Stack>
+            </Card>
           </Box>
         </Stack>
       </Box>
@@ -684,7 +793,7 @@ const TestMultipleChoice = () => {
                       {isSubmitting ? (
                         <CircularProgress size={24} color="inherit" />
                       ) : (
-                        "Submit Exercise"
+                        "Submit"
                       )}
                     </Button>
                   </Box>

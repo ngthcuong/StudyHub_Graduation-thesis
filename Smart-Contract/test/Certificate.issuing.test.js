@@ -20,6 +20,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
             issuer.address,
             "IUH University",
             "Blockchain Development",
+            "Technology",
+            "Advanced",
             "ipfs://test-metadata"
           )
       ).not.to.be.reverted;
@@ -38,6 +40,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
             issuer.address,
             "IUH University",
             "Smart Contracts",
+            "Technology",
+            "Intermediate",
             "ipfs://test-metadata"
           )
       ).to.be.revertedWithCustomError(
@@ -55,6 +59,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
       const studentName = "Nguyen Van A";
       const issuerName = "IUH University";
       const courseName = "Blockchain Development";
+      const courseType = "Technology";
+      const courseLevel = "Advanced";
       const metadataURI = "ipfs://test-metadata";
 
       const tx = await certificateRegistry
@@ -65,6 +71,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
           issuer.address,
           issuerName,
           courseName,
+          courseType,
+          courseLevel,
           metadataURI
         );
 
@@ -80,6 +88,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
       expect(certificate.issuer).to.equal(issuer.address);
       expect(certificate.issuerName).to.equal(issuerName);
       expect(certificate.courseName).to.equal(courseName);
+      expect(certificate.courseType).to.equal(courseType);
+      expect(certificate.courseLevel).to.equal(courseLevel);
       expect(certificate.metadataURI).to.equal(metadataURI);
       expect(certificate.certHash).to.equal(certHash);
       expect(certificate.issuedDate).to.be.greaterThan(0);
@@ -97,6 +107,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
           issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -108,6 +120,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
           issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -135,6 +149,8 @@ describe("CertificateRegistry - Issue Certificate", function () {
             issuer.address,
             "IUH University",
             "Blockchain Development",
+            "Technology",
+            "Advanced",
             "ipfs://test-metadata"
           )
       )

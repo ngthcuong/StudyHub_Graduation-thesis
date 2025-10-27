@@ -7,6 +7,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
+import CoursePayment from "../pages/course/CoursePayment";
 import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
@@ -30,6 +31,10 @@ import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
 
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
+import TestInformationCustom from "../pages/test/TestInformationCustom";
+
+import FillInBlankTest from "../pages/test/FillInBlankTest";
+import CourseRecommend from "../pages/course/CourseRecommend";
 
 export const router = createBrowserRouter([
   {
@@ -104,6 +109,10 @@ export const router = createBrowserRouter([
             element: <CourseList variant="market" />,
           },
           {
+            path: "/course/payment",
+            element: <CoursePayment />,
+          },
+          {
             path: "/course/:courseId",
             element: <CourseDetail />,
           },
@@ -133,8 +142,16 @@ export const router = createBrowserRouter([
                 element: <TestMultipleChoiceCustom />,
               },
               {
+                path: "fill-in-blank",
+                element: <FillInBlankTest />,
+              },
+              {
                 path: "result",
                 element: <TestResult />,
+              },
+              {
+                path: "custom-info",
+                element: <TestInformationCustom />,
               },
             ],
           },
