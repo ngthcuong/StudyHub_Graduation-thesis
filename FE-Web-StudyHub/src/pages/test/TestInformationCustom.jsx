@@ -48,6 +48,8 @@ const TestInformationCustom = () => {
 
   const [history, setHistory] = useState([]);
 
+  console.log("Test Information Custom - testInfor:", history);
+
   const testPool = true;
 
   useEffect(() => {
@@ -411,10 +413,10 @@ const TestInformationCustom = () => {
                         </Box>
                         <Typography
                           variant="h6"
-                          color="#22c55e"
+                          color="#16a34a"
                           fontWeight={700}
                         >
-                          Score: {attempt.attemptId.score}
+                          Score: {attempt.totalScore}
                         </Typography>
                       </CardContent>
                     </Card>

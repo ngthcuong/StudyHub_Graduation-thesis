@@ -3,6 +3,38 @@ from pydantic import BaseModel, Field
 from datetime import date
 
 
+# thêm progresss trend và speed vào personalized plan
+
+class ProgressTrend(BaseModel):
+    past_tests: int
+    accuracy_growth_rate: float
+    strong_skills: List[str]
+    weak_skills: List[str]
+    consistency_index: float
+
+
+class ProgressSpeed(BaseModel):
+    category: str
+    description: str
+    trend: ProgressTrend
+    predicted_reach_next_level_weeks: int
+    recommendation: str
+
+
+class WeeklyGoal(BaseModel):
+    week: int
+    topic: str
+    description: str
+    study_methods: List[str]
+    materials: List[str]
+    hours: int
+
+
+class PersonalizedPlan(BaseModel):
+    progress_speed: ProgressSpeed
+    weekly_goals: List[WeeklyGoal]
+# end thêm
+
 class QuestionKey(BaseModel):
     id: int
     question: Optional[str] = None 
@@ -41,7 +73,7 @@ class GradeResponse(BaseModel):
     skill_summary: List[SkillSummary]
     weak_topics: List[str]
     recommendations: Optional[List[str]] = None
-    personalized_plan: Optional[Any] = None
+    personalized_plan: Optional[PersonalizedPlan] = None  # 
     current_level: str 
     post_test_level: str
 
@@ -69,3 +101,4 @@ class GradeRequest(BaseModel):
     student_answers: Dict[str, str]
     use_gemini: Optional[bool] = False
     profile: Optional[LearningProfile]
+

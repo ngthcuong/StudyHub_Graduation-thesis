@@ -3,6 +3,8 @@ from fastapi.encoders import jsonable_encoder
 from .schemas import GradeRequest, GradeResponse, PerQuestionResult, SkillSummary
 from .grader import grade_locally
 from .gemini_client import call_gemini_analysis
+from .material_mapper import get_materials_from_database
+from .schemas import PersonalizedPlan
 
 app = FastAPI(title="AI Grader Service")
 
@@ -46,8 +48,40 @@ async def grade_endpoint(req: GradeRequest):
                 skill_summary = [SkillSummary(**s) for s in gemini_resp["skill_summary"]]
             if "weak_topics" in gemini_resp:
                 weak_topics = gemini_resp["weak_topics"]
+
             recommendations = gemini_resp.get("recommendations")
-            personalized_plan = gemini_resp.get("personalized_plan")
+            personalized_plan_data = gemini_resp.get("personalized_plan")
+            personalized_plan = None
+            if personalized_plan_data:
+                try:
+                    personalized_plan = PersonalizedPlan(**personalized_plan_data)
+                except Exception as e:
+                    print(f"[WARN] Could not parse personalized_plan: {e}")
+                    personalized_plan = personalized_plan_data  # fallback dạng raw dict
+
+            if personalized_plan:
+                # Nếu personalized_plan có weekly_goals thì xử lý như cũ
+                if isinstance(personalized_plan, dict) and "weekly_goals" in personalized_plan:
+                    for goal in personalized_plan["weekly_goals"]:
+                        skill_detected = "Grammar"
+                        for s in skill_summary:
+                            if s.skill in goal.get("topic", ""):
+                                skill_detected = s.skill
+                                break
+                        goal["materials"] = get_materials_from_database(skill_detected, weak_topics)
+                    # Nếu không có weekly_goals (ví dụ plan dạng progress_speed)
+                else:
+                    # chọn skill chính để lấy materials
+                    main_skill = skill_summary[0].skill if skill_summary else "Grammar"
+                    materials = get_materials_from_database(main_skill, weak_topics)
+
+                    # ép personalized_plan thành dict (đề phòng là pydantic model)
+                    if hasattr(personalized_plan, "dict"):
+                        personalized_plan = personalized_plan.dict()
+
+                    # thêm materials vào personalized_plan
+                    personalized_plan["materials"] = materials
+
             total_correct = gemini_resp.get("total_score", total_correct)
             total_qs = gemini_resp.get("total_questions", total_qs)
 

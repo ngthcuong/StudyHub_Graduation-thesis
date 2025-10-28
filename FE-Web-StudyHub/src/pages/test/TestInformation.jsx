@@ -597,10 +597,10 @@ const TestInformation = () => {
                         </Box>
                         <Typography
                           variant="h6"
-                          color="#22c55e"
+                          color="#dc2626"
                           fontWeight={700}
                         >
-                          Score: {attempt.attemptId.score}
+                          Score: {attempt.totalScore}
                         </Typography>
                       </CardContent>
                     </Card>

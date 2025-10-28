@@ -114,11 +114,17 @@ const CourseLessson = () => {
           })
         );
 
-        const newLessons = await attachIsPassedToLessons(
-          chaptersWithTests,
-          user._id
-        );
-        const allTests = lessonsWithTests
+        let newLessons = [];
+        try {
+          newLessons = await attachIsPassedToLessons(
+            chaptersWithTests,
+            user._id
+          );
+        } catch (error) {
+          console.error("Error attaching isPassed to lessons:", error);
+        }
+
+        const allTests = newLessons
           .flatMap((ch) => ch.tests || [])
           .map((t) => t?.data)
           .filter(Boolean);
@@ -127,11 +133,11 @@ const CourseLessson = () => {
 
         // Kiểm tra có test nào chưa pass không
         const allPassed =
-          allTests.slice(0, -1).every((test) => test.isPassed === true) ||
-          allTests.every((test) => test.isPassed === true);
+          newLessons.length > 0 &&
+          allTests.slice(0, -1).every((test) => test.isPassed === true);
 
         setFinalTest(allPassed);
-        console.log("Tổng số test:", allTests.length);
+        console.log("Tổng số test:", newLessons.length);
         console.log(
           "Số test đã pass:",
           allTests.every((test) => test.isPassed === true)
