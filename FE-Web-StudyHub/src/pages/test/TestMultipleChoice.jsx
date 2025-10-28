@@ -52,7 +52,8 @@ const TestMultipleChoice = () => {
   const [loading, setLoading] = useState(false); // State để quản lý trạng thái loading khi load test
 
   const completedCount = answersP.filter((a) => a !== null).length;
-  const percent = Math.round((completedCount / 10 || 0) * 100);
+  console.log("Completed count:", completedCount);
+  const percent = Math.round((completedCount / answersP.length) * 100);
 
   useEffect(() => {
     startTest();
@@ -118,6 +119,7 @@ const TestMultipleChoice = () => {
           setTestPool(testPool);
 
           setQuestions({ data: testPool });
+          setAnswersP(Array(questions?.data?.data?.length).fill(null));
 
           try {
             const attemptByTestPool = await getTestAttemptsByTestIdTrigger({
@@ -153,7 +155,7 @@ const TestMultipleChoice = () => {
                 createdBy: testByLevel?.createdBy?._id, // string, ID của user
               }).unwrap();
               setQuestions({ data: testPoolin });
-
+              setAnswersP(Array(questions?.data?.data?.length).fill(null));
               try {
                 const attemptInfo = await getAttemptByTestAndUserTrigger({
                   testId: testId,
@@ -277,6 +279,7 @@ const TestMultipleChoice = () => {
                     score_range: user?.currentLevel?.[test?.data?.examType],
                   }).unwrap();
                   setQuestions(newQuestions);
+                  setAnswersP(Array(questions?.data?.data?.length).fill(null));
                   console.log("🧠 Created questions:", newQuestions);
 
                   try {
@@ -356,7 +359,8 @@ const TestMultipleChoice = () => {
     setAnswersP(newAnswers);
   };
 
-  const handleNext = () => setCurrent((c) => Math.min(c + 1, 10 - 1));
+  const handleNext = () =>
+    setCurrent((c) => Math.min(c + 1, questions.data.data.length - 1));
   const handleBack = () => setCurrent((c) => Math.max(c - 1, 0));
   const handleJump = (idx) => setCurrent(idx);
 
@@ -778,7 +782,7 @@ const TestMultipleChoice = () => {
                         variant="contained"
                         color="primary"
                         onClick={handleNext}
-                        disabled={current === 10 - 1}
+                        disabled={current === questions.data.data.length - 1}
                         sx={{ textTransform: "none", width: 100 }}
                       >
                         Next

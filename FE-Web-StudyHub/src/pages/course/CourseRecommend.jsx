@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -7,12 +7,16 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CourseCard from "../../components/CourseCard";
+import { useGetAllCoursesMutation } from "../../services/grammarLessonApi";
 
 const CourseRecommend = () => {
   const [selectedCurrentLevel, setSelectedCurrentLevel] = useState("");
   const [selectedGoalLevel, setSelectedGoalLevel] = useState("");
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [recommendedCourses, setRecommendedCourses] = useState([]);
+  const [courses, setCourses] = useState([]);
+
+  const [getAllCourse] = useGetAllCoursesMutation();
 
   const currentLevels = [
     { id: "lr-1-295", label: "TOEIC LR 1-295", range: "1-295" },
@@ -26,19 +30,131 @@ const CourseRecommend = () => {
     { id: "lr-800+", label: "TOEIC LR 800+", range: "800+" },
   ];
 
-  const handleLevelSelect = (level, type) => {
+  const allowedGoals = {
+    "lr-1-295": ["lr-300+", "lr-600+", "lr-800+"],
+    "lr-300-595": ["lr-600+", "lr-800+"],
+    "lr-600-650": ["lr-800+"],
+  };
+
+  const learningPaths = [
+    {
+      currentLevel: "lr-1-295",
+      goalLevel: "lr-300+",
+      courses: [
+        "TOEIC Foundation – Ngữ pháp và Từ vựng cơ bản",
+        "Listening Starter – TOEIC Part 1 & 2",
+        "Reading Starter – TOEIC Part 5 & 6",
+        "Mini Test – TOEIC 300+ Practice",
+      ],
+    },
+
+    {
+      currentLevel: "lr-1-295",
+      goalLevel: "lr-600+",
+      courses: [
+        "Grammar & Vocabulary Expansion – Trung cấp",
+        "Listening Practice A – TOEIC Part 3 & 4",
+        "Reading Practice A – TOEIC Part 6 & 7",
+        "Mock Test – TOEIC 600+ Simulation",
+      ],
+    },
+
+    {
+      currentLevel: "lr-1-295",
+      goalLevel: "lr-800+",
+      courses: [
+        "Advanced Grammar Review & Traps in TOEIC",
+        "Listening Mastery – Chiến thuật nghe nâng cao",
+        "Reading Mastery – Đọc hiểu & Suy luận ý chính",
+        "Full Mock Test – TOEIC 800+ Challenge",
+      ],
+    },
+
+    {
+      currentLevel: "lr-300-595",
+      goalLevel: "lr-600+",
+      courses: [
+        "Grammar & Vocabulary Expansion – Trung cấp",
+        "Listening Practice A – TOEIC Part 3 & 4",
+        "Reading Practice A – TOEIC Part 6 & 7",
+        "Mock Test – TOEIC 600+ Simulation",
+      ],
+    },
+
+    {
+      currentLevel: "lr-300-595",
+      goalLevel: "lr-800+",
+      courses: [
+        "Advanced Grammar Review & Traps in TOEIC",
+        "Listening Mastery – Chiến thuật nghe nâng cao",
+        "Reading Mastery – Đọc hiểu & Suy luận ý chính",
+        "Full Mock Test – TOEIC 800+ Challenge",
+      ],
+    },
+
+    {
+      currentLevel: "lr-600-650",
+      goalLevel: "lr-800+",
+      courses: [
+        "Advanced Grammar Review & Traps in TOEIC",
+        "Listening Mastery – Chiến thuật nghe nâng cao",
+        "Reading Mastery – Đọc hiểu & Suy luận ý chính",
+        "Full Mock Test – TOEIC 800+ Challenge",
+      ],
+    },
+  ];
+
+  useEffect(() => {
+    const fetchAllCourses = async () => {
+      try {
+        const response = await getAllCourse().unwrap();
+        setCourses(response);
+        if (selectedCurrentLevel && selectedGoalLevel) {
+          const path = learningPaths.find(
+            (p) =>
+              p.currentLevel === selectedCurrentLevel &&
+              p.goalLevel === selectedGoalLevel
+          );
+          console.log("Selected Learning Path:", response, path.courses);
+          const filteredCourses = response.filter((course) =>
+            path.courses.includes(course.title)
+          );
+
+          setRecommendedCourses(filteredCourses);
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+    fetchAllCourses();
+  }, [selectedCurrentLevel, selectedGoalLevel]);
+
+  const handleLevelSelect = (levelId, type) => {
     if (type === "current") {
-      setSelectedCurrentLevel(level);
+      setSelectedCurrentLevel(levelId);
+      // reset goal nếu goal đang không hợp lệ
+      if (
+        selectedGoalLevel &&
+        !allowedGoals[levelId]?.includes(selectedGoalLevel)
+      ) {
+        setSelectedGoalLevel("");
+      }
     } else {
-      setSelectedGoalLevel(level);
+      // chỉ cho chọn nếu hợp lệ
+      if (
+        selectedCurrentLevel &&
+        !allowedGoals[selectedCurrentLevel]?.includes(levelId)
+      ) {
+        return; // không cho chọn goal sai
+      }
+      setSelectedGoalLevel(levelId);
     }
 
-    // Show recommendations if both levels are selected
-    const bothSelected =
+    // Hiện gợi ý nếu đã chọn đủ 2 cấp
+    if (
       (type === "current" && selectedGoalLevel) ||
-      (type === "goal" && selectedCurrentLevel);
-
-    if (bothSelected) {
+      (type === "goal" && selectedCurrentLevel)
+    ) {
       setShowRecommendations(true);
     }
   };
@@ -172,70 +288,12 @@ const CourseRecommend = () => {
               Based on your current level and goals
             </Typography>
 
-            {/* <Grid container spacing={4}>
-              {recommendedCourses.length > 0 ? (
-                recommendedCourses.map((course) => (
-                  <Grid item xs={12} sm={6} lg={4} key={course._id}>
-                    <CourseCard course={course} variant="market" />
-                  </Grid>
-                ))
-              ) : (
-                <Box className="flex justify-center items-center py-12 w-full">
-                  <CircularProgress size={40} />
-                </Box>
-              )}
-            </Grid> */}
-            <Grid item xs={12} sm={6} lg={4} key={"fdasjfasfsa"}>
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-              <CourseCard
-                course={{
-                  title: "Sample Course",
-                  description: "This is a sample course description.",
-                }}
-                variant="market"
-              />
-            </Grid>
+            {/* --- Hiển thị 4 card mỗi hàng --- */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-6">
+              {recommendedCourses.map((course, i) => (
+                <CourseCard key={i} course={course} variant="market" />
+              ))}
+            </div>
 
             {recommendedCourses.length > 0 && (
               <div className="text-center mt-8">

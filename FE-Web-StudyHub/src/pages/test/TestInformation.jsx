@@ -429,7 +429,7 @@ const TestInformation = () => {
                     ? testInfor.passingScore * 10
                     : testInfoState?.passingScore * 10}{" "}
                   {!testInfor?.passingScore && !testInfoState?.passingScore
-                    ? "70"
+                    ? ""
                     : null}
                   <span className="text-base font-normal">%</span>
                 </Typography>

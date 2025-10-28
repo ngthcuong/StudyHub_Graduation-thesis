@@ -42,7 +42,7 @@ import {
   useGetLessonsByCourseIdMutation,
   useGetPartByIdMutation,
 } from "../services/grammarLessonApi";
-import { useGetCourseByIdQuery } from "../services/courseApi";
+import { useGetCourseByIdMutation } from "../services/courseApi";
 import {
   useGetTestByTestIdMutation,
   useGetAttemptByTestAndUserMutation,
@@ -69,7 +69,7 @@ const CourseLessson = () => {
   const [getLessonsByCourseId] = useGetLessonsByCourseIdMutation();
   const [logStudySession] = useLogStudySessionMutation();
   const [getPartById] = useGetPartByIdMutation();
-  const { data: courseData } = useGetCourseByIdQuery(courseId);
+  const [getCourseById] = useGetCourseByIdMutation();
   const [getTestByTestId] = useGetTestByTestIdMutation();
   const [getAttemptByTestAndUser] = useGetAttemptByTestAndUserMutation();
 
@@ -81,9 +81,11 @@ const CourseLessson = () => {
         setData(result.data); // cập nhật state, nhưng đừng dùng ngay
 
         // 2. Set course data from query
-        if (courseData) {
-          setCourse(courseData);
-        }
+        // if (courseData) {
+        //   setCourse(courseData);
+        // }
+        const courseResult = await getCourseById(courseId).unwrap();
+        setCourse(courseResult);
 
         // 3. Lấy tests dựa trên result.data chứ không phải state data
         const chaptersWithTests = await Promise.all(
@@ -121,16 +123,22 @@ const CourseLessson = () => {
           .map((t) => t?.data)
           .filter(Boolean);
 
+        console.log("ALL TESTS:", allTests);
+
         // Kiểm tra có test nào chưa pass không
         const allPassed =
-          allTests.length > 0 &&
+          allTests.slice(0, -1).every((test) => test.isPassed === true) ||
           allTests.every((test) => test.isPassed === true);
 
         setFinalTest(allPassed);
         console.log("Tổng số test:", allTests.length);
         console.log(
           "Số test đã pass:",
-          allTests.filter((t) => t.isPassed).length
+          allTests.every((test) => test.isPassed === true)
+        );
+        console.log(
+          "Danh sách test:",
+          allTests.slice(0, -1).every((test) => test.isPassed === true)
         );
         console.log("Đã pass hết chưa:", allPassed);
 
@@ -142,7 +150,7 @@ const CourseLessson = () => {
     };
 
     fetchLessons();
-  }, [courseId, courseData, getLessonsByCourseId, getTestByTestId]);
+  }, [courseId, getLessonsByCourseId, getTestByTestId]);
 
   // Find current lesson object
   const findCurrentLesson = () => {
@@ -255,9 +263,6 @@ const CourseLessson = () => {
             if (!testId) return testObj;
 
             try {
-              // const res = await axios.get(
-              //   `http://localhost:3000/api/v1/attempts/test/${testId}/user/${userId}`
-              // );
               const res = await getAttemptByTestAndUser({
                 testId,
                 userId,

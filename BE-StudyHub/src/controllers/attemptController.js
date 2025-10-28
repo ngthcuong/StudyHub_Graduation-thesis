@@ -212,7 +212,7 @@ const submitAttempt = async (req, res) => {
 
       console.log("Simplified test history:", simplifiedResults);
 
-      formattedUser.test_history = [];
+      formattedUser.test_history = simplifiedResults;
 
       console.log(
         "Formatted user data sent to grading service:",
@@ -232,7 +232,9 @@ const submitAttempt = async (req, res) => {
       };
 
       console.log("Grading payload:", gradingPayload);
-
+      if (testDetail.isTheLastTest) {
+        gradingPayload.use_gemini = false; // nếu là bài test cuối, ko dùng gemini
+      }
       const response = await axios.post(
         "http://localhost:8000/grade",
         gradingPayload
@@ -343,6 +345,8 @@ const submitAttempt = async (req, res) => {
     // }
 
     let certificate = null;
+
+    console.log("Test detail fetched:", testDetail);
 
     if (
       (totalScore / testDetail?.numQuestions) * 100 >=
