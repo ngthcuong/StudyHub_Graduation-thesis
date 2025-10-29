@@ -74,7 +74,11 @@ const LoginPage = () => {
 
       if (response) {
         dispatch(openSnackbar({ message: response.message }));
-        navigate("/home/dashboard");
+        if (response.user?.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/home/dashboard");
+        }
       } else {
         dispatch(
           openSnackbar({ severity: "error", message: response.message })

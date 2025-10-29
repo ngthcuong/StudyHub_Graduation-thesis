@@ -8,7 +8,10 @@ const RootLayout = () => {
   const location = useLocation();
 
   if (user && location.pathname === "/") {
-    return <Navigate to={"/home/dashboard"} replace />;
+    if (user.role === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    return <Navigate to="/home/dashboard" replace />;
   }
 
   return (
