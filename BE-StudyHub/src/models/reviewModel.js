@@ -296,6 +296,42 @@ const getAdminReviewStats = async () => {
   }
 };
 
+/**
+ * Lấy tất cả reviews (cho admin)
+ * @returns {Array} Danh sách tất cả reviews
+ */
+const getAllReviews = async () => {
+  try {
+    const reviews = await Review.find()
+      .populate({
+        path: "userId",
+        select: "fullName email",
+        options: { lean: true },
+      })
+      .populate({
+        path: "courseId",
+        select: "title courseType courseLevel",
+        options: { lean: true },
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Transform userId to user và courseId to course
+    const transformedReviews = reviews.map((review) => ({
+      ...review,
+      user: review.userId,
+      course: review.courseId,
+      userId: undefined,
+      courseId: undefined,
+    }));
+
+    return transformedReviews;
+  } catch (error) {
+    console.error("Error getting all reviews:", error);
+    throw new Error("Failed to get all reviews");
+  }
+};
+
 module.exports = {
   createReview,
   getReviewsByCourse,
@@ -305,4 +341,5 @@ module.exports = {
   getReviewsByUser,
   getCourseRatingStats,
   getAdminReviewStats,
+  getAllReviews,
 };

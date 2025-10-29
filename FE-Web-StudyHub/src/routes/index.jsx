@@ -29,6 +29,7 @@ import AdminDashboard from "../pages/admin/Dashboard";
 import AdminCertificate from "../pages/admin/Certificate";
 import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
+import AdminCourse from "../pages/admin/Course";
 
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 import TestInformationCustom from "../pages/test/TestInformationCustom";
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
                 path: "review",
                 element: <AdminReview />,
               },
+              { path: "course", element: <AdminCourse /> },
             ],
           },
           {

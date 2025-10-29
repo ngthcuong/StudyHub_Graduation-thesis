@@ -429,7 +429,7 @@ const TestInformation = () => {
                     ? testInfor.passingScore * 10
                     : testInfoState?.passingScore * 10}{" "}
                   {!testInfor?.passingScore && !testInfoState?.passingScore
-                    ? "70"
+                    ? ""
                     : null}
                   <span className="text-base font-normal">%</span>
                 </Typography>
@@ -597,10 +597,10 @@ const TestInformation = () => {
                         </Box>
                         <Typography
                           variant="h6"
-                          color="#22c55e"
+                          color="#dc2626"
                           fontWeight={700}
                         >
-                          Score: {attempt.attemptId.score}
+                          Score: {attempt.totalScore}
                         </Typography>
                       </CardContent>
                     </Card>

@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -9,11 +10,13 @@ import { Person } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 export default function HomeLayout() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const currentPath = location.pathname;
@@ -47,7 +50,7 @@ export default function HomeLayout() {
   return (
     <div className="flex ">
       {/* Sidebar */}
-      <div className="w-64 bg-white h-screen fixed top-0 left-0 shadow-md py-5 z-50">
+      <div className="w-64 bg-white h-screen fixed top-0 left-0 shadow-md py-5 z-50 flex flex-col">
         <h2 className="flex items-center text-xl font-semibold mb-6 px-5">
           <PortraitIcon className="w-8 h-8 mr-2 text-blue-500" />
           <div className="flex flex-col">
@@ -56,7 +59,7 @@ export default function HomeLayout() {
           </div>
         </h2>
 
-        <nav className="flex flex-col">
+        <nav className="flex flex-col flex-1">
           <button
             onClick={() => {
               setActiveTab("dashboard");
@@ -84,7 +87,7 @@ export default function HomeLayout() {
             }`}
           >
             <DriveFileMoveIcon className="w-4 h-4 mr-2" />
-            My Courses
+            Courses
           </button>
 
           <button
@@ -147,6 +150,17 @@ export default function HomeLayout() {
             Settings
           </button>
         </nav>
+        {/* Logout Button */}
+        <button
+          onClick={() => {
+            dispatch({ type: "auth/logout" });
+            navigate("/login", { replace: true });
+          }}
+          className="flex items-center px-5 py-2 rounded-r-md text-red-600 hover:bg-red-50 mt-auto mb-2"
+        >
+          <LogoutIcon className="w-4 h-4 mr-2" />
+          Logout
+        </button>
       </div>
 
       {/* Nội dung hiển thị */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   TextField,
   Button,
@@ -37,7 +37,7 @@ import CourseReviews from "../../components/CourseReviews";
 import CourseRatingStats from "../../components/CourseRatingStats";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import {
-  useGetCourseByIdQuery,
+  useGetCourseByIdMutation,
   useGetCoursesQuery,
 } from "../../services/courseApi";
 
@@ -60,15 +60,36 @@ const CourseDetail = () => {
 
   const dispatch = useDispatch();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+  const [course, setCourse] = React.useState(null);
+  const [courseError, setCourseError] = React.useState(null);
+  const [courseLoading, setCourseLoading] = React.useState(true);
 
   // Fetch course details using API
-  const {
-    data: course,
-    isLoading: courseLoading,
-    error: courseError,
-  } = useGetCourseByIdQuery(courseId, {
-    skip: !courseId,
-  });
+  // const {
+  //   data: course,
+  //   isLoading: courseLoading,
+  //   error: courseError,
+  // } = useGetCourseByIdQuery(courseId, {
+  //   skip: !courseId,
+  // });
+  const [getCourseById] = useGetCourseByIdMutation();
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      setCourseLoading(true);
+      try {
+        const courseData = await getCourseById(courseId).unwrap();
+        setCourse(courseData);
+        setCourseError(null);
+      } catch (error) {
+        setCourseError(error);
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+
+    fetchCourse();
+  }, [courseId, getCourseById]);
 
   // Fetch recommended courses
   const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery();

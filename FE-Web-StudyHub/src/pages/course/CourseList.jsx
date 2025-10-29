@@ -124,7 +124,7 @@ const CourseList = () => {
               aria-label="course tabs"
             >
               <Tab
-                label="Khóa học của bạn"
+                label="My Courses"
                 icon={<School />}
                 iconPosition="start"
                 id="my-courses-tab"
@@ -136,7 +136,7 @@ const CourseList = () => {
                 }}
               />
               <Tab
-                label="Khám phá thị trường"
+                label="Explore the market"
                 icon={<Storefront />}
                 iconPosition="start"
                 id="market-courses-tab"
@@ -222,7 +222,7 @@ const CourseList = () => {
               {paginatedCourses.length > 0 ? (
                 <Grid container spacing={3}>
                   {paginatedCourses.map((course, index) => (
-                    <Grid xs={12} sm={6} md={3} key={course._id}>
+                    <Grid xs={12} sm={6} md={4} key={course._id}>
                       {" "}
                       {/* 👈 Sửa Grid prop */}
                       <div

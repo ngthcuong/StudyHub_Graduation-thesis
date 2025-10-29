@@ -214,6 +214,23 @@ const getAdminReviewStats = async (req, res) => {
   }
 };
 
+/**
+ * Lấy tất cả reviews (admin only)
+ */
+const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await reviewModel.getAllReviews();
+    res.status(200).json({
+      message: "All reviews retrieved successfully",
+      reviews: reviews,
+      total: reviews.length,
+    });
+  } catch (error) {
+    console.error("Error getting all reviews:", error);
+    res.status(500).json({ error: "Failed to get all reviews" });
+  }
+};
+
 module.exports = {
   createReview,
   getReviewsByCourse,
@@ -223,4 +240,5 @@ module.exports = {
   getReviewsByUser,
   getCourseRatingStats,
   getAdminReviewStats,
+  getAllReviews,
 };

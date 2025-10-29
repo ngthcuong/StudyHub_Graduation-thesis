@@ -8,6 +8,8 @@ import {
   MenuItem,
   Select,
   FormControl,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   PieChart,
@@ -25,123 +27,144 @@ import {
 import {
   Assessment as AssessmentIcon,
   School as SchoolIcon,
+  AttachMoney as AttachMoneyIcon,
+  People as PeopleIcon,
   EmojiEvents as CertificateIcon,
   Quiz as QuizIcon,
   Comment as CommentIcon,
   TrendingUp as TrendingUpIcon,
 } from "@mui/icons-material";
+import { useGetAdminReviewStatsQuery } from "../../services/reviewApi";
+import { useGetCourseStatisticsQuery } from "../../services/courseApi";
 
 const Dashboard = () => {
   const [topCoursesLimit, setTopCoursesLimit] = useState(5);
-  const [topTestsLimit, setTopTestsLimit] = useState(5);
-  const [topDiscussionsLimit, setTopDiscussionsLimit] = useState(5);
 
-  // Function to truncate long text
-  const truncateText = (text, maxLength = 25) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + "...";
+  // Fetch data from APIs - Call hooks first before any conditions
+  const {
+    data: reviewStatsData,
+    isLoading: reviewsLoading,
+    error: reviewsError,
+  } = useGetAdminReviewStatsQuery();
+
+  const {
+    data: courseStatsData,
+    isLoading: coursesLoading,
+    error: coursesError,
+  } = useGetCourseStatisticsQuery();
+
+  // Calculate total stats
+  const totalCourses = courseStatsData?.data?.totalCourses || 0;
+  const totalRevenue = courseStatsData?.data?.totalRevenue || 0;
+  const totalStudents = courseStatsData?.data?.totalStudents || 0;
+  const totalReviews = reviewStatsData?.stats?.totalReviews || 0;
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
   };
 
-  // Mock data cho Review Distribution
-  const reviewData = [
-    { name: "5 Stars", value: 1523, percentage: 53.5, color: "#10b981" },
-    { name: "4 Stars", value: 882, percentage: 31.3, color: "#3b82f6" },
-    { name: "3 Stars", value: 321, percentage: 11.3, color: "#f59e0b" },
-    { name: "2 Stars", value: 111, percentage: 3.9, color: "#ef4444" },
-    { name: "1 Star", value: 10, percentage: 0.35, color: "#991b1b" },
-  ];
+  // PieChart data for review distribution
+  const reviewData = React.useMemo(() => {
+    const distribution = reviewStatsData?.stats?.ratingDistribution || {};
+    const total = reviewStatsData?.stats?.totalReviews || 1;
+    return [
+      {
+        name: "5 Stars",
+        value: distribution[5] || 0,
+        percentage: ((distribution[5] || 0) / total) * 100,
+        color: "#10b981",
+      },
+      {
+        name: "4 Stars",
+        value: distribution[4] || 0,
+        percentage: ((distribution[4] || 0) / total) * 100,
+        color: "#3b82f6",
+      },
+      {
+        name: "3 Stars",
+        value: distribution[3] || 0,
+        percentage: ((distribution[3] || 0) / total) * 100,
+        color: "#f59e0b",
+      },
+      {
+        name: "2 Stars",
+        value: distribution[2] || 0,
+        percentage: ((distribution[2] || 0) / total) * 100,
+        color: "#ef4444",
+      },
+      {
+        name: "1 Star",
+        value: distribution[1] || 0,
+        percentage: ((distribution[1] || 0) / total) * 100,
+        color: "#991b1b",
+      },
+    ];
+  }, [reviewStatsData]);
 
-  const totalReviews = reviewData.reduce((sum, item) => sum + item.value, 0);
-  const averageRating = (
-    reviewData.reduce((sum, item, index) => {
-      const stars = 5 - index;
-      return sum + stars * item.value;
-    }, 0) / totalReviews
-  ).toFixed(1);
+  // BarChart data for top enrolled courses
+  const topEnrolledCourses = React.useMemo(() => {
+    const courses = courseStatsData?.data?.courses || [];
+    const colors = [
+      "#3b82f6",
+      "#10b981",
+      "#f59e0b",
+      "#8b5cf6",
+      "#ec4899",
+      "#06b6d4",
+      "#f97316",
+      "#84cc16",
+      "#6366f1",
+      "#14b8a6",
+    ];
+    return [...courses]
+      .sort((a, b) => (b.totalStudents || 0) - (a.totalStudents || 0))
+      .slice(0, topCoursesLimit)
+      .map((course, index) => ({
+        name: course.title,
+        enrollments: course.totalStudents || 0,
+        color: colors[index % colors.length],
+        displayName:
+          course.title.length > 25
+            ? course.title.slice(0, 25) + "..."
+            : course.title,
+      }));
+  }, [courseStatsData, topCoursesLimit]);
 
-  // Mock data cho Top Enrolled Courses
-  const allEnrolledCourses = [
-    { name: "Full Stack Web Development", enrollments: 1245, color: "#3b82f6" },
-    { name: "React & Redux Masterclass", enrollments: 1156, color: "#10b981" },
-    { name: "Node.js Complete Guide", enrollments: 987, color: "#f59e0b" },
-    { name: "Python for Data Science", enrollments: 876, color: "#8b5cf6" },
-    { name: "JavaScript Fundamentals", enrollments: 845, color: "#ec4899" },
-    { name: "MongoDB Database Design", enrollments: 756, color: "#06b6d4" },
-    { name: "TypeScript Advanced", enrollments: 698, color: "#f97316" },
-    { name: "Vue.js Complete Course", enrollments: 645, color: "#84cc16" },
-    { name: "Angular Essentials", enrollments: 587, color: "#6366f1" },
-    { name: "Docker & Kubernetes", enrollments: 534, color: "#14b8a6" },
-    { name: "AWS Cloud Practitioner", enrollments: 489, color: "#f43f5e" },
-    { name: "DevOps Fundamentals", enrollments: 423, color: "#a855f7" },
-  ];
+  // Show loading state
+  if (reviewsLoading || coursesLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress size={50} />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Loading dashboard data...
+        </Typography>
+      </Box>
+    );
+  }
 
-  // Mock data cho Top Certificate Issued
-  const allCertificateCourses = [
-    { name: "JavaScript Fundamentals", certificates: 756, color: "#3b82f6" },
-    { name: "Python for Data Science", certificates: 698, color: "#10b981" },
-    { name: "React & Redux Masterclass", certificates: 645, color: "#f59e0b" },
-    { name: "Full Stack Web Development", certificates: 587, color: "#8b5cf6" },
-    { name: "Node.js Complete Guide", certificates: 534, color: "#ec4899" },
-    { name: "MongoDB Database Design", certificates: 489, color: "#06b6d4" },
-    { name: "TypeScript Advanced", certificates: 423, color: "#f97316" },
-    { name: "Docker & Kubernetes", certificates: 378, color: "#84cc16" },
-    { name: "AWS Cloud Practitioner", certificates: 345, color: "#6366f1" },
-    { name: "Vue.js Complete Course", certificates: 312, color: "#14b8a6" },
-    { name: "Angular Essentials", certificates: 289, color: "#f43f5e" },
-    { name: "DevOps Fundamentals", certificates: 256, color: "#a855f7" },
-  ];
+  // Show error state
+  if (reviewsError || coursesError) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">
+          Failed to load dashboard data. Please try again later.
+        </Alert>
+      </Box>
+    );
+  }
 
-  // Mock data cho Top Tests
-  const allTopTests = [
-    { name: "JavaScript Quiz Pro", attempts: 2345, color: "#3b82f6" },
-    { name: "React Hooks Challenge", attempts: 2156, color: "#10b981" },
-    { name: "Python Basics Test", attempts: 1987, color: "#f59e0b" },
-    { name: "Node.js Assessment", attempts: 1876, color: "#8b5cf6" },
-    { name: "HTML & CSS Mastery", attempts: 1765, color: "#ec4899" },
-    { name: "TypeScript Advanced Test", attempts: 1654, color: "#06b6d4" },
-    { name: "Database Design Quiz", attempts: 1543, color: "#f97316" },
-    { name: "API Development Test", attempts: 1432, color: "#84cc16" },
-    { name: "Git & GitHub Quiz", attempts: 1321, color: "#6366f1" },
-    { name: "Docker Fundamentals", attempts: 1210, color: "#14b8a6" },
-    { name: "AWS Services Quiz", attempts: 1098, color: "#f43f5e" },
-    { name: "Security Best Practices", attempts: 987, color: "#a855f7" },
-  ];
-
-  // Mock data cho Top Discussed Lessons
-  const allTopDiscussions = [
-    { name: "Introduction to React Hooks", comments: 456, color: "#3b82f6" },
-    { name: "Async/Await in JavaScript", comments: 423, color: "#10b981" },
-    { name: "RESTful API Design", comments: 398, color: "#f59e0b" },
-    { name: "State Management with Redux", comments: 367, color: "#8b5cf6" },
-    { name: "Database Normalization", comments: 345, color: "#ec4899" },
-    { name: "Authentication & Authorization", comments: 312, color: "#06b6d4" },
-    { name: "CSS Grid & Flexbox", comments: 289, color: "#f97316" },
-    { name: "Docker Containerization", comments: 267, color: "#84cc16" },
-    { name: "Microservices Architecture", comments: 245, color: "#6366f1" },
-    { name: "GraphQL Basics", comments: 223, color: "#14b8a6" },
-    { name: "Testing with Jest", comments: 201, color: "#f43f5e" },
-    { name: "CI/CD Pipeline Setup", comments: 189, color: "#a855f7" },
-  ];
-
-  const topEnrolledCourses = allEnrolledCourses.slice(0, topCoursesLimit);
-  const topTests = allTopTests.slice(0, topTestsLimit);
-  const topDiscussions = allTopDiscussions.slice(0, topDiscussionsLimit);
-
-  // Create display data with truncated names for Y-axis
-  const topEnrolledCoursesDisplay = topEnrolledCourses.map((course) => ({
-    ...course,
-    displayName: truncateText(course.name, 25),
-  }));
-
-  const topTestsDisplay = topTests.map((test) => ({
-    ...test,
-    displayName: truncateText(test.name, 25),
-  }));
-
-  const topDiscussionsDisplay = topDiscussions.map((lesson) => ({
-    ...lesson,
-    displayName: truncateText(lesson.name, 25),
-  }));
+  // Create display data with truncated names for Y-axis (used in charts below)
+  const topEnrolledCoursesDisplay = topEnrolledCourses;
 
   return (
     <div className="w-full">
@@ -156,109 +179,175 @@ const Dashboard = () => {
       </div>
 
       {/* Summary Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Typography variant="body2" className="text-gray-500 mb-1">
-                  Total Reviews
-                </Typography>
-                <Typography variant="h5" className="font-bold text-gray-800">
-                  {totalReviews.toLocaleString()}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  className="text-green-600 font-semibold"
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card
+            sx={{
+              height: "100%",
+              borderRadius: 3,
+              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, fontSize: "0.875rem" }}
+                  >
+                    Total Courses
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {totalCourses}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: "#dbeafe",
+                    borderRadius: 2,
+                    p: 1.5,
+                  }}
                 >
-                  {averageRating} Average
-                </Typography>
-              </div>
-              <div className="bg-blue-100 rounded-full p-3">
-                <AssessmentIcon className="text-blue-600 text-3xl" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <SchoolIcon sx={{ color: "#1976d2", fontSize: 32 }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card className="rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Typography variant="body2" className="text-gray-500 mb-1">
-                  Total Enrollments
-                </Typography>
-                <Typography variant="h5" className="font-bold text-gray-800">
-                  {allEnrolledCourses
-                    .reduce((sum, c) => sum + c.enrollments, 0)
-                    .toLocaleString()}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  className="text-green-600 font-semibold"
+        <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card
+            sx={{
+              height: "100%",
+              borderRadius: 3,
+              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, fontSize: "0.875rem" }}
+                  >
+                    Total Revenue
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                    {formatCurrency(totalRevenue)}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: "#d1fae5",
+                    borderRadius: 2,
+                    p: 1.5,
+                  }}
                 >
-                  +12% this month
-                </Typography>
-              </div>
-              <div className="bg-green-100 rounded-full p-3">
-                <SchoolIcon className="text-green-600 text-3xl" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <AttachMoneyIcon sx={{ color: "#10b981", fontSize: 32 }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card className="rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Typography variant="body2" className="text-gray-500 mb-1">
-                  Certificates Issued
-                </Typography>
-                <Typography variant="h5" className="font-bold text-gray-800">
-                  {allCertificateCourses
-                    .reduce((sum, c) => sum + c.certificates, 0)
-                    .toLocaleString()}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  className="text-green-600 font-semibold"
+        <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card
+            sx={{
+              height: "100%",
+              borderRadius: 3,
+              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, fontSize: "0.875rem" }}
+                  >
+                    Total Payments
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {totalStudents}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: "#fef3c7",
+                    borderRadius: 2,
+                    p: 1.5,
+                  }}
                 >
-                  +8% this month
-                </Typography>
-              </div>
-              <div className="bg-yellow-100 rounded-full p-3">
-                <CertificateIcon className="text-yellow-600 text-3xl" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <PeopleIcon sx={{ color: "#f59e0b", fontSize: 32 }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card className="rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Typography variant="body2" className="text-gray-500 mb-1">
-                  Test Attempts
-                </Typography>
-                <Typography variant="h5" className="font-bold text-gray-800">
-                  {allTopTests
-                    .reduce((sum, t) => sum + t.attempts, 0)
-                    .toLocaleString()}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  className="text-green-600 font-semibold"
+        <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card
+            sx={{
+              height: "100%",
+              borderRadius: 3,
+              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5, fontSize: "0.875rem" }}
+                  >
+                    Total Reviews
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {totalReviews}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: "#e0e7ff",
+                    borderRadius: 2,
+                    p: 1.5,
+                  }}
                 >
-                  +15% this month
-                </Typography>
-              </div>
-              <div className="bg-purple-100 rounded-full p-3">
-                <QuizIcon className="text-purple-600 text-3xl" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  <AssessmentIcon sx={{ color: "#6366f1", fontSize: 32 }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -397,7 +486,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Top Tests */}
-        <Card className="rounded-xl shadow-sm h-full">
+        {/* <Card className="rounded-xl shadow-sm h-full">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
@@ -460,10 +549,10 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Top Discussed Lessons */}
-        <Card className="rounded-xl shadow-sm h-full ">
+        {/* <Card className="rounded-xl shadow-sm h-full ">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
@@ -526,7 +615,7 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

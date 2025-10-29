@@ -12,12 +12,13 @@ export const courseApi = rootApi.injectEndpoints({
     }),
 
     // Lấy thông tin chi tiết của một khóa học
-    getCourseById: builder.query({
+    getCourseById: builder.mutation({
       query: (id) => ({
         url: `/courses/${id}`,
         method: "GET",
+        body: { id },
       }),
-      providesTags: ["Course"],
+      invalidatesTags: ["Course"],
     }),
 
     // Tạo mới một khóa học
@@ -48,15 +49,25 @@ export const courseApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Course"],
     }),
+
+    // Lấy thống kê courses cho admin
+    getCourseStatistics: builder.query({
+      query: () => ({
+        url: "/courses/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Course"],
+    }),
   }),
 });
 
 export const {
   useGetCoursesQuery,
-  useGetCourseByIdQuery,
+  useGetCourseByIdMutation,
   useCreateCourseMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
+  useGetCourseStatisticsQuery,
 } = courseApi;
 
 export default courseApi;

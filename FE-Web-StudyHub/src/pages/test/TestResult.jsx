@@ -33,10 +33,20 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+import CourseCard from "../../components/CourseCard";
 import { useLocation } from "react-router-dom";
 import CertificateDetailModal from "../../components/CertificateDetailModal";
+import {
+  useGetAllCoursesMutation,
+  useGetMyCoursesMutation,
+} from "../../services/grammarLessonApi";
 
 import { CloseOutlined } from "@mui/icons-material";
+import { useSelector } from "react-redux";
+import {
+  useGetTestByIdMutation,
+  useUpdateAttemptMutation,
+} from "../../services/testApi";
 
 function formatTime(s) {
   const m = Math.floor(s / 60);
@@ -51,12 +61,24 @@ const TestResult = () => {
   const [tab, setTab] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [certificateModalOpen, setCertificateModalOpen] = useState(false);
+  const [recommendedCourses, setRecommendedCourses] = useState([]);
+  const [test, setTest] = useState(null);
+  const user = useSelector((state) => state.auth.user);
+
+  const [getMyCourses] = useGetMyCoursesMutation();
+  const [getAllCourses] = useGetAllCoursesMutation();
+  const [updateAttempt] = useUpdateAttemptMutation();
+  const [getTestById] = useGetTestByIdMutation();
+
+  console.log("Result Data in TestResult page:", resultData);
 
   // Check if certificate exists and show snackbar
   useEffect(() => {
     if (resultData?.certificate) {
       setSnackbarOpen(true);
     }
+
+    fetchCourses();
   }, [resultData]);
 
   // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi
@@ -71,6 +93,62 @@ const TestResult = () => {
       </Box>
     );
   }
+
+  const scoreRanges = {
+    "TOEIC 10-250": ["TOEIC 10-250", "TOEIC 255-400"],
+    "TOEIC 255-400": ["TOEIC 405-600"],
+    "TOEIC 405-600": ["TOEIC 405-600", "TOEIC 785-900"],
+    "TOEIC 605-780": ["TOEIC 785-900"],
+    "TOEIC 785-900": ["TOEIC 785-900"],
+    "TOEIC 905-990": ["TOEIC 785-900"],
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const res = await getAllCourses().unwrap();
+
+      const resCourse = await getMyCourses(user._id);
+      const filteredCourse = res.filter(
+        (course2) =>
+          !resCourse.data.courses.some((course1) => course1._id === course2._id)
+      );
+
+      let recommended = [];
+      if (
+        resultData.attemptDetail.analysisResult.post_test_level ===
+        "Unknown".trim()
+      ) {
+        recommended = resultData?.attemptDetail.analysisResult.current_level;
+      } else {
+        recommended = resultData?.attemptDetail.analysisResult.post_test_level;
+      }
+      const filtered = filteredCourse.filter((course) =>
+        scoreRanges[recommended].includes(
+          `${course.courseType} ${course.courseLevel}`
+        )
+      );
+
+      setRecommendedCourses(filtered);
+
+      // update attempt pass
+      if (resultData.attemptDetail.totalScore >= 7) {
+        await updateAttempt({
+          attemptId: resultData.attempt._id,
+          updateData: {
+            isPassed: true,
+          },
+        }).unwrap();
+      }
+
+      // take test
+      const testDetailRes = await getTestById(
+        resultData.attempt.testId
+      ).unwrap();
+      setTest(testDetailRes.data);
+    } catch (error) {
+      console.error("Error fetching courses for recommendations:", error);
+    }
+  };
 
   console.log("Result Data:", resultData.certificate);
 
@@ -265,7 +343,7 @@ const TestResult = () => {
           <Card className="rounded-xl shadow mb-6">
             <CardContent>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-                Areas for Improvement
+                Areas for Improvement (weak topics)
               </Typography>
               <Stack
                 direction="row"
@@ -298,7 +376,9 @@ const TestResult = () => {
           >
             <Tab label="Correct Answers" sx={{ textTransform: "none" }} />
             <Tab label="Incorrect Answers" sx={{ textTransform: "none" }} />
-            <Tab label="Learning Plan" sx={{ textTransform: "none" }} />
+            {!test?.isTheLastTest && (
+              <Tab label="Learning Plan" sx={{ textTransform: "none" }} />
+            )}
           </Tabs>
           <Divider />
           <CardContent>
@@ -461,33 +541,174 @@ const TestResult = () => {
                 </Typography>
 
                 {/* Overall Goal */}
-                <Card className="mb-4 bg-blue-50 border border-blue-200">
-                  <CardContent>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <TrendingUpIcon color="primary" />
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={700}>
-                          Overall Goal
-                        </Typography>
-                        <Typography variant="body2" color="#64748b">
-                          {personalized_plan.overall_goal}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </CardContent>
-                </Card>
+                {personalized_plan.overall_goal && (
+                  <Card className="mb-4 bg-blue-50 border border-blue-200">
+                    <CardContent>
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <TrendingUpIcon color="primary" />
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Overall Goal
+                          </Typography>
+                          <Typography variant="body2" color="#64748b">
+                            {personalized_plan.overall_goal}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Progress Speed */}
                 <Card className="mb-4 bg-green-50 border border-green-200">
                   <CardContent>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <ScheduleIcon color="success" />
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={700}>
-                          Progress Speed
+                    <Stack direction="column" spacing={2}>
+                      {/* Header */}
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <ScheduleIcon color="success" />
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Progress Speed
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color:
+                                personalized_plan?.progress_speed?.category ===
+                                "accelerating"
+                                  ? "green"
+                                  : personalized_plan?.progress_speed
+                                      ?.category === "steady"
+                                  ? "orange"
+                                  : "red",
+                              fontWeight: 600,
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {personalized_plan?.progress_speed?.category ||
+                              "N/A"}
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      {/* Description */}
+                      <Typography variant="body2" color="text.secondary">
+                        {personalized_plan?.progress_speed?.description}
+                      </Typography>
+
+                      {/* Trend Section */}
+                      <Box
+                        sx={{
+                          borderLeft: "4px solid #22c55e",
+                          pl: 2,
+                          py: 1,
+                          backgroundColor: "#f9fafb",
+                          borderRadius: 2,
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={600}
+                          gutterBottom
+                        >
+                          Performance Trend
                         </Typography>
-                        <Typography variant="body2" color="#64748b">
-                          {personalized_plan.progress_speed}
+
+                        <Typography variant="body2" color="text.secondary">
+                          Past Tests:{" "}
+                          <strong>
+                            {
+                              personalized_plan?.progress_speed?.trend
+                                ?.past_tests
+                            }
+                          </strong>
+                        </Typography>
+
+                        <Typography variant="body2" color="text.secondary">
+                          Accuracy Growth Rate:{" "}
+                          <strong>
+                            {
+                              personalized_plan?.progress_speed?.trend
+                                ?.accuracy_growth_rate
+                            }
+                            %
+                          </strong>
+                        </Typography>
+
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          mt={1}
+                        >
+                          Consistency Index:{" "}
+                          <strong>
+                            {
+                              personalized_plan?.progress_speed?.trend
+                                ?.consistency_index
+                            }
+                          </strong>
+                        </Typography>
+
+                        {/* Strong & Weak Skills */}
+                        <Grid container spacing={1} mt={1}>
+                          <Grid item xs={12} md={6}>
+                            <Typography variant="body2" fontWeight={600}>
+                              Strong Skills:
+                            </Typography>
+                            <ul className="list-disc pl-5 text-sm text-gray-600">
+                              {personalized_plan?.progress_speed?.trend?.strong_skills
+                                ?.slice(0, 5)
+                                .map((skill, idx) => (
+                                  <li key={idx}>{skill}</li>
+                                ))}
+                            </ul>
+                          </Grid>
+
+                          <Grid item xs={12} md={6}>
+                            <Typography variant="body2" fontWeight={600}>
+                              Weak Skills:
+                            </Typography>
+                            <ul className="list-disc pl-5 text-sm text-gray-600">
+                              {personalized_plan?.progress_speed?.trend?.weak_skills
+                                ?.slice(0, 5)
+                                .map((skill, idx) => (
+                                  <li key={idx}>{skill}</li>
+                                ))}
+                            </ul>
+                          </Grid>
+                        </Grid>
+                      </Box>
+
+                      {/* Predicted Weeks */}
+                      <Typography variant="body2" color="text.secondary">
+                        Predicted Weeks to Reach Next Level:{" "}
+                        <strong>
+                          {
+                            personalized_plan?.progress_speed
+                              ?.predicted_reach_next_level_weeks
+                          }
+                        </strong>
+                      </Typography>
+
+                      {/* Recommendation */}
+                      <Box
+                        sx={{
+                          mt: 1,
+                          p: 2,
+                          borderRadius: 2,
+                          backgroundColor: "#f0fdf4",
+                          border: "1px solid #bbf7d0",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={600}
+                          color="green"
+                        >
+                          Recommendation
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {personalized_plan?.progress_speed?.recommendation}
                         </Typography>
                       </Box>
                     </Stack>
@@ -673,6 +894,31 @@ const TestResult = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Course Recommendations */}
+        <Box className="mt-8">
+          <Typography variant="h5" fontWeight={700} gutterBottom>
+            Recommended Courses for You
+          </Typography>
+          <Typography variant="body2" color="#64748b" sx={{ mb: 4 }}>
+            Based on your test results, we suggest these courses to help you
+            improve.
+          </Typography>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)", // 4 thẻ ngang
+              gap: 3,
+            }}
+          >
+            {recommendedCourses?.map((course, i) => (
+              <Card key={course._id}>
+                <CourseCard key={i} course={course} variant="market" />
+              </Card>
+            ))}
+          </Box>
+        </Box>
 
         {/* Action Buttons */}
         <Box className="flex justify-center gap-4 mt-6">

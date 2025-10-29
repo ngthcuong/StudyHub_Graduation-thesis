@@ -1,4 +1,6 @@
 const Course = require("../schemas/Course");
+const Payment = require("../schemas/Payment");
+const mongoose = require("mongoose");
 
 /**
  * Tạo khóa học mới
@@ -82,6 +84,101 @@ const getCourseRatings = async (id) => {
   }
 };
 
+/**
+ * Lấy thống kê courses cho admin
+ * @returns {Object} Thống kê courses
+ */
+const getCourseStatistics = async () => {
+  try {
+    // Tổng số courses
+    const totalCourses = await Course.countDocuments();
+
+    // Lấy thông tin từ payment statistics
+    const paymentStats = await Payment.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$amount" },
+          totalPayments: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalRevenue =
+      paymentStats.length > 0 ? paymentStats[0].totalRevenue : 0;
+    const totalStudents =
+      paymentStats.length > 0 ? paymentStats[0].totalPayments : 0;
+
+    // Lấy thông tin chi tiết từ mỗi course kết hợp với payment data
+    const courseDetails = await Course.aggregate([
+      {
+        $lookup: {
+          from: "payments",
+          localField: "_id",
+          foreignField: "courseId",
+          as: "payments",
+        },
+      },
+      {
+        $addFields: {
+          totalRevenue: { $sum: "$payments.amount" },
+          totalStudents: { $size: "$payments" },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          cost: 1,
+          courseType: 1,
+          courseLevel: 1,
+          thumbnailUrl: 1,
+          totalRevenue: 1,
+          totalStudents: 1,
+          createdAt: 1,
+        },
+      },
+      {
+        $sort: { totalStudents: -1 },
+      },
+    ]);
+
+    // Tính tổng số khóa học đã bán (có ít nhất 1 payment)
+    const totalSoldCourses = await Course.aggregate([
+      {
+        $lookup: {
+          from: "payments",
+          localField: "_id",
+          foreignField: "courseId",
+          as: "payments",
+        },
+      },
+      {
+        $match: {
+          "payments.0": { $exists: true }, // Có ít nhất 1 payment
+        },
+      },
+      {
+        $count: "soldCourses",
+      },
+    ]);
+
+    const soldCoursesCount =
+      totalSoldCourses.length > 0 ? totalSoldCourses[0].soldCourses : 0;
+
+    return {
+      totalCourses,
+      totalRevenue,
+      totalStudents,
+      totalSoldCourses: soldCoursesCount,
+      courses: courseDetails,
+    };
+  } catch (error) {
+    console.error("Error getting course statistics:", error);
+    throw new Error("Failed to get course statistics");
+  }
+};
+
 module.exports = {
   createCourse,
   findCourseById,
@@ -90,4 +187,5 @@ module.exports = {
   getAllCourses,
   addRatingToCourse,
   getCourseRatings,
+  getCourseStatistics,
 };
