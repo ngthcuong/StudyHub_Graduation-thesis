@@ -103,7 +103,7 @@ const CourseCard = ({ course, variant = "market" }) => {
           <div className="flex items-center space-x-2">
             <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
             <Typography variant="body2" className="text-gray-600 font-medium">
-              {course.type}
+              {course.courseType}
             </Typography>
           </div>
           <div className="flex items-center space-x-2">
@@ -147,7 +147,8 @@ const CourseCard = ({ course, variant = "market" }) => {
               gap: 1,
             }}
           >
-            <LinearProgress
+            {/* thanh tiến trình */}
+            {/* <LinearProgress
               variant="determinate"
               value={10}
               sx={{
@@ -160,7 +161,7 @@ const CourseCard = ({ course, variant = "market" }) => {
             />
             <Typography variant="body2" fontWeight={600}>
               {10}%
-            </Typography>
+            </Typography> */}
           </Box>
         )}
 
@@ -174,7 +175,7 @@ const CourseCard = ({ course, variant = "market" }) => {
               ${course.originalPrice}
             </Typography> */}
             <Typography variant="h6" className="!font-bold text-teal-600">
-              ${course.cost}
+              {course.cost}đ
             </Typography>
           </div>
         )}

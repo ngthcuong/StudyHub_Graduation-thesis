@@ -96,11 +96,11 @@ const TestResult = () => {
 
   const scoreRanges = {
     "TOEIC 10-250": ["TOEIC 10-250", "TOEIC 255-400"],
-    "TOEIC 255-400": ["TOEIC 405-600"],
-    "TOEIC 405-600": ["TOEIC 405-600", "TOEIC 785-900"],
-    "TOEIC 605-780": ["TOEIC 785-900"],
+    "TOEIC 255-400": ["TOEIC 255-400"],
+    "TOEIC 405-600": ["TOEIC 405-600"],
+    "TOEIC 605-780": ["TOEIC 605-780"],
     "TOEIC 785-900": ["TOEIC 785-900"],
-    "TOEIC 905-990": ["TOEIC 785-900"],
+    "TOEIC 905-990": ["TOEIC 905-990"],
   };
 
   const fetchCourses = async () => {

@@ -35,6 +35,8 @@ import TestInformationCustom from "../pages/test/TestInformationCustom";
 
 import FillInBlankTest from "../pages/test/FillInBlankTest";
 import CourseRecommend from "../pages/course/CourseRecommend";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 
 export const router = createBrowserRouter([
   {
@@ -175,6 +177,14 @@ export const router = createBrowserRouter([
           {
             path: "/login",
             element: <LoginPage />,
+          },
+          {
+            path: "/forgot-password",
+            element: <ForgotPasswordPage />,
+          },
+          {
+            path: "/reset-password",
+            element: <ResetPasswordPage />,
           },
         ],
       },

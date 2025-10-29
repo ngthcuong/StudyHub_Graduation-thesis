@@ -18,6 +18,7 @@ const FormField = ({
   options = [],
   startIcon,
   endIcon,
+  endAdornment,
   onEndIconClick,
   disable = false,
   className = "",
@@ -90,7 +91,9 @@ const FormField = ({
                     {startIcon}
                   </InputAdornment>
                 ) : undefined,
-                endAdornment: endIcon ? (
+                endAdornment: endAdornment ? (
+                  endAdornment // Ưu tiên endAdornment nếu truyền từ ngoài vào
+                ) : endIcon ? (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={onEndIconClick}
