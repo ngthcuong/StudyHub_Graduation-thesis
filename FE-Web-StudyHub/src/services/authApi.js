@@ -50,6 +50,26 @@ export const authApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
+    // Quên mật khẩu - có thể thêm sau nếu cần
+    forgotPassword: builder.mutation({
+      query: (data) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // reset mật khẩu - có thể thêm sau nếu cần
+    resetPassword: builder.mutation({
+      query: ({ token, newPassword }) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: { token, newPassword },
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -58,5 +78,7 @@ export const {
   useLoginMutation,
   useRefreshTokenMutation,
   useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = authApi;
 export default authApi;
