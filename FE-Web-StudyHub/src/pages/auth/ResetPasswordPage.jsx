@@ -43,8 +43,12 @@ const ResetPasswordPage = () => {
   const schema = yup.object({
     newPassword: yup
       .string()
-      .required("Mật khẩu mới là bắt buộc")
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+      .required("Mật khẩu là bắt buộc")
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .matches(
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
+        "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
+      ),
     confirmPassword: yup
       .string()
       .oneOf([yup.ref("newPassword")], "Mật khẩu xác nhận không khớp")
@@ -68,8 +72,8 @@ const ResetPasswordPage = () => {
       dispatch(openSnackbar({ message: res.message, severity: "success" }));
       reset();
 
-      // Chuyển hướng sau 2 giây
-      setTimeout(() => navigate("/login"), 2000);
+      // Chuyển hướng sau 1 giây
+      setTimeout(() => navigate("/login"), 1000);
     } catch (error) {
       console.error("Reset password error:", error);
       dispatch(
