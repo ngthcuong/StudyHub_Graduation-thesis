@@ -14,8 +14,16 @@ router.get(
   paymentController.getAdminPaymentStats
 );
 
-// Lấy tất cả payments (admin only)
-router.get("/", verifyToken, requireAdmin, paymentController.getAllPayments);
+// Lấy danh sách payments của user hiện tại
+router.get("/user", verifyToken, paymentController.getMyPayments);
+
+// Lấy danh sách payments của một user cụ thể (admin only)
+router.get(
+  "/user/:userId",
+  verifyToken,
+  requireAdmin,
+  paymentController.getPaymentsByUser
+);
 
 // Lấy danh sách payments theo khóa học
 router.get(
@@ -24,7 +32,7 @@ router.get(
   paymentController.getPaymentsByCourse
 );
 
-// Lấy danh sách payments theo user
-router.get("/user", verifyToken, paymentController.getPaymentsByUser);
+// Lấy tất cả payments (admin only) - Đặt cuối để tránh conflict
+router.get("/all", verifyToken, requireAdmin, paymentController.getAllPayments);
 
 module.exports = router;

@@ -118,6 +118,22 @@ const getMyCourses = async (req, res) => {
   }
 };
 
+/**
+ * Lấy thống kê courses cho admin
+ */
+const getCourseStatistics = async (req, res) => {
+  try {
+    const stats = await courseModel.getCourseStatistics();
+    res.status(200).json({
+      message: "Course statistics retrieved successfully",
+      data: stats,
+    });
+  } catch (error) {
+    console.error("Error getting course statistics:", error);
+    res.status(500).json({ error: "Failed to get course statistics" });
+  }
+};
+
 module.exports = {
   createCourse,
   getCourseById,
@@ -126,4 +142,5 @@ module.exports = {
   updateCourseById,
   addRatingToCourse,
   getMyCourses,
+  getCourseStatistics,
 };

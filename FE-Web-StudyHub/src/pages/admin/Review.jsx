@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Card,
@@ -21,6 +21,7 @@ import {
   Button,
   Stack,
   InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -31,6 +32,10 @@ import {
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import {
+  useGetAdminReviewStatsQuery,
+  useGetAllReviewsQuery,
+} from "../../services/reviewApi";
 
 const Review = () => {
   const [page, setPage] = useState(1);
@@ -43,103 +48,48 @@ const Review = () => {
   const [endDate, setEndDate] = useState(null);
   const itemsPerPage = 5;
 
-  // Mock data cho reviews
-  const reviews = [
-    {
-      id: 1,
-      rating: 5,
-      courseName: "Beginners Guide to Design",
-      reviewerName: "Chris Walter",
-      reviewerEmail: "chris.walter@example.com",
-      reviewDate: "2024-01-15",
-      content:
-        "I was initially apprehensive, having no prior design experience. But the instructor, John Doe, did an amazing job of breaking down complex concepts into easy-to-understand lessons.",
-    },
-    {
-      id: 2,
-      rating: 4,
-      courseName: "Data Warehouse - The Ultimate Guide",
-      reviewerName: "Michel Evans",
-      reviewerEmail: "michel.evans@example.com",
-      reviewDate: "2024-01-18",
-      content:
-        "Great course with comprehensive content. The instructor explains everything clearly. Would recommend to anyone looking to learn data warehousing.",
-    },
-    {
-      id: 3,
-      rating: 5,
-      courseName: "React Advanced Patterns",
-      reviewerName: "Sarah Johnson",
-      reviewerEmail: "sarah.johnson@example.com",
-      reviewDate: "2024-01-20",
-      content:
-        "Excellent course! The advanced patterns taught here have really improved my React skills. The practical examples are very helpful.",
-    },
-    {
-      id: 4,
-      rating: 3,
-      courseName: "Node.js Fundamentals",
-      reviewerName: "David Lee",
-      reviewerEmail: "david.lee@example.com",
-      reviewDate: "2024-01-22",
-      content:
-        "Good content but could use more practical examples. The theory is solid but I would have liked more hands-on projects.",
-    },
-    {
-      id: 5,
-      rating: 5,
-      courseName: "Full Stack Development Bootcamp",
-      reviewerName: "Emily Chen",
-      reviewerEmail: "emily.chen@example.com",
-      reviewDate: "2024-01-25",
-      content:
-        "Amazing bootcamp! Covers everything from frontend to backend. The instructor is very knowledgeable and responsive to questions.",
-    },
-    {
-      id: 6,
-      rating: 4,
-      courseName: "Python for Data Science",
-      reviewerName: "Michael Brown",
-      reviewerEmail: "michael.brown@example.com",
-      reviewDate: "2024-01-28",
-      content:
-        "Very comprehensive course. Great for beginners and intermediate learners. Some sections could be more concise.",
-    },
-    {
-      id: 7,
-      rating: 2,
-      courseName: "JavaScript Basics",
-      reviewerName: "Lisa Anderson",
-      reviewerEmail: "lisa.anderson@example.com",
-      reviewDate: "2024-02-01",
-      content:
-        "The course content is outdated. Some examples don't work with modern JavaScript. Needs updating.",
-    },
-    {
-      id: 8,
-      rating: 5,
-      courseName: "Cloud Computing with AWS",
-      reviewerName: "Robert Taylor",
-      reviewerEmail: "robert.taylor@example.com",
-      reviewDate: "2024-02-05",
-      content:
-        "Outstanding course! Clear explanations, great hands-on labs, and excellent support from the instructor.",
-    },
-  ];
+  // Fetch reviews data from API
+  const {
+    data: reviewsData,
+    isLoading: reviewsLoading,
+    error: reviewsError,
+  } = useGetAllReviewsQuery();
+
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useGetAdminReviewStatsQuery();
+
+  // Get reviews from API response
+  const reviews = useMemo(
+    () =>
+      reviewsData?.reviews?.map((review) => ({
+        id: review._id,
+        rating: review.rating,
+        courseName: review.course?.title || "Unknown Course",
+        reviewerName: review.user?.fullName || "Anonymous",
+        reviewerEmail: review.user?.email || "N/A",
+        reviewDate: new Date(review.createdAt).toISOString().split("T")[0],
+        content: review.content,
+      })) || [],
+    [reviewsData]
+  );
+
+  // Get stats from API
+  const overallRating = statsData?.stats?.averageRating || 0;
+  const totalReviews = statsData?.stats?.totalReviews || 0;
+  const ratingCounts = statsData?.stats?.ratingDistribution || {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
-
-  const getRatingCounts = () => {
-    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    reviews.forEach((review) => {
-      counts[review.rating]++;
-    });
-    return counts;
-  };
-
-  const ratingCounts = getRatingCounts();
 
   const handleClearAll = () => {
     setSearchTerm("");
@@ -181,6 +131,43 @@ const Review = () => {
     setOpenDialog(false);
     setSelectedReview(null);
   };
+
+  // Show loading state
+  if (reviewsLoading || statsLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress size={50} />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Loading reviews...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (reviewsError || statsError) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <Typography variant="h6" color="error">
+          Error loading reviews. Please try again.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -229,11 +216,16 @@ const Review = () => {
                 Overall Rating
               </Typography>
               <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
-                4.3
+                {overallRating.toFixed(1)}
               </Typography>
-              <Rating value={4.3} precision={0.1} readOnly size="large" />
+              <Rating
+                value={overallRating}
+                precision={0.1}
+                readOnly
+                size="large"
+              />
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Based on {reviews.length} reviews
+                Based on {totalReviews} reviews
               </Typography>
             </Box>
 
@@ -243,10 +235,10 @@ const Review = () => {
                 Rating Distribution
               </Typography>
               {[5, 4, 3, 2, 1].map((star) => {
-                const count = ratingCounts[star];
+                const count = ratingCounts[star] || 0;
                 const percentage =
-                  reviews.length > 0
-                    ? ((count / reviews.length) * 100).toFixed(0)
+                  totalReviews > 0
+                    ? ((count / totalReviews) * 100).toFixed(0)
                     : 0;
                 return (
                   <Box

@@ -10,6 +10,40 @@ const mongoose = require("mongoose");
  */
 const createPayment = async (paymentData) => {
   try {
+    // Kiểm tra course tồn tại và lấy thông tin giá
+    const course = await Course.findById(paymentData.courseId);
+    if (!course) {
+      throw new Error("Course not found");
+    }
+
+    // Kiểm tra user tồn tại
+    const user = await User.findById(paymentData.studentId);
+    if (!user) {
+      throw new Error("Student not found");
+    }
+
+    // Kiểm tra user đã mua course này chưa
+    const existingPayment = await Payment.findOne({
+      studentId: paymentData.studentId,
+      courseId: paymentData.courseId,
+    });
+    if (existingPayment) {
+      throw new Error("You have already purchased this course");
+    }
+
+    // Validation: Kiểm tra amount có khớp với cost của course không
+    // Sử dụng parseFloat và so sánh với độ chính xác 2 chữ số thập phân
+    const expectedAmount = parseFloat(course.cost);
+    const providedAmount = parseFloat(paymentData.amount);
+
+    if (Math.abs(expectedAmount - providedAmount) > 0.01) {
+      throw new Error(
+        `Invalid payment amount. Expected: $${expectedAmount.toFixed(
+          2
+        )}, Received: $${providedAmount.toFixed(2)}`
+      );
+    }
+
     const newPayment = new Payment(paymentData);
     const savedPayment = await newPayment.save();
 
@@ -33,14 +67,6 @@ const createPayment = async (paymentData) => {
         options: { lean: true },
       })
       .lean();
-
-    // Kiểm tra populate có thành công không
-    if (!populatedPayment.studentId) {
-      throw new Error("Student not found");
-    }
-    if (!populatedPayment.courseId) {
-      throw new Error("Course not found");
-    }
 
     // Transform studentId to student và courseId to course
     const transformedPayment = {

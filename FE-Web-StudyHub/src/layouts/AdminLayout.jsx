@@ -18,6 +18,7 @@ import {
   RateReview as ReviewIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
+  MenuBook as MenuBookIcon,
 } from "@mui/icons-material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -37,6 +38,7 @@ export default function AdminLayout() {
     },
     { text: "Test", icon: <TestIcon />, path: "/admin/test" },
     { text: "Review", icon: <ReviewIcon />, path: "/admin/review" },
+    { text: "Course", icon: <MenuBookIcon />, path: "/admin/course" },
   ];
 
   const handleDrawerToggle = () => {

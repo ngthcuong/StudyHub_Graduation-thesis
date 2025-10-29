@@ -49,6 +49,15 @@ export const courseApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Course"],
     }),
+
+    // Lấy thống kê courses cho admin
+    getCourseStatistics: builder.query({
+      query: () => ({
+        url: "/courses/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Course"],
+    }),
   }),
 });
 
@@ -58,6 +67,7 @@ export const {
   useCreateCourseMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
+  useGetCourseStatisticsQuery,
 } = courseApi;
 
 export default courseApi;

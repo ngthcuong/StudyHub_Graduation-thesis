@@ -14,6 +14,9 @@ router.get(
   reviewController.getAdminReviewStats
 );
 
+// Lấy tất cả reviews (admin only)
+router.get("/all", verifyToken, requireAdmin, reviewController.getAllReviews);
+
 // Lấy thống kê rating của khóa học
 router.get(
   "/course/:courseId/statistics",

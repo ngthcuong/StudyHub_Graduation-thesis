@@ -10,7 +10,9 @@ const createPayment = async (req, res) => {
 
     // Kiểm tra các trường bắt buộc
     const requiredFields = ["courseId", "amount"];
-    const missingFields = requiredFields.filter((field) => !paymentData[field]);
+    const missingFields = requiredFields.filter(
+      (field) => paymentData[field] === undefined || paymentData[field] === null
+    );
 
     if (!userId) {
       missingFields.push("studentId");
@@ -22,10 +24,10 @@ const createPayment = async (req, res) => {
       });
     }
 
-    // Kiểm tra amount hợp lệ
-    if (paymentData.amount <= 0) {
+    // Kiểm tra amount hợp lệ (cho phép 0)
+    if (typeof paymentData.amount !== "number" || paymentData.amount < 0) {
       return res.status(400).json({
-        error: "Amount must be greater than 0",
+        error: "Amount must be a number equal or greater than 0",
       });
     }
 
@@ -46,17 +48,48 @@ const createPayment = async (req, res) => {
     if (error.message === "Course not found") {
       return res.status(404).json({ error: "Course not found" });
     }
+    if (error.message === "You have already purchased this course") {
+      return res
+        .status(409)
+        .json({ error: "You have already purchased this course" });
+    }
+    if (error.message.startsWith("Invalid payment amount")) {
+      return res.status(400).json({ error: error.message });
+    }
 
     res.status(500).json({ error: "Failed to create payment" });
   }
 };
 
 /**
- * Lấy danh sách payments của một user
+ * Lấy danh sách payments của user hiện tại
+ */
+const getMyPayments = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const payments = await paymentModel.getPaymentsByUser(userId);
+    res.status(200).json({
+      message: "User payments retrieved successfully",
+      payments: payments,
+      total: payments.length,
+    });
+  } catch (error) {
+    console.error("Error getting my payments:", error);
+    res.status(500).json({ error: "Failed to get my payments" });
+  }
+};
+
+/**
+ * Lấy danh sách payments của một user (admin only)
  */
 const getPaymentsByUser = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const { userId } = req.params;
 
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
@@ -132,6 +165,7 @@ const getAdminPaymentStats = async (req, res) => {
 
 module.exports = {
   createPayment,
+  getMyPayments,
   getPaymentsByUser,
   getPaymentsByCourse,
   getAllPayments,

@@ -33,10 +33,19 @@ export const reviewApi = rootApi.injectEndpoints({
     // Lấy thống kê tổng quan reviews cho admin
     getAdminReviewStats: builder.query({
       query: () => ({
-        url: "/reviews/admin/statistics",
+        url: "/reviews/statistics",
         method: "GET",
       }),
-      providesTags: ["Review", "Course"],
+      providesTags: ["Review"],
+    }),
+
+    // Lấy tất cả reviews (admin only)
+    getAllReviews: builder.query({
+      query: () => ({
+        url: "/reviews/all",
+        method: "GET",
+      }),
+      providesTags: ["Review"],
     }),
 
     // Lấy danh sách đánh giá của user
@@ -83,6 +92,7 @@ export const {
   useGetReviewsByCourseQuery,
   useGetCourseRatingStatsQuery,
   useGetAdminReviewStatsQuery,
+  useGetAllReviewsQuery,
   useGetReviewsByUserQuery,
   useGetReviewByIdQuery,
   useUpdateReviewMutation,

@@ -18,6 +18,7 @@ import {
   DialogTitle,
   Button,
 } from "@mui/material";
+import { useCreatePaymentMutation } from "../../services/paymentApi";
 
 const CoursePayment = () => {
   const location = useLocation();
@@ -26,6 +27,10 @@ const CoursePayment = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+
+  // Payment API mutation
+  const [createPayment, { isLoading: isPaymentLoading }] =
+    useCreatePaymentMutation();
 
   const {
     register,
@@ -59,27 +64,36 @@ const CoursePayment = () => {
     navigate(`/home/courses`);
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
     try {
-      const payload = {
-        cardName: data.cardName,
-        cardNumber: data.cardNumber.replace(/\s+/g, ""),
-        expiryDate: data.expiryDate,
-        cvc: data.cvc,
+      // Kiểm tra course.cost phải là số và không âm (cho phép 0)
+      if (
+        course.cost === undefined ||
+        course.cost === null ||
+        course.cost < 0
+      ) {
+        setDialogMessage("Invalid course price. Please contact support.");
+        setDialogOpen(true);
+        return;
+      }
+
+      const paymentData = {
         courseId: course._id,
+        amount: course.cost,
       };
 
-      console.log(payload);
-
-      //  TODO: Cần nối API thực tế của việc mua khóa học này
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Gọi API tạo payment
+      await createPayment(paymentData).unwrap();
 
       setDialogMessage(
         "Payment successful! You now have access to the course."
       );
       setDialogOpen(true);
-    } catch {
-      setDialogMessage("Payment failed. Please try again.");
+    } catch (error) {
+      console.error("Payment error:", error);
+      const errorMessage =
+        error?.data?.error || "Payment failed. Please try again.";
+      setDialogMessage(errorMessage);
       setDialogOpen(true);
     }
   };
@@ -111,7 +125,7 @@ const CoursePayment = () => {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-white hover:text-gray-200 transition-colors"
+            className="flex items-center cursor-pointer text-white hover:text-gray-200 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             <span className="font-medium">Back</span>
@@ -276,10 +290,10 @@ const CoursePayment = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  disabled={isSubmitting || isPaymentLoading}
+                  className="w-full bg-blue-600 text-white py-3 px-6 cursor-pointer rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isSubmitting ? (
+                  {isSubmitting || isPaymentLoading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Processing Payment...

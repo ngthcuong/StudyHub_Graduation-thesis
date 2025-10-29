@@ -7,8 +7,13 @@ const {
   updateCourseById,
   addRatingToCourse,
   getMyCourses,
+  getCourseStatistics,
 } = require("../controllers/courseController");
+const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
+
+// Statistics route (should be before other GET routes to avoid conflicts)
+router.get("/statistics", verifyToken, requireAdmin, getCourseStatistics);
 
 router.post("/create", createCourse);
 router.get("/:id", getCourseById);
