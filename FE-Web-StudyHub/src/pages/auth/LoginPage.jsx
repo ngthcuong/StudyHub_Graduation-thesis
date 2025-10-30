@@ -35,7 +35,7 @@ const LoginPage = () => {
   const [loginUser, { isLoading }] = useLoginMutation();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  // const [rememberMe, setRememberMe] = useState(false);
 
   const formSchema = yup.object({
     email: yup
@@ -61,9 +61,9 @@ const LoginPage = () => {
     mode: "onChange",
   });
 
-  const handleRememberMeChange = () => {
-    setRememberMe(!rememberMe);
-  };
+  // const handleRememberMeChange = () => {
+  //   setRememberMe(!rememberMe);
+  // };
 
   const onSubmit = async (data) => {
     try {
@@ -144,8 +144,8 @@ const LoginPage = () => {
           />
 
           {/* Remember Me & Forgot Password */}
-          <Box className="flex items-center justify-between">
-            <FormControlLabel
+          <Box className="flex items-center justify-end">
+            {/* <FormControlLabel
               control={
                 <Checkbox
                   name="rememberMe"
@@ -155,7 +155,7 @@ const LoginPage = () => {
                 />
               }
               label="Remember me"
-            />
+            /> */}
             <Link
               to="/forgot-password"
               className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
@@ -185,14 +185,14 @@ const LoginPage = () => {
         </Box>
 
         {/* Divider */}
-        <Divider className="!my-1">
+        {/* <Divider className="!my-1">
           <Typography variant="body2" color="textSecondary">
             or
           </Typography>
-        </Divider>
+        </Divider> */}
 
         {/* Social Login Buttons */}
-        <Box className="space-y-5">
+        {/* <Box className="space-y-5">
           <Button
             fullWidth
             variant="outlined"
@@ -223,7 +223,7 @@ const LoginPage = () => {
             <FacebookOutlined className="mr-2" />
             Sign in with Facebook
           </Button>
-        </Box>
+        </Box> */}
 
         {/* Register Link */}
         <Box className="text-center">
