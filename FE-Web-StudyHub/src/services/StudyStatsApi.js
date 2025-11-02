@@ -5,7 +5,7 @@ export const studyApi = rootApi.injectEndpoints({
     // 🧠 Lấy thống kê học tập theo tháng & năm
     getStudyStats: builder.query({
       query: ({ month, year }) => ({
-        url: `/study/stats?month=${month}&year=${year}`,
+        url: `/study-stats/${year}/${month}`,
         method: "GET",
       }),
       providesTags: ["StudyStats"],
@@ -13,12 +13,17 @@ export const studyApi = rootApi.injectEndpoints({
 
     // 🕒 Ghi log học
     logStudySession: builder.mutation({
-      query: ({ lessonId, durationSeconds }) => {
-        console.log("🧠 Sending to backend:", { lessonId, durationSeconds }); // 👈 LOG tại đây
+      query: ({ day, lessons, exercises, durationSeconds }) => {
+        console.log("🧠 Sending to backend:", {
+          day,
+          lessons,
+          exercises,
+          durationSeconds,
+        });
         return {
           url: "/study/log",
           method: "POST",
-          body: { lessonId, durationSeconds },
+          body: { day, lessons, exercises, durationSeconds },
         };
       },
       invalidatesTags: ["StudyStats"],

@@ -200,9 +200,12 @@ const CourseLessson = () => {
     const durationMs = end - startTime;
     let durationSeconds = durationMs / 1000;
 
+    console.log(lesson._id, " - Thời gian học (giây):", durationSeconds);
+
     try {
       const res = await logStudySession({
-        lessonId: lesson._id,
+        day: new Date().getDate(),
+        lessons: lesson._id,
         durationSeconds,
       }).unwrap();
       console.log("✅ Response from backend:", res);
