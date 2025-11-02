@@ -96,12 +96,12 @@ const generateTestCustomController = async (req, res) => {
     // 4. GỌI DỊCH VỤ AI VỚI CẤU TRÚC MỚI
     // -----------------------------------------------------
     const aiResponse = await axios.post(
-      "http://localhost:8002/generate-test-custom", // ✅ Cập nhật Endpoint
+      "http://localhost:8000/generate-test-custom", // ✅ Cập nhật Endpoint
       aiPayload // ✅ Sử dụng Payload mới
     );
 
     // Lấy mảng câu hỏi thực sự (Giả định cấu trúc data trả về vẫn giống cũ)
-    const aiData = aiResponse?.data?.data?.data;
+    const aiData = aiResponse?.data?.data;
 
     if (!aiData || !Array.isArray(aiData) || aiData.length === 0) {
       console.error("AI response is invalid or empty:", aiResponse.data);

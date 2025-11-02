@@ -12,7 +12,7 @@ const studyLogSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    // 👉 Đổi từ phút sang giây
+    //  Đổi từ phút sang giây
     durationSeconds: {
       type: Number,
       required: true,

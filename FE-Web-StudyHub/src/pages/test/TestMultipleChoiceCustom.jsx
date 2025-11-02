@@ -423,6 +423,7 @@ const TestMultipleChoiceCustom = () => {
               numQuestions: payloadForm?.numQuestions,
               timeLimit: payloadForm?.timeLimit,
             }).unwrap();
+            console.log("Generated Custom Test Data:", res);
             setData(res);
             setQuestions(res);
             setLoading(false);

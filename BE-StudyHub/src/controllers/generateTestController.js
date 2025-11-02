@@ -22,7 +22,7 @@ const generateTestController = async (req, res) => {
     console.log("Generating test with:");
 
     // Call AI service
-    const response = await axios.post("http://localhost:8001/generate-test", {
+    const response = await axios.post("http://localhost:8000/generate-test", {
       topic,
       question_types,
       num_questions,
@@ -31,7 +31,7 @@ const generateTestController = async (req, res) => {
     });
 
     // Lấy mảng câu hỏi thực sự
-    const aiData = response?.data?.data?.data; // fix 2 lớp data
+    const aiData = response?.data?.data; // fix 2 lớp data
     // console.log("AI response data:", aiData);
 
     // if (!aiData || !Array.isArray(aiData)) {
