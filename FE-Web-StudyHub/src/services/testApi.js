@@ -1,121 +1,329 @@
-import axios from "axios";
-import config from "../configs/config";
+import { rootApi } from "./rootApi";
 
-export const testInfo = {
-  title: "TOEIC Grammar Practice - Verb Tenses",
-  description:
-    "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
-  topic: "Present Simple, Present Continuous, Present Perfect, and Past Simple",
-  skill: "grammar",
-  level: "B1",
-  durationMin: 30,
-  numQuestions: 10,
-  difficulty: "medium",
-  questionTypes: ["multiple_choice"],
-};
+export const testApi = rootApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // -----------------------------
+    // --- TẤT CẢ LÀ MUTATION ---
+    // -----------------------------
 
-const createTest = async (testInfo) => {
-  try {
-    const res = await axios.post(`${config.baseApiUrl}/tests`, testInfo);
-    console.log(res);
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    // 1. getTestById
+    getTestById: builder.mutation({
+      query: (testId) => ({
+        url: `/tests/${testId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Test"],
+    }),
 
-const getTestByTestId = async (testId) => {
-  try {
-    const res = await axios.get(`${config.baseApiUrl}/tests/${testId}`);
-    console.log(res);
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    // 2. getTestPoolByLevel
+    getTestPoolByLevel: builder.mutation({
+      query: ({ level }) => ({
+        url: `/test-pools/level/${level}`,
+        method: "GET",
+      }),
+    }),
 
-const generateTestQuestions = async () => {
-  const testData = {
-    testId: "68c01f071fe11e25c650cf3f",
-    topic: "thì hiện tại đơn, hiện tại tiếp diễn",
-    num_questions: 10,
-    difficulty: "dễ",
-    question_types: ["multiple_choice"],
-  };
+    // 3. getTestPoolByTestIdAndLevel
+    getTestPoolByTestIdAndLevel: builder.mutation({
+      query: ({ testId, exam_type, score_range, createdBy }) => ({
+        url: `/questions/filter`,
+        method: "POST",
+        body: { testId, exam_type, score_range, createdBy },
+      }),
+      invalidatesTags: ["Question"],
+    }),
 
-  try {
-    const res = await axios.post(
-      `${config.baseApiUrl}/generate-test`,
-      testData
-    );
-    console.log(res);
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    // 4. getTestAttemptsByTestId
+    getTestAttemptsByTestId: builder.mutation({
+      query: ({ testPoolId, userId }) => ({
+        url: `/attempts/by-test-pool`,
+        method: "POST",
+        body: { testPoolId, userId },
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
 
-const createAttempt = async ({ testId, userId }) => {
-  try {
-    const res = await axios.post(
-      `${config.baseApiUrl}/attempts`,
-      {
-        testId,
-        userId,
-      }
-      // {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // }
-    );
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    // 5. getAttemptByTestAndUser
+    getAttemptByTestAndUser: builder.mutation({
+      query: ({ testId, userId }) => ({
+        url: `/attempts/test/${testId}/user/${userId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
 
-const submitTest = async ({ answers, attemptId }) => {
-  try {
-    const res = await axios.post(
-      `${config.baseApiUrl}/attempts/${attemptId}/submit`,
-      { answers }
-      // {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     "Content-Type": "application/json",
-      //   },
-      // }
-    );
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    // 6. createAttempt
+    createAttempt: builder.mutation({
+      query: ({ testPoolId, testId, maxAttempts }) => ({
+        url: "/attempts",
+        method: "POST",
+        body: { testPoolId, testId, evaluationModel: "gemini", maxAttempts },
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
 
-const getTestResult = async ({ testId, attemptId }) => {
-  try {
-    const res = await axios.post(
-      `${config.baseApiUrl}/test-result/submit`,
-      { testId, attemptId }
-      // {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     "Content-Type": "application/json",
-      //   },
-      // }
-    );
-    return res;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    // 7. getAttemptInfo
+    getAttemptInfo: builder.mutation({
+      query: ({ userId, testId }) => ({
+        url: "/attempts/info",
+        method: "POST",
+        body: { userId, testId },
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
 
-export {
-  createTest,
-  getTestByTestId,
-  generateTestQuestions,
-  createAttempt,
-  submitTest,
-  getTestResult,
-};
+    // 8. createTestPool
+    createTestPool: builder.mutation({
+      query: (testPoolInfo) => ({
+        url: "/test-pools",
+        method: "POST",
+        body: testPoolInfo,
+      }),
+      invalidatesTags: ["TestPool"],
+    }),
+
+    // 9. generateTestQuestions
+    generateTestQuestions: builder.mutation({
+      query: (payload) => ({
+        url: "/generate-test",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: ["Question"],
+    }),
+
+    // 10. getAllTests
+    getAllTests: builder.mutation({
+      query: (params) => ({
+        url: "/tests",
+        method: "GET",
+        params,
+      }),
+      invalidatesTags: ["Test"],
+    }),
+
+    // 11. getTestByTestId
+    getTestByTestId: builder.mutation({
+      query: (testId) => ({
+        url: `/tests/${testId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Test"],
+    }),
+
+    // 12. getQuestionsByTestId
+    getQuestionsByTestId: builder.mutation({
+      query: (testId) => ({
+        url: `/questions/test/${testId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Question"],
+    }),
+
+    // 13. submitTestAnswer
+    submitTestAnswer: builder.mutation({
+      query: ({ attemptId, questionId, answers }) => ({
+        url: `/attempts/${attemptId}/answers`,
+        method: "POST",
+        body: { questionId, answers },
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 14. submitTest
+    submitTest: builder.mutation({
+      query: ({ attemptId, answers, testId, startTime }) => ({
+        url: `/attempts/${attemptId}/submit`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers, testId, startTime }), // <- stringify thủ công
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 15. getTestResults
+    getTestResults: builder.mutation({
+      query: (attemptId) => ({
+        url: `/attempts/${attemptId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 16. getMyTestAttempts
+    getMyTestAttempts: builder.mutation({
+      query: () => ({
+        url: "/attempts/my-attempts",
+        method: "GET",
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 17. updateTestPool
+    updateTestPool: builder.mutation({
+      query: ({ poolId, updateData }) => ({
+        url: `/test-pools/${poolId}`,
+        method: "PUT",
+        body: updateData,
+      }),
+      invalidatesTags: ["TestPool"],
+    }),
+
+    // 18. getTestResult (Grade Test)
+    getTestResult: builder.mutation({
+      query: ({ testId, attemptId }) => ({
+        url: "/test-result/submit",
+        method: "POST",
+        body: { testId, attemptId },
+      }),
+    }),
+
+    // 19. getListAttempt
+    getListAttempt: builder.mutation({
+      query: () => ({
+        url: "/attempt-details/details/grouped",
+        method: "GET",
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 20. getTestPoolsByCreatorId
+    getTestPoolsByCreatorId: builder.mutation({
+      query: (creatorId) => ({
+        url: `/test-pools/creator/${creatorId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["TestPool"],
+    }),
+
+    // 21. saveAnswers
+    saveAnswers: builder.mutation({
+      query: (answers) => ({
+        url: "/answers/submit-many",
+        method: "POST",
+        body: { answers },
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 22. checkExistTestPool
+    checkExistTestPool: builder.mutation({
+      query: ({ userId, testId }) => ({
+        url: "/attempts/info",
+        method: "POST",
+        body: { userId, testId },
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 23. getAttemptDetailByUserAndTest
+    getAttemptDetailByUserAndTest: builder.mutation({
+      query: ({ userId, testId }) => ({
+        url: `attempt-details/user/${userId}/test/${testId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["AttemptDetail"],
+    }),
+
+    // 24. createTest
+    createTest: builder.mutation({
+      query: (testData) => ({
+        url: "/tests",
+        method: "POST",
+        body: testData,
+      }),
+      invalidatesTags: ["Test"],
+    }),
+
+    // 25. getTestStatistics
+    getTestStatistics: builder.query({
+      query: () => ({
+        url: "/tests/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Test"],
+    }),
+
+    // 26. getMyTests
+    getMyTests: builder.mutation({
+      query: () => ({
+        url: "/tests/my-tests",
+        method: "GET",
+      }),
+      invalidatesTags: ["Test"],
+    }),
+
+    // 27. generateCustomTest
+    generateCustomTest: builder.mutation({
+      query: (payload) => ({
+        url: "/generate-test/custom",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: ["Question"],
+    }),
+
+    // 28. get attempt detail by user
+    getAttemptDetailByUser: builder.mutation({
+      query: () => ({
+        url: `/attempts/custom/user`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+
+    // 29. get question by attempt id
+    getQuestionsByAttemptId: builder.mutation({
+      query: (attemptId) => ({
+        url: `/questions/attempt/${attemptId}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["Question"],
+    }),
+
+    // 30. updateAttempt
+    updateAttempt: builder.mutation({
+      query: ({ attemptId, updateData }) => ({
+        url: `/attempts/${attemptId}`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: ["Attempt"],
+    }),
+  }),
+});
+
+export const {
+  useGetTestByIdMutation,
+  useGetTestPoolByLevelMutation,
+  useGetTestPoolByTestIdAndLevelMutation,
+  useGetTestAttemptsByTestIdMutation,
+  useGetAttemptByTestAndUserMutation,
+  useCreateAttemptMutation,
+  useGetAttemptInfoMutation,
+  useCreateTestPoolMutation,
+  useGenerateTestQuestionsMutation,
+  useGetAllTestsMutation,
+  useGetTestByTestIdMutation,
+  useGetQuestionsByTestIdMutation,
+  useSubmitTestAnswerMutation,
+  useSubmitTestMutation,
+  useGetTestResultsMutation,
+  useGetMyTestAttemptsMutation,
+  useUpdateTestPoolMutation,
+  useGetTestResultMutation,
+  useGetListAttemptMutation,
+  useGetTestPoolsByCreatorIdMutation,
+  useSaveAnswersMutation,
+  useCheckExistTestPoolMutation,
+  useGetAttemptDetailByUserAndTestMutation,
+  useCreateTestMutation,
+  useGetTestStatisticsQuery,
+  useGetMyTestsMutation,
+  useGenerateCustomTestMutation,
+  useGetAttemptDetailByUserMutation,
+  useGetQuestionsByAttemptIdMutation,
+  useUpdateAttemptMutation,
+} = testApi;
+
+export default testApi;

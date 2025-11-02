@@ -9,7 +9,7 @@ const { deployCertificateFixture } = require("./fixtures/Certificate.fixture");
 describe("CertificateRegistry - Student Search Functions", function () {
   describe("getStudentCertificatesByStudent", function () {
     it("Should return all certificates with correct total count", async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
 
       // Issue 3 certificates for student1
@@ -18,8 +18,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
       await certificateRegistry
@@ -27,8 +30,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
       await certificateRegistry
@@ -36,8 +42,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -47,8 +56,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student2.address,
           "Student 2",
+          issuer.address,
           "IUH",
           "Course 4",
+          "Business",
+          "Beginner",
           "ipfs://4"
         );
 
@@ -91,12 +103,12 @@ describe("CertificateRegistry - Student Search Functions", function () {
 
   describe("getStudentCertificateByCourseName", function () {
     beforeEach(async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
       this.certificateRegistry = certificateRegistry;
       this.admin = admin;
       this.student1 = student1;
+      this.issuer = issuer;
 
       // Setup test data
       await certificateRegistry
@@ -104,8 +116,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Blockchain Development",
+          "Technology",
+          "Advanced",
           "ipfs://1"
         );
       await certificateRegistry
@@ -113,8 +128,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Smart Contract Programming",
+          "Technology",
+          "Advanced",
           "ipfs://2"
         );
       await certificateRegistry
@@ -122,8 +140,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Web Development",
+          "Technology",
+          "Intermediate",
           "ipfs://3"
         );
       await certificateRegistry
@@ -131,8 +152,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Mobile Development",
+          "Technology",
+          "Intermediate",
           "ipfs://4"
         );
     });
@@ -199,9 +223,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
 
   describe("getStudentCertificateByDate", function () {
     it("Should find certificates within date range", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const startTime = await time.latest();
 
@@ -211,8 +234,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -225,8 +251,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -240,8 +269,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -292,9 +324,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
     });
 
     it("Should handle edge case with exact timestamp match", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const beforeIssue = await time.latest();
 
@@ -304,8 +335,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -325,9 +359,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
     });
 
     it("Should return certificates in chronological order", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const startTime = await time.latest();
 
@@ -337,8 +370,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "First Course",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -349,8 +385,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Second Course",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -361,8 +400,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Third Course",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -393,9 +435,8 @@ describe("CertificateRegistry - Student Search Functions", function () {
     });
 
     it("Should handle overlapping date ranges correctly", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const startTime = await time.latest();
 
@@ -405,8 +446,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course A",
+          "Technology",
+          "Beginner",
           "ipfs://a"
         );
 
@@ -418,8 +462,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course B",
+          "Business",
+          "Intermediate",
           "ipfs://b"
         );
 
@@ -431,8 +478,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course C",
+          "Technology",
+          "Advanced",
           "ipfs://c"
         );
 
@@ -474,17 +524,19 @@ describe("CertificateRegistry - Student Search Functions", function () {
 
   describe("getStudentCertificateByHash", function () {
     it("Should return certificate when student owns it", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const tx = await certificateRegistry
         .connect(admin)
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -501,7 +553,7 @@ describe("CertificateRegistry - Student Search Functions", function () {
     });
 
     it("Should revert when certificate doesn't belong to student", async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
 
       const tx = await certificateRegistry
@@ -509,8 +561,11 @@ describe("CertificateRegistry - Student Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 

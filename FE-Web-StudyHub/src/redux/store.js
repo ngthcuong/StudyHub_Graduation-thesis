@@ -16,11 +16,13 @@ import certificateReducer from "./slices/certificate";
 import snackbarReducer from "./slices/snackbar";
 import authReducer from "./slices/auth";
 
+import { rootApi } from "../services/rootApi";
+
 const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  blacklist: ["certificate", "snackbar", "auth"],
+  blacklist: ["certificate", "snackbar", rootApi.reducerPath],
 };
 
 const persistedReducer = persistReducer(
@@ -29,6 +31,7 @@ const persistedReducer = persistReducer(
     certificate: certificateReducer,
     snackbar: snackbarReducer,
     auth: authReducer,
+    [rootApi.reducerPath]: rootApi.reducer,
   })
 );
 
@@ -39,7 +42,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(rootApi.middleware),
 });
 
 setupListeners(store.dispatch);

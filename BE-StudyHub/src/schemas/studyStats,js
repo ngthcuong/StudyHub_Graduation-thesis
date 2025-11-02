@@ -1,0 +1,45 @@
+const mongoose = require("mongoose");
+
+const dailyStatSchema = new mongoose.Schema(
+  {
+    day: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 31,
+    },
+    exercises: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Test", // tên model bài test của bạn
+    },
+    lessons: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "GrammarLesson", // tên model bài học của bạn
+    },
+  },
+  { _id: false }
+);
+
+const studyStatsSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    year: {
+      type: Number,
+      required: true,
+    },
+    month: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 12,
+    },
+    dailyStats: [dailyStatSchema],
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("StudyStats", studyStatsSchema);

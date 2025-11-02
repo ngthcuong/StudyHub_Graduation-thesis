@@ -19,6 +19,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import LecturerImage from "../assets/lecture.png";
 import StudentImage from "../assets/student.png";
+import CourseRecommend from "./course/CourseRecommend";
 
 const testimonials = [
   {
@@ -270,6 +271,8 @@ const LandingPage = () => {
           </Box>
         </Container>
       </section>
+
+      <CourseRecommend />
 
       {/* Statistics */}
       <section className="py-10 bg-white">

@@ -64,6 +64,30 @@ const deleteQuestionById = async (id) => {
   }
 };
 
+const findQuestionsByTestLevelAndCreator = async (filter) => {
+  try {
+    return await Question.find(filter).sort({ createdAt: 1 });
+  } catch (error) {
+    console.error(
+      "Error finding questions by test, level, and creator:",
+      error
+    );
+    throw new Error("Failed to find questions by test, level, and creator");
+  }
+};
+
+const findQuestionsByAttemptId = async (attemptId) => {
+  try {
+    return await Question.find({ attemptId })
+      .populate("testId", "title examType") // optional: lấy thêm thông tin Test
+      .populate("createdBy", "name email") // optional: lấy thông tin người tạo
+      .sort({ createdAt: 1 });
+  } catch (error) {
+    console.error("Error finding questions by attemptId:", error);
+    throw new Error("Failed to find questions by attemptId");
+  }
+};
+
 module.exports = {
   createQuestion,
   createManyQuestions,
@@ -72,4 +96,6 @@ module.exports = {
   updateQuestionById,
   deleteQuestionById,
   findQuestionsByIds,
+  findQuestionsByTestLevelAndCreator,
+  findQuestionsByAttemptId,
 };

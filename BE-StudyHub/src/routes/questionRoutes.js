@@ -31,4 +31,10 @@ router.delete(
   questionController.deleteQuestionById
 );
 
+// GET /questions/filter?testId=&level=&createdBy=
+router.post("/filter", questionController.getQuestionsByTestLevelAndCreator);
+
+// GET /questions/attempt/:attemptId
+router.get("/attempt/:attemptId", questionController.getQuestionsByAttemptId);
+
 module.exports = router;

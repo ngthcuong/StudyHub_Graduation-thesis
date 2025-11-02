@@ -61,6 +61,21 @@ const getAllUsers = async () => {
   }
 };
 
+const getMyCourses = async (userId) => {
+  try {
+    const course = await User.findById(userId)
+      .populate({
+        path: "courses",
+        select:
+          "title description teacherId courseType courseLevel thumbnailUrl category tags cost durationHours reviews grammarLessons",
+      })
+      .lean();
+    return course;
+  } catch (error) {
+    console.error("Error getting user's courses:", error);
+  }
+};
+
 module.exports = {
   createUser,
   findUserById,
@@ -68,4 +83,5 @@ module.exports = {
   findUserByEmail,
   updateUserById,
   getAllUsers,
+  getMyCourses,
 };

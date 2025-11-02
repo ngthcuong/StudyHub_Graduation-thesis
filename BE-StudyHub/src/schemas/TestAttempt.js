@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const testAttemptSchema = new mongoose.Schema(
   {
-    testId: {
+    testPoolId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Test",
+      ref: "TestPool",
       required: true,
     },
     userId: {
@@ -12,12 +12,20 @@ const testAttemptSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    startTime: { type: Date, default: Date.now },
-    endTime: { type: Date },
+    testId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Test",
+      required: true,
+    },
+    attemptNumber: { type: Number, default: 0 }, // lần attempt cho cùng 1 đề
+    maxAttempts: { type: Number, default: 3 },
     score: { type: Number, default: 0 },
-    feedback: { type: String, trim: true }, // AI feedback (speaking/writing)
-
-    evaluationModel: { type: String, default: "gemini" }, // hoặc gpt/manual
+    feedback: { type: String, trim: true },
+    evaluationModel: { type: String, default: "gemini" },
+    isPassed: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

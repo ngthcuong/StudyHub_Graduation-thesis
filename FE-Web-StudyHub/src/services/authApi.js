@@ -1,86 +1,84 @@
-import axios from "axios";
-import config from "../configs/config";
+import { rootApi } from "./rootApi";
+import { login } from "../redux/slices/auth";
 
-const login = async ({ email, password }) => {
-  try {
-    console.log({ email, password });
+export const authApi = rootApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Đăng ký
+    register: builder.mutation({
+      query: (userData) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: userData,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-    const response = await axios.post(`${config.baseApiUrl}/auth/login`, {
-      email,
-      password,
-    });
+    // Đăng nhập
+    login: builder.mutation({
+      query: ({ email, password }) => ({
+        url: "/auth/login",
+        method: "POST",
+        body: { email, password },
+      }),
+      async onQueryStarted(args, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(login(data));
+        } catch (error) {
+          console.error("Login failed: ", error);
+        }
+      },
+      invalidatesTags: ["User"],
+    }),
 
-    console.log(response);
+    // RefreshToken
+    refreshToken: builder.mutation({
+      query: (refreshToken) => ({
+        url: "/auth/refreshToken",
+        method: "POST",
+        body: { refreshToken },
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-    return response;
-  } catch (error) {
-    console.error("Login failed: ", error);
+    // Thay đổi mật khẩu
+    changePassword: builder.mutation({
+      query: ({ currentPassword, newPassword }) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body: { currentPassword, newPassword },
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-    // Log more detailed error information
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
-    }
+    // Quên mật khẩu - có thể thêm sau nếu cần
+    forgotPassword: builder.mutation({
+      query: (data) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-    throw error;
-  }
-};
+    // reset mật khẩu - có thể thêm sau nếu cần
+    resetPassword: builder.mutation({
+      query: ({ token, newPassword }) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: { token, newPassword },
+      }),
+      invalidatesTags: ["User"],
+    }),
+  }),
+});
 
-const register = async (data) => {
-  try {
-    console.log("data register: ", {
-      data,
-    });
-
-    const response = await axios.post(
-      `${config.baseApiUrl}/auth/register`,
-      data
-    );
-
-    console.log("res in service: ", response);
-    return response;
-  } catch (error) {
-    console.error("Register failed: ", error);
-
-    // Log more detailed error information
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
-    }
-
-    throw error;
-  }
-};
-
-const changePassword = async ({ currentPassword, newPassword }) => {
-  try {
-    const accessToken = localStorage.getItem("accessToken");
-    const response = await axios.post(
-      `${config.baseApiUrl}/auth/change-password`,
-      { currentPassword, newPassword },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (response.status === 200) {
-      return response.data.message;
-    } else {
-      return response.data.error;
-    }
-  } catch (error) {
-    console.error("Change password failed: ", error);
-
-    // Log more detailed error information
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
-    }
-
-    throw error;
-  }
-};
-
-export default { login, register, changePassword };
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useRefreshTokenMutation,
+  useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} = authApi;
+export default authApi;

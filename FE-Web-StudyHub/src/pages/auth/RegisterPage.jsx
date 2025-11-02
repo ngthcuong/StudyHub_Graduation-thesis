@@ -1,20 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Paper,
-  InputAdornment,
-  IconButton,
-  Divider,
-  FormControl,
-  Grid,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { Button, Typography, Box, Paper, Divider, Grid } from "@mui/material";
 import {
   Visibility,
   VisibilityOff,
@@ -27,70 +13,87 @@ import {
   Google,
   FacebookOutlined,
   Transgender,
+  AutoStories,
+  CrisisAlert,
 } from "@mui/icons-material";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import FormField from "../../components/FormField";
-import authApi from "../../services/authApi";
+import { useRegisterMutation } from "../../services/authApi";
+import { useDispatch, useSelector } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
+import SnackBar from "../../components/Snackbar";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const formSchema = yup.object({
     fullName: yup
       .string()
-      .required("Họ tên là bắt buộc")
-      .min(2, "Họ tên phải có ít nhất 2 ký tự")
+      .required("Full name is required")
+      .min(2, "Full name must be at least 2 characters")
       .matches(
         /^[A-Za-zÀ-ỹ][A-Za-zÀ-ỹ\s]{0,48}[A-Za-zÀ-ỹ]$/,
-        "Họ tên không hợp lệ"
+        "Invalid full name"
       )
       .trim(),
 
     dob: yup
       .date()
-      .required("Ngày sinh là bắt buộc")
-      .typeError("Ngày sinh không hợp lệ")
-      .max(new Date(), "Ngày sinh không hợp lệ"),
+      .required("Date of birth is required")
+      .typeError("Invalid date of birth")
+      .max(new Date(), "Invalid date of birth"),
 
     gender: yup
       .string()
-      .required("Vui lòng chọn giới tính")
-      .oneOf(["male", "female", "other"], "Giới tính không hợp lệ"),
+      .required("Please select a gender")
+      .oneOf(["male", "female", "other"], "Invalid gender"),
 
     email: yup
       .string()
-      .required("Email là bắt buộc")
-      .email("Email không hợp lệ"),
+      .required("Email is required")
+      .email("Invalid email address"),
 
     phone: yup
       .string()
-      .required("Số điện thoại là bắt buộc")
-      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
+      .required("Phone number is required")
+      .matches(/^(\+?[0-9]{1,4})?[0-9]{9,15}$/, "Invalid phone number"),
 
     password: yup
       .string()
-      .required("Mật khẩu là bắt buộc")
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
       .matches(
         /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
-        "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
+        "Password must contain uppercase, lowercase, number, and special character"
       ),
 
     confirmPassword: yup
       .string()
-      .required("Vui lòng nhập lại mật khẩu")
-      .oneOf([yup.ref("password")], "Mật khẩu không khớp"),
+      .required("Please confirm your password")
+      .oneOf([yup.ref("password")], "Passwords do not match"),
+
+    type: yup.string().required("Please select a type"),
+
+    target: yup
+      .number()
+      .typeError("Target must be a number")
+      .required("Target is required"),
+
+    time: yup
+      .number()
+      .typeError("Time must be a number")
+      .required("Time is required"),
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -100,20 +103,33 @@ const RegisterPage = () => {
       phone: "",
       password: "",
       confirmPassword: "",
+      type: "",
+      target: "",
+      time: "",
     },
     mode: "onChange",
   });
+
+  const [register, { isLoading }] = useRegisterMutation();
 
   const onSubmit = async (data) => {
     try {
       // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...registerData } = data;
-      const response = await authApi.register(registerData);
-      if (response) {
-        console.log("res register ", response);
+      const learningGoals = `Đạt ${data.type} ${data.target} trong vòng ${data.time} tháng.`;
+
+      const response = await register({ ...registerData, learningGoals });
+      if (!response.error) {
         navigate("/login", {
           state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
         });
+      } else {
+        dispatch(
+          openSnackbar({
+            severity: "error",
+            message: response?.error?.data?.error,
+          })
+        );
       }
     } catch (error) {
       console.error("Lỗi đăng ký:", error);
@@ -138,10 +154,10 @@ const RegisterPage = () => {
             component="h2"
             className="font-bold text-gray-900 mb-2"
           >
-            Đăng ký tài khoản
+            Create an Account
           </Typography>
           <Typography variant="body1" color="textSecondary">
-            Tạo tài khoản mới để bắt đầu học tập cùng StudyHub
+            Create a new account to start learning with StudyHub
           </Typography>
         </Box>
 
@@ -154,7 +170,7 @@ const RegisterPage = () => {
                 variant="h6"
                 className="font-semibold mb-4 text-gray-800"
               >
-                Thông tin cá nhân
+                Personal Information
               </Typography>
             </Grid>
 
@@ -163,7 +179,7 @@ const RegisterPage = () => {
               <FormField
                 name={"fullName"}
                 control={control}
-                label={"Họ và tên"}
+                label={"Full Name"}
                 startIcon={<Person className="text-gray-400" />}
               />
             </Grid>
@@ -173,7 +189,7 @@ const RegisterPage = () => {
               <FormField
                 name="dob"
                 control={control}
-                label="Ngày sinh"
+                label="Date of Birth"
                 type="date"
                 startIcon={<CalendarMonth className="text-gray-400" />}
               />
@@ -184,12 +200,12 @@ const RegisterPage = () => {
               <FormField
                 name="gender"
                 control={control}
-                label="Giới tính"
+                label="Gender"
                 type="select"
                 options={[
-                  { value: "male", label: "Nam" },
-                  { value: "female", label: "Nữ" },
-                  { value: "other", label: "Khác" },
+                  { value: "male", label: "Male" },
+                  { value: "female", label: "Female" },
+                  { value: "other", label: "Other" },
                 ]}
                 startIcon={<Transgender className="text-gray-400" />}
               />
@@ -202,7 +218,7 @@ const RegisterPage = () => {
                 variant="h6"
                 className="font-semibold mb-4 text-gray-800"
               >
-                Thông tin liên hệ
+                Contact Information
               </Typography>
             </Grid>
 
@@ -221,7 +237,7 @@ const RegisterPage = () => {
               <FormField
                 name="phone"
                 control={control}
-                label="Số điện thoại"
+                label="Phone Number"
                 type="tel"
                 startIcon={<PhoneIphone className="text-gray-400" />}
               />
@@ -234,7 +250,7 @@ const RegisterPage = () => {
                 variant="h6"
                 className="font-semibold mb-4 text-gray-800"
               >
-                Thông tin bảo mật
+                Security Information
               </Typography>
             </Grid>
 
@@ -243,7 +259,7 @@ const RegisterPage = () => {
               <FormField
                 name="password"
                 control={control}
-                label="Mật khẩu"
+                label="Password"
                 type={showPassword ? "text" : "password"}
                 startIcon={<Lock className="text-gray-400" />}
                 endIcon={showPassword ? <VisibilityOff /> : <Visibility />}
@@ -255,7 +271,7 @@ const RegisterPage = () => {
               <FormField
                 name="confirmPassword"
                 control={control}
-                label="Nhập lại mật khẩu"
+                label="Confirm Password"
                 type={showConfirmPassword ? "text" : "password"}
                 startIcon={<Lock className="text-gray-400" />}
                 endIcon={
@@ -267,6 +283,54 @@ const RegisterPage = () => {
               />
             </Grid>
 
+            {/* Mục tiêu học tập */}
+            <Grid size={12}>
+              <Divider className="my-4" />
+              <Typography
+                variant="h6"
+                className="font-semibold mb-4 text-gray-800"
+              >
+                Your Goal
+                <div className="text-[13px]">
+                  <strong>Ex:</strong> I want to get 750 TOEIC in 6 months.
+                </div>
+              </Typography>
+            </Grid>
+
+            <Grid size={4}>
+              <FormField
+                name="type"
+                control={control}
+                label="Type"
+                type="select"
+                options={[
+                  { value: "TOEIC", label: "TOEIC" },
+                  { value: "IELTS", label: "IELTS" },
+                ]}
+                startIcon={<AutoStories className="text-gray-400" />}
+              />
+            </Grid>
+
+            <Grid size={4}>
+              <FormField
+                name="target"
+                control={control}
+                label="Target"
+                type="tel"
+                startIcon={<CrisisAlert className="text-gray-400" />}
+              />
+            </Grid>
+
+            <Grid size={4}>
+              <FormField
+                name="time"
+                control={control}
+                label="In time (months)"
+                type="tel"
+                startIcon={<CalendarMonth className="text-gray-400" />}
+              />
+            </Grid>
+
             {/* Yêu cầu mật khẩu */}
             <Grid size={12}>
               <Box className="bg-blue-50 p-4 rounded-lg">
@@ -275,35 +339,35 @@ const RegisterPage = () => {
                   color="textSecondary"
                   className="font-semibold mb-2"
                 >
-                  Yêu cầu mật khẩu:
+                  Password requirements:
                 </Typography>
                 <Typography
                   variant="body2"
                   color="textSecondary"
                   component={"li"}
                 >
-                  Ít nhất 8 ký tự
+                  At least 8 characters
                 </Typography>
                 <Typography
                   variant="body2"
                   color="textSecondary"
                   component={"li"}
                 >
-                  Chứa chữ hoa và chữ thường
+                  Contains uppercase and lowercase letters
                 </Typography>
                 <Typography
                   variant="body2"
                   color="textSecondary"
                   component={"li"}
                 >
-                  Chứa ít nhất 1 số
+                  Contains at least 1 number
                 </Typography>
                 <Typography
                   variant="body2"
                   color="textSecondary"
                   component={"li"}
                 >
-                  Chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*...)
+                  Contains at least 1 special character (!@#$%^&*...)
                 </Typography>
               </Box>
             </Grid>
@@ -321,7 +385,7 @@ const RegisterPage = () => {
                   type="submit"
                   variant="contained"
                   size="large"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                   startIcon={<PersonAdd />}
                   className="py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 max-w-fit"
                   sx={{
@@ -330,7 +394,7 @@ const RegisterPage = () => {
                     fontSize: 16,
                   }}
                 >
-                  {isSubmitting ? "Đang xử lý..." : "Đăng ký tài khoản"}
+                  {isLoading ? "Processing..." : "Register Account"}
                 </Button>
               </Box>
             </Grid>
@@ -338,14 +402,14 @@ const RegisterPage = () => {
         </Box>
 
         {/* Divider */}
-        <Divider className="my-6">
+        {/* <Divider className="my-6">
           <Typography variant="body2" color="textSecondary">
-            hoặc
+            or
           </Typography>
-        </Divider>
+        </Divider> */}
 
         {/* Social Register Buttons */}
-        <Box
+        {/* <Box
           sx={{
             display: "flex",
             justifyContent: "center",
@@ -365,7 +429,7 @@ const RegisterPage = () => {
             }}
           >
             <Google className="mr-2" />
-            Đăng ký với Google
+            Sign up with Google
           </Button>
 
           <Button
@@ -380,23 +444,24 @@ const RegisterPage = () => {
             }}
           >
             <FacebookOutlined className="mr-2" />
-            Đăng ký với Facebook
+            Sign up with Facebook
           </Button>
-        </Box>
+        </Box> */}
 
         {/* Login Link */}
-        <Box className="text-center mt-6">
+        <Box className="text-center ">
           <Typography variant="body2" color="textSecondary">
-            Đã có tài khoản?{" "}
+            Already have an account?{" "}
             <Link
               to="/login"
               className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
             >
-              Đăng nhập ngay
+              Login now
             </Link>
           </Typography>
         </Box>
       </Paper>
+      <SnackBar isOpen={isOpen} message={message} severity={severity} />
     </Box>
   );
 };

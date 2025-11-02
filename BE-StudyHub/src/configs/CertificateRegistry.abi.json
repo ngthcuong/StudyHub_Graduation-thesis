@@ -163,8 +163,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -180,6 +185,168 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "issuedDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadataURI",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct CertificateRegistry.Certificate[]",
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "name": "adminSearchByCourseLevel",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "certHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "student",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "studentName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "issuedDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadataURI",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct CertificateRegistry.Certificate[]",
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "name": "adminSearchByCourseType",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "certHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "student",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "studentName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -229,8 +396,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -246,6 +418,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -290,8 +472,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -307,6 +494,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -345,8 +542,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -362,6 +564,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -406,8 +618,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -423,6 +640,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -476,7 +703,7 @@
         "type": "string"
       }
     ],
-    "name": "getStudentCertificateByCourseName",
+    "name": "getStudentCertificateByCourseLevel",
     "outputs": [
       {
         "components": [
@@ -486,8 +713,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -503,6 +735,178 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "issuedDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadataURI",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct CertificateRegistry.Certificate[]",
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "name": "getStudentCertificateByCourseName",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "certHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "student",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "studentName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "issuedDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadataURI",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct CertificateRegistry.Certificate[]",
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "name": "getStudentCertificateByCourseType",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "certHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "student",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "studentName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -557,8 +961,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -574,6 +983,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -623,8 +1042,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -640,6 +1064,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -679,8 +1113,13 @@
             "type": "bytes32"
           },
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "issuer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "issuerName",
             "type": "string"
           },
           {
@@ -696,6 +1135,16 @@
           {
             "internalType": "string",
             "name": "courseName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "courseLevel",
             "type": "string"
           },
           {
@@ -777,13 +1226,28 @@
         "type": "string"
       },
       {
-        "internalType": "string",
+        "internalType": "address",
         "name": "_issuer",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_issuerName",
         "type": "string"
       },
       {
         "internalType": "string",
         "name": "_courseName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_courseType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_courseLevel",
         "type": "string"
       },
       {

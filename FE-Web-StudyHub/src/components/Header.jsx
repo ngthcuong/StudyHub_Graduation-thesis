@@ -17,6 +17,7 @@ import {
   LogoutOutlined,
   PersonOutline,
   SettingsOutlined,
+  Verified,
 } from "@mui/icons-material";
 import { logout } from "../redux/slices/auth";
 
@@ -35,7 +36,7 @@ const Header = () => {
   if (user) {
     // Đã đăng nhập
     return (
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border rounded-lg border-gray-200 bg-white mb-3">
         <Container maxWidth="lg" className="pb-2 pt-3">
           <Box className="flex items-center justify-between">
             <Box>
@@ -84,7 +85,7 @@ const Header = () => {
                 >
                   <MenuItem
                     onClick={() => {
-                      navigate("/profile");
+                      navigate("/home/profile");
                       setAnchorEl(null);
                     }}
                   >
@@ -92,7 +93,7 @@ const Header = () => {
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
-                      navigate("/dashboard");
+                      navigate("/home/dashboard");
                       setAnchorEl(null);
                     }}
                   >
@@ -100,7 +101,15 @@ const Header = () => {
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
-                      navigate("/settings");
+                      navigate("/verify-certificate");
+                      setAnchorEl(null);
+                    }}
+                  >
+                    <Verified sx={{ mr: 1 }} /> Verify Certificate
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      navigate("/home/settings");
                       setAnchorEl(null);
                     }}
                   >
@@ -127,18 +136,24 @@ const Header = () => {
 
   // Chưa đăng nhập
   return (
-    <header className="border-b border-gray-200">
+    <header className="border rounded-lg border-gray-200 bg-white mb-3">
       <Container
         maxWidth="lg"
         className="flex items-center justify-between py-4"
       >
         <div className="font-bold text-2xl">Logo</div>
         <nav className="flex items-center gap-8">
-          <a href="#" className="text-gray-700 hover:text-blue-600">
+          <a href="/" className="text-gray-700 hover:text-blue-600">
             Home
           </a>
-          <a href="#" className="text-gray-700 hover:text-blue-600">
+          <a href="/course" className="text-gray-700 hover:text-blue-600">
             Courses
+          </a>
+          <a
+            href="/verify-certificate"
+            className="text-gray-700 hover:text-blue-600"
+          >
+            Verify Certificate
           </a>
           <a href="#" className="text-gray-700 hover:text-blue-600">
             Contact

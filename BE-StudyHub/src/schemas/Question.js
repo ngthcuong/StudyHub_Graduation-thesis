@@ -8,6 +8,12 @@ const questionSchema = new mongoose.Schema(
       required: true,
     },
 
+    attemptId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TestAttempt",
+      required: false,
+    },
+
     questionText: { type: String, required: true }, // nội dung câu hỏi
 
     questionType: {
@@ -27,7 +33,7 @@ const questionSchema = new mongoose.Schema(
     audioUrl: { type: String, trim: true }, // listening
     imageUrl: { type: String, trim: true }, // hình minh họa
     points: { type: Number, default: 1 },
-    descriptions: { type: String, trim: true }, // mô tả chi tiết cho câu hỏi hình ảnh
+    descriptions: { type: String, trim: true }, // giải thích đáp án
 
     skill: {
       type: String,
@@ -42,6 +48,18 @@ const questionSchema = new mongoose.Schema(
     },
     topic: [{ type: String, trim: true }],
     tag: [{ type: String, trim: true }],
+
+    // Người tạo câu hỏi (teacher/admin/AI)
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+
+    level: {
+      TOEIC: { type: String },
+      IELTS: { type: String },
+    },
   },
   { timestamps: true }
 );

@@ -4,16 +4,40 @@ import ProtectedLayout from "../layouts/ProtectedLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
-import HomePage from "../pages/HomePage";
 import VerifyCertificatePage from "../pages/certificate/VerifyCertificatePage";
-import UserInfoPage from "../pages/user/UserInfoPage";
 import LandingPage from "../pages/LandingPage";
 import CourseDetail from "../pages/course/CourseDetail";
+import CoursePayment from "../pages/course/CoursePayment";
 import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
 import TestLayout from "../layouts/TestLayout";
 import TestList from "../pages/test/TestList";
+import CourseList from "../pages/course/CourseList";
+import CourseLessson from "../components/CourseLessson";
+import HomeLayout from "../layouts/HomeLayout";
+import Dashboard from "../pages/home/Dashboard";
+import Settings from "../pages/home/Settings";
+import Certificate from "../pages/home/Certificates";
+import UserInfo from "../pages/home/UserInfo";
+
+import TestResultDisplay from "../pages/test/TestResultDisplay";
+import LessonContentViewer from "../pages/course/LessonContentViewer";
+
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/Dashboard";
+import AdminCertificate from "../pages/admin/Certificate";
+import AdminTest from "../pages/admin/Test";
+import AdminReview from "../pages/admin/Review";
+import AdminCourse from "../pages/admin/Course";
+
+import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
+import TestInformationCustom from "../pages/test/TestInformationCustom";
+
+import FillInBlankTest from "../pages/test/FillInBlankTest";
+import CourseRecommend from "../pages/course/CourseRecommend";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 
 export const router = createBrowserRouter([
   {
@@ -24,7 +48,7 @@ export const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
-        path: "/verify-cert",
+        path: "/verify-certificate",
         element: <VerifyCertificatePage />,
       },
       {
@@ -32,16 +56,75 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/home",
-            element: <HomePage />,
+            element: <HomeLayout />,
+            children: [
+              {
+                path: "dashboard",
+                index: true,
+                element: <Dashboard />,
+              },
+              {
+                path: "courses",
+                element: <CourseList variant="owned" />,
+              },
+              {
+                path: "exercises",
+                element: <TestList />,
+              },
+              {
+                path: "certificates",
+                element: <Certificate />,
+              },
+              {
+                path: "profile",
+                element: <UserInfo />,
+              },
+              {
+                path: "settings",
+                element: <Settings />,
+              },
+            ],
           },
           {
-            path: "/profile",
-            element: <UserInfoPage />,
+            path: "/admin",
+            element: <AdminLayout />,
+            children: [
+              {
+                path: "dashboard",
+                element: <AdminDashboard />,
+              },
+              {
+                path: "certificate",
+                element: <AdminCertificate />,
+              },
+              {
+                path: "test",
+                element: <AdminTest />,
+              },
+              {
+                path: "review",
+                element: <AdminReview />,
+              },
+              { path: "course", element: <AdminCourse /> },
+            ],
           },
           {
             path: "/course",
+            element: <CourseList variant="market" />,
+          },
+          {
+            path: "/course/payment",
+            element: <CoursePayment />,
+          },
+          {
+            path: "/course/:courseId",
             element: <CourseDetail />,
           },
+          {
+            path: "/course/:courseId/lesson/:lessonId",
+            element: <CourseLessson />,
+          },
+
           {
             path: "/test",
             element: <TestList />,
@@ -59,10 +142,30 @@ export const router = createBrowserRouter([
                 element: <TestMultipleChoice />,
               },
               {
+                path: "custom",
+                element: <TestMultipleChoiceCustom />,
+              },
+              {
+                path: "fill-in-blank",
+                element: <FillInBlankTest />,
+              },
+              {
                 path: "result",
                 element: <TestResult />,
               },
+              {
+                path: "custom-info",
+                element: <TestInformationCustom />,
+              },
             ],
+          },
+          {
+            path: "/attempt/:attemptId",
+            element: <TestResultDisplay />,
+          },
+          {
+            path: "/lesson/:lessonId",
+            element: <LessonContentViewer />,
           },
         ],
       },
@@ -76,6 +179,14 @@ export const router = createBrowserRouter([
           {
             path: "/login",
             element: <LoginPage />,
+          },
+          {
+            path: "/forgot-password",
+            element: <ForgotPasswordPage />,
+          },
+          {
+            path: "/reset-password",
+            element: <ResetPasswordPage />,
           },
         ],
       },

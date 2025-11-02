@@ -1,6 +1,7 @@
 const config = require("../configs/config");
 const pinataSDK = require("@pinata/sdk");
 const { Readable } = require("stream");
+const axios = require("axios");
 
 const pinata = new pinataSDK({ pinataJWTKey: config.pinataJwt });
 
@@ -14,6 +15,16 @@ function ipfsUriToCid(uri) {
 }
 
 /**
+ * Chuyển ipfs://CID về gateway URL.
+ * @param {string} uri Chuỗi IPFS URI (ví dụ: "ipfs://bafy...")
+ * @returns {string} CID thuần (http://<gateway>/ipfs/bafy...)
+ */
+function ipfsUriToGatewayUrl(uri) {
+  const cid = uri?.startsWith("ipfs://") ? uri.slice(7) : uri;
+  return `${config.pinataGatewayBase}/ipfs/${cid}`;
+}
+
+/**
  * Tải metadata JSON từ IPFS qua gateway Pinata bằng URI hoặc CID.
  * @param {string} uriOrCid IPFS URI (ipfs://...) hoặc CID thuần
  * @returns {Promise<any>} Đối tượng JSON đã parse
@@ -24,6 +35,24 @@ async function fetchJSONFromIPFS(uriOrCid) {
   const { data } = await axios.get(url, { responseType: "json" });
   return data;
 }
+
+/**
+ * Lấy metadata JSON của chứng chỉ từ Pinata/IPFS bằng CID.
+ * @param {string} cid - CID của metadata trên IPFS
+ * @returns {Promise<Object|null>} - Trả về metadata JSON hoặc null nếu lỗi
+ */
+const getPinataMetadataByCID = async (cid) => {
+  try {
+    if (!cid) return null;
+    // Sử dụng gateway của Pinata để lấy nội dung JSON
+    const url = `${config.pinataGatewayBase}/ipfs/${cid}`;
+    const response = await axios.get(url, { timeout: 10000 });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching metadata from Pinata:", error.message);
+    return null;
+  }
+};
 
 /**
  * Chuyển Buffer thành Readable stream để upload lên Pinata.
@@ -111,7 +140,7 @@ async function searchMetadataByKeyvalues(
     pageLimit,
     pageOffset,
     metadata: {
-      name: "metadata.json", // chỉ lấy các item có tên metadata này (trùng với uploadJSON đã đặt)
+      name: "studyhub-certificate.json", // chỉ lấy các item có tên metadata này (trùng với uploadJSON đã đặt)
       keyvalues, // bộ lọc theo chuẩn Pinata (từng key có dạng {value,op}, vd: eq, like, ... )
     },
   };
@@ -149,4 +178,6 @@ module.exports = {
   searchMetadataByKeyvalues,
   fetchJSONFromIPFS,
   updatePinataKeyvalues,
+  ipfsUriToGatewayUrl,
+  getPinataMetadataByCID,
 };

@@ -1,0 +1,45 @@
+import { rootApi } from "./rootApi";
+
+export const studyApi = rootApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // 🧠 Lấy thống kê học tập theo tháng & năm
+    getStudyStats: builder.query({
+      query: ({ month, year }) => ({
+        url: `/study/stats?month=${month}&year=${year}`,
+        method: "GET",
+      }),
+      providesTags: ["StudyStats"],
+    }),
+
+    // 🕒 Ghi log học
+    logStudySession: builder.mutation({
+      query: ({ lessonId, durationSeconds }) => {
+        console.log("🧠 Sending to backend:", { lessonId, durationSeconds }); // 👈 LOG tại đây
+        return {
+          url: "/study/log",
+          method: "POST",
+          body: { lessonId, durationSeconds },
+        };
+      },
+      invalidatesTags: ["StudyStats"],
+    }),
+  }),
+});
+
+export const { useGetStudyStatsQuery, useLogStudySessionMutation } = studyApi;
+export default studyApi;
+
+// CÁCH DÙNG trong component React:
+// const [logStudySession, { isLoading, error }] = useLogStudySessionMutation();
+
+//   const handleLog = async () => {
+//     try {
+//       const result = await logStudySession({
+//         lessonId,
+//         durationMinutes: 45, // ví dụ học 45 phút
+//       }).unwrap(); // unwrap giúp lấy data thật hoặc throw lỗi
+//       console.log("✅ Ghi log thành công:", result);
+//     } catch (err) {
+//       console.error("❌ Ghi log thất bại:", err);
+//     }
+//   };

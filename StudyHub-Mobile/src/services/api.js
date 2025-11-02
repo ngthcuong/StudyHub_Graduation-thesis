@@ -1,0 +1,76 @@
+import axios from "axios";
+import { store } from "../store/store";
+import { refreshToken, logout } from "../store/slices/authSlice";
+import { Platform } from "react-native";
+
+// Base API configuration
+let API_BASE_URL_HOME = "http://172.28.103.25:3000/api/v1"; // Update this with your backend URL
+let API_BASE_URL_SCHOOL = "http://172.20.92.250:3000/api/v1"; // Update this with your backend URL
+
+// Nếu chạy web thì dùng proxy hoặc localhost
+if (Platform.OS === "web") {
+  API_BASE_URL_HOME = "/api/v1"; // => trỏ qua proxy của webpack (cấu hình trong package.json)
+}
+
+const api = axios.create({
+  baseURL: API_BASE_URL_HOME,
+  timeout: 300000, // 5 minutes timeout
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const state = store.getState();
+    const token = state.auth.token;
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle token refresh
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const state = store.getState();
+        const refreshTokenValue = state.auth.refreshTokenValue;
+
+        if (refreshTokenValue) {
+          await store.dispatch(refreshToken(refreshTokenValue)).unwrap();
+
+          // Retry the original request with new token
+          const newState = store.getState();
+          originalRequest.headers.Authorization = `Bearer ${newState.auth.token}`;
+          return api(originalRequest);
+        } else {
+          // No refresh token, logout user
+          store.dispatch(logout());
+        }
+      } catch (refreshError) {
+        // Refresh failed, logout user
+        store.dispatch(logout());
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;

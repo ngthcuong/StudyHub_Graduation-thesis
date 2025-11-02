@@ -11,69 +11,82 @@ import {
   InputAdornment,
   List,
   ListItem,
+  CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import {
+  FilterAltOutlined,
+  FilterAltOffOutlined,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-
-const mockData = [
-  {
-    id: "68bed08f2623c6062be404dc",
-    title: "TOEIC Grammar Practice",
-    description:
-      "Practice test with Present Simple, Present Continuous, Present Perfect, and Past Simple.",
-    topic:
-      "Present Simple, Present Continuous, Present Perfect, and Past Simple",
-    skill: "grammar",
-    level: "B1",
-    durationMin: 30,
-    createdBy: {
-      $oid: "68a2e78da4178e9ee70a34a1",
-    },
-    numQuestions: 10,
-    difficulty: "medium",
-    type: "test",
-    questionTypes: ["multiple_choice"],
-    createdAt: {
-      $date: "2025-09-08T12:48:15.612Z",
-    },
-    updatedAt: {
-      $date: "2025-09-08T12:48:15.612Z",
-    },
-    __v: 0,
-  },
-];
+import {
+  useGetMyTestsMutation,
+  useGetAttemptDetailByUserMutation,
+} from "../../services/testApi";
+import ModalCreateCustomTest from "../../components/ModalCreateCustomTest";
+import { useEffect } from "react";
 
 const typeOptions = ["All Types", "Test", "Assignment"];
 const statusOptions = ["All Status", "Completed", "Not Completed"];
-const difficultyOptions = ["All Levels", "Easy", "Medium", "Hard"];
+// const difficultyOptions = ["All Levels", "Easy", "Medium", "Hard"];
 
 const TestList = () => {
   const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [type, setType] = useState("All Types");
   const [status, setStatus] = useState("All Status");
   const [difficulty, setDifficulty] = useState("All Levels");
   const [showFilter, setShowFilter] = useState(false);
+  const [tests, setTests] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataCreatedTest, setDataCreatedTest] = useState(null);
+  // const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  const [getMyTests] = useGetMyTestsMutation();
+  const [getAttemptDetailByUser] = useGetAttemptDetailByUserMutation();
+
+  const fetchTests = async () => {
+    try {
+      setIsLoading(true);
+      const res = await getAttemptDetailByUser().unwrap();
+      console.log("Fetched tests:", res);
+      setTests(res);
+    } catch (error) {
+      if (error.status === 404) {
+        setTests({ data: [], total: 0 });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTests();
+  }, [getMyTests]);
 
   // Lọc dữ liệu
   const filtered = useMemo(() => {
-    return mockData.filter((item) => {
-      const matchTitle = item.title
+    if (!tests?.data) return [];
+    return tests?.data?.filter((item) => {
+      const matchTitle = item?.testId?.title
         .toLowerCase()
         .includes(search.toLowerCase());
-      const matchType = type === "All Types" || item.type === type;
+      const matchType = type === "All Types" || item.testId.type === type;
       const matchStatus =
         status === "All Status" ||
-        (status === "Completed" && item.completed) ||
-        (status === "Not Completed" && !item.completed);
+        (status === "Completed" && item.testId.completed) ||
+        (status === "Not Completed" && !item.testId.completed);
       const matchDifficulty =
-        difficulty === "All Levels" || item.difficulty === difficulty;
+        difficulty === "All Levels" || item.testId.difficulty === difficulty;
       return matchTitle && matchType && matchStatus && matchDifficulty;
     });
-  }, [search, type, status, difficulty]);
+  }, [search, type, status, difficulty, tests?.data]);
 
   const handleClearAll = () => {
     setSearch("");
@@ -82,20 +95,74 @@ const TestList = () => {
     setDifficulty("All Levels");
   };
 
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  // TODO: Cập nhật UI hiển thị thông báo lỗi
+  // if (error) {
+  //   return <div>{error}</div>;
+  // }
+
+  const openModal = () => {
+    setOpen(true);
+  };
+
+  console.log("Data created test in TestList:", filtered);
+
   return (
-    <Box className="min-h-screen bg-gray-50 py-8 px-2">
-      <Box className="max-w-4xl mx-auto">
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          color="#22223b"
-          sx={{ mb: 1 }}
+    <Box className="min-h-fit bg-white py-8 px-6 rounded-xl">
+      <Box className="max-w-6xl mx-auto">
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "center", sm: "flex-start" },
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, sm: 0 },
+            mb: 1,
+          }}
         >
-          Assignments & Tests
-        </Typography>
-        <Typography variant="subtitle1" color="#64748b" sx={{ mb: 2 }}>
-          Track your progress and complete your learning tasks
-        </Typography>
+          <Box>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              color="#22223b"
+              sx={{ mb: 1 }}
+            >
+              Assignments & Tests
+            </Typography>
+            <Typography variant="subtitle1" color="#64748b" sx={{ mb: 2 }}>
+              Track your progress and complete your learning tasks
+            </Typography>
+          </Box>
+          <Tooltip title="Create a new test with custom questions and settings">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openModal}
+              sx={{
+                backgroundColor: "#1976d2",
+                "&:hover": { backgroundColor: "#1565c0" },
+                "&:disabled": { backgroundColor: "#ccc" },
+                textTransform: "none",
+                fontWeight: 600,
+                py: 1,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.25)",
+                minWidth: { xs: "auto", sm: 160 },
+              }}
+            >
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                Create New Test
+              </Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                Create Test
+              </Box>
+            </Button>
+          </Tooltip>
+        </Box>
+
         {/* Thanh search và filter trigger */}
         <Box className="bg-white rounded-xl shadow p-4 mb-6">
           <Stack
@@ -145,7 +212,7 @@ const TestList = () => {
               color="#64748b"
               sx={{ minWidth: 100, textAlign: "center" }}
             >
-              {filtered.length} of {mockData.length} items
+              {filtered.length} of {tests?.total || 0} items
             </Typography>
           </Stack>
 
@@ -194,7 +261,7 @@ const TestList = () => {
                 </Select>
               </Box>
               {/* Level */}
-              <Box className="flex flex-col w-full md:w-auto">
+              {/* <Box className="flex flex-col w-full md:w-auto">
                 <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
                   Difficulty Level
                 </Typography>
@@ -210,21 +277,7 @@ const TestList = () => {
                     </MenuItem>
                   ))}
                 </Select>
-              </Box>
-              {/* Button */}
-              {/* <Button
-                className="h-full"
-                variant="contained"
-                color="primary"
-                sx={{
-                  minWidth: 140,
-                  textTransform: "none",
-                  fontWeight: 600,
-                }}
-                onClick={() => setShowFilter(false)}
-              >
-                Apply Filters
-              </Button> */}
+              </Box> */}
             </Stack>
           )}
         </Box>
@@ -233,15 +286,17 @@ const TestList = () => {
         <List className="rounded-xl">
           {filtered.map((item) => (
             <ListItem
-              key={item.id}
+              key={item.testId._id}
               className="flex items-center justify-between !py-4  border rounded-xl mb-5 !shadow-md !bg-white cursor-pointer"
-              onClick={() =>
-                navigate(`/test/${item.id}`, {
+              onClick={() => {
+                navigate(`/test/${item.testId._id}/custom-info`, {
                   state: {
-                    testInfor: item,
+                    testInfor: item.testId,
+                    dataCreatedTest: dataCreatedTest,
+                    attemptDetail: item,
                   },
-                })
-              }
+                });
+              }}
             >
               <Stack
                 direction="row"
@@ -250,7 +305,7 @@ const TestList = () => {
                 className="w-full"
               >
                 {/* Hiện trạng thái completion */}
-                {item.completed ? (
+                {item?.attemptNumber === item?.maxAttempts ? (
                   <CheckCircleIcon color="success" />
                 ) : (
                   <RadioButtonUncheckedIcon color="disabled" />
@@ -263,10 +318,10 @@ const TestList = () => {
                       fontWeight={600}
                       color="#22223b"
                     >
-                      {item.title}
+                      {item.testId.title}
                     </Typography>
                     {/* Độ khó */}
-                    <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                    {/* <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
                       <Typography
                         variant="subtitle2"
                         fontWeight={400}
@@ -282,12 +337,14 @@ const TestList = () => {
                           textTransform: "capitalize",
                         }}
                       />
-                    </Stack>
+                    </Stack> */}
                   </Box>
                   {/* Loại bài */}
                   <Chip
-                    label={item.type}
-                    color={item.type === "Test" ? "warning" : "info"}
+                    label={item.testId.examType}
+                    color={
+                      item.testId.examType === "TOEIC" ? "warning" : "info"
+                    }
                     size="small"
                     sx={{ textTransform: "capitalize" }}
                   />
@@ -297,6 +354,16 @@ const TestList = () => {
           ))}
         </List>
       </Box>
+      <ModalCreateCustomTest
+        open={open}
+        handleClose={() => setOpen(false)}
+        onSuccess={(newTestData) => {
+          // ✅ newTestData chính là payload_form
+          fetchTests();
+          setOpen(false);
+          setDataCreatedTest(newTestData);
+        }}
+      />
     </Box>
   );
 };

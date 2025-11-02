@@ -9,15 +9,23 @@ const authRoutes = require("./src/routes/authRoutes");
 const courseRoutes = require("./src/routes/courseRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const certificateRoutes = require("./src/routes/certificateRoutes");
+const reviewRoutes = require("./src/routes/reviewRoutes");
+const paymentRoutes = require("./src/routes/paymentRoutes");
 
 const testRoutes = require("./src/routes/testRoutes");
 const questionRoutes = require("./src/routes/questionRoutes");
 const attemptRoutes = require("./src/routes/attemptRoutes");
-const answerOptionRoutes = require("./src/routes/answerOptionRoutes");
-const userAnswerRoutes = require("./src/routes/userAnswerRoutes");
 
 const testResultRoutes = require("./src/routes/testResultRoutes");
 const generateTestRoutes = require("./src/routes/generateTestRoutes");
+
+const testPoolRoutes = require("./src/routes/testPoolRoutes");
+
+const attemptDetailRoutes = require("./src/routes/attemptDetailRoutes");
+
+const studyRoutes = require("./src/routes/studyRoutes");
+
+const grammarLessonRoutes = require("./src/routes/grammarLessonRoutes");
 
 require("dotenv").config();
 
@@ -41,15 +49,22 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/certs", certificateRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/payments", paymentRoutes);
 
 app.use("/api/v1/tests", testRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/attempts", attemptRoutes);
-app.use("/api/v1/options", answerOptionRoutes);
-app.use("/api/v1/answers", userAnswerRoutes);
 
 app.use("/api/v1/test-result", testResultRoutes);
 app.use("/api/v1/generate-test", generateTestRoutes); // tạm thời dùng chung
+app.use("/api/v1/test-pools", testPoolRoutes);
+
+app.use("/api/v1/attempt-details", attemptDetailRoutes);
+
+app.use("/api/v1/study", studyRoutes);
+
+app.use("/api/v1/grammar-lessons", grammarLessonRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {

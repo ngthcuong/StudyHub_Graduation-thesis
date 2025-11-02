@@ -12,31 +12,20 @@ export const authSlice = createSlice({
       state.user = action.payload.user;
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
-      localStorage.setItem("user", JSON.stringify(state.user));
-      localStorage.setItem("accessToken", state.accessToken);
-      localStorage.setItem("refreshToken", state.refreshToken);
+      // localStorage.setItem("user", JSON.stringify(state.user));
+      // localStorage.setItem("accessToken", state.accessToken);
+      // localStorage.setItem("refreshToken", state.refreshToken);
     },
     logout: (state) => {
       state.user = null;
       state.accessToken = "";
       state.refreshToken = "";
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
     },
-    saveUserInfor: (state) => {
-      const user = localStorage.getItem("user");
-      const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
-
-      if (user && accessToken) {
-        state.user = JSON.parse(user);
-        state.accessToken = accessToken;
-        state.refreshToken = refreshToken;
-      }
+    updateUser: (state, action) => {
+      state.user = { ...state.user, ...action.payload };
     },
   },
 });
 
-export const { login, logout, saveUserInfor } = authSlice.actions;
+export const { login, logout, updateUser } = authSlice.actions;
 export default authSlice.reducer;

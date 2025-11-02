@@ -1,41 +1,55 @@
-import React, { useState } from "react";
-import { TextField, CircularProgress, Chip, Avatar } from "@mui/material";
-import { verifyCertificateByCode } from "../../services/certificateApi";
-// import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-// import ErrorIcon from "@mui/icons-material/Error";
+import React, { useEffect, useState } from "react";
+import { TextField, CircularProgress } from "@mui/material";
+import { useLazyVerifyCertificateByCodeQuery } from "../../services/certificateApi";
+import CertificateDetailModal from "../../components/CertificateDetailModal";
+import Header from "../../components/Header";
 
 const VerifyCertificatePage = () => {
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState(null);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [currentResult, setCurrentResult] = useState(null);
+
+  const [
+    verifyCertificate,
+    { data: result, isLoading, error: apiError, isError, isSuccess },
+  ] = useLazyVerifyCertificateByCodeQuery();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setResult(null);
+
     if (!code.trim()) {
-      setError("Vui lòng nhập mã chứng chỉ");
+      setError("Please input certificate code.");
       return;
     }
-    try {
-      setLoading(true);
-      const data = await verifyCertificateByCode(code.trim());
-      console.log(result);
 
-      setResult(data);
+    try {
+      const response = await verifyCertificate(code.trim()).unwrap();
+      setCurrentResult(response.certificate);
+      setOpenDetailModal(true);
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      // Error được handle tự động bởi RTK Query
+      console.error("Verification failed:", err);
     }
   };
 
-  const cert = result?.certificate;
+  useEffect(() => {
+    if (result && isSuccess) {
+      setCurrentResult(result);
+      setOpenDetailModal(true);
+    }
+  }, [result, isSuccess]);
+
+  const handleCloseDetailModal = () => {
+    setOpenDetailModal(false);
+    setCurrentResult(null);
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-start justify-center py-16 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-slate-200 p-10">
+    <div className="min-h-screen flex mx-auto flex-col w-7xl">
+      <Header />
+      <div className="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-slate-200 p-10 self-center">
         <h1 className="text-3xl font-semibold text-center mb-2 text-slate-900">
           Certificate Verification
         </h1>
@@ -64,18 +78,18 @@ const VerifyCertificatePage = () => {
             />
           </div>
 
-          {error && (
+          {(error || isError) && (
             <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-              {error}
+              {error || apiError?.data?.message || "Verification failed"}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full h-12 inline-flex items-center justify-center rounded-md bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white font-medium text-sm transition-colors"
+            disabled={isLoading}
+            className="w-full h-12 inline-flex items-center justify-center rounded-md bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white font-medium text-sm transition-colors cursor-pointer"
           >
-            {loading ? (
+            {isLoading ? (
               <span className="inline-flex items-center gap-2">
                 <CircularProgress size={18} sx={{ color: "#fff" }} />
                 Verifying...
@@ -86,83 +100,14 @@ const VerifyCertificatePage = () => {
           </button>
         </form>
 
-        {!loading && result && (
-          <div className="mt-10">
-            {result ? (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  {/* <CheckCircleIcon className="text-emerald-500" /> */}
-                  <h2 className="text-xl font-semibold text-slate-800">
-                    Certificate Valid
-                  </h2>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-6 text-sm">
-                  <div className="space-y-2">
-                    <p className="font-medium text-slate-600">
-                      Certificate Code
-                    </p>
-                    <p className="font-mono text-slate-900 bg-slate-100 rounded-md px-2 py-1 text-xs break-all">
-                      {cert?.code || code}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-slate-600">Issued To</p>
-                    <p className="text-slate-900">{cert?.student?.name}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-slate-600">Course</p>
-                    <p className="text-slate-900">{cert?.course?.name}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-slate-600">Issued Date</p>
-                    <p className="text-slate-900">
-                      {cert?.issueDate?.formatted
-                        ? new Date(cert.issueDate.formatted).toLocaleString(
-                            "vi-VN"
-                          )
-                        : ""}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-slate-600">Hash</p>
-                    <p className="font-mono text-[11px] leading-relaxed text-slate-900 bg-slate-100 rounded-md px-2 py-1 break-all">
-                      {cert?.certHash}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-slate-600">Status</p>
-                    <div>
-                      <Chip
-                        color="success"
-                        size="small"
-                        label="Authentic"
-                        avatar={
-                          <Avatar sx={{ bgcolor: "transparent" }}>
-                            {/* <CheckCircleIcon
-                              className="text-emerald-500"
-                              fontSize="small"
-                            /> */}
-                          </Avatar>
-                        }
-                        variant="outlined"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 text-red-600 mt-6">
-                {/* <ErrorIcon /> */}
-                <p className="font-medium">
-                  Certificate is invalid or revoked.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <CertificateDetailModal
+          open={openDetailModal}
+          certificate={result?.certificate || currentResult}
+          onClose={handleCloseDetailModal}
+        />
 
         <div className="mt-12 border rounded-md bg-slate-50 border-slate-200 p-5 text-center">
-          <p className="text-[11px] text-slate-500 leading-relaxed">
+          <p className="text-base text-slate-500 leading-relaxed">
             For assistance with certificate verification, please contact our
             support team.
             <br />

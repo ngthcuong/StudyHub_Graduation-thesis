@@ -9,12 +9,13 @@ const { deployCertificateFixture } = require("./fixtures/Certificate.fixture");
 describe("CertificateRegistry - Admin Search Functions", function () {
   describe("adminSearchByCourse", function () {
     beforeEach(async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
       this.certificateRegistry = certificateRegistry;
       this.admin = admin;
       this.student1 = student1;
       this.student2 = student2;
+      this.issuer = issuer;
 
       // Setup test data with various courses
       await certificateRegistry
@@ -22,8 +23,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Alice",
+          issuer.address,
           "IUH",
           "Blockchain Development",
+          "Technology",
+          "Advanced",
           "ipfs://1"
         );
       await certificateRegistry
@@ -31,8 +35,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student2.address,
           "Bob",
+          issuer.address,
           "IUH",
           "Smart Contract Programming",
+          "Technology",
+          "Advanced",
           "ipfs://2"
         );
       await certificateRegistry
@@ -40,8 +47,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Alice",
+          issuer.address,
           "IUH",
           "Web Development",
+          "Technology",
+          "Intermediate",
           "ipfs://3"
         );
       await certificateRegistry
@@ -49,8 +59,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student2.address,
           "Bob",
+          issuer.address,
           "IUH",
           "Mobile App Development",
+          "Technology",
+          "Intermediate",
           "ipfs://4"
         );
       await certificateRegistry
@@ -58,8 +71,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Alice",
+          issuer.address,
           "IUH",
           "Data Science",
+          "Technology",
+          "Advanced",
           "ipfs://5"
         );
     });
@@ -125,12 +141,13 @@ describe("CertificateRegistry - Admin Search Functions", function () {
 
   describe("adminSearchByStudentName", function () {
     beforeEach(async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
       this.certificateRegistry = certificateRegistry;
       this.admin = admin;
       this.student1 = student1;
       this.student2 = student2;
+      this.issuer = issuer;
 
       // Setup test data with various student names
       await certificateRegistry
@@ -138,8 +155,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Nguyen Van An",
+          issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
       await certificateRegistry
@@ -147,8 +167,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student2.address,
           "Tran Thi Binh",
+          issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
       await certificateRegistry
@@ -156,8 +179,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Nguyen Van An",
+          issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
       await certificateRegistry
@@ -165,8 +191,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student2.address,
           "Le Van Cuong",
+          issuer.address,
           "IUH",
           "Course 4",
+          "Business",
+          "Intermediate",
           "ipfs://4"
         );
       await certificateRegistry
@@ -174,8 +203,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Nguyen Thi Dung",
+          issuer.address,
           "IUH",
           "Course 5",
+          "Technology",
+          "Beginner",
           "ipfs://5"
         );
     });
@@ -245,7 +277,7 @@ describe("CertificateRegistry - Admin Search Functions", function () {
 
   describe("adminSearchByDate", function () {
     it("Should find certificates within date range", async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
 
       // Get blockchain time
@@ -257,8 +289,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -270,8 +305,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student2.address,
           "Student 2",
+          issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -282,8 +320,11 @@ describe("CertificateRegistry - Admin Search Functions", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 3",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -333,6 +374,112 @@ describe("CertificateRegistry - Admin Search Functions", function () {
       ).to.be.revertedWithCustomError(
         certificateRegistry,
         "AccessControlUnauthorizedAccount"
+      );
+    });
+
+    it("Should handle exact timestamp matches", async function () {
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
+
+      const beforeIssue = await time.latest();
+
+      await certificateRegistry
+        .connect(admin)
+        .issueCertificate(
+          student1.address,
+          "Test Student",
+          issuer.address,
+          "IUH",
+          "Test Course",
+          "Technology",
+          "Beginner",
+          "ipfs://test"
+        );
+
+      const afterIssue = await time.latest();
+
+      const [certificates, total] = await certificateRegistry
+        .connect(admin)
+        .adminSearchByDate(beforeIssue, afterIssue);
+
+      expect(total).to.equal(1);
+      expect(certificates.length).to.equal(1);
+      expect(certificates[0].courseName).to.equal("Test Course");
+      expect(certificates[0].studentName).to.equal("Test Student");
+      expect(certificates[0].issuer).to.equal(issuer.address);
+      expect(certificates[0].issuerName).to.equal("IUH");
+    });
+
+    it("Should return certificates in chronological order", async function () {
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
+
+      const startTime = await time.latest();
+
+      // Issue certificates with time gaps
+      await certificateRegistry
+        .connect(admin)
+        .issueCertificate(
+          student1.address,
+          "Student A",
+          issuer.address,
+          "IUH",
+          "First Course",
+          "Technology",
+          "Beginner",
+          "ipfs://1"
+        );
+
+      await time.increase(5);
+
+      await certificateRegistry
+        .connect(admin)
+        .issueCertificate(
+          student1.address,
+          "Student A",
+          issuer.address,
+          "IUH",
+          "Second Course",
+          "Business",
+          "Intermediate",
+          "ipfs://2"
+        );
+
+      await time.increase(5);
+
+      await certificateRegistry
+        .connect(admin)
+        .issueCertificate(
+          student1.address,
+          "Student A",
+          issuer.address,
+          "IUH",
+          "Third Course",
+          "Technology",
+          "Advanced",
+          "ipfs://3"
+        );
+
+      const endTime = await time.latest();
+
+      const [certificates, total] = await certificateRegistry
+        .connect(admin)
+        .adminSearchByDate(startTime, endTime);
+
+      expect(total).to.equal(3);
+      expect(certificates.length).to.equal(3);
+
+      // Verify chronological order
+      expect(certificates[0].courseName).to.equal("First Course");
+      expect(certificates[1].courseName).to.equal("Second Course");
+      expect(certificates[2].courseName).to.equal("Third Course");
+
+      // Verify timestamps are increasing
+      expect(certificates[0].issuedDate).to.be.lessThan(
+        certificates[1].issuedDate
+      );
+      expect(certificates[1].issuedDate).to.be.lessThan(
+        certificates[2].issuedDate
       );
     });
   });

@@ -8,10 +8,13 @@ contract CertificateRegistry is AccessControl {
 
     struct Certificate {
         bytes32 certHash; // Hash duy nhất của chứng chỉ (keccak256)
-        string issuer; // Tên tổ chức/cơ sở cấp chứng chỉ
-        address student; // Tên người nhận chứng chỉ
+        address issuer; // Địa chỉ tổ chức/cơ sở cấp chứng chỉ
+        string issuerName; // Tên của tổ chức/cơ sở cấp chứng chỉ
+        address student; // Địa chỉ người nhận chứng chỉ
         string studentName; // Tên của người nhận chứng chỉ
         string courseName; // Tên khóa học/ môn học
+        string courseType; // Thể loại của khóa học/ môn học
+        string courseLevel; // Độ khó của khóa học, vd: TOEIC 400 - 550
         uint256 issuedDate; // Ngày cấp (timestamp)
         string metadataURI; // URI chứa thông tin chi tiết chứng chỉ (IPFS/URL)
     }
@@ -35,16 +38,22 @@ contract CertificateRegistry is AccessControl {
      * @notice Hàm cấp chứng chỉ
      * @param _student địa chỉ ví người nhận
      * @param _studentName tên của người nhận
-     * @param _issuer thông tin bên cấp chứng chỉ
+     * @param _issuer địa chỉ ví bên cấp chứng chỉ
+     * @param _issuerName ten bên cấp chứng chỉ
      * @param _courseName tên khóa học
+     * @param _courseType thể loại của khóa học
+     * @param _courseLevel độ khó của khóa học
      * @param _metadataURI link IPFS
      * @return certHash hash của chứng chỉ
      */
     function issueCertificate(
         address _student,
         string memory _studentName,
-        string memory _issuer,
+        address _issuer,
+        string memory _issuerName,
         string memory _courseName,
+        string memory _courseType,
+        string memory _courseLevel,
         string memory _metadataURI
     ) public onlyRole(ADMIN_ROLE) returns (bytes32) {
         // Tạo hash của chứng chỉ
@@ -58,7 +67,10 @@ contract CertificateRegistry is AccessControl {
             student: _student,
             studentName: _studentName,
             issuer: _issuer,
+            issuerName: _issuerName,
             courseName: _courseName,
+            courseType: _courseType,
+            courseLevel: _courseLevel,
             issuedDate: block.timestamp,
             metadataURI: _metadataURI
         });
@@ -266,6 +278,96 @@ contract CertificateRegistry is AccessControl {
         // return (listCertificates, total);
     }
 
+    /**
+     * @notice Hàm tìm kiếm chứng chỉ theo thể loại khóa học (courseType)
+     * @param _student địa chỉ ví của người học
+     * @param _keyword thể loại khóa học
+     * @return listCertificates mảng danh sách các chứng chỉ của người học
+     * @return total tổng số chứng chỉ tìm được
+     */
+    function getStudentCertificateByCourseType(
+        address _student,
+        string memory _keyword
+    )
+        public
+        view
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
+
+        bytes32[] memory hashes = studentCertificates[_student];
+
+        total = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[hashes[i]].courseType,
+                    _keyword
+                )
+            ) {
+                total++;
+            }
+        }
+
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[hashes[i]].courseType,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[hashes[i]];
+            }
+        }
+    }
+
+    /**
+     * @notice Hàm tìm kiếm chứng chỉ theo độ khó khóa học (courseLevel)
+     * @param _student địa chỉ ví của người học
+     * @param _keyword độ khó khóa học
+     * @return listCertificates mảng danh sách các chứng chỉ của người học
+     * @return total tổng số chứng chỉ tìm được
+     */
+    function getStudentCertificateByCourseLevel(
+        address _student,
+        string memory _keyword
+    )
+        public
+        view
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
+
+        bytes32[] memory hashes = studentCertificates[_student];
+
+        total = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[hashes[i]].courseLevel,
+                    _keyword
+                )
+            ) {
+                total++;
+            }
+        }
+
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < hashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[hashes[i]].courseLevel,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[hashes[i]];
+            }
+        }
+    }
+
     /*
     ===================================================================================
                                 HÀM TÌM KIẾM CHO ADMIN  
@@ -412,6 +514,96 @@ contract CertificateRegistry is AccessControl {
         for (uint i = 0; i < allCertificateHashes.length; i++) {
             uint issuedDate = certificates[allCertificateHashes[i]].issuedDate;
             if (issuedDate >= _fromDate && issuedDate <= _toDate) {
+                listCertificates[currentIndex++] = certificates[
+                    allCertificateHashes[i]
+                ];
+            }
+        }
+        // return (listCertificates, total);
+    }
+
+    /**
+     * @notice Hàm tìm kiếm chứng chỉ theo thể loại khóa học (courseType)
+     * @param _keyword thể loại khóa học
+     * @return listCertificates mảng danh sách các chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
+     */
+    function adminSearchByCourseType(
+        string memory _keyword
+    )
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
+
+        total = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[allCertificateHashes[i]].courseType,
+                    _keyword
+                )
+            ) {
+                total++;
+            }
+        }
+
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[allCertificateHashes[i]].courseType,
+                    _keyword
+                )
+            ) {
+                listCertificates[currentIndex++] = certificates[
+                    allCertificateHashes[i]
+                ];
+            }
+        }
+        // return (listCertificates, total);
+    }
+
+    /**
+     * @notice Hàm tìm kiếm chứng chỉ theo độ khó khóa học (courseLevel)
+     * @param _keyword độ khó khóa học
+     * @return listCertificates mảng danh sách các chứng chỉ
+     * @return total tổng số chứng chỉ tìm được
+     */
+    function adminSearchByCourseLevel(
+        string memory _keyword
+    )
+        public
+        view
+        onlyRole(ADMIN_ROLE)
+        returns (Certificate[] memory listCertificates, uint256 total)
+    {
+        require(bytes(_keyword).length > 0, "Keyword cannot be empty");
+
+        total = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[allCertificateHashes[i]].courseLevel,
+                    _keyword
+                )
+            ) {
+                total++;
+            }
+        }
+
+        listCertificates = new Certificate[](total);
+        uint256 currentIndex = 0;
+        for (uint i = 0; i < allCertificateHashes.length; i++) {
+            if (
+                _containsIgnoreCase(
+                    certificates[allCertificateHashes[i]].courseLevel,
+                    _keyword
+                )
+            ) {
                 listCertificates[currentIndex++] = certificates[
                     allCertificateHashes[i]
                 ];

@@ -1,0 +1,440 @@
+{
+  "0x75b238fc": {
+    "name": "ADMIN_ROLE",
+    "signature": "function ADMIN_ROLE() view returns (bytes32)",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ]
+  },
+  "0xa217fddf": {
+    "name": "DEFAULT_ADMIN_ROLE",
+    "signature": "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ]
+  },
+  "0x86258d34": {
+    "name": "adminSearchByCourse",
+    "signature": "function adminSearchByCourse(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0xb24633f4": {
+    "name": "adminSearchByCourseLevel",
+    "signature": "function adminSearchByCourseLevel(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x58f0d1ec": {
+    "name": "adminSearchByCourseType",
+    "signature": "function adminSearchByCourseType(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x6e964e9c": {
+    "name": "adminSearchByDate",
+    "signature": "function adminSearchByDate(uint256 _fromDate, uint256 _toDate) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_fromDate",
+        "type": "uint256"
+      },
+      {
+        "name": "_toDate",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0xbc7eb259": {
+    "name": "adminSearchByStudentName",
+    "signature": "function adminSearchByStudentName(string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x13fcfe80": {
+    "name": "getAllCertificates",
+    "signature": "function getAllCertificates() view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x90ab95cb": {
+    "name": "getCertificateByHash",
+    "signature": "function getCertificateByHash(bytes32 _certHash) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI))",
+    "inputs": [
+      {
+        "name": "_certHash",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple"
+      }
+    ]
+  },
+  "0x248a9ca3": {
+    "name": "getRoleAdmin",
+    "signature": "function getRoleAdmin(bytes32 role) view returns (bytes32)",
+    "inputs": [
+      {
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ]
+  },
+  "0x6cd93f7a": {
+    "name": "getStudentCertificateByCourseLevel",
+    "signature": "function getStudentCertificateByCourseLevel(address _student, string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x9726879c": {
+    "name": "getStudentCertificateByCourseName",
+    "signature": "function getStudentCertificateByCourseName(address _student, string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x74c7b8e7": {
+    "name": "getStudentCertificateByCourseType",
+    "signature": "function getStudentCertificateByCourseType(address _student, string _keyword) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "name": "_keyword",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x66914f29": {
+    "name": "getStudentCertificateByDate",
+    "signature": "function getStudentCertificateByDate(address _student, uint256 _fromDate, uint256 _toDate) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "name": "_fromDate",
+        "type": "uint256"
+      },
+      {
+        "name": "_toDate",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x1506a24c": {
+    "name": "getStudentCertificateByHash",
+    "signature": "function getStudentCertificateByHash(address _student, bytes32 _certHash) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI) certificate)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "name": "_certHash",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "certificate",
+        "type": "tuple"
+      }
+    ]
+  },
+  "0x20c7e945": {
+    "name": "getStudentCertificatesByStudent",
+    "signature": "function getStudentCertificatesByStudent(address _student) view returns ((bytes32 certHash, address issuer, string issuerName, address student, string studentName, string courseName, string courseType, string courseLevel, uint256 issuedDate, string metadataURI)[] listCertificates, uint256 total)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "listCertificates",
+        "type": "tuple[]"
+      },
+      {
+        "name": "total",
+        "type": "uint256"
+      }
+    ]
+  },
+  "0x2f2ff15d": {
+    "name": "grantRole",
+    "signature": "function grantRole(bytes32 role, address account)",
+    "inputs": [
+      {
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "outputs": []
+  },
+  "0x91d14854": {
+    "name": "hasRole",
+    "signature": "function hasRole(bytes32 role, address account) view returns (bool)",
+    "inputs": [
+      {
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ]
+  },
+  "0xd45069a9": {
+    "name": "issueCertificate",
+    "signature": "function issueCertificate(address _student, string _studentName, address _issuer, string _issuerName, string _courseName, string _courseType, string _courseLevel, string _metadataURI) returns (bytes32)",
+    "inputs": [
+      {
+        "name": "_student",
+        "type": "address"
+      },
+      {
+        "name": "_studentName",
+        "type": "string"
+      },
+      {
+        "name": "_issuer",
+        "type": "address"
+      },
+      {
+        "name": "_issuerName",
+        "type": "string"
+      },
+      {
+        "name": "_courseName",
+        "type": "string"
+      },
+      {
+        "name": "_courseType",
+        "type": "string"
+      },
+      {
+        "name": "_courseLevel",
+        "type": "string"
+      },
+      {
+        "name": "_metadataURI",
+        "type": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ]
+  },
+  "0x36568abe": {
+    "name": "renounceRole",
+    "signature": "function renounceRole(bytes32 role, address callerConfirmation)",
+    "inputs": [
+      {
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "name": "callerConfirmation",
+        "type": "address"
+      }
+    ],
+    "outputs": []
+  },
+  "0xd547741f": {
+    "name": "revokeRole",
+    "signature": "function revokeRole(bytes32 role, address account)",
+    "inputs": [
+      {
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "outputs": []
+  },
+  "0x01ffc9a7": {
+    "name": "supportsInterface",
+    "signature": "function supportsInterface(bytes4 interfaceId) view returns (bool)",
+    "inputs": [
+      {
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ]
+  }
+}

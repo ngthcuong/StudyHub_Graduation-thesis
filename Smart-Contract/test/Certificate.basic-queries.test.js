@@ -8,17 +8,19 @@ const { deployCertificateFixture } = require("./fixtures/Certificate.fixture");
 describe("CertificateRegistry - Basic Queries", function () {
   describe("Get Certificate By Hash", function () {
     it("Should return certificate by hash", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       const tx = await certificateRegistry
         .connect(admin)
         .issueCertificate(
           student1.address,
           "Test Student",
+          issuer.address,
           "Test Issuer",
           "Test Course",
+          "Technology",
+          "Beginner",
           "ipfs://test"
         );
 
@@ -30,6 +32,11 @@ describe("CertificateRegistry - Basic Queries", function () {
       );
       expect(certificate.student).to.equal(student1.address);
       expect(certificate.studentName).to.equal("Test Student");
+      expect(certificate.issuer).to.equal(issuer.address);
+      expect(certificate.issuerName).to.equal("Test Issuer");
+      expect(certificate.courseName).to.equal("Test Course");
+      expect(certificate.courseType).to.equal("Technology");
+      expect(certificate.courseLevel).to.equal("Beginner");
     });
 
     it("Should revert when getting non-existent certificate", async function () {
@@ -61,7 +68,7 @@ describe("CertificateRegistry - Basic Queries", function () {
     });
 
     it("Should return all issued certificates with correct total count", async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
 
       // Issue 2 certificates
@@ -70,8 +77,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -80,8 +90,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student2.address,
           "Student 2",
+          issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -97,17 +110,24 @@ describe("CertificateRegistry - Basic Queries", function () {
       // Verify certificate data
       expect(certificates[0].studentName).to.equal("Student 1");
       expect(certificates[0].courseName).to.equal("Course 1");
+      expect(certificates[0].courseType).to.equal("Technology");
+      expect(certificates[0].courseLevel).to.equal("Beginner");
       expect(certificates[0].student).to.equal(student1.address);
+      expect(certificates[0].issuer).to.equal(issuer.address);
+      expect(certificates[0].issuerName).to.equal("IUH");
 
       expect(certificates[1].studentName).to.equal("Student 2");
       expect(certificates[1].courseName).to.equal("Course 2");
+      expect(certificates[1].courseType).to.equal("Business");
+      expect(certificates[1].courseLevel).to.equal("Intermediate");
       expect(certificates[1].student).to.equal(student2.address);
+      expect(certificates[1].issuer).to.equal(issuer.address);
+      expect(certificates[1].issuerName).to.equal("IUH");
     });
 
     it("Should return certificates in correct order (FIFO)", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       // Issue 3 certificates in specific order
       await certificateRegistry
@@ -115,8 +135,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student1.address,
           "Student A",
+          issuer.address,
           "IUH",
           "First Course",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -125,8 +148,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student1.address,
           "Student A",
+          issuer.address,
           "IUH",
           "Second Course",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -135,8 +161,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student1.address,
           "Student A",
+          issuer.address,
           "IUH",
           "Third Course",
+          "Technology",
+          "Advanced",
           "ipfs://3"
         );
 
@@ -154,9 +183,8 @@ describe("CertificateRegistry - Basic Queries", function () {
     });
 
     it("Should handle large number of certificates efficiently", async function () {
-      const { certificateRegistry, admin, student1 } = await loadFixture(
-        deployCertificateFixture
-      );
+      const { certificateRegistry, admin, student1, issuer } =
+        await loadFixture(deployCertificateFixture);
 
       // Issue 10 certificates
       for (let i = 0; i < 10; i++) {
@@ -165,8 +193,11 @@ describe("CertificateRegistry - Basic Queries", function () {
           .issueCertificate(
             student1.address,
             `Student ${i}`,
+            issuer.address,
             "IUH",
             `Course ${i}`,
+            i % 2 === 0 ? "Technology" : "Business",
+            i < 3 ? "Beginner" : i < 7 ? "Intermediate" : "Advanced",
             `ipfs://${i}`
           );
       }
@@ -182,6 +213,8 @@ describe("CertificateRegistry - Basic Queries", function () {
       expect(certificates[5].studentName).to.equal("Student 5");
       expect(certificates[5].courseName).to.equal("Course 5");
       expect(certificates[5].metadataURI).to.equal("ipfs://5");
+      expect(certificates[5].issuer).to.equal(issuer.address);
+      expect(certificates[5].issuerName).to.equal("IUH");
     });
 
     it("Should revert when called by non-admin", async function () {
@@ -199,7 +232,7 @@ describe("CertificateRegistry - Basic Queries", function () {
     });
 
     it("Should return consistent results with total count", async function () {
-      const { certificateRegistry, admin, student1, student2 } =
+      const { certificateRegistry, admin, student1, student2, issuer } =
         await loadFixture(deployCertificateFixture);
 
       // Issue some certificates
@@ -208,8 +241,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student1.address,
           "Student 1",
+          issuer.address,
           "IUH",
           "Course 1",
+          "Technology",
+          "Beginner",
           "ipfs://1"
         );
 
@@ -218,8 +254,11 @@ describe("CertificateRegistry - Basic Queries", function () {
         .issueCertificate(
           student2.address,
           "Student 2",
+          issuer.address,
           "IUH",
           "Course 2",
+          "Business",
+          "Intermediate",
           "ipfs://2"
         );
 
@@ -234,6 +273,8 @@ describe("CertificateRegistry - Basic Queries", function () {
       for (let i = 0; i < certificates.length; i++) {
         expect(certificates[i].student).to.not.equal(ethers.ZeroAddress);
         expect(certificates[i].studentName).to.not.equal("");
+        expect(certificates[i].issuer).to.not.equal(ethers.ZeroAddress);
+        expect(certificates[i].issuerName).to.not.equal("");
         expect(certificates[i].courseName).to.not.equal("");
         expect(certificates[i].issuedDate).to.be.greaterThan(0);
         expect(certificates[i].certHash).to.not.equal(ethers.ZeroHash);

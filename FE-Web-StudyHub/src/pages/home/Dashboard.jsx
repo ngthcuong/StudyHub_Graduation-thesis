@@ -1,17 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BookIcon from "@mui/icons-material/Book";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import StreamIcon from "@mui/icons-material/Stream";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import HeaderHome from "./HeaderHome";
 import DailyLessonsChart from "../../components/DailyLessonsChart";
+import DailyStudyTimeChart from "../../components/DailyStudyTimeChart";
+import { useGetStudyStatsQuery } from "../../services/StudyStatsApi";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("lessons");
+
+  const currentMonth = new Date().getMonth() + 1; // Tháng hiện tại
+  const currentYear = new Date().getFullYear();
+
+  const { data, isLoading } = useGetStudyStatsQuery(
+    { month: currentMonth, year: currentYear },
+    {
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  function normalizeTimeString(str) {
+    const match = str?.match(/(\d+)h\s*(\d+)m\s*(\d+)s/);
+    if (!match) return str; // không đúng format thì trả lại nguyên
+
+    let hours = parseInt(match[1]);
+    let minutes = parseInt(match[2]);
+    let seconds = parseInt(match[3]);
+
+    // Chuẩn hóa lại thời gian
+    minutes += Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
+
+    return `${hours}h ${minutes}m`; // bỏ giây luôn
+  }
+
+  useEffect(() => {
+    if (data) {
+      console.log("✅ Dữ liệu mới nhất:", data);
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="flex-1">
       {/* Welcome Card */}
-      <HeaderHome />
 
       {/* Overview Cards */}
       <div className="bg-white p-6 rounded-xl shadow-md  mx-auto">
@@ -28,25 +68,33 @@ export default function Dashboard() {
           <div className="text-center p-4 rounded-lg bg-white shadow">
             <BookIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Completed Lessons</h3>
-            <p className="text-lg font-bold text-gray-800">59 Lessons</p>
+            <p className="text-lg font-bold text-gray-800">
+              {data?.data?.completedLessons || 0} Lessons
+            </p>
           </div>
 
           <div className="text-center p-4 rounded-lg bg-white shadow">
             <CalendarMonthIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Current Streak</h3>
-            <p className="text-lg font-bold text-gray-800">0 days</p>
+            <p className="text-lg font-bold text-gray-800">
+              {data?.data?.currentStreak || 0} days
+            </p>
           </div>
 
           <div className="text-center p-4 rounded-lg bg-white shadow">
             <StreamIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Longest Streak</h3>
-            <p className="text-lg font-bold text-gray-800">5 days</p>
+            <p className="text-lg font-bold text-gray-800">
+              {data?.data?.longestStreak || 0} days
+            </p>
           </div>
 
           <div className="text-center p-4 rounded-lg bg-white shadow">
             <AccessTimeIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Study Time This Month</h3>
-            <p className="text-lg font-bold text-gray-800">10h 10m</p>
+            <p className="text-lg font-bold text-gray-800">
+              {normalizeTimeString(data?.data?.studyTimeThisMonth) || "0h 0m"}
+            </p>
           </div>
         </div>
 
@@ -81,7 +129,11 @@ export default function Dashboard() {
               ? "Daily Lessons Completed"
               : "Daily Study Time"}
           </h3>
-          <DailyLessonsChart />
+          {activeTab === "lessons" ? (
+            <DailyLessonsChart data={data?.data?.dailyStats} />
+          ) : (
+            <DailyStudyTimeChart data={data?.data?.dailyStats} />
+          )}
         </div>
       </div>
     </div>
