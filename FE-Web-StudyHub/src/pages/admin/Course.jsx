@@ -769,7 +769,13 @@ const Course = () => {
                             timeout="auto"
                             unmountOnExit
                           >
-                            <Box sx={{ px: 2, py: 1.5, bgcolor: "#f9fafb" }}>
+                            <Box
+                              sx={{
+                                px: 2,
+                                py: 1.5,
+                                bgcolor: "#f9fafb",
+                              }}
+                            >
                               <Box
                                 sx={{
                                   display: "flex",
@@ -780,7 +786,7 @@ const Course = () => {
                               >
                                 <MenuBookIcon sx={{ color: "#667eea" }} />
                                 <Typography
-                                  variant="h6"
+                                  variant="body1"
                                   sx={{ fontWeight: 600, color: "#1f2937" }}
                                 >
                                   Grammar Lessons
@@ -831,12 +837,32 @@ const Course = () => {
                                                         "space-between",
                                                     }}
                                                   >
-                                                    <Typography
-                                                      variant="subtitle1"
-                                                      sx={{ fontWeight: 600 }}
+                                                    <Box
+                                                      sx={{
+                                                        display: "flex",
+                                                        gap: 1,
+                                                        alignItems: "center",
+                                                        justifyContent:
+                                                          "space-between",
+                                                      }}
                                                     >
-                                                      {lesson.title}
-                                                    </Typography>
+                                                      <Typography
+                                                        variant="body1"
+                                                        sx={{ fontWeight: 600 }}
+                                                      >
+                                                        {lesson.title}
+                                                      </Typography>
+
+                                                      <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                      >
+                                                        Parts:{" "}
+                                                        {lesson.parts?.length ||
+                                                          0}
+                                                      </Typography>
+                                                    </Box>
+
                                                     <Box
                                                       sx={{
                                                         display: "flex",
@@ -890,27 +916,27 @@ const Course = () => {
                                                     </Box>
                                                   </Box>
                                                 }
-                                                secondary={
-                                                  <Box sx={{ mt: 0.5 }}>
-                                                    <Typography
-                                                      variant="body2"
-                                                      color="text.secondary"
-                                                    >
-                                                      Parts:{" "}
-                                                      {lesson.parts?.length ||
-                                                        0}
-                                                    </Typography>
-                                                    <Typography
-                                                      variant="caption"
-                                                      color="text.secondary"
-                                                    >
-                                                      Created:{" "}
-                                                      {new Date(
-                                                        lesson.createdAt
-                                                      ).toLocaleDateString()}
-                                                    </Typography>
-                                                  </Box>
-                                                }
+                                                // secondary={
+                                                //   <Box sx={{ mt: 0.5 }}>
+                                                //     <Typography
+                                                //       variant="body2"
+                                                //       color="text.secondary"
+                                                //     >
+                                                //       Parts:{" "}
+                                                //       {lesson.parts?.length ||
+                                                //         0}
+                                                //     </Typography>
+                                                //     {/* <Typography
+                                                //       variant="caption"
+                                                //       color="text.secondary"
+                                                //     >
+                                                //       Created:{" "}
+                                                //       {new Date(
+                                                //         lesson.createdAt
+                                                //       ).toLocaleDateString()}
+                                                //     </Typography> */}
+                                                //   </Box>
+                                                // }
                                               />
                                             </ListItemButton>
 

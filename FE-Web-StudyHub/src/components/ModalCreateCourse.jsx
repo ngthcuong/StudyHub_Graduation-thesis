@@ -1024,7 +1024,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                           sx={{
                             display: "flex",
                             flexDirection: "column",
-                            gap: 3,
+                            gap: 2,
                           }}
                         >
                           {/* Section Name */}
