@@ -1,14 +1,56 @@
 const courseModel = require("../models/courseModel");
 const userModel = require("../models/userModel");
+const grammarLessonModel = require("../models/grammarLessonModel");
 
 /** Hàm tạo khóa học mới */
 const createCourse = async (req, res) => {
   try {
-    const courseData = req.body;
+    const { sections, ...courseData } = req.body;
+
+    // Tạo course trước
     const savedCourse = await courseModel.createCourse(courseData);
+
+    // Nếu có sections (grammar lessons), tạo chúng
+    if (sections && sections.length > 0) {
+      const grammarLessons = [];
+
+      for (const section of sections) {
+        if (section.lessons && section.lessons.length > 0) {
+          // Tạo grammar lesson cho mỗi section
+          const lessonData = {
+            title: section.sectionName,
+            courseId: savedCourse._id,
+            parts: section.lessons.map((lesson) => ({
+              title: lesson.lessonName,
+              description: lesson.description || "",
+              content: lesson.lectureNotes || "",
+              videoUrl: lesson.videoUrl || "",
+              attachmentUrl: lesson.attachmentUrl || "",
+              contentType: lesson.contentType || "video",
+            })),
+          };
+
+          const createdLesson = await grammarLessonModel.createLesson(
+            lessonData
+          );
+          grammarLessons.push(createdLesson._id);
+        }
+      }
+
+      // Cập nhật course với grammar lessons
+      if (grammarLessons.length > 0) {
+        await courseModel.updateCourseById(savedCourse._id, {
+          grammarLessons: grammarLessons,
+        });
+      }
+    }
+
+    // Lấy course đã cập nhật với grammar lessons
+    const finalCourse = await courseModel.findCourseById(savedCourse._id);
+
     res.status(201).json({
       message: "Course created successfully!",
-      course: savedCourse,
+      course: finalCourse,
     });
   } catch (error) {
     console.error("Error creating course:", error);
@@ -42,9 +84,54 @@ const getCourseByTitle = async (req, res) => {
 const updateCourseById = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
-    const updatedCourse = await courseModel.updateCourseById(id, updateData);
-    res.status(200).json(updatedCourse);
+    const { sections, ...updateData } = req.body;
+
+    // Cập nhật thông tin course
+    let updatedCourse = await courseModel.updateCourseById(id, updateData);
+
+    // Nếu có sections, cập nhật grammar lessons
+    if (sections && sections.length > 0) {
+      // Xóa các grammar lessons cũ của course này
+      const oldLessons = await grammarLessonModel.getLessonsByCourseId(id);
+      for (const lesson of oldLessons) {
+        await grammarLessonModel.deleteLesson(lesson._id);
+      }
+
+      // Tạo grammar lessons mới
+      const grammarLessons = [];
+      for (const section of sections) {
+        if (section.lessons && section.lessons.length > 0) {
+          const lessonData = {
+            title: section.sectionName,
+            courseId: id,
+            parts: section.lessons.map((lesson) => ({
+              title: lesson.lessonName,
+              description: lesson.description || "",
+              content: lesson.lectureNotes || "",
+              videoUrl: lesson.videoUrl || "",
+              attachmentUrl: lesson.attachmentUrl || "",
+              contentType: lesson.contentType || "video",
+            })),
+          };
+
+          const createdLesson = await grammarLessonModel.createLesson(
+            lessonData
+          );
+          grammarLessons.push(createdLesson._id);
+        }
+      }
+
+      // Cập nhật course với grammar lessons mới
+      if (grammarLessons.length > 0) {
+        updatedCourse = await courseModel.updateCourseById(id, {
+          grammarLessons: grammarLessons,
+        });
+      }
+    }
+
+    // Lấy course đã cập nhật đầy đủ
+    const finalCourse = await courseModel.findCourseById(id);
+    res.status(200).json(finalCourse);
   } catch (error) {
     console.error("Error updating course by id:", error);
     res.status(500).json({ error: "Failed to update course by id" });
@@ -134,6 +221,35 @@ const getCourseStatistics = async (req, res) => {
   }
 };
 
+/**
+ * Xóa course và tất cả grammar lessons liên quan
+ */
+const deleteCourseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Xóa tất cả grammar lessons của course
+    const lessons = await grammarLessonModel.getLessonsByCourseId(id);
+    for (const lesson of lessons) {
+      await grammarLessonModel.deleteLesson(lesson._id);
+    }
+
+    // Xóa course
+    const deletedCourse = await courseModel.deleteCourseById(id);
+
+    if (!deletedCourse) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    res.status(200).json({
+      message: "Course and all related lessons deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    res.status(500).json({ error: "Failed to delete course" });
+  }
+};
+
 module.exports = {
   createCourse,
   getCourseById,
@@ -143,4 +259,5 @@ module.exports = {
   addRatingToCourse,
   getMyCourses,
   getCourseStatistics,
+  deleteCourseById,
 };

@@ -179,6 +179,21 @@ const getCourseStatistics = async () => {
   }
 };
 
+/**
+ * Xóa course theo ID
+ * @param {String} id ID của course
+ * @returns {Object} Course đã xóa
+ */
+const deleteCourseById = async (id) => {
+  try {
+    const course = await Course.findByIdAndDelete(id);
+    return course;
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    throw new Error("Failed to delete course");
+  }
+};
+
 module.exports = {
   createCourse,
   findCourseById,
@@ -188,4 +203,5 @@ module.exports = {
   addRatingToCourse,
   getCourseRatings,
   getCourseStatistics,
+  deleteCourseById,
 };
