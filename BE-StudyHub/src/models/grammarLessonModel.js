@@ -30,8 +30,8 @@ const updateLesson = async (id, updateData) => {
   });
 };
 
-const deleteLesson = async (slug) => {
-  return GrammarLesson.findOneAndDelete({ slug });
+const deleteLesson = async (id) => {
+  return GrammarLesson.findOneAndDelete({ _id: id });
 };
 
 const getLessonsByCourseId = async (courseId) => {

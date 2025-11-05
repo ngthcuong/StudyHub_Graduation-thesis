@@ -16,7 +16,6 @@ export const courseApi = rootApi.injectEndpoints({
       query: (id) => ({
         url: `/courses/${id}`,
         method: "GET",
-        body: { id },
       }),
       invalidatesTags: ["Course"],
     }),

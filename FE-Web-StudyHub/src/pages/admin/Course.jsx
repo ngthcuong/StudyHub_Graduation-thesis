@@ -53,7 +53,10 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { useGetCourseStatisticsQuery } from "../../services/courseApi";
+import {
+  useGetCourseStatisticsQuery,
+  useGetCourseByIdMutation,
+} from "../../services/courseApi";
 import { useGetPaymentStatisticsQuery } from "../../services/paymentApi";
 import {
   useGetLessonsByCourseIdMutation,
@@ -88,6 +91,7 @@ const Course = () => {
     useGetPaymentStatisticsQuery();
 
   const [getLessonsByCourseId] = useGetLessonsByCourseIdMutation();
+  const [getCourseById] = useGetCourseByIdMutation();
   const [deleteCourse] = useDeleteCourseMutation();
   const [deleteLesson] = useDeleteGrammarLessonMutation();
 
@@ -289,6 +293,9 @@ const Course = () => {
 
   const handleOpenUpdateCourse = async (course) => {
     try {
+      // Fetch full course data from API (course from table may be missing fields like description, category, etc.)
+      const fullCourse = await getCourseById(course._id).unwrap();
+
       // Fetch grammar lessons for this course
       const lessonsResponse = await getLessonsByCourseId(course._id).unwrap();
       const grammarLessons = lessonsResponse.data || [];
@@ -307,24 +314,18 @@ const Course = () => {
           })) || [],
       }));
 
-      // Create course object with sections
+      // Create course object with sections using full course data
       const courseWithSections = {
-        ...course,
+        ...fullCourse,
         sections: sections,
       };
 
       setSelectedCourse(courseWithSections);
       setOpenCreateModal(true); // Reuse create modal in edit mode
     } catch (error) {
-      console.error("Error fetching lessons:", error);
-      toast.error("Cannot load course lessons!");
+      console.error("Error fetching course data:", error);
+      toast.error("Cannot load course data!");
     }
-  };
-
-  const handleOpenUpdateLesson = (lesson) => {
-    // For now, lesson editing is not implemented via modal
-    // You can implement this later if needed
-    console.log("Edit lesson:", lesson);
   };
 
   return (
@@ -870,7 +871,7 @@ const Course = () => {
                                                         alignItems: "center",
                                                       }}
                                                     >
-                                                      <Tooltip title="Edit">
+                                                      {/* <Tooltip title="Edit">
                                                         <IconButton
                                                           size="small"
                                                           sx={{
@@ -885,7 +886,7 @@ const Course = () => {
                                                         >
                                                           <EditIcon fontSize="small" />
                                                         </IconButton>
-                                                      </Tooltip>
+                                                      </Tooltip> */}
                                                       <Tooltip title="Delete">
                                                         <IconButton
                                                           size="small"

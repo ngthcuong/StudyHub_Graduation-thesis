@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -88,8 +88,12 @@ function TabPanel({ children, value, index, ...other }) {
 const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
   const [tabValue, setTabValue] = useState(0);
   const [tagInput, setTagInput] = useState("");
+  const [expandedSections, setExpandedSections] = useState(new Set([0])); // Track which sections are expanded
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
+
+  // Track if this is the initial load to prevent resetting courseLevel in edit mode
+  const isInitialLoadRef = useRef(true);
 
   const isEditMode = Boolean(course);
   const isLoading = isCreating || isUpdating;
@@ -188,17 +192,11 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
     { value: "Test Preparation", label: "Test Preparation" },
   ];
 
-  // Reset courseLevel when courseType changes
-  useEffect(() => {
-    if (watchedCourseType) {
-      setValue("courseLevel", "");
-    }
-  }, [watchedCourseType, setValue]);
-
   // Pre-fill data when in edit mode
   useEffect(() => {
     if (open && course) {
       // Course edit mode: Pre-fill with course data
+      isInitialLoadRef.current = true;
       reset({
         title: course.title || "",
         description: course.description || "",
@@ -211,8 +209,13 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
         tags: course.tags || [],
         sections: course.sections || [],
       });
+      // Reset flag after a short delay to allow form to populate
+      setTimeout(() => {
+        isInitialLoadRef.current = false;
+      }, 100);
     } else if (open && !course) {
       // Create mode: Reset to empty
+      isInitialLoadRef.current = false;
       reset({
         title: "",
         description: "",
@@ -227,6 +230,19 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
       });
     }
   }, [open, course, reset]);
+
+  // Reset courseLevel when courseType changes (but not during initial load in edit mode)
+  useEffect(() => {
+    // Skip if this is initial load in edit mode
+    if (isInitialLoadRef.current) {
+      return;
+    }
+
+    // Reset courseLevel when courseType changes
+    if (watchedCourseType) {
+      setValue("courseLevel", "");
+    }
+  }, [watchedCourseType, setValue]);
 
   const handleAddTag = () => {
     if (tagInput.trim() && !watchedTags?.includes(tagInput.trim())) {
@@ -243,10 +259,13 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
   };
 
   const handleAddSection = () => {
+    const newIndex = sectionFields.length;
     appendSection({
       sectionName: "",
       lessons: [],
     });
+    // Expand the newly added section
+    setExpandedSections(new Set([...expandedSections, newIndex]));
   };
 
   const handleAddLesson = (sectionIndex) => {
@@ -263,6 +282,10 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
       lectureNotes: "",
     });
     setValue("sections", currentSections);
+    // Keep the current section expanded
+    if (!expandedSections.has(sectionIndex)) {
+      setExpandedSections(new Set([...expandedSections, sectionIndex]));
+    }
   };
 
   const handleRemoveLesson = (sectionIndex, lessonIndex) => {
@@ -271,23 +294,60 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
     setValue("sections", currentSections);
   };
 
+  // Handle accordion expansion
+  const handleAccordionChange = (sectionIndex) => (event, isExpanded) => {
+    const newExpanded = new Set(expandedSections);
+    if (isExpanded) {
+      newExpanded.add(sectionIndex);
+    } else {
+      newExpanded.delete(sectionIndex);
+    }
+    setExpandedSections(newExpanded);
+  };
+
   const onSubmit = async (data) => {
     try {
-      const courseData = {
-        ...data,
-      };
-
       if (isEditMode) {
         // Update existing course
-        const result = await updateCourse({
+        const { sections, ...courseData } = data;
+
+        const updatePayload = {
           id: course._id,
           ...courseData,
-        }).unwrap();
+        };
+
+        // Smart sections handling:
+        // - If sections have content (length > 0): Include them for update
+        // - If sections is empty but original course had sections loaded in form: User wants to delete all
+        // - If sections is empty and wasn't loaded: Don't send (no change to lessons)
+
+        const originalSectionsCount = course?.sections?.length || 0;
+        const currentSectionsCount = sections?.length || 0;
+
+        if (currentSectionsCount > 0) {
+          // User has sections with content - send for update
+          updatePayload.sections = sections;
+          console.log(`Sending ${currentSectionsCount} sections for update`);
+        } else if (originalSectionsCount > 0 && currentSectionsCount === 0) {
+          // Original had sections, now empty - user explicitly deleted all
+          // Only send empty array if we're sure sections were loaded
+          // Check if form was properly initialized with sections
+          if (course.sections) {
+            updatePayload.sections = [];
+            console.log("User deleted all sections - sending empty array");
+          } else {
+            console.log("Sections not loaded yet - skipping sections update");
+          }
+        } else {
+          console.log("No sections to update - skipping");
+        }
+
+        const result = await updateCourse(updatePayload).unwrap();
         toast.success("Update course successfully!");
         onSuccess?.(result);
       } else {
         // Create new course
-        const result = await createCourse(courseData).unwrap();
+        const result = await createCourse(data).unwrap();
         toast.success("Create course successfully!");
         onSuccess?.(result);
       }
@@ -310,6 +370,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
   const handleClose = () => {
     reset();
     setTabValue(0);
+    setExpandedSections(new Set([0])); // Reset to default (first section expanded)
     onClose();
   };
 
@@ -929,7 +990,8 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                   {sectionFields.map((section, sectionIndex) => (
                     <Accordion
                       key={section.id}
-                      defaultExpanded={sectionIndex === 0}
+                      expanded={expandedSections.has(sectionIndex)}
+                      onChange={handleAccordionChange(sectionIndex)}
                       sx={{
                         borderRadius: 3,
                         border: "1px solid",

@@ -84,49 +84,67 @@ const getCourseByTitle = async (req, res) => {
 const updateCourseById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Check if body exists
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        error: "Request body is empty or undefined",
+        receivedBody: req.body,
+        contentType: req.headers["content-type"],
+      });
+    }
+
     const { sections, ...updateData } = req.body;
 
     // Cập nhật thông tin course
     let updatedCourse = await courseModel.updateCourseById(id, updateData);
 
-    // Nếu có sections, cập nhật grammar lessons
-    if (sections && sections.length > 0) {
-      // Xóa các grammar lessons cũ của course này
+    // Nếu có sections trong request (có thể rỗng hoặc có data)
+    if (sections !== undefined) {
+      // Xóa TẤT CẢ các grammar lessons cũ của course này
       const oldLessons = await grammarLessonModel.getLessonsByCourseId(id);
+
+      let deletedCount = 0;
       for (const lesson of oldLessons) {
-        await grammarLessonModel.deleteLesson(lesson._id);
+        const result = await grammarLessonModel.deleteLesson(lesson._id);
+        if (result) deletedCount++;
       }
 
-      // Tạo grammar lessons mới
+      // Tạo grammar lessons mới (nếu có sections)
       const grammarLessons = [];
-      for (const section of sections) {
-        if (section.lessons && section.lessons.length > 0) {
-          const lessonData = {
-            title: section.sectionName,
-            courseId: id,
-            parts: section.lessons.map((lesson) => ({
-              title: lesson.lessonName,
-              description: lesson.description || "",
-              content: lesson.lectureNotes || "",
-              videoUrl: lesson.videoUrl || "",
-              attachmentUrl: lesson.attachmentUrl || "",
-              contentType: lesson.contentType || "video",
-            })),
-          };
+      if (sections.length > 0) {
+        console.log(`Creating ${sections.length} new grammar lessons...`);
+        for (const section of sections) {
+          if (section.lessons && section.lessons.length > 0) {
+            const lessonData = {
+              title: section.sectionName,
+              courseId: id,
+              parts: section.lessons.map((lesson) => ({
+                title: lesson.lessonName,
+                description: lesson.description || "",
+                content: lesson.lectureNotes || "",
+                videoUrl: lesson.videoUrl || "",
+                attachmentUrl: lesson.attachmentUrl || "",
+                contentType: lesson.contentType || "video",
+              })),
+            };
 
-          const createdLesson = await grammarLessonModel.createLesson(
-            lessonData
-          );
-          grammarLessons.push(createdLesson._id);
+            const createdLesson = await grammarLessonModel.createLesson(
+              lessonData
+            );
+            grammarLessons.push(createdLesson._id);
+          }
         }
+        console.log(
+          `Created ${grammarLessons.length} grammar lessons successfully`
+        );
+      } else {
+        console.log("No sections to create (sections array is empty)");
       }
 
-      // Cập nhật course với grammar lessons mới
-      if (grammarLessons.length > 0) {
-        updatedCourse = await courseModel.updateCourseById(id, {
-          grammarLessons: grammarLessons,
-        });
-      }
+      updatedCourse = await courseModel.updateCourseById(id, {
+        grammarLessons: grammarLessons,
+      });
     }
 
     // Lấy course đã cập nhật đầy đủ
