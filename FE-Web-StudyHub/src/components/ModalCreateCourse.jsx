@@ -1004,31 +1004,23 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                         },
                       }}
                     >
-                      <AccordionSummary
-                        expandIcon={
-                          <ExpandMoreIcon sx={{ color: "#667eea" }} />
-                        }
-                        sx={{
-                          bgcolor: "#f8f9ff",
-                          borderRadius: "12px 12px 0 0",
-                          "&.Mui-expanded": {
-                            minHeight: 56,
-                          },
-                          "& .MuiAccordionSummary-content": {
-                            my: 1.5,
-                            "&.Mui-expanded": {
-                              my: 1.5,
-                            },
-                          },
-                        }}
-                      >
-                        <Box
+                      <Box sx={{ position: "relative" }}>
+                        <AccordionSummary
+                          expandIcon={
+                            <ExpandMoreIcon sx={{ color: "#667eea" }} />
+                          }
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            width: "100%",
-                            pr: 2,
+                            bgcolor: "#f8f9ff",
+                            borderRadius: "12px 12px 0 0",
+                            "&.Mui-expanded": {
+                              minHeight: 56,
+                            },
+                            "& .MuiAccordionSummary-content": {
+                              my: 1.5,
+                              "&.Mui-expanded": {
+                                my: 1.5,
+                              },
+                            },
                           }}
                         >
                           <Box
@@ -1036,6 +1028,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                               display: "flex",
                               alignItems: "center",
                               gap: 2,
+                              width: "100%",
                             }}
                           >
                             <Box
@@ -1061,26 +1054,30 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                 "Untitled Section"}
                             </Typography>
                           </Box>
-                          <Tooltip title="Remove Section">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeSection(sectionIndex);
-                              }}
-                              sx={{
-                                color: "#ef4444",
-                                bgcolor: "#fee2e2",
-                                "&:hover": {
-                                  bgcolor: "#fecaca",
-                                },
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </AccordionSummary>
+                        </AccordionSummary>
+                        <Tooltip title="Remove Section">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeSection(sectionIndex);
+                            }}
+                            sx={{
+                              position: "absolute",
+                              top: 12,
+                              right: 48,
+                              color: "#ef4444",
+                              bgcolor: "#fee2e2",
+                              zIndex: 1,
+                              "&:hover": {
+                                bgcolor: "#fecaca",
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                       <AccordionDetails sx={{ p: 3, bgcolor: "white" }}>
                         <Box
                           sx={{
@@ -1201,36 +1198,28 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                         },
                                       }}
                                     >
-                                      <AccordionSummary
-                                        expandIcon={
-                                          <ExpandMoreIcon
-                                            sx={{ color: "#667eea" }}
-                                          />
-                                        }
-                                        sx={{
-                                          minHeight: 48,
-                                          bgcolor: "white",
-                                          borderRadius: "8px 8px 0 0",
-                                          "&.Mui-expanded": {
-                                            minHeight: 48,
-                                            borderBottom: "1px solid",
-                                            borderColor: "divider",
-                                          },
-                                          "& .MuiAccordionSummary-content": {
-                                            my: 1,
-                                            "&.Mui-expanded": {
-                                              my: 1,
-                                            },
-                                          },
-                                        }}
-                                      >
-                                        <Box
+                                      <Box sx={{ position: "relative" }}>
+                                        <AccordionSummary
+                                          expandIcon={
+                                            <ExpandMoreIcon
+                                              sx={{ color: "#667eea" }}
+                                            />
+                                          }
                                           sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                            width: "100%",
-                                            pr: 1,
+                                            minHeight: 48,
+                                            bgcolor: "white",
+                                            borderRadius: "8px 8px 0 0",
+                                            "&.Mui-expanded": {
+                                              minHeight: 48,
+                                              borderBottom: "1px solid",
+                                              borderColor: "divider",
+                                            },
+                                            "& .MuiAccordionSummary-content": {
+                                              my: 1,
+                                              "&.Mui-expanded": {
+                                                my: 1,
+                                              },
+                                            },
                                           }}
                                         >
                                           <Box
@@ -1238,6 +1227,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                               display: "flex",
                                               alignItems: "center",
                                               gap: 1.5,
+                                              width: "100%",
                                             }}
                                           >
                                             <Box
@@ -1269,27 +1259,31 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                                 `Lesson ${lessonIndex + 1}`}
                                             </Typography>
                                           </Box>
-                                          <IconButton
-                                            size="small"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleRemoveLesson(
-                                                sectionIndex,
-                                                lessonIndex
-                                              );
-                                            }}
-                                            sx={{
-                                              color: "#ef4444",
-                                              bgcolor: "#fee2e2",
-                                              "&:hover": {
-                                                bgcolor: "#fecaca",
-                                              },
-                                            }}
-                                          >
-                                            <DeleteIcon fontSize="small" />
-                                          </IconButton>
-                                        </Box>
-                                      </AccordionSummary>
+                                        </AccordionSummary>
+                                        <IconButton
+                                          size="small"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveLesson(
+                                              sectionIndex,
+                                              lessonIndex
+                                            );
+                                          }}
+                                          sx={{
+                                            position: "absolute",
+                                            top: 8,
+                                            right: 40,
+                                            color: "#ef4444",
+                                            bgcolor: "#fee2e2",
+                                            zIndex: 1,
+                                            "&:hover": {
+                                              bgcolor: "#fecaca",
+                                            },
+                                          }}
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </Box>
                                       <AccordionDetails
                                         sx={{ p: 2.5, bgcolor: "white" }}
                                       >
