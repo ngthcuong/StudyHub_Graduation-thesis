@@ -44,6 +44,8 @@ import {
   useUpdateCourseMutation,
 } from "../services/courseApi";
 import { toast } from "react-toastify";
+import RichTextEditorModal from "./RichTextEditorModal";
+import FileUploadComponent from "./FileUploadComponent";
 
 // Validation schema for course information
 const courseInfoSchema = yup.object({
@@ -91,6 +93,15 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
   const [expandedSections, setExpandedSections] = useState(new Set([0])); // Track which sections are expanded
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
+
+  // Rich text editor modal state
+  const [richTextModal, setRichTextModal] = useState({
+    open: false,
+    sectionIndex: -1,
+    lessonIndex: -1,
+    content: "",
+    lessonName: "",
+  });
 
   // Track if this is the initial load to prevent resetting courseLevel in edit mode
   const isInitialLoadRef = useRef(true);
@@ -197,6 +208,43 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
     if (open && course) {
       // Course edit mode: Pre-fill with course data
       isInitialLoadRef.current = true;
+      console.log("Pre-filling course data:", course);
+      console.log("Course grammarLessons:", course.grammarLessons);
+
+      // Convert grammarLessons to sections format for UI compatibility
+      let sectionsData = [];
+      if (course.grammarLessons && course.grammarLessons.length > 0) {
+        sectionsData = course.grammarLessons.map((grammarLesson) => ({
+          sectionName: grammarLesson.title,
+          lessons: grammarLesson.parts
+            ? grammarLesson.parts.map((part) => ({
+                lessonName: part.title,
+                contentType: part.contentType || "text",
+                content: part.content || "",
+                videoUrl: part.videoUrl || "",
+                attachmentUrl: part.attachmentUrl || "",
+                description: part.description || "",
+                lectureNotes: "", // Legacy field
+              }))
+            : [],
+        }));
+
+        console.log("Converted sections:", sectionsData);
+        sectionsData.forEach((section, idx) => {
+          console.log(`Section ${idx}:`, section);
+          if (section.lessons) {
+            section.lessons.forEach((lesson, lessonIdx) => {
+              console.log(`  Lesson ${lessonIdx}:`, lesson);
+              if (lesson.content) {
+                console.log(
+                  `    Has content: ${lesson.content.length} characters`
+                );
+              }
+            });
+          }
+        });
+      }
+
       reset({
         title: course.title || "",
         description: course.description || "",
@@ -207,7 +255,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
         durationHours: course.durationHours || 1,
         thumbnailUrl: course.thumbnailUrl || "",
         tags: course.tags || [],
-        sections: course.sections || [],
+        sections: sectionsData,
       });
       // Reset flag after a short delay to allow form to populate
       setTimeout(() => {
@@ -275,10 +323,11 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
     }
     currentSections[sectionIndex].lessons.push({
       lessonName: "",
-      contentType: "video",
+      contentType: "text",
       videoUrl: "",
       attachmentUrl: "",
       description: "",
+      content: "",
       lectureNotes: "",
     });
     setValue("sections", currentSections);
@@ -305,6 +354,100 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
     setExpandedSections(newExpanded);
   };
 
+  // Handle rich text editor modal
+  const handleOpenRichTextEditor = (sectionIndex, lessonIndex) => {
+    const lesson = watchedSections[sectionIndex]?.lessons[lessonIndex];
+    console.log("Opening rich text editor for lesson:", lesson);
+    console.log("Lesson content:", lesson?.content);
+    setRichTextModal({
+      open: true,
+      sectionIndex,
+      lessonIndex,
+      content: lesson?.content || "",
+      lessonName: lesson?.lessonName || `Lesson ${lessonIndex + 1}`,
+    });
+  };
+
+  const handleCloseRichTextEditor = () => {
+    setRichTextModal({
+      open: false,
+      sectionIndex: -1,
+      lessonIndex: -1,
+      content: "",
+      lessonName: "",
+    });
+  };
+
+  const handleSaveRichTextContent = (content) => {
+    const { sectionIndex, lessonIndex } = richTextModal;
+    const currentSections = [...watchedSections];
+    console.log("Saving content:", content);
+    console.log("Section index:", sectionIndex, "Lesson index:", lessonIndex);
+
+    if (
+      currentSections[sectionIndex] &&
+      currentSections[sectionIndex].lessons[lessonIndex]
+    ) {
+      currentSections[sectionIndex].lessons[lessonIndex].content = content;
+      setValue("sections", currentSections);
+      console.log(
+        "Content saved to lesson:",
+        currentSections[sectionIndex].lessons[lessonIndex]
+      );
+    } else {
+      console.error("Failed to save content: invalid section or lesson index");
+    }
+  };
+
+  // Handle file upload for lessons
+  const handleFileUpload = (sectionIndex, lessonIndex, url) => {
+    const currentSections = [...watchedSections];
+    if (
+      currentSections[sectionIndex] &&
+      currentSections[sectionIndex].lessons[lessonIndex]
+    ) {
+      const lesson = currentSections[sectionIndex].lessons[lessonIndex];
+      if (lesson.contentType === "video") {
+        lesson.videoUrl = url;
+      } else if (lesson.contentType === "document") {
+        lesson.attachmentUrl = url;
+      }
+      setValue("sections", currentSections);
+    }
+  };
+
+  const handleUrlChange = (sectionIndex, lessonIndex, url) => {
+    const currentSections = [...watchedSections];
+    if (
+      currentSections[sectionIndex] &&
+      currentSections[sectionIndex].lessons[lessonIndex]
+    ) {
+      const lesson = currentSections[sectionIndex].lessons[lessonIndex];
+      if (lesson.contentType === "video") {
+        lesson.videoUrl = url;
+      } else if (lesson.contentType === "document") {
+        lesson.attachmentUrl = url;
+      }
+      setValue("sections", currentSections);
+    }
+  };
+
+  // Function to extract plain text from HTML content for preview
+  const getContentPreview = (htmlContent, maxLength = 100) => {
+    if (!htmlContent) return "No content added";
+
+    // Create a temporary element to extract text content
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlContent;
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+
+    if (textContent.length <= maxLength) {
+      return textContent;
+    }
+
+    return textContent.substring(0, maxLength) + "...";
+  };
+
   const onSubmit = async (data) => {
     try {
       if (isEditMode) {
@@ -327,7 +470,10 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
         if (currentSectionsCount > 0) {
           // User has sections with content - send for update
           updatePayload.sections = sections;
-          console.log(`Sending ${currentSectionsCount} sections for update`);
+          console.log(
+            `Sending ${currentSectionsCount} sections for update:`,
+            sections
+          );
         } else if (originalSectionsCount > 0 && currentSectionsCount === 0) {
           // Original had sections, now empty - user explicitly deleted all
           // Only send empty array if we're sure sections were loaded
@@ -347,6 +493,21 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
         onSuccess?.(result);
       } else {
         // Create new course
+        console.log("Creating course with data:", data);
+        if (data.sections && data.sections.length > 0) {
+          console.log("Sections data:", data.sections);
+          data.sections.forEach((section, idx) => {
+            console.log(`Section ${idx}:`, section);
+            if (section.lessons) {
+              section.lessons.forEach((lesson, lessonIdx) => {
+                console.log(`  Lesson ${lessonIdx}:`, lesson);
+                if (lesson.content) {
+                  console.log(`    Content length: ${lesson.content.length}`);
+                }
+              });
+            }
+          });
+        }
         const result = await createCourse(data).unwrap();
         toast.success("Create course successfully!");
         onSuccess?.(result);
@@ -1403,38 +1564,172 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                             )}
                                           />
 
+                                          {/* Content based on type */}
                                           {watchedSections[sectionIndex]
                                             ?.lessons[lessonIndex]
-                                            ?.contentType === "video" && (
-                                            <Controller
-                                              name={`sections.${sectionIndex}.lessons.${lessonIndex}.videoUrl`}
-                                              control={control}
-                                              render={({ field }) => (
-                                                <TextField
-                                                  {...field}
-                                                  label="Video URL"
-                                                  placeholder="https://youtube.com/watch?v=..."
-                                                  fullWidth
-                                                  size="small"
+                                            ?.contentType === "text" && (
+                                            <Box>
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  justifyContent:
+                                                    "space-between",
+                                                  alignItems: "center",
+                                                  mb: 2,
+                                                }}
+                                              >
+                                                <Typography
+                                                  variant="body2"
                                                   sx={{
-                                                    "& .MuiOutlinedInput-root":
-                                                      {
-                                                        borderRadius: 2,
-                                                        bgcolor: "white",
-                                                        "&:hover fieldset": {
-                                                          borderColor:
-                                                            "#667eea",
-                                                        },
-                                                        "&.Mui-focused fieldset":
-                                                          {
-                                                            borderColor:
-                                                              "#667eea",
-                                                          },
-                                                      },
+                                                    fontWeight: 600,
+                                                    color: "text.primary",
                                                   }}
-                                                />
-                                              )}
-                                            />
+                                                >
+                                                  Text Content
+                                                </Typography>
+                                                <Button
+                                                  size="small"
+                                                  variant="outlined"
+                                                  onClick={() =>
+                                                    handleOpenRichTextEditor(
+                                                      sectionIndex,
+                                                      lessonIndex
+                                                    )
+                                                  }
+                                                  sx={{
+                                                    borderRadius: 2,
+                                                    borderColor: "#667eea",
+                                                    color: "#667eea",
+                                                    textTransform: "none",
+                                                    fontSize: "0.75rem",
+                                                    "&:hover": {
+                                                      borderColor: "#5568d3",
+                                                      bgcolor: "#f0f2ff",
+                                                    },
+                                                  }}
+                                                >
+                                                  Edit Content
+                                                </Button>
+                                              </Box>
+                                              <Paper
+                                                elevation={0}
+                                                sx={{
+                                                  p: 2,
+                                                  bgcolor: watchedSections[
+                                                    sectionIndex
+                                                  ]?.lessons[lessonIndex]
+                                                    ?.content
+                                                    ? "#f8f9ff"
+                                                    : "#f8f9fa",
+                                                  border: "1px solid",
+                                                  borderColor: watchedSections[
+                                                    sectionIndex
+                                                  ]?.lessons[lessonIndex]
+                                                    ?.content
+                                                    ? "#e3f2fd"
+                                                    : "divider",
+                                                  borderStyle: watchedSections[
+                                                    sectionIndex
+                                                  ]?.lessons[lessonIndex]
+                                                    ?.content
+                                                    ? "solid"
+                                                    : "dashed",
+                                                  borderRadius: 2,
+                                                  textAlign: watchedSections[
+                                                    sectionIndex
+                                                  ]?.lessons[lessonIndex]
+                                                    ?.content
+                                                    ? "left"
+                                                    : "center",
+                                                }}
+                                              >
+                                                <Typography
+                                                  variant="body2"
+                                                  color={
+                                                    watchedSections[
+                                                      sectionIndex
+                                                    ]?.lessons[lessonIndex]
+                                                      ?.content
+                                                      ? "text.primary"
+                                                      : "text.secondary"
+                                                  }
+                                                  sx={{
+                                                    fontStyle: watchedSections[
+                                                      sectionIndex
+                                                    ]?.lessons[lessonIndex]
+                                                      ?.content
+                                                      ? "normal"
+                                                      : "italic",
+                                                    lineHeight: 1.5,
+                                                  }}
+                                                >
+                                                  {getContentPreview(
+                                                    watchedSections[
+                                                      sectionIndex
+                                                    ]?.lessons[lessonIndex]
+                                                      ?.content
+                                                  )}
+                                                </Typography>
+                                              </Paper>
+                                            </Box>
+                                          )}
+
+                                          {(watchedSections[sectionIndex]
+                                            ?.lessons[lessonIndex]
+                                            ?.contentType === "video" ||
+                                            watchedSections[sectionIndex]
+                                              ?.lessons[lessonIndex]
+                                              ?.contentType === "document") && (
+                                            <Box>
+                                              <Typography
+                                                variant="body2"
+                                                sx={{
+                                                  fontWeight: 600,
+                                                  color: "text.primary",
+                                                  mb: 2,
+                                                }}
+                                              >
+                                                {watchedSections[sectionIndex]
+                                                  ?.lessons[lessonIndex]
+                                                  ?.contentType === "video"
+                                                  ? "Video File"
+                                                  : "Document File"}
+                                              </Typography>
+                                              <FileUploadComponent
+                                                contentType={
+                                                  watchedSections[sectionIndex]
+                                                    ?.lessons[lessonIndex]
+                                                    ?.contentType
+                                                }
+                                                currentUrl={
+                                                  watchedSections[sectionIndex]
+                                                    ?.lessons[lessonIndex]
+                                                    ?.contentType === "video"
+                                                    ? watchedSections[
+                                                        sectionIndex
+                                                      ]?.lessons[lessonIndex]
+                                                        ?.videoUrl || ""
+                                                    : watchedSections[
+                                                        sectionIndex
+                                                      ]?.lessons[lessonIndex]
+                                                        ?.attachmentUrl || ""
+                                                }
+                                                onFileUpload={(url) =>
+                                                  handleFileUpload(
+                                                    sectionIndex,
+                                                    lessonIndex,
+                                                    url
+                                                  )
+                                                }
+                                                onUrlChange={(url) =>
+                                                  handleUrlChange(
+                                                    sectionIndex,
+                                                    lessonIndex,
+                                                    url
+                                                  )
+                                                }
+                                              />
+                                            </Box>
                                           )}
 
                                           <Controller
@@ -1541,6 +1836,16 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
           </Button>
         </DialogActions>
       </form>
+
+      {/* Rich Text Editor Modal */}
+      <RichTextEditorModal
+        open={richTextModal.open}
+        onClose={handleCloseRichTextEditor}
+        onSave={handleSaveRichTextContent}
+        initialContent={richTextModal.content}
+        lessonName={richTextModal.lessonName}
+        title="Edit Lesson Content"
+      />
     </Dialog>
   );
 };

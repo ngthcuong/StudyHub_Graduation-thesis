@@ -20,7 +20,7 @@ const createCourse = async (courseData) => {
 
 const findCourseById = async (id) => {
   try {
-    const course = await Course.findById(id);
+    const course = await Course.findById(id).populate("grammarLessons");
     return course;
   } catch (error) {
     console.error("Error finding course by id:", error);

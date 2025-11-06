@@ -23,7 +23,7 @@ const createCourse = async (req, res) => {
             parts: section.lessons.map((lesson) => ({
               title: lesson.lessonName,
               description: lesson.description || "",
-              content: lesson.lectureNotes || "",
+              content: lesson.content || lesson.lectureNotes || "", // Prioritize rich text content
               videoUrl: lesson.videoUrl || "",
               attachmentUrl: lesson.attachmentUrl || "",
               contentType: lesson.contentType || "video",
@@ -122,7 +122,7 @@ const updateCourseById = async (req, res) => {
               parts: section.lessons.map((lesson) => ({
                 title: lesson.lessonName,
                 description: lesson.description || "",
-                content: lesson.lectureNotes || "",
+                content: lesson.content || lesson.lectureNotes || "", // Prioritize rich text content
                 videoUrl: lesson.videoUrl || "",
                 attachmentUrl: lesson.attachmentUrl || "",
                 contentType: lesson.contentType || "video",
