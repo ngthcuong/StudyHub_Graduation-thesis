@@ -525,7 +525,10 @@ const CourseLessson = () => {
           <div className="lesson-viewer flex-1">
             <div
               className="lesson-container max-h-[100vh] overflow-y-auto p-4 bg-white rounded-lg shadow-sm"
-              dangerouslySetInnerHTML={{ __html: lessonPlay?.content }}
+              dangerouslySetInnerHTML={{
+                __html: lessonPlay.content.find((item) => item.type === "text")
+                  ?.value,
+              }}
             />
           </div>
         </div>

@@ -21,12 +21,12 @@ export const testApi = {
   },
 
   // Start test attempt
-  startTestAttempt: async (testPoolId, testId) => {
-    console.log("Starting test attempt with:", { testPoolId, testId });
+  startTestAttempt: async (testPoolId, testId, maxAttempts) => {
     const response = await api.post(`/attempts`, {
       testPoolId,
       testId,
       evaluationModel: "gemini",
+      maxAttempts,
     });
     return response.data;
   },
@@ -41,11 +41,11 @@ export const testApi = {
   },
 
   // Submit test attempt
-  submitTestAttempt: async (attemptId, answersPayload, testId, date) => {
+  submitTestAttempt: async ({ attemptId, answers, testId, startTime }) => {
     const response = await api.post(`/attempts/${attemptId}/submit`, {
-      answers: answersPayload,
+      answers,
       testId,
-      startTime: date,
+      startTime,
     });
     return response.data;
   },
@@ -157,6 +157,24 @@ export const testApi = {
 
   getAttemptByTestAndUser: async (testId, userId) => {
     const response = await api.get(`/attempts/test/${testId}/user/${userId}`);
+    return response.data;
+  },
+
+  // getAttemptDetailByUser
+  getAttemptDetailByUser: async () => {
+    const response = await api.get(`/attempts/custom/user`);
+    return response.data;
+  },
+
+  // createTest
+  createTest: async (payload) => {
+    const response = await api.post(`/tests`, payload);
+    return response.data;
+  },
+
+  // custom test
+  createCustomTest: async (payload) => {
+    const response = await api.post(`/generate-test/custom`, payload);
     return response.data;
   },
 };

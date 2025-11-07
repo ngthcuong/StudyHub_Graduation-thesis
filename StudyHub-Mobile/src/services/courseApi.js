@@ -1,3 +1,4 @@
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import api from "./api";
 
 export const courseApi = {
@@ -10,12 +11,6 @@ export const courseApi = {
   // Get course by ID
   getCourseById: async (courseId) => {
     const response = await api.get(`/courses/${courseId}`);
-    return response.data;
-  },
-
-  // Get user's enrolled courses
-  getMyCourses: async () => {
-    const response = await api.get("/courses/my-courses");
     return response.data;
   },
 
@@ -42,6 +37,24 @@ export const courseApi = {
     const response = await api.post(
       `/courses/${courseId}/lessons/${lessonId}/complete`
     );
+    return response.data;
+  },
+
+  // get my course
+  getMyCourses: async (userId) => {
+    const response = await api.get(`/courses/my-courses/${userId}`);
+    return response.data;
+  },
+
+  // get all courses
+  getAllCourses: async () => {
+    const response = await api.get(`/courses`);
+    return response.data;
+  },
+
+  // get grammar courses by id
+  getGrammarCoursesById: async (courseId) => {
+    const response = await api.get(`/grammar-lessons/course/${courseId}`);
     return response.data;
   },
 };
