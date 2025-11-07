@@ -57,4 +57,10 @@ export const courseApi = {
     const response = await api.get(`/grammar-lessons/course/${courseId}`);
     return response.data;
   },
+
+  // get part of grammar lessons by id
+  getPartGrammarLessonsById: async (partId) => {
+    const response = await api.get(`/grammar-lessons/parts/${partId}`);
+    return response.data;
+  },
 };

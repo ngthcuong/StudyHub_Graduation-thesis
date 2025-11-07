@@ -32,7 +32,6 @@ const CourseDetailScreen = ({ navigation, route }) => {
       const mockCourse = getMockCourseById("1");
 
       const res = await courseApi.getGrammarCoursesById(courseId);
-      console.log("Grammar courses response:", res.total);
       setLessons(res);
 
       if (mockCourse) {
@@ -79,7 +78,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
       onPress={() =>
         navigation.navigate("CourseVideo", {
           courseId,
-          lessonId: lesson.id,
+          lesson,
         })
       }
     >
@@ -229,7 +228,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
         <Text style={styles.sectionTitle}>Lessons ({lessons.data.length})</Text>
         {lessons.data.length > 0 ? (
           lessons.data.map((lesson, index) => (
-            <LessonItem key={lesson.id} lesson={lesson} index={index} />
+            <LessonItem key={lesson._id} lesson={lesson} index={index} />
           ))
         ) : (
           <View style={styles.emptyLessons}>
