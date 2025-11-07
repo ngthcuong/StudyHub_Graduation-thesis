@@ -177,4 +177,10 @@ export const testApi = {
     const response = await api.post(`/generate-test/custom`, payload);
     return response.data;
   },
+
+  // get question by attemptId
+  getQuestionsByAttemptId: async (attemptId) => {
+    const response = await api.get(`/questions/attempt/${attemptId}`);
+    return response.data;
+  },
 };

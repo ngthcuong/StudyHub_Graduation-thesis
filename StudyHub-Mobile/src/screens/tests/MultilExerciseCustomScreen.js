@@ -17,10 +17,11 @@ import SubmittingTestLoader from "../../components/SubmittingTestLoader";
 const MultilExerciseCustomScreen = ({ navigation }) => {
   const route = useRoute();
   const payloadForm = route.params?.payloadForm;
+  const attemptDetail = route.params?.attemptDetail;
 
   const [questions, setQuestions] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answersP, setAnswersP] = useState({});
   const [timeLeft, setTimeLeft] = useState(60 * 5); // 5 phút
   const [loadingResult, setLoadingResult] = useState(false);
   const [attemptId, setAttemptId] = useState(null);
@@ -66,58 +67,73 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
 
   // 🔹 Giả lập fetch test
   useEffect(() => {
-    if (payloadForm) {
+    if (payloadForm || attemptDetail) {
       startTest();
     }
-  }, [payloadForm]);
+  }, [payloadForm, attemptDetail]);
 
   const startTest = async () => {
-    try {
-      setLoadingTest(true);
-      const testPoolId = "000000000000000000000000";
-      const testId = payloadForm?.testId;
-      const maxAttempts = 3;
+    if (
+      attemptDetail &&
+      attemptDetail?.attemptNumber < attemptDetail?.maxAttempts
+    ) {
+      const now = new Date();
+      const isoString = now.toISOString();
+      setDate(isoString);
 
-      const attemptRes = await testApi.startTestAttempt(
-        testPoolId,
-        testId,
-        maxAttempts
-      );
-      console.log("🚀 Test Attempt Response:", attemptRes);
-      setAttemptId(attemptRes?.data?._id || null);
+      const res = await testApi.getQuestionsByAttemptId(attemptDetail?._id);
+      setQuestions({ data: res });
+      setTest(attemptDetail?.testId);
+      setAttemptId(attemptDetail?._id);
+      setLoadingTest(false);
+    } else {
       try {
-        const testRes = await testApi.getTestById(testId);
-        setTest(testRes);
+        setLoadingTest(true);
+        const testPoolId = "000000000000000000000000";
+        const testId = payloadForm?.testId;
+        const maxAttempts = 3;
+
+        const attemptRes = await testApi.startTestAttempt(
+          testPoolId,
+          testId,
+          maxAttempts
+        );
+        console.log("🚀 Test Attempt Response:", attemptRes);
+        setAttemptId(attemptRes?.data?._id || null);
         try {
-          const res = await testApi.createCustomTest({
-            testId: payloadForm?.testId,
-            testAttemptId: attemptRes?.data?._id,
-            level: payloadForm?.level,
-            toeicScore: payloadForm?.toeicScore,
-            weakSkills: payloadForm?.weakSkills,
-            exam_type: "TOEIC",
-            topics: payloadForm?.topics,
-            difficulty: payloadForm?.difficulty,
-            question_ratio: "MCQ",
-            numQuestions: payloadForm?.numQuestions,
-            timeLimit: payloadForm?.timeLimit,
-          });
+          const testRes = await testApi.getTestById(testId);
+          setTest(testRes);
+          try {
+            const res = await testApi.createCustomTest({
+              testId: payloadForm?.testId,
+              testAttemptId: attemptRes?.data?._id,
+              level: payloadForm?.level,
+              toeicScore: payloadForm?.toeicScore,
+              weakSkills: payloadForm?.weakSkills,
+              exam_type: "TOEIC",
+              topics: payloadForm?.topics,
+              difficulty: payloadForm?.difficulty,
+              question_ratio: "MCQ",
+              numQuestions: payloadForm?.numQuestions,
+              timeLimit: payloadForm?.timeLimit,
+            });
 
-          const now = new Date();
-          const isoString = now.toISOString();
-          setDate(isoString);
+            const now = new Date();
+            const isoString = now.toISOString();
+            setDate(isoString);
 
-          console.log("🚀 Custom Test Questions:", res);
-          setQuestions(res);
-          setLoadingTest(false);
+            console.log("🚀 Custom Test Questions:", res);
+            setQuestions(res);
+            setLoadingTest(false);
+          } catch (error) {
+            console.log("🚨 Error fetching test questions:", error);
+          }
         } catch (error) {
-          console.log("🚨 Error fetching test questions:", error);
+          console.log("🚨 Error parsing start test response:", error);
         }
       } catch (error) {
-        console.log("🚨 Error parsing start test response:", error);
+        console.error("Error starting test:", error);
       }
-    } catch (error) {
-      console.error("Error starting test:", error);
     }
   };
 
@@ -132,7 +148,7 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
   }, [timeLeft]);
 
   const handleAnswerSelect = (questionId, answerId) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: answerId }));
+    setAnswersP((prev) => ({ ...prev, [questionId]: answerId }));
   };
 
   const handleNextQuestion = () => {
@@ -150,12 +166,12 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
   };
 
   const handleSubmitTest = async () => {
-    console.log("Submitting Test with answers:", answers);
+    console.log("Submitting Test with answers:", answersP);
 
     setLoadingResult(true);
     setIsSubmitting(true);
 
-    const formattedAnswers = Object.entries(answers).map(
+    const formattedAnswers = Object.entries(answersP).map(
       ([questionId, selectedOptionId]) => ({
         questionId,
         selectedOptionId,
@@ -164,7 +180,7 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
 
     try {
       const startTime = date;
-      const testId = payloadForm?.testId;
+      const testId = payloadForm?.testId || attemptDetail?.testId?._id;
 
       console.log("Submitting Test with data:", {
         attemptId,
@@ -173,7 +189,7 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
         startTime,
       });
 
-      const response = await testApi.submitTest({
+      const response = await testApi.submitTestAttempt({
         attemptId,
         answers: formattedAnswers,
         testId,
@@ -213,7 +229,7 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
   // }
 
   const currentQuestion = questions?.data?.data[currentQuestionIndex];
-  const selectedAnswer = answers[currentQuestion?._id];
+  const selectedAnswer = answersP[currentQuestion?._id];
 
   if (loadingTest || !questions || !test) {
     return (

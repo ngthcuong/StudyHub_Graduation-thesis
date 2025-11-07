@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,10 @@ const AssessmentListScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("All Types");
+  const [status, setStatus] = useState("All Status");
+  const [difficulty, setDifficulty] = useState("All Levels");
 
   useEffect(() => {
     loadTests();
@@ -47,7 +51,8 @@ const AssessmentListScreen = ({ navigation }) => {
       setLoading(true);
       const response = await testApi.getAttemptDetailByUser();
       const mappedTests = response.data.map(mapTestFromApi);
-      setTests(mappedTests);
+      console.log("Loaded tests:", mappedTests);
+      setTests(response);
     } catch (error) {
       console.error("Error loading tests:", error);
     } finally {
@@ -61,34 +66,61 @@ const AssessmentListScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
+  // Lọc dữ liệu
+  const filtered = useMemo(() => {
+    if (!tests?.data) return [];
+    return tests?.data?.filter((item) => {
+      const matchTitle = item?.testId?.title
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      const matchType = type === "All Types" || item.testId.type === type;
+      const matchStatus =
+        status === "All Status" ||
+        (status === "Completed" && item.testId.completed) ||
+        (status === "Not Completed" && !item.testId.completed);
+      const matchDifficulty =
+        difficulty === "All Levels" || item.testId.difficulty === difficulty;
+      return matchTitle && matchType && matchStatus && matchDifficulty;
+    });
+  }, [search, type, status, difficulty, tests?.data]);
+
+  console.log("Rendering AssessmentListScreen with tests:", filtered[0]);
+
   const TestCard = ({ test }) => (
     <TouchableOpacity
       style={styles.testCard}
-      onPress={() => navigation.navigate("Assessment", { testId: test.id })}
+      onPress={() =>
+        navigation.navigate("AssessmentCustom", {
+          testId: test.testId._id,
+          attemptDetail: test,
+        })
+      }
     >
       <View style={styles.testIcon}>
         <Ionicons name="clipboard" size={32} color="#10B981" />
       </View>
       <View style={styles.testContent}>
         <Text style={styles.testTitle} numberOfLines={2}>
-          {test.title}
+          {test.testId.title}
         </Text>
         <Text style={styles.testDescription} numberOfLines={3}>
-          {test.description}
+          {test.testId.description}
         </Text>
         <View style={styles.testMeta}>
           <View style={styles.metaItem}>
             <Ionicons name="time-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{test.duration} min</Text>
+            <Text style={styles.metaText}>{test.testId.durationMin} min</Text>
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="help-circle-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{test.totalQuestions} questions</Text>
+            <Text style={styles.metaText}>
+              {test.testId.numQuestions} questions
+            </Text>
           </View>
         </View>
       </View>
       <View style={styles.testStatus}>
-        {test.isCompleted ? (
+        {test.attemptNumber === test.maxAttempts ? (
           <Ionicons name="checkmark-circle" size={24} color="#10B981" />
         ) : (
           <Ionicons name="play-circle" size={24} color="#3B82F6" />
@@ -119,8 +151,8 @@ const AssessmentListScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={tests}
-        keyExtractor={(item) => item.id.toString()}
+        data={filtered}
+        keyExtractor={(item) => item._id.toString()}
         renderItem={({ item }) => <TestCard test={item} />}
         contentContainerStyle={styles.listContainer}
         refreshControl={
