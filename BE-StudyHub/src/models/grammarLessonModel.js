@@ -67,6 +67,22 @@ const getPartById = async (partId) => {
   }
 };
 
+const addTestToLesson = async (lessonId, testId) => {
+  try {
+    // Thêm testId vào exercises array của grammar lesson
+    const updatedLesson = await GrammarLesson.findByIdAndUpdate(
+      lessonId,
+      { $addToSet: { exercises: testId } }, // $addToSet để tránh duplicate
+      { new: true, runValidators: true }
+    ).populate("exercises", "title description");
+
+    return updatedLesson;
+  } catch (error) {
+    console.error("Error adding test to lesson:", error);
+    throw new Error("Failed to add test to lesson");
+  }
+};
+
 module.exports = {
   createLesson,
   getAllLessons,
@@ -75,4 +91,5 @@ module.exports = {
   deleteLesson,
   getLessonsByCourseId,
   getPartById,
+  addTestToLesson,
 };

@@ -28,6 +28,9 @@ const createTest = async (req, res) => {
       // "maxAttempts",
       "isTheLastTest",
     ];
+
+    // grammarLessonId là optional - có thể có hoặc không
+    // Nếu có grammarLessonId thì test này thuộc về một lesson cụ thể
     for (const field of requiredFields) {
       if (testData[field] === undefined || testData[field] === null) {
         return res
