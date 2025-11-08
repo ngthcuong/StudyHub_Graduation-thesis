@@ -31,6 +31,10 @@ import CertificateDetailScreen from "../screens/Certificate/CertificateDetailMod
 // History Test Screen
 import HistoryTestResultScreen from "../screens/tests/HistoryTestResultScreen";
 import CompletedTestsScreen from "../screens/tests/CompletedTestsScreen";
+import MultilExerciseCustomScreen from "../screens/tests/MultilExerciseCustomScreen";
+
+// custom navigators
+import AssessmentCustomScreen from "../screens/tests/AssessmentCustomScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -105,9 +109,19 @@ const TestsStackNavigator = () => (
       options={{ title: "Multiple Choice" }}
     />
     <TestsStack.Screen
+      name="MultilExerciseCustom"
+      component={MultilExerciseCustomScreen}
+      options={{ title: "Multiple Choice Custom" }}
+    />
+    <TestsStack.Screen
       name="TestResults"
       component={TestResultsScreen}
       options={{ title: "Test Results" }}
+    />
+    <TestsStack.Screen
+      name="AssessmentCustom"
+      component={AssessmentCustomScreen}
+      options={{ title: "Assessment Custom" }}
     />
   </TestsStack.Navigator>
 );

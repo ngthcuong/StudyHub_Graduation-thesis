@@ -48,8 +48,6 @@ const TestInformationCustom = () => {
 
   const [history, setHistory] = useState([]);
 
-  console.log("Test Information Custom - testInfor:", history);
-
   const testPool = true;
 
   useEffect(() => {

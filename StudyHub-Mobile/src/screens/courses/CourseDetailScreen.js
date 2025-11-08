@@ -14,6 +14,7 @@ import { getMockCourseById } from "../../mock";
 
 const CourseDetailScreen = ({ navigation, route }) => {
   const { courseId } = route.params;
+  console.log("CourseDetailScreen courseId:", courseId);
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,14 +29,24 @@ const CourseDetailScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       // Sử dụng mock data thay vì API calls
-      const mockCourse = getMockCourseById(courseId);
+      const mockCourse = getMockCourseById("1");
+
+      const res = await courseApi.getGrammarCoursesById(courseId);
+      setLessons(res);
 
       if (mockCourse) {
-        setCourse(mockCourse);
-        setLessons(mockCourse.lessons || []);
+        // setCourse(mockCourse);
+        // setLessons(mockCourse.lessons || []);
         setEnrolled(mockCourse.isEnrolled || false);
       } else {
         Alert.alert("Error", "Course not found");
+      }
+
+      try {
+        const resCourse = await courseApi.getCourseById(courseId);
+        setCourse(resCourse);
+      } catch (error) {
+        console.error("Error fetching grammar courses:", error);
       }
     } catch (error) {
       console.error("Error loading course details:", error);
@@ -53,8 +64,8 @@ const CourseDetailScreen = ({ navigation, route }) => {
 
   const handleEnroll = async () => {
     try {
-      await courseApi.enrollCourse(courseId);
-      setEnrolled(true);
+      // await courseApi.enrollCourse(courseId);
+      // setEnrolled(true);
       Alert.alert("Success", "Successfully enrolled in the course!");
     } catch (error) {
       Alert.alert("Error", "Failed to enroll in the course");
@@ -67,7 +78,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
       onPress={() =>
         navigation.navigate("CourseVideo", {
           courseId,
-          lessonId: lesson.id,
+          lesson,
         })
       }
     >
@@ -77,7 +88,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
       <View style={styles.lessonContent}>
         <Text style={styles.lessonTitle}>{lesson.title}</Text>
         <View style={styles.lessonMeta}>
-          <Text style={styles.lessonDuration}>{lesson.duration || "N/A"}</Text>
+          {/* <Text style={styles.lessonDuration}>{15 || "N/A"}</Text> */}
           <View style={styles.lessonType}>
             <Ionicons
               name={
@@ -143,7 +154,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
         <View style={styles.courseMeta}>
           <View style={styles.metaItem}>
             <Ionicons name="time-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{course.duration || "N/A"}</Text>
+            <Text style={styles.metaText}>{course.durationHours || "N/A"}</Text>
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="people-outline" size={16} color="#6B7280" />
@@ -153,7 +164,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.metaText}>{course.rating || "4.5"}</Text>
+            <Text style={styles.metaText}>{course.review || "4.5"}</Text>
           </View>
         </View>
 
@@ -179,22 +190,26 @@ const CourseDetailScreen = ({ navigation, route }) => {
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
             <Ionicons name="book-outline" size={24} color="#3B82F6" />
-            <Text style={styles.statNumber}>{course.lessons?.length || 0}</Text>
+            <Text style={styles.statNumber}>{lessons?.total || 0}</Text>
             <Text style={styles.statLabel}>Lessons</Text>
           </View>
           <View style={styles.statItem}>
             <Ionicons name="library-outline" size={24} color="#10B981" />
-            <Text style={styles.statNumber}>{course.vocabulary || 0}</Text>
+            <Text style={styles.statNumber}>
+              {lessons.data.flatMap((item) => item.parts).length || 0}
+            </Text>
             <Text style={styles.statLabel}>Vocabulary</Text>
           </View>
           <View style={styles.statItem}>
             <Ionicons name="document-text-outline" size={24} color="#F59E0B" />
-            <Text style={styles.statNumber}>{course.grammar || 0}</Text>
+            <Text style={styles.statNumber}>
+              {lessons.data.flatMap((item) => item.parts).length || 0}
+            </Text>
             <Text style={styles.statLabel}>Grammar Points</Text>
           </View>
           <View style={styles.statItem}>
             <Ionicons name="trophy-outline" size={24} color="#EF4444" />
-            <Text style={styles.statNumber}>{course.targetScore || "N/A"}</Text>
+            <Text style={styles.statNumber}>{"70%" || "N/A"}</Text>
             <Text style={styles.statLabel}>Target Score</Text>
           </View>
         </View>
@@ -210,10 +225,10 @@ const CourseDetailScreen = ({ navigation, route }) => {
 
       {/* Lessons */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Lessons ({lessons.length})</Text>
-        {lessons.length > 0 ? (
-          lessons.map((lesson, index) => (
-            <LessonItem key={lesson.id} lesson={lesson} index={index} />
+        <Text style={styles.sectionTitle}>Lessons ({lessons.data.length})</Text>
+        {lessons.data.length > 0 ? (
+          lessons.data.map((lesson, index) => (
+            <LessonItem key={lesson._id} lesson={lesson} index={index} />
           ))
         ) : (
           <View style={styles.emptyLessons}>

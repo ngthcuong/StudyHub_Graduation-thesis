@@ -32,6 +32,7 @@ import {
   useSubmitTestMutation,
   // useUpdateTestPoolMutation,
 } from "../../services/testApi";
+import { array } from "prop-types";
 
 const TestMultipleChoice = () => {
   const navigate = useNavigate();
@@ -52,7 +53,6 @@ const TestMultipleChoice = () => {
   const [loading, setLoading] = useState(false); // State để quản lý trạng thái loading khi load test
 
   const completedCount = answersP.filter((a) => a !== null).length;
-  console.log("Completed count:", completedCount);
   const percent = Math.round((completedCount / answersP.length) * 100);
 
   useEffect(() => {
@@ -395,12 +395,21 @@ const TestMultipleChoice = () => {
     const answers = formattedAnswers;
     const startTime = date;
 
-    const response = await submitTestTrigger({
-      attemptId,
-      answers,
-      testId,
-      startTime,
-    }).unwrap();
+    let response = null;
+    try {
+      response = await submitTestTrigger({
+        attemptId,
+        answers,
+        testId,
+        startTime,
+      }).unwrap();
+    } catch (error) {
+      alert(
+        "Có lỗi xảy ra khi gửi dữ liệu!",
+        error.data?.message || error.message
+      );
+      setIsSubmitting(false);
+    }
 
     console.log("Simulated API response:", response);
 

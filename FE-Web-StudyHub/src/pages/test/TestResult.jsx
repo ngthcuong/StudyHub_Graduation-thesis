@@ -151,6 +151,7 @@ const TestResult = () => {
   };
 
   console.log("Result Data:", resultData.certificate);
+  console.log("FormattedAnswers:", formattedAnswers);
 
   const startTime = new Date(resultData.attemptDetail.startTime);
   const endTime = new Date(resultData.attemptDetail.endTime);
@@ -741,15 +742,15 @@ const TestResult = () => {
                 )}
 
                 {/* Weekly Study Plan */}
-                {personalized_plan.weekly_goals &&
-                  personalized_plan.weekly_goals.length > 0 && (
+                {personalized_plan?.weekly_goals &&
+                  personalized_plan?.weekly_goals?.length > 0 && (
                     <>
                       <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                         Weekly Study Plan (
-                        {personalized_plan.weekly_goals.length} weeks)
+                        {personalized_plan?.weekly_goals?.length} weeks)
                       </Typography>
 
-                      {personalized_plan.weekly_goals.map((week, idx) => (
+                      {personalized_plan?.weekly_goals?.map((week, idx) => (
                         <Accordion key={idx} sx={{ mb: 2 }}>
                           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Stack

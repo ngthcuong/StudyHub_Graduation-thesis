@@ -200,9 +200,12 @@ const CourseLessson = () => {
     const durationMs = end - startTime;
     let durationSeconds = durationMs / 1000;
 
+    console.log(lesson._id, " - Thời gian học (giây):", durationSeconds);
+
     try {
       const res = await logStudySession({
-        lessonId: lesson._id,
+        day: new Date().getDate(),
+        lessons: lesson._id,
         durationSeconds,
       }).unwrap();
       console.log("✅ Response from backend:", res);
@@ -522,7 +525,10 @@ const CourseLessson = () => {
           <div className="lesson-viewer flex-1">
             <div
               className="lesson-container max-h-[100vh] overflow-y-auto p-4 bg-white rounded-lg shadow-sm"
-              dangerouslySetInnerHTML={{ __html: lessonPlay?.content }}
+              dangerouslySetInnerHTML={{
+                __html: lessonPlay.content.find((item) => item.type === "text")
+                  ?.value,
+              }}
             />
           </div>
         </div>
