@@ -16,7 +16,6 @@ export const courseApi = rootApi.injectEndpoints({
       query: (id) => ({
         url: `/courses/${id}`,
         method: "GET",
-        body: { id },
       }),
       invalidatesTags: ["Course"],
     }),
@@ -33,7 +32,7 @@ export const courseApi = rootApi.injectEndpoints({
 
     // Cập nhật thông tin khóa học
     updateCourse: builder.mutation({
-      query: ({ id, updatedCourse }) => ({
+      query: ({ id, ...updatedCourse }) => ({
         url: `/courses/update/${id}`,
         method: "PUT",
         body: updatedCourse,

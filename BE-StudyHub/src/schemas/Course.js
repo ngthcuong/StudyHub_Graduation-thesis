@@ -12,11 +12,11 @@ const courseSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    teacherId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    // teacherId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "User",
+    //   required: true,
+    // },
     courseType: {
       type: String,
       enum: ["TOEIC", "IELTS"],

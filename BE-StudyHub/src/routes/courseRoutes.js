@@ -8,6 +8,7 @@ const {
   addRatingToCourse,
   getMyCourses,
   getCourseStatistics,
+  deleteCourseById,
 } = require("../controllers/courseController");
 const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -20,6 +21,7 @@ router.get("/:id", getCourseById);
 router.get("/title/:title", getCourseByTitle);
 router.get("/", getAllCourses);
 router.put("/update/:id", updateCourseById);
+router.delete("/:id", verifyToken, requireAdmin, deleteCourseById);
 router.post("/:id/ratings", addRatingToCourse);
 
 router.get("/my-courses/:userId", getMyCourses);

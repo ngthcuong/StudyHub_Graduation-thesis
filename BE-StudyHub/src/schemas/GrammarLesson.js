@@ -13,6 +13,13 @@ const grammarLessonSchema = new mongoose.Schema(
         title: { type: String, required: true }, // Phần 1, 2, 3
         description: { type: String }, // mô tả phần
         content: { type: String }, // nội dung chính
+        videoUrl: { type: String }, // URL video nếu có
+        attachmentUrl: { type: String }, // URL tài liệu đính kèm
+        contentType: {
+          type: String,
+          enum: ["video", "document", "text"],
+          default: "video",
+        }, // loại nội dung
       },
     ],
     exercises: [{ type: mongoose.Schema.Types.ObjectId, ref: "Test" }], // liên kết bài tập

@@ -28,6 +28,9 @@ const createTest = async (req, res) => {
       // "maxAttempts",
       "isTheLastTest",
     ];
+
+    // grammarLessonId là optional - có thể có hoặc không
+    // Nếu có grammarLessonId thì test này thuộc về một lesson cụ thể
     for (const field of requiredFields) {
       if (testData[field] === undefined || testData[field] === null) {
         return res
@@ -180,6 +183,8 @@ const getTestStatistics = async (req, res) => {
             id: test._id,
             title: test.title,
             examType: test.examType,
+            courseId: test.courseId || null,
+            isTheLastTest: test.isTheLastTest || false,
             totalQuestions,
             totalParticipants,
             totalAttempts,
@@ -193,6 +198,8 @@ const getTestStatistics = async (req, res) => {
             id: test._id,
             title: test.title,
             examType: test.examType,
+            courseId: test.courseId || null,
+            isTheLastTest: test.isTheLastTest || false,
             totalQuestions: 0,
             totalParticipants: 0,
             totalAttempts: 0,
