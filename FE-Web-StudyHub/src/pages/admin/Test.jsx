@@ -29,11 +29,9 @@ import {
 } from "@mui/material";
 import {
   Search as SearchIcon,
-  Visibility as VisibilityIcon,
   Edit as EditIcon,
   Quiz as QuizIcon,
   People as PeopleIcon,
-  ExpandMore as ExpandMoreIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   FilterAltOutlined,
@@ -53,6 +51,8 @@ const Test = () => {
   const [sortBy, setSortBy] = useState("title");
   const [filteredTests, setFilteredTests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [theLastTestFilter, setTheLastTestFilter] = useState("All");
+  const [customTestFilter, setCustomTestFilter] = useState("All");
 
   // Fetch test statistics from API
   const {
@@ -110,6 +110,8 @@ const Test = () => {
     setSearchTerm("");
     setCategoryFilter("All");
     setSortBy("title");
+    setTheLastTestFilter("All");
+    setCustomTestFilter("All");
   };
 
   // Filter and sort logic
@@ -122,7 +124,22 @@ const Test = () => {
       const matchesCategory =
         categoryFilter === "All" || test.examType === categoryFilter;
 
-      return matchesSearch && matchesCategory;
+      const matchesTheLastTest =
+        theLastTestFilter === "All" ||
+        (theLastTestFilter === "Yes" && test.isTheLastTest === true) ||
+        (theLastTestFilter === "No" && test.isTheLastTest !== true);
+
+      const matchesCustomTest =
+        customTestFilter === "All" ||
+        (customTestFilter === "Custom" && !test.courseId) ||
+        (customTestFilter === "Course" && test.courseId);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesTheLastTest &&
+        matchesCustomTest
+      );
     });
 
     // Sort
@@ -143,7 +160,14 @@ const Test = () => {
 
     setFilteredTests(filtered);
     setPage(0);
-  }, [searchTerm, categoryFilter, sortBy, tests]);
+  }, [
+    searchTerm,
+    categoryFilter,
+    sortBy,
+    theLastTestFilter,
+    customTestFilter,
+    tests,
+  ]);
 
   // Show loading state
   if (testsLoading) {
@@ -442,6 +466,36 @@ const Test = () => {
                   </Select>
                 </FormControl>
 
+                {/* The Last Test Filter */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel size="small">The Last Test</InputLabel>
+                  <Select
+                    value={theLastTestFilter}
+                    onChange={(e) => setTheLastTestFilter(e.target.value)}
+                    label="The Last Test"
+                    size="small"
+                  >
+                    <MenuItem value="All">All Tests</MenuItem>
+                    <MenuItem value="Yes">Last Test Only</MenuItem>
+                    <MenuItem value="No">Not Last Test</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* Custom Test Filter */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel size="small">Test Type</InputLabel>
+                  <Select
+                    value={customTestFilter}
+                    onChange={(e) => setCustomTestFilter(e.target.value)}
+                    label="Test Type"
+                    size="small"
+                  >
+                    <MenuItem value="All">All Types</MenuItem>
+                    <MenuItem value="Custom">Custom Tests</MenuItem>
+                    <MenuItem value="Course">Course Tests</MenuItem>
+                  </Select>
+                </FormControl>
+
                 {/* Sort By */}
                 <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel size="small">Sort By</InputLabel>
@@ -468,13 +522,13 @@ const Test = () => {
               <QuizIcon sx={{ fontSize: 80, color: "#d1d5db", mb: 2 }} />
               <Typography variant="h6" sx={{ color: "#6b7280", mb: 1 }}>
                 {searchTerm || categoryFilter !== "All"
-                  ? "No tests found matching your criteria"
+                  ? "No tests found matching criteria"
                   : "No tests created yet"}
               </Typography>
               <Typography variant="body2" sx={{ color: "#9ca3af", mb: 3 }}>
                 {searchTerm || categoryFilter !== "All"
-                  ? "Try adjusting your search or filter criteria"
-                  : "Create your first test to get started with managing assessments"}
+                  ? "Try adjusting search or filter criteria"
+                  : "Create first test to get started with managing assessments"}
               </Typography>
               {!searchTerm && categoryFilter === "All" && (
                 <Button
@@ -492,7 +546,7 @@ const Test = () => {
                     borderRadius: 2,
                   }}
                 >
-                  {"Create Your First Test"}
+                  {"Create First Test"}
                 </Button>
               )}
             </Box>
@@ -500,10 +554,13 @@ const Test = () => {
             <TableContainer>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+                  <TableRow
+                    sx={{ backgroundColor: "#f9fafb", textAlign: "center" }}
+                  >
                     <TableCell sx={{ fontWeight: 600, width: 50 }}></TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Test Title</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Test Type</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Total Questions
                     </TableCell>
@@ -513,7 +570,9 @@ const Test = () => {
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Total Attempts
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      The Last Test
+                    </TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Actions
                     </TableCell>
@@ -557,6 +616,21 @@ const Test = () => {
                               }}
                             />
                           </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                test.courseId ? "Course Test" : "Custom Test"
+                              }
+                              size="small"
+                              sx={{
+                                backgroundColor: test.courseId
+                                  ? "#e0f2fe"
+                                  : "#fff3e0",
+                                color: test.courseId ? "#0277bd" : "#f57c00",
+                                fontWeight: 500,
+                              }}
+                            />
+                          </TableCell>
                           <TableCell align="center">
                             <Chip
                               label={test.totalQuestions}
@@ -586,17 +660,21 @@ const Test = () => {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label="Active"
+                              label={test?.isTheLastTest ? "Yes" : "No"}
                               size="small"
                               sx={{
-                                backgroundColor: "#d1fae5",
-                                color: "#10b981",
+                                backgroundColor: test?.isTheLastTest
+                                  ? "#e8f5e8"
+                                  : "#ffeaa7",
+                                color: test?.isTheLastTest
+                                  ? "#2e7d32"
+                                  : "#f57c00",
                                 fontWeight: 600,
                               }}
                             />
                           </TableCell>
                           <TableCell align="center">
-                            <IconButton
+                            {/* <IconButton
                               size="small"
                               sx={{
                                 color: "#1976d2",
@@ -605,7 +683,7 @@ const Test = () => {
                               }}
                             >
                               <VisibilityIcon fontSize="small" />
-                            </IconButton>
+                            </IconButton> */}
                             <IconButton
                               size="small"
                               sx={{
@@ -622,7 +700,7 @@ const Test = () => {
                         <TableRow>
                           <TableCell
                             style={{ paddingBottom: 0, paddingTop: 0 }}
-                            colSpan={8}
+                            colSpan={9}
                           >
                             <Collapse
                               in={expandedRows[test.id]}
