@@ -6,27 +6,65 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+// ⭐️ Đã import đúng YoutubeIframe
+import YoutubeIframe from "react-native-youtube-iframe";
+// Đã loại bỏ import trùng lặp của courseApi
 import { courseApi } from "../../services/courseApi";
 
 const CourseVideoScreen = ({ navigation, route }) => {
-  const { courseId, lessonId } = route.params;
-  const [lesson, setLesson] = useState(null);
+  const { courseId, lesson } = route.params;
   const [loading, setLoading] = useState(true);
+  // videoLinks bây giờ sẽ lưu trữ các Video ID
+  const [videoLinks, setVideoLinks] = useState([]);
 
   useEffect(() => {
-    loadLesson();
-  }, [courseId, lessonId]);
+    loadLessonVideos();
+  }, [lesson]);
 
-  const loadLesson = async () => {
+  const loadLessonVideos = async () => {
     try {
       setLoading(true);
-      const response = await courseApi.getLessonById(courseId, lessonId);
-      setLesson(response.data);
+      // ⭐️ SỬ DỤNG videoIds ĐỂ THU THẬP TẤT CẢ CÁC ID
+      const videoIds = [];
+
+      // ⭐️ CHỈ SỬ DỤNG MỘT VÒNG LẶP DUY NHẤT
+      for (const part of lesson.parts) {
+        try {
+          const response = await courseApi.getPartGrammarLessonsById(part._id);
+          const content = response?.data?.content || [];
+
+          const partVideoIds = content
+            .filter((item) => item.type === "video")
+            .map((item) => {
+              const originalUrl = item.value;
+              if (originalUrl && originalUrl.includes("youtube.com/")) {
+                // LOGIC TRÍCH XUẤT VIDEO ID
+                const videoIdMatch = originalUrl.match(
+                  /(?:v=|\/embed\/|youtu\.be\/)([^"&?\/\s]{11})/
+                );
+                if (videoIdMatch && videoIdMatch[1]) {
+                  return videoIdMatch[1]; // Trả về ID (ví dụ: sXjd9Uy4qDY)
+                }
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          videoIds.push(...partVideoIds);
+        } catch (error) {
+          console.error("Error fetching part:", part._id, error);
+        }
+      }
+
+      // ⭐️ CẬP NHẬT STATE 1 LẦN DUY NHẤT SAU KHI THU THẬP HẾT
+      setVideoLinks(videoIds);
+      console.log("All video IDs:", videoIds);
     } catch (error) {
-      console.error("Error loading lesson:", error);
-      Alert.alert("Error", "Failed to load lesson");
+      console.error("Error loading lesson videos:", error);
+      Alert.alert("Error", "Failed to load lesson videos");
     } finally {
       setLoading(false);
     }
@@ -34,13 +72,15 @@ const CourseVideoScreen = ({ navigation, route }) => {
 
   const handleMarkCompleted = async () => {
     try {
-      await courseApi.markLessonCompleted(courseId, lessonId);
+      await courseApi.markLessonCompleted(courseId, lesson._id);
       Alert.alert("Success", "Lesson marked as completed!");
       navigation.goBack();
     } catch (error) {
       Alert.alert("Error", "Failed to mark lesson as completed");
     }
   };
+
+  const screenWidth = Dimensions.get("window").width;
 
   if (loading) {
     return (
@@ -61,43 +101,40 @@ const CourseVideoScreen = ({ navigation, route }) => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Video Placeholder */}
-      <View style={styles.videoContainer}>
-        <View style={styles.videoPlaceholder}>
-          <Ionicons name="play-circle" size={80} color="#3B82F6" />
-          <Text style={styles.videoText}>Video Player</Text>
-          <Text style={styles.videoSubtext}>
-            {lesson.videoUrl || "Video content will be displayed here"}
-          </Text>
+      {/* Video List */}
+      {videoLinks.length > 0 ? (
+        // ⭐️ FIX: DÙNG YoutubeIframe và videoId
+        videoLinks.map((videoId, index) => (
+          <View key={index} style={styles.videoContainer}>
+            <YoutubeIframe
+              key={index}
+              height={250} // Chiều cao cố định
+              width={screenWidth - 20}
+              videoId={videoId} // Truyền Video ID đã trích xuất
+              play={false} // Không tự động phát khi load
+              // Cấu hình các tham số để tối giản giao diện
+              initialPlayerParams={{
+                controls: true,
+                modestbranding: true, // Ẩn logo YT lớn
+                rel: false, // Tắt video liên quan
+                showInfo: false, // Tắt thông tin video
+              }}
+              // Thêm style nhỏ này để khắc phục flicker trên Android
+              webViewStyle={{ opacity: 0.99, minHeight: 1 }}
+            />
+          </View>
+        ))
+      ) : (
+        <View style={styles.videoContainer}>
+          <Ionicons name="videocam" size={60} color="#9CA3AF" />
+          <Text style={styles.videoText}>No videos available</Text>
         </View>
-      </View>
+      )}
 
       {/* Lesson Content */}
       <View style={styles.content}>
         <Text style={styles.lessonTitle}>{lesson.title}</Text>
         <Text style={styles.lessonDescription}>{lesson.description}</Text>
-
-        {/* Lesson Materials */}
-        {lesson.materials && lesson.materials.length > 0 && (
-          <View style={styles.materialsSection}>
-            <Text style={styles.sectionTitle}>Materials</Text>
-            {lesson.materials.map((material, index) => (
-              <TouchableOpacity key={index} style={styles.materialItem}>
-                <Ionicons name="document-text" size={20} color="#3B82F6" />
-                <Text style={styles.materialText}>{material.name}</Text>
-                <Ionicons name="download" size={20} color="#6B7280" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Lesson Notes */}
-        {lesson.notes && (
-          <View style={styles.notesSection}>
-            <Text style={styles.sectionTitle}>Notes</Text>
-            <Text style={styles.notesText}>{lesson.notes}</Text>
-          </View>
-        )}
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
@@ -115,55 +152,33 @@ const CourseVideoScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9FAFB",
-  },
+  container: { flex: 1, backgroundColor: "#F9FAFB" },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
   },
-  loadingText: {
-    fontSize: 16,
-    color: "#6B7280",
-  },
+  loadingText: { fontSize: 16, color: "#6B7280" },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
   },
-  errorText: {
-    fontSize: 18,
-    color: "#EF4444",
-    marginTop: 16,
-  },
+  errorText: { fontSize: 18, color: "#EF4444", marginTop: 16 },
   videoContainer: {
-    backgroundColor: "#000000",
-    height: 250,
+    marginVertical: 10,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
-  },
-  videoPlaceholder: {
-    alignItems: "center",
   },
   videoText: {
-    color: "#FFFFFF",
-    fontSize: 18,
+    color: "#1F2937",
+    fontSize: 16,
     fontWeight: "600",
-    marginTop: 16,
-  },
-  videoSubtext: {
-    color: "#9CA3AF",
-    fontSize: 14,
     marginTop: 8,
-    textAlign: "center",
   },
-  content: {
-    padding: 20,
-  },
+  content: { padding: 20 },
   lessonTitle: {
     fontSize: 24,
     fontWeight: "bold",
@@ -176,43 +191,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
   },
-  materialsSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1F2937",
-    marginBottom: 16,
-  },
-  materialItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  materialText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#1F2937",
-    marginLeft: 12,
-  },
-  notesSection: {
-    marginBottom: 24,
-  },
-  notesText: {
-    fontSize: 16,
-    color: "#6B7280",
-    lineHeight: 24,
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 12,
-  },
-  actionButtons: {
-    marginTop: 24,
-  },
+  actionButtons: { marginTop: 24 },
   completeButton: {
     backgroundColor: "#10B981",
     flexDirection: "row",

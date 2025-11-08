@@ -37,6 +37,8 @@ const TestResultsScreen = ({ navigation }) => {
   const theme = useTheme(); // Lấy theme để custom style
   const resultData = route.params?.resultData; // Lấy dữ liệu từ route params
 
+  console.log("TestResultsScreen received resultData:", resultData);
+
   const [tab, setTab] = useState(0);
 
   // --- Xử lý dữ liệu (Data Handling) ---
