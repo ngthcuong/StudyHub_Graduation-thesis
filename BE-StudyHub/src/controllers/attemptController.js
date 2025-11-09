@@ -18,14 +18,9 @@ const { issueCertificate } = require("../models/certificateModel");
 
 const startAttempt = async (req, res) => {
   try {
-    const { testPoolId, testId, evaluationModel, maxAttempts } = req.body;
-    if (!testPoolId)
-      return res.status(400).json({ error: "testPoolId is required" });
-
-    console.log("maxAttempts received:", maxAttempts);
+    const { testId, evaluationModel, maxAttempts } = req.body;
 
     const attemptData = {
-      testPoolId,
       userId: req.user?.userId || req.body.userId,
       evaluationModel: evaluationModel || "gemini",
       feedback: "",

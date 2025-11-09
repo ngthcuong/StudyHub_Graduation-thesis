@@ -132,7 +132,6 @@ const TestMultipleChoice = () => {
             if (!attemptByTestPool?.data?.length === 0) {
               try {
                 const attempt = await createAttemptTrigger({
-                  testPoolId: testPool?.testPoolId,
                   testId: testId,
                   maxAttempts: 10000,
                 }).unwrap();
@@ -171,7 +170,6 @@ const TestMultipleChoice = () => {
                 } else {
                   try {
                     const attempt = await createAttemptTrigger({
-                      testPoolId: testByLevel?._id,
                       testId: testId,
                       maxAttempts: 10000,
                     }).unwrap();
@@ -225,7 +223,6 @@ const TestMultipleChoice = () => {
                   }
                   try {
                     const attempt = await createAttemptTrigger({
-                      testPoolId: newTestPool?.data?._id,
                       testId: testId,
                       maxAttempts: 10000,
                     }).unwrap();
@@ -298,7 +295,6 @@ const TestMultipleChoice = () => {
                   }
                   try {
                     const attempt = await createAttemptTrigger({
-                      testPoolId: newTestPool?.data?._id,
                       testId: testId,
                       maxAttempts: 10000,
                     }).unwrap();

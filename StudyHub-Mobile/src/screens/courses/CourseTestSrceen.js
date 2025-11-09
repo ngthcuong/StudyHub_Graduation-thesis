@@ -12,7 +12,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
 import CreateTestModal from "../../components/CreateTestModal";
 
-const AssessmentListScreen = ({ navigation }) => {
+const CourseTestScreen = ({ navigation, route }) => {
+  const { lesson } = route.params;
+
   const [tests, setTests] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,13 +51,8 @@ const AssessmentListScreen = ({ navigation }) => {
   const loadTests = async () => {
     try {
       setLoading(true);
-      const response = await testApi.getAttemptDetailByUser();
 
-      const filteredTests = response.data.filter(
-        (test) => test.maxAttempts === 3
-      );
-
-      setTests({ data: filteredTests });
+      setTests(lesson.exercises || []);
     } catch (error) {
       console.error("Error loading tests:", error);
     } finally {
@@ -87,48 +84,41 @@ const AssessmentListScreen = ({ navigation }) => {
     });
   }, [search, type, status, difficulty, tests?.data]);
 
-  const TestCard = ({ test }) => (
-    <TouchableOpacity
-      style={styles.testCard}
-      onPress={() =>
-        navigation.navigate("AssessmentCustom", {
-          testId: test.testId._id,
-          attemptDetail: test,
-        })
-      }
-    >
-      <View style={styles.testIcon}>
-        <Ionicons name="clipboard" size={32} color="#10B981" />
-      </View>
-      <View style={styles.testContent}>
-        <Text style={styles.testTitle} numberOfLines={2}>
-          {test.testId.title}
-        </Text>
-        <Text style={styles.testDescription} numberOfLines={3}>
-          {test.testId.description}
-        </Text>
-        <View style={styles.testMeta}>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{test.testId.durationMin} min</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="help-circle-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>
-              {test.testId.numQuestions} questions
-            </Text>
+  const TestCard = ({ test }) => {
+    return (
+      <TouchableOpacity
+        style={styles.testCard}
+        onPress={() =>
+          navigation.navigate("Tests", {
+            screen: "Assessment",
+            params: { testId: test?._id },
+          })
+        }
+      >
+        <View style={styles.testIcon}>
+          <Ionicons name="clipboard" size={32} color="#10B981" />
+        </View>
+        <View style={styles.testContent}>
+          <Text style={styles.testTitle} numberOfLines={2}>
+            {test.title}
+          </Text>
+          <Text style={styles.testDescription} numberOfLines={3}>
+            {test.description}
+          </Text>
+          <View style={styles.testMeta}>
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={16} color="#6B7280" />
+              <Text style={styles.metaText}>{test.durationMin} min</Text>
+            </View>
+            <View style={styles.metaItem}>
+              <Ionicons name="help-circle-outline" size={16} color="#6B7280" />
+              <Text style={styles.metaText}>{test.numQuestions} questions</Text>
+            </View>
           </View>
         </View>
-      </View>
-      <View style={styles.testStatus}>
-        {test.attemptNumber === test.maxAttempts ? (
-          <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-        ) : (
-          <Ionicons name="play-circle" size={24} color="#3B82F6" />
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
@@ -149,10 +139,12 @@ const AssessmentListScreen = ({ navigation }) => {
     );
   }
 
+  console.log("Rendering CourseTestScreen with tests:", lesson.exercises || []);
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={filtered}
+        data={lesson.exercises || []}
         keyExtractor={(item) => item._id.toString()}
         renderItem={({ item }) => <TestCard test={item} />}
         contentContainerStyle={styles.listContainer}
@@ -162,14 +154,6 @@ const AssessmentListScreen = ({ navigation }) => {
         ListEmptyComponent={<EmptyState />}
         showsVerticalScrollIndicator={false}
       />
-      {/* Nút tạo mới */}
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() => setModalVisible(true)}
-      >
-        <Ionicons name="add-circle-outline" size={20} color="white" />
-        <Text style={styles.createButtonText}>Create New Test</Text>
-      </TouchableOpacity>
 
       <CreateTestModal
         visible={modalVisible}
@@ -288,4 +272,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AssessmentListScreen;
+export default CourseTestScreen;

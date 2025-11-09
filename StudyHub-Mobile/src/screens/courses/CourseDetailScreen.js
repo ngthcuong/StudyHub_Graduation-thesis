@@ -10,16 +10,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { courseApi } from "../../services/courseApi";
-import { getMockCourseById } from "../../mock";
+import { testApi } from "../../services/testApi";
 
 const CourseDetailScreen = ({ navigation, route }) => {
   const { courseId } = route.params;
-  console.log("CourseDetailScreen courseId:", courseId);
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [enrolled, setEnrolled] = useState(false);
 
   useEffect(() => {
     loadCourseDetails();
@@ -28,18 +26,20 @@ const CourseDetailScreen = ({ navigation, route }) => {
   const loadCourseDetails = async () => {
     try {
       setLoading(true);
-      // Sử dụng mock data thay vì API calls
-      const mockCourse = getMockCourseById("1");
-
       const res = await courseApi.getGrammarCoursesById(courseId);
-      setLessons(res);
+      try {
+        const updatedLessons = await populateExercises(res.data);
 
-      if (mockCourse) {
-        // setCourse(mockCourse);
-        // setLessons(mockCourse.lessons || []);
-        setEnrolled(mockCourse.isEnrolled || false);
-      } else {
-        Alert.alert("Error", "Course not found");
+        const reorderedLessons = [...updatedLessons].sort((a, b) => {
+          // Nếu a.exercises[0] là last test, đưa xuống cuối
+          const aIsLast = a.exercises[0]?.isTheLastTest ? 1 : 0;
+          const bIsLast = b.exercises[0]?.isTheLastTest ? 1 : 0;
+          return aIsLast - bIsLast;
+        });
+
+        setLessons({ data: reorderedLessons });
+      } catch (error) {
+        console.error("Error populating exercises:", error);
       }
 
       try {
@@ -56,20 +56,38 @@ const CourseDetailScreen = ({ navigation, route }) => {
     }
   };
 
+  const getTestById = async (testId) => {
+    // Thay bằng call thực tế tới API của bạn
+    const response = await testApi.getTestById(testId);
+    return response.data;
+  };
+
+  const populateExercises = async (lessons) => {
+    for (const lesson of lessons) {
+      if (lesson.exercises && lesson.exercises.length > 0) {
+        const populatedExercises = [];
+        for (const exercise of lesson.exercises) {
+          const testId = exercise._id || exercise; // lấy _id nếu là object
+          try {
+            const testDetail = await getTestById(testId);
+            populatedExercises.push(testDetail);
+          } catch (err) {
+            console.error(
+              `Failed to fetch test ${testId}:`,
+              err.response?.data || err.message
+            );
+          }
+        }
+        lesson.exercises = populatedExercises;
+      }
+    }
+    return lessons;
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await loadCourseDetails();
     setRefreshing(false);
-  };
-
-  const handleEnroll = async () => {
-    try {
-      // await courseApi.enrollCourse(courseId);
-      // setEnrolled(true);
-      Alert.alert("Success", "Successfully enrolled in the course!");
-    } catch (error) {
-      Alert.alert("Error", "Failed to enroll in the course");
-    }
   };
 
   const LessonItem = ({ lesson, index }) => (
@@ -136,6 +154,8 @@ const CourseDetailScreen = ({ navigation, route }) => {
     );
   }
 
+  // console.log("Lessons data:", lessons);
+
   return (
     <ScrollView
       style={styles.container}
@@ -169,19 +189,6 @@ const CourseDetailScreen = ({ navigation, route }) => {
         </View>
 
         {/* Course Progress (if enrolled) */}
-        {enrolled && course.progress !== undefined && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>Course Progress</Text>
-              <Text style={styles.progressPercentage}>{course.progress}%</Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View
-                style={[styles.progressFill, { width: `${course.progress}%` }]}
-              />
-            </View>
-          </View>
-        )}
       </View>
 
       {/* Course Statistics */}
@@ -239,24 +246,6 @@ const CourseDetailScreen = ({ navigation, route }) => {
       </View>
 
       {/* Enroll Button */}
-      {!enrolled && (
-        <View style={styles.enrollSection}>
-          <TouchableOpacity style={styles.enrollButton} onPress={handleEnroll}>
-            <Text style={styles.enrollButtonText}>
-              {course.price ? `Enroll for $${course.price}` : "Enroll for Free"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {enrolled && (
-        <View style={styles.enrolledSection}>
-          <View style={styles.enrolledBadge}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={styles.enrolledText}>Enrolled</Text>
-          </View>
-        </View>
-      )}
     </ScrollView>
   );
 };

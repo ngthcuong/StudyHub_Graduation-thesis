@@ -6,62 +6,52 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Dimensions,
+  Dimensions, // ⭐️ Loại bỏ, không cần thiết nữa
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-// ⭐️ Đã import đúng YoutubeIframe
 import YoutubeIframe from "react-native-youtube-iframe";
-// Đã loại bỏ import trùng lặp của courseApi
 import { courseApi } from "../../services/courseApi";
 
 const CourseVideoScreen = ({ navigation, route }) => {
   const { courseId, lesson } = route.params;
   const [loading, setLoading] = useState(true);
-  // videoLinks bây giờ sẽ lưu trữ các Video ID
-  const [videoLinks, setVideoLinks] = useState([]);
+  const [videoParts, setVideoParts] = useState([]);
 
   useEffect(() => {
-    loadLessonVideos();
+    // ⭐️ Đảm bảo 'lesson' tồn tại trước khi load
+    if (lesson) {
+      loadLessonVideos();
+    } else {
+      setLoading(false);
+    }
   }, [lesson]);
 
   const loadLessonVideos = async () => {
     try {
       setLoading(true);
-      // ⭐️ SỬ DỤNG videoIds ĐỂ THU THẬP TẤT CẢ CÁC ID
-      const videoIds = [];
+      const videos = [];
 
-      // ⭐️ CHỈ SỬ DỤNG MỘT VÒNG LẶP DUY NHẤT
       for (const part of lesson.parts) {
         try {
           const response = await courseApi.getPartGrammarLessonsById(part._id);
-          const content = response?.data?.content || [];
+          const partData = response.data;
 
-          const partVideoIds = content
-            .filter((item) => item.type === "video")
-            .map((item) => {
-              const originalUrl = item.value;
-              if (originalUrl && originalUrl.includes("youtube.com/")) {
-                // LOGIC TRÍCH XUẤT VIDEO ID
-                const videoIdMatch = originalUrl.match(
-                  /(?:v=|\/embed\/|youtu\.be\/)([^"&?\/\s]{11})/
-                );
-                if (videoIdMatch && videoIdMatch[1]) {
-                  return videoIdMatch[1]; // Trả về ID (ví dụ: sXjd9Uy4qDY)
-                }
-              }
-              return null;
-            })
-            .filter(Boolean);
-
-          videoIds.push(...partVideoIds);
+          if (partData.contentType === "video" && partData.videoUrl) {
+            const videoIdMatch = partData.videoUrl.match(
+              /(?:v=|\/embed\/|youtu\.be\/)([^"&?\/\s]{11})/
+            );
+            if (videoIdMatch && videoIdMatch[1]) {
+              videos.push({
+                videoId: videoIdMatch[1],
+                title: partData.title || "Video Part", // ⭐️ Đảm bảo luôn có title
+              });
+            }
+          }
         } catch (error) {
           console.error("Error fetching part:", part._id, error);
         }
       }
-
-      // ⭐️ CẬP NHẬT STATE 1 LẦN DUY NHẤT SAU KHI THU THẬP HẾT
-      setVideoLinks(videoIds);
-      console.log("All video IDs:", videoIds);
+      setVideoParts(videos);
     } catch (error) {
       console.error("Error loading lesson videos:", error);
       Alert.alert("Error", "Failed to load lesson videos");
@@ -80,8 +70,7 @@ const CourseVideoScreen = ({ navigation, route }) => {
     }
   };
 
-  const screenWidth = Dimensions.get("window").width;
-
+  // ⭐️ Trạng thái Loading
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -90,69 +79,99 @@ const CourseVideoScreen = ({ navigation, route }) => {
     );
   }
 
+  // ⭐️ Trạng thái Lỗi / Không có bài học
   if (!lesson) {
     return (
       <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={64} color="#EF4444" />
+        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
         <Text style={styles.errorText}>Lesson not found</Text>
       </View>
     );
   }
 
+  // ⭐️ Giao diện chính
   return (
-    <ScrollView style={styles.container}>
-      {/* Video List */}
-      {videoLinks.length > 0 ? (
-        // ⭐️ FIX: DÙNG YoutubeIframe và videoId
-        videoLinks.map((videoId, index) => (
-          <View key={index} style={styles.videoContainer}>
-            <YoutubeIframe
-              key={index}
-              height={250} // Chiều cao cố định
-              width={screenWidth - 20}
-              videoId={videoId} // Truyền Video ID đã trích xuất
-              play={false} // Không tự động phát khi load
-              // Cấu hình các tham số để tối giản giao diện
-              initialPlayerParams={{
-                controls: true,
-                modestbranding: true, // Ẩn logo YT lớn
-                rel: false, // Tắt video liên quan
-                showInfo: false, // Tắt thông tin video
-              }}
-              // Thêm style nhỏ này để khắc phục flicker trên Android
-              webViewStyle={{ opacity: 0.99, minHeight: 1 }}
-            />
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent} // ⭐️ Dùng contentContainerStyle để padding
+    >
+      {/* 1. Phần tiêu đề bài học */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.lessonTitle}>
+          {lesson.title || "Lesson"} {/* ⭐️ Hiển thị tiêu đề bài học */}
+        </Text>
+        <Text style={styles.lessonDescription}>{lesson.description}</Text>
+      </View>
+
+      {/* 2. Danh sách video */}
+      {videoParts.length > 0 ? (
+        videoParts.map((video, index) => (
+          <View key={index} style={styles.videoCard}>
+            <View style={styles.videoWrapper}>
+              <YoutubeIframe
+                height={220} // ⭐️ Chiều cao cố định cho video
+                videoId={video.videoId}
+                play={false}
+                initialPlayerParams={{
+                  controls: true,
+                  modestbranding: true,
+                  rel: false,
+                  showInfo: false,
+                }}
+                webViewStyle={{ opacity: 0.99, minHeight: 1 }}
+              />
+            </View>
+            <Text style={styles.videoTitleText}>{video.title}</Text>
           </View>
         ))
       ) : (
-        <View style={styles.videoContainer}>
-          <Ionicons name="videocam" size={60} color="#9CA3AF" />
-          <Text style={styles.videoText}>No videos available</Text>
+        // ⭐️ Placeholder khi không có video
+        <View style={styles.noVideoCard}>
+          <Ionicons name="videocam-off-outline" size={40} color="#9CA3AF" />
+          <Text style={styles.noVideoText}>No videos for this lesson</Text>
         </View>
       )}
 
-      {/* Lesson Content */}
-      <View style={styles.content}>
-        <Text style={styles.lessonTitle}>{lesson.title}</Text>
-        <Text style={styles.lessonDescription}>{lesson.description}</Text>
+      {/* 3. Nút hoàn thành */}
+      <View style={styles.actionContainer}>
+        {/* ⭐️ NÚT LÀM BÀI TẬP (MỚI) ⭐️ */}
+        <TouchableOpacity
+          style={[styles.baseButton, styles.exerciseButton]} // Kết hợp style
+          onPress={() => {
+            // TODO: Thay bằng logic điều hướng của bạn
+            // Ví dụ: navigation.navigate('ExerciseScreen', { lessonId: lesson._id });
+            navigation.navigate("CourseTest", {
+              lesson: lesson,
+            });
+          }}
+        >
+          <Ionicons name="pencil-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.buttonText}>Làm bài tập</Text>
+        </TouchableOpacity>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.completeButton}
-            onPress={handleMarkCompleted}
-          >
-            <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-            <Text style={styles.completeButtonText}>Mark as Completed</Text>
-          </TouchableOpacity>
-        </View>
+        {/* ⭐️ Nút hoàn thành (GIỮ NGUYÊN) ⭐️ */}
+        <TouchableOpacity
+          style={[styles.baseButton, styles.completeButton]} // Kết hợp style
+          onPress={handleMarkCompleted}
+        >
+          <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+          <Text style={styles.buttonText}>Mark as Completed</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
+// 🎨 Bảng StyleSheet mới
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFB" },
+  container: {
+    flex: 1,
+    backgroundColor: "#F9FAFB", // ⭐️ Màu nền xám nhạt
+  },
+  scrollContent: {
+    padding: 16, // ⭐️ Padding chung cho toàn bộ nội dung
+    paddingBottom: 40, // ⭐️ Thêm padding
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -165,45 +184,141 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
+    padding: 20,
   },
-  errorText: { fontSize: 18, color: "#EF4444", marginTop: 16 },
-  videoContainer: {
-    marginVertical: 10,
-    alignItems: "center",
-    justifyContent: "center",
+  errorText: {
+    fontSize: 18,
+    color: "#EF4444",
+    marginTop: 16,
+    textAlign: "center",
   },
-  videoText: {
-    color: "#1F2937",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 8,
+
+  // ⭐️ Header (Tiêu đề bài học)
+  headerContainer: {
+    marginBottom: 24,
+    padding: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  content: { padding: 20 },
   lessonTitle: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#1F2937",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   lessonDescription: {
+    fontSize: 15,
+    color: "#4B5563",
+    lineHeight: 22,
+  },
+
+  // ⭐️ Video Card (Mỗi video là 1 card)
+  videoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    marginBottom: 20,
+    overflow: "hidden", // ⭐️ Để bo góc cả YoutubeIframe
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  videoWrapper: {
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    overflow: "hidden", // ⭐️ Quan trọng để bo góc video
+  },
+  videoTitleText: {
     fontSize: 16,
-    color: "#6B7280",
-    lineHeight: 24,
+    fontWeight: "600",
+    color: "#374151",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+
+  // ⭐️ Placeholder khi không có video
+  noVideoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderStyle: "dashed",
     marginBottom: 24,
   },
-  actionButtons: { marginTop: 24 },
+  noVideoText: {
+    fontSize: 15,
+    color: "#6B7280",
+    marginTop: 12,
+  },
+
+  // ⭐️ Nút hoàn thành
   completeButton: {
-    backgroundColor: "#10B981",
+    backgroundColor: "#10B981", // Màu xanh lá cây
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 12,
+    marginTop: 16, // ⭐️ Thêm margin
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
   },
   completeButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+
+  // nút
+  actionContainer: {
+    marginTop: 16,
+    paddingHorizontal: 8, // Thêm chút padding nếu cần
+  },
+
+  // ⭐️ Style CHUNG cho các nút
+  baseButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 16, // Khoảng cách giữa 2 nút
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+
+  // ⭐️ Nút làm bài tập (MỚI)
+  exerciseButton: {
+    backgroundColor: "#3B82F6", // Màu xanh dương
+    shadowColor: "#3B82F6",
+  },
+
+  // ⭐️ Nút hoàn thành (Cập nhật)
+  completeButton: {
+    backgroundColor: "#10B981", // Màu xanh lá cây
+    shadowColor: "#10B981",
+  },
+
+  // ⭐️ Đổi tên "completeButtonText" thành "buttonText"
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
     marginLeft: 8,
   },
 });

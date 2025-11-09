@@ -143,7 +143,6 @@ const FillInBlankTest = () => {
           setLoading(true);
 
           const attemptRes = await createAttempt({
-            testPoolId: "000000000000000000000000",
             testId: payloadForm?.testId,
             maxAttempts: 3,
           }).unwrap();

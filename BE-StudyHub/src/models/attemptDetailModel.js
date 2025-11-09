@@ -97,22 +97,17 @@ const getAttemptDetailByUserAndTest = async (userId, testId) => {
 
 const getAllAttemptDetailsByUserId = async (userId) => {
   try {
-    // Lấy tất cả các attempt của user này
+    // Lấy tất cả các attempt của user này, populate trực tiếp testId
     const attempts = await TestAttempt.find({ userId })
       .populate({
-        path: "testPoolId",
-        populate: {
-          path: "baseTestId",
-          model: "Test",
-          select: "title skill level examType durationMin",
-        },
+        path: "testId",
+        model: "Test",
+        select: "title skill level examType durationMin",
       })
       .lean();
 
     if (!attempts.length) {
-      return res
-        .status(404)
-        .json({ message: "No attempts found for this user" });
+      return []; // Không trả về res ở đây, trả về array rỗng
     }
 
     // Lấy danh sách attemptId
@@ -135,24 +130,15 @@ const getAllAttemptDetailsByUserId = async (userId) => {
         (a) => a._id.toString() === detail.attemptId.toString()
       );
 
-      console.log(detail);
-
       return {
         attemptId: detail.attemptId,
-        testTitle: relatedAttempt?.testPoolId?.baseTestId?.title,
-        skill: relatedAttempt?.testPoolId?.baseTestId?.skill,
-        level: relatedAttempt?.testPoolId?.baseTestId?.level,
-        examType: relatedAttempt?.testPoolId?.baseTestId?.examType,
-        durationMin: relatedAttempt?.testPoolId?.baseTestId?.durationMin,
+        testTitle: relatedAttempt?.testId?.title,
+        skill: relatedAttempt?.testId?.skill,
+        level: relatedAttempt?.testId?.level,
+        examType: relatedAttempt?.testId?.examType,
+        durationMin: relatedAttempt?.testId?.durationMin,
         startTime: detail?.startTime,
         endTime: detail?.endTime,
-        // answers: detail.answers.map((a) => ({
-        //   questionId: a.questionId?._id,
-        //   questionText: a.questionText || a.questionId?.questionText,
-        //   selectedOptionText: a.selectedOptionText,
-        //   isCorrect: a.isCorrect,
-        //   score: a.score,
-        // })),
         analysisResult: detail.analysisResult || {},
       };
     });
@@ -160,10 +146,7 @@ const getAllAttemptDetailsByUserId = async (userId) => {
     return mergedData;
   } catch (error) {
     console.error("Error fetching attempt details:", error);
-    res.status(500).json({
-      message: "Error fetching attempt details",
-      error: error.message,
-    });
+    throw new Error(error.message); // Ném lỗi ra controller để xử lý
   }
 };
 

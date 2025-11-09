@@ -20,7 +20,7 @@ const CoursesListScreen = ({ navigation }) => {
   const [ownedCourses, setOwnedCourses] = useState([]); // Khóa học đã sở hữu
   const [availableCourses, setAvailableCourses] = useState([]); // Chưa sở hữu
   const [filteredCourses, setFilteredCourses] = useState([]); // Dữ liệu hiển thị hiện tại
-  const [activeTab, setActiveTab] = useState("available"); // "available" | "owned"
+  const [activeTab, setActiveTab] = useState("owned"); // "available" | "owned"
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -101,9 +101,13 @@ const CoursesListScreen = ({ navigation }) => {
   const CourseCard = ({ course }) => (
     <TouchableOpacity
       style={styles.courseCard}
-      onPress={() =>
-        navigation.navigate("CourseDetail", { courseId: course._id })
-      }
+      onPress={() => {
+        if (activeTab === "available") {
+          navigation.navigate("CoursePurchase", { course: course });
+        } else {
+          navigation.navigate("CourseDetail", { courseId: course._id });
+        }
+      }}
     >
       <View style={styles.courseImage}>
         <Ionicons name="book" size={40} color="#3B82F6" />
@@ -130,13 +134,16 @@ const CoursesListScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.courseFooter}>
-          <Text style={styles.coursePrice}>
-            {course.cost ? `${course.cost}đ` : "Miễn phí"}
-          </Text>
-          <View style={styles.ratingContainer}>
+          {activeTab === "available" && (
+            <Text style={styles.coursePrice}>
+              {course.cost ? `${course.cost}đ` : "Miễn phí"}
+            </Text>
+          )}
+
+          {/* <View style={styles.ratingContainer}>
             <Ionicons name="star" size={16} color="#F59E0B" />
             <Text style={styles.ratingText}>{course.rating || "4.5"}</Text>
-          </View>
+          </View> */}
         </View>
       </View>
     </TouchableOpacity>

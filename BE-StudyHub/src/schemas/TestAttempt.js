@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 
 const testAttemptSchema = new mongoose.Schema(
   {
-    testPoolId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TestPool",
-      required: true,
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

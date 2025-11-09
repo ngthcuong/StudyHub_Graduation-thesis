@@ -21,9 +21,8 @@ export const testApi = {
   },
 
   // Start test attempt
-  startTestAttempt: async (testPoolId, testId, maxAttempts) => {
+  startTestAttempt: async (testId, maxAttempts) => {
     const response = await api.post(`/attempts`, {
-      testPoolId,
       testId,
       evaluationModel: "gemini",
       maxAttempts,
@@ -181,6 +180,12 @@ export const testApi = {
   // get question by attemptId
   getQuestionsByAttemptId: async (attemptId) => {
     const response = await api.get(`/questions/attempt/${attemptId}`);
+    return response.data;
+  },
+
+  // get question by testId
+  getQuestionByTestId: async (testId) => {
+    const response = await api.get(`/questions/test/${testId}`);
     return response.data;
   },
 };
