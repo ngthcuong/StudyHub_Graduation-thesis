@@ -21,6 +21,11 @@ import {
   Tab,
   Grid,
   Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Stack,
 } from "@mui/material";
 
 const UserDetailDialog = ({
@@ -38,12 +43,268 @@ const UserDetailDialog = ({
   const [testRowsPerPage, setTestRowsPerPage] = useState(5);
   const [attemptPage, setAttemptPage] = useState(0);
   const [attemptRowsPerPage, setAttemptRowsPerPage] = useState(5);
+  const [certificatePage, setCertificatePage] = useState(0);
+  const [certificateRowsPerPage, setCertificateRowsPerPage] = useState(5);
+
+  // Filter states
+  const [courseTypeFilter, setCourseTypeFilter] = useState("all");
+  const [courseLevelFilter, setCourseLevelFilter] = useState("all");
+  const [testExamTypeFilter, setTestExamTypeFilter] = useState("all");
+  const [testDifficultyFilter, setTestDifficultyFilter] = useState("all");
+  const [attemptStatusFilter, setAttemptStatusFilter] = useState("all");
+  const [attemptExamTypeFilter, setAttemptExamTypeFilter] = useState("all");
+  const [certificateDateFilter, setCertificateDateFilter] = useState("all");
+  const [certificateStatusFilter, setCertificateStatusFilter] = useState("all");
+
+  // Define level options based on exam type
+  const getLevelOptions = (examType) => {
+    if (examType === "TOEIC") {
+      return [
+        { value: "all", label: "All Levels" },
+        { value: "10-250", label: "10-250" },
+        { value: "255-400", label: "255-400" },
+        { value: "405-600", label: "405-600" },
+        { value: "605-780", label: "605-780" },
+        { value: "785-900", label: "785-900" },
+        { value: "905-990", label: "905-990" },
+      ];
+    } else if (examType === "IELTS") {
+      return [
+        { value: "all", label: "All Levels" },
+        { value: "0-3.5", label: "0-3.5" },
+        { value: "4.0-5.0", label: "4.0-5.0" },
+        { value: "5.5-6.0", label: "5.5-6.0" },
+        {
+          value: "6.5-7.0",
+          label: "6.5-7.0",
+        },
+        { value: "7.5-8.0", label: "7.5-8.0" },
+        { value: "8.5-9.0", label: "8.5-9.0" },
+      ];
+    } else {
+      return [
+        { value: "all", label: "All Levels" },
+        { value: "beginner", label: "Beginner" },
+        { value: "intermediate", label: "Intermediate" },
+        { value: "advanced", label: "Advanced" },
+      ];
+    }
+  };
+
+  // Helper function to filter certificates by date range
+  const matchesDateFilter = (certificate, dateFilter) => {
+    if (dateFilter === "all") return true;
+
+    const certificateDate = new Date(
+      certificate.issuedDate || certificate.createdAt
+    );
+    const now = new Date();
+
+    switch (dateFilter) {
+      case "thisMonth": {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        return certificateDate >= startOfMonth;
+      }
+      case "last3Months": {
+        const threeMonthsAgo = new Date(
+          now.getTime() - 90 * 24 * 60 * 60 * 1000
+        );
+        return certificateDate >= threeMonthsAgo;
+      }
+      case "last6Months": {
+        const sixMonthsAgo = new Date(
+          now.getTime() - 180 * 24 * 60 * 60 * 1000
+        );
+        return certificateDate >= sixMonthsAgo;
+      }
+      case "thisYear": {
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        return certificateDate >= startOfYear;
+      }
+      case "lastYear": {
+        const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+        const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
+        return (
+          certificateDate >= startOfLastYear && certificateDate <= endOfLastYear
+        );
+      }
+      default:
+        return true;
+    }
+  };
+
+  // Helper function to match course level with filter selection
+  const matchesLevelFilter = (course, levelFilter, typeFilter) => {
+    if (levelFilter === "all") return true;
+
+    // Check multiple possible level field names
+    const courseLevel =
+      course.level || course.courseLevel || course.targetLevel;
+    const courseScore = course.scoreRange || course.score || course.targetScore;
+    const courseBand = course.bandScore || course.band || course.targetBand;
+
+    // Direct string match first (most common case)
+    if (courseLevel === levelFilter) {
+      return true;
+    }
+
+    // For TOEIC courses with score-based filtering
+    if (typeFilter === "TOEIC") {
+      // If course has scoreRange field
+      if (courseScore) {
+        const score = parseInt(courseScore);
+        if (!isNaN(score)) {
+          return checkTOEICRange(score, levelFilter);
+        }
+      }
+
+      // If course level is a number (score)
+      const numericLevel = parseInt(courseLevel);
+      if (!isNaN(numericLevel)) {
+        return checkTOEICRange(numericLevel, levelFilter);
+      }
+    }
+
+    // For IELTS courses with band-based filtering
+    if (typeFilter === "IELTS") {
+      // If course has bandScore field
+      if (courseBand) {
+        const band = parseFloat(courseBand);
+        if (!isNaN(band)) {
+          return checkIELTSRange(band, levelFilter);
+        }
+      }
+
+      // If course level is a number (band)
+      const numericLevel = parseFloat(courseLevel);
+      if (!isNaN(numericLevel)) {
+        return checkIELTSRange(numericLevel, levelFilter);
+      }
+    }
+
+    return false;
+  };
+
+  // Helper function for TOEIC range checking
+  const checkTOEICRange = (score, levelFilter) => {
+    switch (levelFilter) {
+      case "10-250":
+        return score >= 10 && score <= 250;
+      case "255-400":
+        return score >= 255 && score <= 400;
+      case "405-600":
+        return score >= 405 && score <= 600;
+      case "605-780":
+        return score >= 605 && score <= 780;
+      case "785-900":
+        return score >= 785 && score <= 900;
+      case "905-990":
+        return score >= 905 && score <= 990;
+      default:
+        return false;
+    }
+  };
+
+  // Helper function for IELTS range checking
+  const checkIELTSRange = (band, levelFilter) => {
+    switch (levelFilter) {
+      case "0-3.5":
+        return band >= 0 && band <= 3.5;
+      case "4.0-5.0":
+        return band >= 4.0 && band <= 5.0;
+      case "5.5-6.0":
+        return band >= 5.5 && band <= 6.0;
+      case "6.5-7.0":
+        return band >= 6.5 && band <= 7.0;
+      case "7.5-8.0":
+        return band >= 7.5 && band <= 8.0;
+      case "8.5-9.0":
+        return band >= 8.5 && band <= 9.0;
+      default:
+        return false;
+    }
+  };
+
+  // Filter functions for each tab
+  const filteredCourses =
+    userDetailData?.data?.courses?.filter((course) => {
+      // Check type filter - be flexible with field names
+      if (courseTypeFilter !== "all") {
+        const courseType = course.type || course.courseType || course.examType;
+        if (courseType !== courseTypeFilter) {
+          return false;
+        }
+      }
+
+      // Check level filter
+      if (!matchesLevelFilter(course, courseLevelFilter, courseTypeFilter)) {
+        return false;
+      }
+
+      return true;
+    }) || [];
+
+  const filteredTests =
+    userDetailData?.data?.customTests?.filter((test) => {
+      if (testExamTypeFilter !== "all" && test.examType !== testExamTypeFilter)
+        return false;
+      if (
+        testDifficultyFilter !== "all" &&
+        test.difficulty !== testDifficultyFilter
+      )
+        return false;
+      return true;
+    }) || [];
+
+  const filteredAttempts =
+    userDetailData?.data?.testAttempts?.filter((attempt) => {
+      if (attemptStatusFilter !== "all") {
+        const status = attempt.isPassed ? "pass" : "fail";
+        if (status !== attemptStatusFilter) return false;
+      }
+      if (
+        attemptExamTypeFilter !== "all" &&
+        attempt.testInfo?.examType !== attemptExamTypeFilter
+      )
+        return false;
+      return true;
+    }) || [];
+
+  const filteredCertificates =
+    userDetailData?.data?.certificates?.filter((certificate) => {
+      // Filter by date range
+      if (!matchesDateFilter(certificate, certificateDateFilter)) {
+        return false;
+      }
+
+      // Filter by certificate status (valid/expired/revoked)
+      if (certificateStatusFilter !== "all") {
+        if (certificateStatusFilter === "valid" && !certificate.isValid) {
+          return false;
+        }
+        if (certificateStatusFilter === "expired" && certificate.isValid) {
+          return false;
+        }
+      }
+
+      return true;
+    }) || [];
 
   const handleClose = () => {
     setTabValue(0);
     setCoursePage(0);
     setTestPage(0);
     setAttemptPage(0);
+    setCertificatePage(0);
+    // Reset all filters
+    setCourseTypeFilter("all");
+    setCourseLevelFilter("all");
+    setTestExamTypeFilter("all");
+    setTestDifficultyFilter("all");
+    setAttemptStatusFilter("all");
+    setAttemptExamTypeFilter("all");
+    setCertificateDateFilter("all");
+    setCertificateStatusFilter("all");
     onClose();
   };
 
@@ -75,6 +336,84 @@ const UserDetailDialog = ({
   const handleAttemptRowsPerPageChange = (event) => {
     setAttemptRowsPerPage(parseInt(event.target.value, 10));
     setAttemptPage(0);
+  };
+
+  // Certificate pagination handlers
+  const handleCertificatePageChange = (event, newPage) => {
+    setCertificatePage(newPage);
+  };
+
+  const handleCertificateRowsPerPageChange = (event) => {
+    setCertificateRowsPerPage(parseInt(event.target.value, 10));
+    setCertificatePage(0);
+  };
+
+  // Reset pagination when filters change
+  const handleCourseTypeFilterChange = (value) => {
+    setCourseTypeFilter(value);
+    setCourseLevelFilter("all"); // Reset level filter when type changes
+    setCoursePage(0);
+  };
+
+  const handleCourseLevelFilterChange = (value) => {
+    setCourseLevelFilter(value);
+    setCoursePage(0);
+  };
+
+  const handleTestExamTypeFilterChange = (value) => {
+    setTestExamTypeFilter(value);
+    setTestPage(0);
+  };
+
+  const handleTestDifficultyFilterChange = (value) => {
+    setTestDifficultyFilter(value);
+    setTestPage(0);
+  };
+
+  const handleAttemptStatusFilterChange = (value) => {
+    setAttemptStatusFilter(value);
+    setAttemptPage(0);
+  };
+
+  const handleAttemptExamTypeFilterChange = (value) => {
+    setAttemptExamTypeFilter(value);
+    setAttemptPage(0);
+  };
+
+  // Clear filter functions
+  const clearCourseFilters = () => {
+    setCourseTypeFilter("all");
+    setCourseLevelFilter("all");
+    setCoursePage(0);
+  };
+
+  const clearTestFilters = () => {
+    setTestExamTypeFilter("all");
+    setTestDifficultyFilter("all");
+    setTestPage(0);
+  };
+
+  const clearAttemptFilters = () => {
+    setAttemptStatusFilter("all");
+    setAttemptExamTypeFilter("all");
+    setAttemptPage(0);
+  };
+
+  // Certificate filter handlers
+  const handleCertificateDateFilterChange = (value) => {
+    setCertificateDateFilter(value);
+    setCertificatePage(0);
+  };
+
+  const handleCertificateStatusFilterChange = (value) => {
+    setCertificateStatusFilter(value);
+    setCertificatePage(0);
+  };
+
+  const clearCertificateFilters = () => {
+    setCertificateDateFilter("all");
+    setCertificateStatusFilter("all");
+    setCertificatePage(0);
   };
 
   return (
@@ -261,16 +600,66 @@ const UserDetailDialog = ({
                 <Tab label="Purchased Courses" />
                 <Tab label="Custom Tests" />
                 <Tab label="Test Attempts" />
+                <Tab label="Certificates" />
               </Tabs>
             </Box>
 
             {/* Tab Panels */}
             {tabValue === 0 && (
               <Box>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                  Purchased Courses ({userDetailData.data.courses?.length || 0})
-                </Typography>
-                {userDetailData.data.courses?.length > 0 ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Purchased Courses ({filteredCourses.length})
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Type</InputLabel>
+                      <Select
+                        value={courseTypeFilter}
+                        label="Type"
+                        onChange={(e) =>
+                          handleCourseTypeFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Types</MenuItem>
+                        <MenuItem value="TOEIC">TOEIC</MenuItem>
+                        <MenuItem value="IELTS">IELTS</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Level</InputLabel>
+                      <Select
+                        value={courseLevelFilter}
+                        label="Level"
+                        onChange={(e) =>
+                          handleCourseLevelFilterChange(e.target.value)
+                        }
+                      >
+                        {getLevelOptions(courseTypeFilter).map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={clearCourseFilters}
+                      sx={{ minWidth: "auto", px: 2 }}
+                    >
+                      Clear
+                    </Button>
+                  </Stack>
+                </Box>
+                {filteredCourses.length > 0 ? (
                   <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
                     <Table>
                       <TableHead>
@@ -322,7 +711,7 @@ const UserDetailDialog = ({
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {userDetailData.data.courses
+                        {filteredCourses
                           .slice(
                             coursePage * courseRowsPerPage,
                             coursePage * courseRowsPerPage + courseRowsPerPage
@@ -415,7 +804,7 @@ const UserDetailDialog = ({
                     </Table>
                     <TablePagination
                       component="div"
-                      count={userDetailData.data.courses?.length || 0}
+                      count={filteredCourses.length}
                       page={coursePage}
                       onPageChange={handleCoursePageChange}
                       rowsPerPage={courseRowsPerPage}
@@ -442,10 +831,58 @@ const UserDetailDialog = ({
 
             {tabValue === 1 && (
               <Box>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                  Custom Tests ({userDetailData.data.customTests?.length || 0})
-                </Typography>
-                {userDetailData.data.customTests?.length > 0 ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Custom Tests ({filteredTests.length})
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Exam Type</InputLabel>
+                      <Select
+                        value={testExamTypeFilter}
+                        label="Exam Type"
+                        onChange={(e) =>
+                          handleTestExamTypeFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Types</MenuItem>
+                        <MenuItem value="TOEIC">TOEIC</MenuItem>
+                        <MenuItem value="IELTS">IELTS</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Difficulty</InputLabel>
+                      <Select
+                        value={testDifficultyFilter}
+                        label="Difficulty"
+                        onChange={(e) =>
+                          handleTestDifficultyFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Levels</MenuItem>
+                        <MenuItem value="easy">Easy</MenuItem>
+                        <MenuItem value="medium">Medium</MenuItem>
+                        <MenuItem value="hard">Hard</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={clearTestFilters}
+                      sx={{ minWidth: "auto", px: 2 }}
+                    >
+                      Clear
+                    </Button>
+                  </Stack>
+                </Box>
+                {filteredTests.length > 0 ? (
                   <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
                     <Table>
                       <TableHead>
@@ -476,7 +913,7 @@ const UserDetailDialog = ({
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {userDetailData.data.customTests
+                        {filteredTests
                           .slice(
                             testPage * testRowsPerPage,
                             testPage * testRowsPerPage + testRowsPerPage
@@ -548,7 +985,7 @@ const UserDetailDialog = ({
                     </Table>
                     <TablePagination
                       component="div"
-                      count={userDetailData.data.customTests?.length || 0}
+                      count={filteredTests.length}
                       page={testPage}
                       onPageChange={handleTestPageChange}
                       rowsPerPage={testRowsPerPage}
@@ -575,11 +1012,57 @@ const UserDetailDialog = ({
 
             {tabValue === 2 && (
               <Box>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                  Test Attempts ({userDetailData.data.testAttempts?.length || 0}
-                  )
-                </Typography>
-                {userDetailData.data.testAttempts?.length > 0 ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Test Attempts ({filteredAttempts.length})
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={attemptStatusFilter}
+                        label="Status"
+                        onChange={(e) =>
+                          handleAttemptStatusFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Status</MenuItem>
+                        <MenuItem value="pass">Pass</MenuItem>
+                        <MenuItem value="fail">Fail</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Exam Type</InputLabel>
+                      <Select
+                        value={attemptExamTypeFilter}
+                        label="Exam Type"
+                        onChange={(e) =>
+                          handleAttemptExamTypeFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Types</MenuItem>
+                        <MenuItem value="TOEIC">TOEIC</MenuItem>
+                        <MenuItem value="IELTS">IELTS</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={clearAttemptFilters}
+                      sx={{ minWidth: "auto", px: 2 }}
+                    >
+                      Clear
+                    </Button>
+                  </Stack>
+                </Box>
+                {filteredAttempts.length > 0 ? (
                   <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
                     <Table>
                       <TableHead>
@@ -610,7 +1093,7 @@ const UserDetailDialog = ({
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {userDetailData.data.testAttempts
+                        {filteredAttempts
                           .slice(
                             attemptPage * attemptRowsPerPage,
                             attemptPage * attemptRowsPerPage +
@@ -671,7 +1154,7 @@ const UserDetailDialog = ({
                     </Table>
                     <TablePagination
                       component="div"
-                      count={userDetailData.data.testAttempts?.length || 0}
+                      count={filteredAttempts.length}
                       page={attemptPage}
                       onPageChange={handleAttemptPageChange}
                       rowsPerPage={attemptRowsPerPage}
@@ -690,6 +1173,205 @@ const UserDetailDialog = ({
                   >
                     <Typography color="text.secondary">
                       No test attempts found
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {tabValue === 3 && (
+              <Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Certificates ({filteredCertificates.length})
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                      <InputLabel>Date Range</InputLabel>
+                      <Select
+                        value={certificateDateFilter}
+                        label="Date Range"
+                        onChange={(e) =>
+                          handleCertificateDateFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Time</MenuItem>
+                        <MenuItem value="thisMonth">This Month</MenuItem>
+                        <MenuItem value="last3Months">Last 3 Months</MenuItem>
+                        <MenuItem value="last6Months">Last 6 Months</MenuItem>
+                        <MenuItem value="thisYear">This Year</MenuItem>
+                        <MenuItem value="lastYear">Last Year</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={certificateStatusFilter}
+                        label="Status"
+                        onChange={(e) =>
+                          handleCertificateStatusFilterChange(e.target.value)
+                        }
+                      >
+                        <MenuItem value="all">All Status</MenuItem>
+                        <MenuItem value="valid">Valid</MenuItem>
+                        <MenuItem value="expired">Expired</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={clearCertificateFilters}
+                      sx={{ minWidth: "auto", px: 2 }}
+                    >
+                      Clear
+                    </Button>
+                  </Stack>
+                </Box>
+                {filteredCertificates.length > 0 ? (
+                  <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: "#f8f9fa" }}>
+                          <TableCell sx={{ fontWeight: 600, width: "35%" }}>
+                            Certificate Name
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              textAlign: "center",
+                              width: "15%",
+                            }}
+                          >
+                            Type
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              textAlign: "center",
+                              width: "17%",
+                            }}
+                          >
+                            Issue Date
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              textAlign: "center",
+                              width: "17%",
+                            }}
+                          >
+                            Expiry Date
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              textAlign: "center",
+                              width: "16%",
+                            }}
+                          >
+                            Status
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {filteredCertificates
+                          .slice(
+                            certificatePage * certificateRowsPerPage,
+                            certificatePage * certificateRowsPerPage +
+                              certificateRowsPerPage
+                          )
+                          .map((certificate) => (
+                            <TableRow key={certificate._id} hover>
+                              <TableCell>
+                                <Box>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ fontWeight: 600, mb: 0.5 }}
+                                  >
+                                    {certificate.name || "Certificate"}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    ID:{" "}
+                                    {certificate.certificateId ||
+                                      certificate._id?.slice(-6)}
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+                              <TableCell sx={{ textAlign: "center" }}>
+                                <Chip
+                                  label={certificate.type || "Course"}
+                                  size="small"
+                                  color="primary"
+                                  variant="outlined"
+                                />
+                              </TableCell>
+                              <TableCell sx={{ textAlign: "center" }}>
+                                <Typography variant="body2">
+                                  {certificate.issuedDate
+                                    ? new Date(
+                                        certificate.issuedDate
+                                      ).toLocaleDateString("vi-VN")
+                                    : new Date(
+                                        certificate.createdAt
+                                      ).toLocaleDateString("vi-VN")}
+                                </Typography>
+                              </TableCell>
+                              <TableCell sx={{ textAlign: "center" }}>
+                                <Typography variant="body2">
+                                  {certificate.expiryDate
+                                    ? new Date(
+                                        certificate.expiryDate
+                                      ).toLocaleDateString("vi-VN")
+                                    : "No Expiry"}
+                                </Typography>
+                              </TableCell>
+                              <TableCell sx={{ textAlign: "center" }}>
+                                <Chip
+                                  label={
+                                    certificate.isValid ? "Valid" : "Expired"
+                                  }
+                                  size="small"
+                                  color={
+                                    certificate.isValid ? "success" : "error"
+                                  }
+                                  variant="outlined"
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                    <TablePagination
+                      component="div"
+                      count={filteredCertificates.length}
+                      page={certificatePage}
+                      onPageChange={handleCertificatePageChange}
+                      rowsPerPage={certificateRowsPerPage}
+                      onRowsPerPageChange={handleCertificateRowsPerPageChange}
+                      rowsPerPageOptions={[5, 10, 25]}
+                    />
+                  </TableContainer>
+                ) : (
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      p: 4,
+                      bgcolor: "#f8f9fa",
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Typography color="text.secondary">
+                      No certificates earned yet
                     </Typography>
                   </Box>
                 )}

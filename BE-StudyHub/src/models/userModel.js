@@ -181,10 +181,35 @@ const getUserDetailWithCourses = async (userId) => {
       createdAt: attempt.createdAt,
     }));
 
+    // Get user's certificates
+    const certificates = await Certificate.find({ "student.id": userId })
+      .select(
+        "certificateCode course.title course.type course.level validity.issueDate validity.expireDate validity.isRevoked createdAt"
+      )
+      .lean();
+
+    // Transform certificates data for easier use in frontend
+    const transformedCertificates = certificates.map((cert) => ({
+      _id: cert._id,
+      certificateId: cert.certificateCode,
+      name: cert.course.title,
+      type: cert.course.type,
+      level: cert.course.level,
+      issuedDate: cert.validity.issueDate,
+      expiryDate: cert.validity.expireDate,
+      isValid:
+        !cert.validity.isRevoked &&
+        (cert.validity.expireDate
+          ? new Date(cert.validity.expireDate) > new Date()
+          : true),
+      createdAt: cert.createdAt,
+    }));
+
     return {
       ...user,
       customTests,
       testAttempts,
+      certificates: transformedCertificates,
     };
   } catch (error) {
     console.error("Error getting user detail with courses:", error);

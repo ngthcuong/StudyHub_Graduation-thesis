@@ -24,10 +24,7 @@ import {
   Search as SearchIcon,
   Visibility as VisibilityIcon,
   Person as PersonIcon,
-  School as SchoolIcon,
-  Assignment as AssignmentIcon,
   AccessTime as TimeIcon,
-  Stars as StarsIcon,
   FilterAltOutlined,
   FilterAltOffOutlined,
 } from "@mui/icons-material";
@@ -38,7 +35,7 @@ import {
   useGetUsersWithStatsQuery,
   useGetUserDetailWithCoursesQuery,
 } from "../../services/userApi";
-import UserDetailDialog from "../../components/admin/UserDetailDialog";
+import UserDetailDialog from "../../components/UserDetailDialog";
 
 const User = () => {
   const [page, setPage] = useState(0);
