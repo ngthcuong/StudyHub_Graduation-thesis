@@ -30,12 +30,12 @@ import AdminCertificate from "../pages/admin/Certificate";
 import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
 import AdminCourse from "../pages/admin/Course";
+import AdminUser from "../pages/admin/User";
 
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 import TestInformationCustom from "../pages/test/TestInformationCustom";
 
 import FillInBlankTest from "../pages/test/FillInBlankTest";
-import CourseRecommend from "../pages/course/CourseRecommend";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 
@@ -106,6 +106,7 @@ export const router = createBrowserRouter([
                 element: <AdminReview />,
               },
               { path: "course", element: <AdminCourse /> },
+              { path: "user", element: <AdminUser /> },
             ],
           },
           {

@@ -1,4 +1,8 @@
 const User = require("../schemas/User");
+const TestAttempt = require("../schemas/TestAttempt");
+const StudyStats = require("../schemas/studyStats,js");
+const Test = require("../schemas/Test");
+const Certificate = require("../schemas/Certificate");
 
 const createUser = async (userData) => {
   try {
@@ -76,6 +80,118 @@ const getMyCourses = async (userId) => {
   }
 };
 
+const getUsersWithStats = async () => {
+  try {
+    const users = await User.find({ role: { $ne: "admin" } })
+      .populate("courses", "title durationHours")
+      .select("-password -__v")
+      .lean();
+
+    const usersWithStats = await Promise.all(
+      users.map(async (user) => {
+        // Get purchased courses count
+        const purchasedCoursesCount = user.courses ? user.courses.length : 0;
+
+        // Get total study hours (sum of all purchased courses duration)
+        const totalStudyHours =
+          user.courses?.reduce((total, course) => {
+            return total + (course.durationHours || 0);
+          }, 0) || 0;
+
+        // Get completed lessons count (from StudyStats)
+        const studyStats = await StudyStats.find({ userId: user._id });
+        const completedLessonsCount = studyStats.reduce((total, stat) => {
+          return (
+            total + (stat.dailyStats?.filter((day) => day.lessons).length || 0)
+          );
+        }, 0);
+
+        // Get completed tests count
+        const completedTestsCount = await TestAttempt.countDocuments({
+          userId: user._id,
+          // isPassed: true,
+        });
+
+        // Get user's custom tests count
+        const customTestsCount = await Test.countDocuments({
+          createdBy: user._id,
+        });
+
+        // Calculate certificates earned (chứng chỉ đã nhận được)
+        // Count actual certificates issued for this user
+        const certificatesEarned = await Certificate.countDocuments({
+          "student.id": user._id,
+        });
+
+        return {
+          ...user,
+          stats: {
+            purchasedCoursesCount,
+            completedLessonsCount,
+            completedTestsCount: completedTestsCount + customTestsCount,
+            customTestsCount,
+            totalStudyHours,
+            certificatesEarned,
+          },
+        };
+      })
+    );
+
+    return usersWithStats;
+  } catch (error) {
+    console.error("Error getting users with stats:", error);
+    throw new Error("Failed to get users with stats");
+  }
+};
+
+const getUserDetailWithCourses = async (userId) => {
+  try {
+    const user = await User.findById(userId)
+      .populate({
+        path: "courses",
+        select:
+          "title description courseType courseLevel thumbnailUrl category durationHours cost",
+      })
+      .select("-password -__v")
+      .lean();
+
+    if (!user) {
+      return null;
+    }
+
+    // Get user's custom tests
+    const customTests = await Test.find({ createdBy: userId })
+      .select(
+        "title description examType questionType difficulty numQuestions createdAt"
+      )
+      .lean();
+
+    // Get test attempts for user's tests
+    let testAttempts = await TestAttempt.find({ userId })
+      .populate("testId", "title examType")
+      .select("testId score isPassed createdAt")
+      .lean();
+
+    // Transform testId to testInfo
+    testAttempts = testAttempts.map((attempt) => ({
+      _id: attempt._id,
+      testInfo: attempt.testId,
+      score: attempt.score,
+      isPassed: attempt.isPassed,
+      createdAt: attempt.createdAt,
+    }));
+
+    return {
+      ...user,
+      customTests,
+      testAttempts,
+    };
+  } catch (error) {
+    console.error("Error getting user detail with courses:", error);
+    throw new Error("Failed to get user detail with courses");
+  }
+};
+
 module.exports = {
   createUser,
   findUserById,
@@ -84,4 +200,6 @@ module.exports = {
   updateUserById,
   getAllUsers,
   getMyCourses,
+  getUsersWithStats,
+  getUserDetailWithCourses,
 };

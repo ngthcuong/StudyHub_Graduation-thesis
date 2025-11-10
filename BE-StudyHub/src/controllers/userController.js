@@ -263,6 +263,45 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getUsersWithStats = async (req, res) => {
+  try {
+    const usersWithStats = await userModel.getUsersWithStats();
+
+    res.status(200).json({
+      message: "Users with statistics retrieved successfully",
+      data: usersWithStats,
+      total: usersWithStats.length,
+    });
+  } catch (error) {
+    console.error("Error getting users with stats:", error);
+    res.status(500).json({ error: "Failed to get users with statistics" });
+  }
+};
+
+const getUserDetailWithCourses = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const userDetail = await userModel.getUserDetailWithCourses(userId);
+
+    if (!userDetail) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User detail retrieved successfully",
+      data: userDetail,
+    });
+  } catch (error) {
+    console.error("Error getting user detail with courses:", error);
+    res.status(500).json({ error: "Failed to get user detail" });
+  }
+};
+
 module.exports = {
   createUser,
   getUserById,
@@ -273,4 +312,6 @@ module.exports = {
   updateProfile,
   getAllUsers,
   getUserProfile,
+  getUsersWithStats,
+  getUserDetailWithCourses,
 };
