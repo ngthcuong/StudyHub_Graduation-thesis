@@ -20,12 +20,17 @@ import {
   Autocomplete,
   Paper,
   Alert,
+  CircularProgress,
+  Backdrop,
 } from "@mui/material";
 import { Close as CloseIcon, Star as StarIcon } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useCreateTestMutation } from "../services/testApi";
+import {
+  useCreateTestMutation,
+  useGenerateTestQuestionsMutation,
+} from "../services/testApi";
 import { useGetCoursesQuery } from "../services/courseApi";
 import {
   useGetLessonsByCourseIdMutation,
@@ -37,7 +42,7 @@ const schema = yup.object({
   title: yup.string().required("Test title is required"),
   description: yup.string(),
   courseId: yup.string().required("Course is required"),
-  grammarLessonId: yup.string().nullable(), // Optional - để chọn lesson cụ thể
+  grammarLessonId: yup.string().nullable(),
   topic: yup.array().min(1, "At least one topic is required"),
   skill: yup.string().required("Primary skill is required"),
   questionTypes: yup.array().min(1, "At least one question type is required"),
@@ -46,7 +51,7 @@ const schema = yup.object({
     .number()
     .required("Number of questions is required")
     .min(1, "Must have at least 1 question")
-    .max(100, "Cannot exceed 100 questions"),
+    .max(30, "Cannot exceed 30 questions"),
   durationMin: yup
     .number()
     .required("Duration is required")
@@ -62,6 +67,7 @@ const schema = yup.object({
 
 const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const [createTest, { isLoading }] = useCreateTestMutation();
+  const [generateQuestions] = useGenerateTestQuestionsMutation();
   const {
     data: coursesData,
     isLoading: coursesLoading,
@@ -74,22 +80,23 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const [getLessonsByCourseId] = useGetLessonsByCourseIdMutation();
   const [addTestToLesson] = useAddTestToLessonMutation();
 
-  // Confirmation dialog state
+  // Processing state
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [createdTestData, setCreatedTestData] = useState(null);
-  const [selectedLessonId, setSelectedLessonId] = useState(null);
 
   // Debug logging
-  useEffect(() => {
-    if (coursesData) {
-      console.log("Courses data structure:", coursesData);
-      console.log("Type of coursesData:", typeof coursesData);
-      console.log("Is coursesData an array:", Array.isArray(coursesData));
-    }
-    if (coursesError) {
-      console.error("Courses API error:", coursesError);
-    }
-  }, [coursesData, coursesError]);
+  // useEffect(() => {
+  //   if (coursesData) {
+  //     console.log("Courses data structure:", coursesData);
+  //     console.log("Type of coursesData:", typeof coursesData);
+  //     console.log("Is coursesData an array:", Array.isArray(coursesData));
+  //   }
+  //   if (coursesError) {
+  //     console.error("Courses API error:", coursesError);
+  //   }
+  // }, [coursesData, coursesError]);
 
   const {
     control,
@@ -195,6 +202,8 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      setIsProcessing(true);
+
       const testData = {
         title: data.title,
         description: data.description,
@@ -211,20 +220,34 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
       };
 
       const result = await createTest(testData).unwrap();
-
-      // Lưu thông tin test đã tạo và lesson được chọn
       setCreatedTestData(result);
-      setSelectedLessonId(data.grammarLessonId);
 
-      // Nếu có lesson được chọn, hiển thị dialog xác nhận
+      // Bước 1: Thêm test vào lesson nếu có
       if (data.grammarLessonId) {
-        setShowConfirmDialog(true);
-      } else {
-        // Nếu không có lesson, đóng modal luôn
-        handleCloseModal();
+        await addTestToLesson({
+          lessonId: data.grammarLessonId,
+          testId: result.data._id,
+        }).unwrap();
       }
+
+      // Bước 2: Tự động tạo questions
+      const questionData = {
+        testId: result.data._id,
+        exam_type: data.examType,
+        num_questions: data.numQuestions,
+        topic: data.topic,
+        question_types: data.questionTypes,
+        score_range: coursesData.courseLevel,
+      };
+
+      await generateQuestions(questionData).unwrap();
+
+      setTimeout(() => {
+        handleCloseModal();
+      }, 1500);
     } catch (error) {
-      console.error("Error creating test:", error);
+      console.error("Error in test creation process:", error);
+      setIsProcessing(false);
     }
   };
 
@@ -233,49 +256,20 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
     setLessons([]);
     setShowConfirmDialog(false);
     setCreatedTestData(null);
-    setSelectedLessonId(null);
+    setIsProcessing(false);
     onSuccess?.(createdTestData);
     onClose();
   };
 
   const handleClose = () => {
+    if (isProcessing) return;
+
     reset();
-    setLessons([]); // Reset lessons khi đóng modal
+    setLessons([]);
     setShowConfirmDialog(false);
     setCreatedTestData(null);
-    setSelectedLessonId(null);
+    setIsProcessing(false);
     onClose();
-  };
-
-  const handleCreateQuestions = async () => {
-    try {
-      if (selectedLessonId && createdTestData) {
-        await addTestToLesson({
-          lessonId: selectedLessonId,
-          testId: createdTestData.data._id,
-        }).unwrap();
-      }
-
-      handleCloseModal();
-    } catch (error) {
-      console.error("Error adding test to lesson:", error);
-    }
-  };
-
-  const handleSkipQuestions = async () => {
-    try {
-      // Chỉ thêm test vào lesson mà không tạo câu hỏi
-      if (selectedLessonId && createdTestData) {
-        await addTestToLesson({
-          lessonId: selectedLessonId,
-          testId: createdTestData.data._id,
-        }).unwrap();
-      }
-
-      handleCloseModal();
-    } catch (error) {
-      console.error("Error adding test to lesson:", error);
-    }
   };
 
   return (
@@ -994,7 +988,7 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
             <Button
               type="submit"
               variant="contained"
-              disabled={isLoading}
+              disabled={isLoading || isProcessing}
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
@@ -1013,11 +1007,35 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                 },
               }}
             >
-              {isLoading ? "Creating..." : "Create Test"}
+              {isLoading || isProcessing
+                ? "Processing..."
+                : "Create Test & Questions"}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* Processing Overlay */}
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.modal + 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+        }}
+        open={isProcessing}
+      >
+        <CircularProgress color="inherit" size={60} />
+        <Box sx={{ textAlign: "center" }}>
+          <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+            Creating Questions...
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+            Please wait while we generate questions for your test
+          </Typography>
+        </Box>
+      </Backdrop>
 
       {/* Confirmation Dialog for Creating Questions */}
       <Dialog
@@ -1055,47 +1073,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
             </Typography>
           </Alert>
         </DialogContent>
-
-        <DialogActions sx={{ p: 3, justifyContent: "center", gap: 2 }}>
-          <Button
-            onClick={handleSkipQuestions}
-            variant="outlined"
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              px: 3,
-              py: 1,
-              fontWeight: 600,
-              color: "text.secondary",
-              borderColor: "divider",
-              "&:hover": {
-                borderColor: "text.secondary",
-                bgcolor: "rgba(0,0,0,0.04)",
-              },
-            }}
-          >
-            Skip for Now
-          </Button>
-          <Button
-            onClick={handleCreateQuestions}
-            variant="contained"
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              px: 4,
-              py: 1,
-              fontWeight: 600,
-              bgcolor: "#4caf50",
-              boxShadow: "0 4px 12px rgba(76, 175, 80, 0.3)",
-              "&:hover": {
-                bgcolor: "#43a047",
-                boxShadow: "0 6px 16px rgba(76, 175, 80, 0.4)",
-              },
-            }}
-          >
-            Create Questions
-          </Button>
-        </DialogActions>
       </Dialog>
     </>
   );
