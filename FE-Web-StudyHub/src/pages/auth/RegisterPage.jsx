@@ -10,8 +10,6 @@ import {
   PersonAdd,
   CalendarMonth,
   PhoneIphone,
-  Google,
-  FacebookOutlined,
   Transgender,
   AutoStories,
   CrisisAlert,
@@ -154,15 +152,12 @@ const RegisterPage = () => {
     try {
       // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...registerData } = data;
-      const learningGoals =
-        data.type === "TOEIC"
-          ? `Đạt ${data.target} điểm TOEIC trong vòng ${data.time} tháng.`
-          : `Đạt band ${data.target} IELTS trong vòng ${data.time} tháng.`;
+      const learningGoals = `Đạt ${data.type} ${data.target} trong vòng ${data.time} tháng.`;
 
       const response = await register({ ...registerData, learningGoals });
       if (!response.error) {
         navigate("/login", {
-          state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
+          state: { message: "Registration successful! Please login." },
         });
       } else {
         dispatch(
@@ -173,7 +168,7 @@ const RegisterPage = () => {
         );
       }
     } catch (error) {
-      console.error("Lỗi đăng ký:", error);
+      console.error("Registration error:", error);
     }
   };
 

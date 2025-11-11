@@ -180,7 +180,7 @@ const LoginPage = () => {
               fontWeight: 600,
             }}
           >
-            {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </Box>
 
