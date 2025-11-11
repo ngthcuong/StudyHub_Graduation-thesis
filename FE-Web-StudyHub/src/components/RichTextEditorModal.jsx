@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -84,8 +84,6 @@ const RichTextEditorModal = ({
   lessonName = "Lesson",
   title = "Edit Lesson Content",
 }) => {
-  const [editorState, setEditorState] = useState(0);
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -108,14 +106,6 @@ const RichTextEditorModal = ({
         class: "tiptap-editor-content",
       },
     },
-    onUpdate: () => {
-      // Force re-render to update button states when editor content changes
-      setEditorState((prev) => prev + 1);
-    },
-    onSelectionUpdate: () => {
-      // Force re-render when selection changes (for formatting states)
-      setEditorState((prev) => prev + 1);
-    },
   });
 
   // Update editor content when initialContent changes
@@ -128,60 +118,15 @@ const RichTextEditorModal = ({
   const handleSave = () => {
     if (editor) {
       const content = editor.getHTML();
-      console.log("Saving editor content:", content);
       onSave(content);
       onClose();
     }
   };
 
-  // Helper function to get active state (includes editorState to trigger re-render)
+  // Helper function to get active state
   const getIsActive = (type, attributes = {}) => {
     if (!editor) return false;
-    // Use editorState to ensure re-render when state changes
-    const _ = editorState;
     return editor.isActive(type, attributes);
-  };
-
-  // Debug function to check editor state
-  const logEditorState = () => {
-    if (editor) {
-      console.log("=== Editor State Debug ===");
-      console.log("Bold:", editor.isActive("bold"));
-      console.log("Italic:", editor.isActive("italic"));
-      console.log("Underline:", editor.isActive("underline"));
-      console.log("Strike:", editor.isActive("strike"));
-
-      console.log("TextAlign left:", editor.isActive({ textAlign: "left" }));
-      console.log(
-        "TextAlign center:",
-        editor.isActive({ textAlign: "center" })
-      );
-      console.log("TextAlign right:", editor.isActive({ textAlign: "right" }));
-      console.log(
-        "TextAlign justify:",
-        editor.isActive({ textAlign: "justify" })
-      );
-
-      // Safe way to get attributes
-      try {
-        console.log(
-          "Current selection attrs:",
-          editor.getAttributes("paragraph")
-        );
-      } catch (e) {
-        console.log("Could not get attributes:", e.message);
-      }
-
-      console.log("Current HTML:", editor.getHTML());
-      console.log("Has selection:", !editor.state.selection.empty);
-      console.log(
-        "Selection from:",
-        editor.state.selection.from,
-        "to:",
-        editor.state.selection.to
-      );
-      console.log("==========================");
-    }
   };
 
   const handleClose = () => {
@@ -382,13 +327,6 @@ const RichTextEditorModal = ({
               >
                 <RedoIcon fontSize="small" />
               </MenuButton>
-              <Button
-                size="small"
-                onClick={logEditorState}
-                sx={{ ml: 2, textTransform: "none", fontSize: "0.75rem" }}
-              >
-                Debug
-              </Button>
             </Box>
           </Toolbar>
         </Paper>
