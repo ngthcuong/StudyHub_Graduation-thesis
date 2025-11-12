@@ -42,6 +42,8 @@ import {
   useGetCoursesQuery,
 } from "../../services/courseApi";
 import { useGetMyCoursesMutation } from "../../services/grammarLessonApi";
+import { useGetUserReviewForCourseQuery } from "../../services/reviewApi";
+import ModalCreateReview from "../../components/ModalCreateReview";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -68,6 +70,8 @@ const CourseDetail = () => {
   const [courseLoading, setCourseLoading] = React.useState(true);
   const [isOwned, setIsOwned] = React.useState(false);
   const [checkingOwnership, setCheckingOwnership] = React.useState(true);
+  const [reviewModalOpen, setReviewModalOpen] = React.useState(false);
+  const [existingReview, setExistingReview] = React.useState(null);
 
   // Fetch course details using API
   // const {
@@ -79,6 +83,12 @@ const CourseDetail = () => {
   // });
   const [getCourseById] = useGetCourseByIdMutation();
   const [getMyCourses] = useGetMyCoursesMutation();
+
+  // Fetch user's review for this course
+  const { data: userReviewData, refetch: refetchUserReview } =
+    useGetUserReviewForCourseQuery(courseId, {
+      skip: !user?._id || !courseId,
+    });
 
   useEffect(() => {
     const fetchCourseAndCheckOwnership = async () => {
@@ -126,6 +136,22 @@ const CourseDetail = () => {
   const handleStartLearning = () => {
     // Navigate to the learning page - adjust this path based on your routing structure
     navigate(`/course/${courseId}/lesson/${course.id || course._id}`);
+  };
+
+  const handleOpenReviewModal = () => {
+    if (userReviewData?.hasReview) {
+      setExistingReview(userReviewData.review);
+    } else {
+      setExistingReview(null);
+    }
+    setReviewModalOpen(true);
+  };
+
+  const handleCloseReviewModal = () => {
+    setReviewModalOpen(false);
+    setExistingReview(null);
+    // Refetch user review to update the UI
+    refetchUserReview();
   };
 
   // Loading state
@@ -302,7 +328,7 @@ const CourseDetail = () => {
               ) : isOwned ? (
                 <Button
                   variant="contained"
-                  className="bg-green-600 hover:bg-green-700 text-white w-full py-3"
+                  className="!bg-green-600 hover:!bg-green-700 text-white w-full py-3"
                   sx={{
                     textTransform: "none",
                   }}
@@ -385,9 +411,37 @@ const CourseDetail = () => {
       {/* Reviews and Rating Section */}
       <section className="py-12 bg-gray-50">
         <Container maxWidth="lg">
-          <Typography variant="h4" className="!font-bold mb-6">
-            Reviews & Ratings
-          </Typography>
+          <div className="flex items-center justify-between mb-6">
+            <Typography variant="h4" className="!font-bold">
+              Reviews & Ratings
+            </Typography>
+            {/* Write Review Button - Only show if user is logged in */}
+            {user && (
+              <>
+                {isOwned ? (
+                  <Button
+                    variant="contained"
+                    onClick={handleOpenReviewModal}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {userReviewData?.hasReview
+                      ? "Update Review"
+                      : "Write Review"}
+                  </Button>
+                ) : (
+                  <div className="bg-orange-100 text-orange-800 px-3 py-1.5 rounded-md">
+                    <Typography variant="body2" className="font-medium">
+                      Purchase this course to write a review
+                    </Typography>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Rating Stats - Left Column */}
@@ -397,9 +451,19 @@ const CourseDetail = () => {
 
             {/* Reviews List - Right Column */}
             <div className="lg:col-span-2 -mt-4">
-              <Typography variant="h6" className="!font-semibold mb-4">
-                Latest Reviews
-              </Typography>
+              <div className="flex items-center justify-between mb-4">
+                <Typography variant="h6" className="!font-semibold">
+                  Latest Reviews
+                </Typography>
+                {/* Show user's review status if logged in and owns course */}
+                {user && isOwned && userReviewData?.hasReview && (
+                  <div className="bg-green-100 text-green-800 px-3 py-1 rounded-md">
+                    <Typography variant="body2" className="font-medium">
+                      You have reviewed this course
+                    </Typography>
+                  </div>
+                )}
+              </div>
               <CourseReviews courseId={courseId} maxDisplay={3} />
             </div>
           </div>
@@ -449,6 +513,18 @@ const CourseDetail = () => {
       </section>
 
       <SnackBar isOpen={isOpen} message={message} severity={severity} />
+
+      {/* Review Modal */}
+      <ModalCreateReview
+        open={reviewModalOpen}
+        onClose={handleCloseReviewModal}
+        course={{
+          id: courseId,
+          name: course?.title || "",
+        }}
+        existingReview={existingReview}
+        isUpdate={!!existingReview}
+      />
     </div>
   );
 };

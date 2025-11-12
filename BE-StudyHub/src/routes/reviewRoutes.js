@@ -27,6 +27,13 @@ router.get(
 // Lấy danh sách reviews theo khóa học
 router.get("/course/:courseId", reviewController.getReviewsByCourse);
 
+// Kiểm tra user đã review khóa học này chưa
+router.get(
+  "/course/:courseId/user-review",
+  verifyToken,
+  reviewController.getUserReviewForCourse
+);
+
 // Lấy danh sách reviews theo user
 router.get("/user/:userId", verifyToken, reviewController.getReviewsByUser);
 
