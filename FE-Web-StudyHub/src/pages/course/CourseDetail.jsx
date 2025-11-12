@@ -28,6 +28,7 @@ import {
   KeyboardArrowRight,
   FavoriteBorder,
   ArrowBack,
+  PlayArrow,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
@@ -40,6 +41,7 @@ import {
   useGetCourseByIdMutation,
   useGetCoursesQuery,
 } from "../../services/courseApi";
+import { useGetMyCoursesMutation } from "../../services/grammarLessonApi";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -60,9 +62,12 @@ const CourseDetail = () => {
 
   const dispatch = useDispatch();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+  const user = useSelector((state) => state.auth.user);
   const [course, setCourse] = React.useState(null);
   const [courseError, setCourseError] = React.useState(null);
   const [courseLoading, setCourseLoading] = React.useState(true);
+  const [isOwned, setIsOwned] = React.useState(false);
+  const [checkingOwnership, setCheckingOwnership] = React.useState(true);
 
   // Fetch course details using API
   // const {
@@ -73,29 +78,54 @@ const CourseDetail = () => {
   //   skip: !courseId,
   // });
   const [getCourseById] = useGetCourseByIdMutation();
+  const [getMyCourses] = useGetMyCoursesMutation();
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseAndCheckOwnership = async () => {
       setCourseLoading(true);
+      setCheckingOwnership(true);
+
       try {
+        // Fetch course details
         const courseData = await getCourseById(courseId).unwrap();
         setCourse(courseData);
         setCourseError(null);
+
+        // Check if user owns this course
+        if (user?._id) {
+          try {
+            const result = await getMyCourses(user._id).unwrap();
+            const ownedCourses = result.courses || [];
+            const isOwned = ownedCourses.some(
+              (course) => course._id === courseId
+            );
+            setIsOwned(isOwned);
+          } catch (error) {
+            console.error("Failed to fetch user courses:", error);
+            setIsOwned(false);
+          }
+        }
       } catch (error) {
         setCourseError(error);
       } finally {
         setCourseLoading(false);
+        setCheckingOwnership(false);
       }
     };
 
-    fetchCourse();
-  }, [courseId, getCourseById]);
+    fetchCourseAndCheckOwnership();
+  }, [courseId, getCourseById, getMyCourses, user?._id]);
 
   // Fetch recommended courses
   const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery();
 
   const handleAddToFavorites = () => {
     dispatch(openSnackbar({ message: "Add to favorites" }));
+  };
+
+  const handleStartLearning = () => {
+    // Navigate to the learning page - adjust this path based on your routing structure
+    navigate(`/course/${courseId}/lesson/${course.id || course._id}`);
   };
 
   // Loading state
@@ -194,14 +224,27 @@ const CourseDetail = () => {
                 </IconButton>
               </div>
 
-              <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-md">
-                <Typography variant="body2" className="font-medium">
-                  {course.type || "Course"}
-                </Typography>
+              <div className="flex gap-2">
+                <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-md">
+                  <Typography variant="body2" className="font-medium">
+                    {course.type || "Course"}
+                  </Typography>
+                </div>
+                {isOwned && (
+                  <div className="inline-block bg-blue-500 text-white px-3 py-1 rounded-md">
+                    <Typography variant="body2" className="font-medium">
+                      Owned
+                    </Typography>
+                  </div>
+                )}
               </div>
 
               <Typography variant="h3" className="!font-bold text-black">
-                {course.cost ? `$${course.cost}` : "Free"}
+                {isOwned
+                  ? "Already Purchased"
+                  : course.cost
+                  ? `$${course.cost}`
+                  : "Free"}
               </Typography>
 
               <Typography
@@ -243,19 +286,47 @@ const CourseDetail = () => {
                 )}
               </div>
 
-              <Button
-                variant="contained"
-                className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3"
-                sx={{
-                  textTransform: "none",
-                }}
-                size="large"
-                onClick={() =>
-                  navigate("/course/payment", { state: { course } })
-                }
-              >
-                Buy now
-              </Button>
+              {checkingOwnership ? (
+                <Button
+                  variant="contained"
+                  className="bg-gray-400 text-white w-full py-3"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                  size="large"
+                  disabled
+                >
+                  <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                  Checking...
+                </Button>
+              ) : isOwned ? (
+                <Button
+                  variant="contained"
+                  className="bg-green-600 hover:bg-green-700 text-white w-full py-3"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                  size="large"
+                  onClick={handleStartLearning}
+                  startIcon={<PlayArrow />}
+                >
+                  Start Learning
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                  size="large"
+                  onClick={() =>
+                    navigate("/course/payment", { state: { course } })
+                  }
+                >
+                  Buy now
+                </Button>
+              )}
             </div>
           </div>
         </Container>
@@ -342,7 +413,7 @@ const CourseDetail = () => {
             <Typography variant="h4" className="!font-bold text-black">
               Recommended for you
             </Typography>
-            <Button
+            {/* <Button
               variant="text"
               size="large"
               className="text-blue-600 hover:text-blue-800 !font-medium"
@@ -354,10 +425,10 @@ const CourseDetail = () => {
               }}
             >
               See more
-            </Button>
+            </Button> */}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-10">
             {coursesLoading ? (
               <div className="col-span-full flex justify-center py-8">
                 <CircularProgress size={32} />

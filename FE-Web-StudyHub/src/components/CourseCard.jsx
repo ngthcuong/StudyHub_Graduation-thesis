@@ -63,7 +63,7 @@ const CourseCard = ({ course, variant = "market" }) => {
   return (
     <Card
       key={course.id}
-      className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
+      className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden w-77"
       onClick={handleCardClick}
     >
       {/* Course Image */}
