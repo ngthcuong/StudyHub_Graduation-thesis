@@ -4,7 +4,6 @@ import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import SettingsIcon from "@mui/icons-material/Settings";
 import PortraitIcon from "@mui/icons-material/Portrait";
 import { Person } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
@@ -37,9 +36,6 @@ export default function HomeLayout() {
         break;
       case "profile":
         setActiveTab("profile");
-        break;
-      case "settings":
-        setActiveTab("settings");
         break;
       default:
         setActiveTab("dashboard");
@@ -133,21 +129,6 @@ export default function HomeLayout() {
           >
             <Person className="w-4 h-4 mr-2" />
             Profile
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("settings");
-              navigate("/home/settings");
-            }}
-            className={`flex items-center px-5 py-2 rounded-r-md ${
-              activeTab === "settings"
-                ? "bg-blue-500 text-white"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            <SettingsIcon className="w-4 h-4 mr-2" />
-            Settings
           </button>
         </nav>
         {/* Logout Button */}

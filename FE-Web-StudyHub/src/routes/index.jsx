@@ -17,7 +17,6 @@ import CourseList from "../pages/course/CourseList";
 import CourseLessson from "../components/CourseLessson";
 import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
-import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
 import UserInfo from "../pages/home/UserInfo";
 
@@ -78,10 +77,6 @@ export const router = createBrowserRouter([
               {
                 path: "profile",
                 element: <UserInfo />,
-              },
-              {
-                path: "settings",
-                element: <Settings />,
               },
             ],
           },
