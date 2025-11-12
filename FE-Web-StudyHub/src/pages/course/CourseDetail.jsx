@@ -269,7 +269,7 @@ const CourseDetail = () => {
                 {isOwned
                   ? "Already Purchased"
                   : course.cost
-                  ? `$${course.cost}`
+                  ? `${course.cost} VND`
                   : "Free"}
               </Typography>
 
