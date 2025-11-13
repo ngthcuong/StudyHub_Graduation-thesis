@@ -127,10 +127,6 @@ const CoursesListScreen = ({ navigation }) => {
               {course.durationHours || "N/A"}h
             </Text>
           </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{course.students || 0} học viên</Text>
-          </View>
         </View>
 
         <View style={styles.courseFooter}>

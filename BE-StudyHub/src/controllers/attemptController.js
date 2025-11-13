@@ -718,6 +718,22 @@ const updateAttempt = async (req, res) => {
   }
 };
 
+const deleteAttemptById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await attemptModel.deleteAttemptById(id); // ✅ Truyền id, KHÔNG truyền req
+
+    if (!result) {
+      return res.status(404).json({ message: "Attempt not found" });
+    }
+
+    res.status(200).json({ message: "Attempt deleted successfully", result });
+  } catch (error) {
+    console.error("Error deleting attempt:", error);
+    throw new Error("Failed to delete attempt");
+  }
+};
+
 module.exports = {
   startAttempt,
   submitAttempt,
@@ -729,4 +745,5 @@ module.exports = {
   getAttemptsByTestIdAndUser,
   getCustomTestAttemptsByUser,
   updateAttempt,
+  deleteAttemptById,
 };

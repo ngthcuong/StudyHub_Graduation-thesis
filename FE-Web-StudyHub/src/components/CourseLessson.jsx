@@ -203,7 +203,10 @@ const CourseLessson = () => {
 
     try {
       const result = await getPartById(lesson._id).unwrap();
-      setLessonPlay(result.data);
+      console.log("FETCHED LESSON:", result.data);
+      const processedLesson = processSingleLessonPart(result.data);
+      console.log("PROCESSED LESSON:", processedLesson);
+      setLessonPlay(processedLesson);
       setStartTime(Date.now()); // reset thời gian bắt đầu cho lesson mới
     } catch (error) {
       console.error("Failed to fetch part data:", error);
@@ -262,7 +265,8 @@ const CourseLessson = () => {
       setCurrentLessonId(nextLesson._id);
       try {
         const result = await getPartById(nextLesson._id).unwrap();
-        setLessonPlay(result.data);
+        const processedLesson = processSingleLessonPart(result.data);
+        setLessonPlay(processedLesson);
         setStartTime(Date.now()); // reset thời gian cho bài mới
       } catch (error) {
         console.error("Failed to fetch next lesson:", error);
@@ -331,7 +335,47 @@ const CourseLessson = () => {
     return updatedLessons;
   };
 
+  function getYouTubeId(url) {
+    if (!url) return null;
+
+    // Regex này xử lý các dạng link:
+    // - youtube.com/watch?v=ID
+    // - youtu.be/ID
+    // - youtube.com/embed/ID
+    // - youtube.com/shorts/ID
+    // - có hoặc không có www, http/https và các tham số (query params)
+    const regExp =
+      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regExp);
+
+    return match ? match[1] : null;
+  }
+
+  function processSingleLessonPart(lessonPart) {
+    // Tạo một bản sao của object gốc để không thay đổi object cũ
+    // (Đây là "best practice" trong JavaScript)
+    let newLessonPart = { ...lessonPart };
+
+    // 1. Kiểm tra xem đây có phải là video và có videoUrl không
+    if (newLessonPart.contentType === "video" && newLessonPart.videoUrl) {
+      // 2. Lấy ID video bằng hàm helper
+      const videoId = getYouTubeId(newLessonPart.videoUrl);
+
+      // 3. Xây dựng link embed
+      const newEmbedUrl = videoId
+        ? `https://www.youtube-nocookie.com/embed/${videoId}`
+        : null; // Sẽ là null nếu link gốc bị lỗi
+
+      // 4. Gán lại videoUrl trong object MỚI
+      newLessonPart.videoUrl = newEmbedUrl;
+    }
+
+    // 5. Trả về object mới (dù đã thay đổi hay chưa)
+    return newLessonPart;
+  }
+
   console.log("LESSONS WITH TESTS:", lessonsWithTests);
+  console.log("LESSON PLAY:", lessonPlay);
 
   return (
     <div className="flex h-screen bg-white">
@@ -554,9 +598,8 @@ const CourseLessson = () => {
                 <iframe
                   width="100%"
                   height="100%"
-                  src={lessonPlay.videoUrl
-                    .replace("watch?v=", "embed/")
-                    .replace("youtube.com", "youtube-nocookie.com")}
+                  // Chỉ cần dùng trực tiếp vì URL đã được chuẩn hóa
+                  src={lessonPlay?.videoUrl}
                   title="Nội dung Video Bài học"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

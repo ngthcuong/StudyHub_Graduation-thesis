@@ -30,6 +30,7 @@ import {
   useCreateTestPoolMutation,
   useGenerateTestQuestionsMutation,
   useSubmitTestMutation,
+  useGetQuestionsByTestIdMutation,
   // useUpdateTestPoolMutation,
 } from "../../services/testApi";
 import { array } from "prop-types";
@@ -45,7 +46,9 @@ const TestMultipleChoice = () => {
   const [test, setTest] = useState(null);
 
   const [current, setCurrent] = useState(0);
-  const [answersP, setAnswersP] = useState(Array(10).fill(null));
+  const [answersP, setAnswersP] = useState(
+    Array(questions?.data?.length).fill(null)
+  );
   const [timeLeft, setTimeLeft] = useState(null); // thời gian làm bài tính bằng phút
   const [isPaused, setIsPaused] = useState(false);
 
@@ -69,252 +72,282 @@ const TestMultipleChoice = () => {
   }, [test, timeLeft]);
 
   // Gọi API
-  const [getTestByIdTrigger] = useGetTestByIdMutation();
-  const [getTestPoolByLevelTrigger] = useGetTestPoolByLevelMutation();
-  const [getTestPoolByTestIdAndLevelTrigger] =
-    useGetTestPoolByTestIdAndLevelMutation();
-  const [getTestAttemptsByTestIdTrigger] = useGetTestAttemptsByTestIdMutation();
+
   const [getAttemptByTestAndUserTrigger] = useGetAttemptByTestAndUserMutation();
   const [createAttemptTrigger] = useCreateAttemptMutation();
-  const [getAttemptInfoTrigger] = useGetAttemptInfoMutation();
-  const [createTestPoolTrigger] = useCreateTestPoolMutation();
-  const [generateTestQuestionsTrigger] = useGenerateTestQuestionsMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
+  const [getQuestionsByTestIdTrigger] = useGetQuestionsByTestIdMutation();
   // const [updateTestPoolTrigger] = useUpdateTestPoolMutation();
 
   const startTest = async () => {
     try {
       setLoading(true);
+      const res = await getQuestionsByTestIdTrigger(testId).unwrap();
+      setQuestions(res);
+      setAnswersP(Array(res?.data?.length).fill(null));
 
-      const now = new Date();
-      const isoString = now.toISOString();
-      setDate(isoString);
-
-      const test = await getTestByIdTrigger(testId).unwrap();
-      setTest(test);
-      const userLevel = `${test?.data?.examType} ${
-        user?.currentLevel?.[test?.data?.examType]
-      }`;
+      let resAttempt;
 
       try {
-        const bylevel = await getTestPoolByLevelTrigger({
-          level: userLevel,
+        resAttempt = await getAttemptByTestAndUserTrigger({
+          testId: testId,
+          userId: user?._id,
         }).unwrap();
-        console.log("✅ Found test pools by level:", bylevel);
-        const testByLevel = bylevel.data.find(
-          (pool) => pool.baseTestId === testId
-        );
+        setAttemptId(resAttempt?.data[0]?._id);
 
-        console.log("✅ Found test:", testByLevel);
-        setTestPool(testByLevel);
+        const now = new Date();
+        const isoString = now.toISOString();
+        setDate(isoString);
+      } catch (error) {
+        console.log("No attempt info found:", error);
+      }
 
+      if (!resAttempt && !resAttempt.data && !resAttempt.data.length > 0) {
         try {
-          const testPool = await getTestPoolByTestIdAndLevelTrigger({
-            testId: testId, // string, ID của test
-            exam_type: test?.data?.examType, // string, ví dụ "TOEIC"
-            score_range: user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
-            createdBy: user?._id, // string, ID của user
+          const resStartAttempt = await createAttemptTrigger({
+            testId: testId,
+            maxAttempts: 10000,
           }).unwrap();
 
-          setTestPool(testPool);
+          setAttemptId(resStartAttempt.data._id);
 
-          setQuestions({ data: testPool });
-          setAnswersP(Array(questions?.data?.data?.length).fill(null));
-
-          try {
-            const attemptByTestPool = await getTestAttemptsByTestIdTrigger({
-              testPoolId: testByLevel?._id,
-              userId: user?._id,
-            }).unwrap();
-
-            setAttemptId(attemptByTestPool?.data[0]?._id);
-            console.log("✅ Found attempt by test pool:", attemptByTestPool);
-            if (!attemptByTestPool?.data?.length === 0) {
-              try {
-                const attempt = await createAttemptTrigger({
-                  testId: testId,
-                  maxAttempts: 10000,
-                }).unwrap();
-                setAttemptId(attempt?.data?._id);
-                console.log("🆕 Created attempt:", attempt);
-              } catch (error) {
-                console.log("❌ Lỗi khi tạo attempt:", error);
-              }
-            }
-          } catch (error) {
-            console.log("❌ Lỗi khi tạo attempt:", error);
-          }
+          const now = new Date();
+          const isoString = now.toISOString();
+          setDate(isoString);
         } catch (error) {
-          if (error.status === 404) {
-            if (testByLevel?.usageCount !== testByLevel?.maxReuse) {
-              const testPoolin = await getTestPoolByTestIdAndLevelTrigger({
-                testId: testId, // string, ID của test
-                exam_type: test?.data?.examType, // string, ví dụ "TOEIC"
-                score_range: user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
-                createdBy: testByLevel?.createdBy?._id, // string, ID của user
-              }).unwrap();
-              setQuestions({ data: testPoolin });
-              setAnswersP(Array(questions?.data?.data?.length).fill(null));
-              try {
-                const attemptInfo = await getAttemptByTestAndUserTrigger({
-                  testId: testId,
-                  userId: user?._id,
-                }).unwrap();
-                if (
-                  attemptInfo?.data?.length > 0 &&
-                  attemptInfo?.data[0]?.attemptNumber <
-                    attemptInfo?.data[0]?.maxAttempts
-                ) {
-                  setAttemptId(attemptInfo?.data[0]?._id);
-                  console.log("✅ Found existing attempt:", attemptInfo);
-                } else {
-                  try {
-                    const attempt = await createAttemptTrigger({
-                      testId: testId,
-                      maxAttempts: 10000,
-                    }).unwrap();
-                    setAttemptId(attempt?.data?._id);
-                    console.log("🆕 Created attempt:", attempt);
-                  } catch (error) {
-                    console.log("❌ Lỗi khi tạo attempt:", error);
-                  }
-                }
-              } catch (error) {
-                console.log("❌ Lỗi khi lấy thông tin attempt:", error);
-              }
-            } else {
-              console.log("⚠️ Test pool đã đạt giới hạn sử dụng");
-              try {
-                const newTestPool = await createTestPoolTrigger({
-                  baseTestId: testId,
-                  level: userLevel,
-                  createdBy: user?._id,
-                  usageCount: 0,
-                  maxReuse: 10,
-                  status: "active",
-                }).unwrap();
-                console.log("🆕 Created new test pool:", newTestPool);
-
-                try {
-                  const newQuestions = await generateTestQuestionsTrigger({
-                    testId,
-                    exam_type: test?.data?.examType,
-                    topic: test?.data?.topic,
-                    question_types: test?.data?.questionTypes,
-                    num_questions: test?.data?.numQuestions,
-                    score_range: user?.currentLevel?.[test?.data?.examType],
-                  }).unwrap();
-                  setQuestions(newQuestions);
-                  console.log("🧠 Created questions:", newQuestions);
-
-                  try {
-                    const attemptInfo = await getAttemptByTestAndUserTrigger({
-                      testId,
-                      userId: user?._id,
-                    }).unwrap();
-                    if (attemptInfo?.data?.length > 0) {
-                      setAttemptId(attemptInfo?.data[0]?._id);
-                      console.log("✅ Found existing attempt:", attemptInfo);
-                    } else {
-                      console.log("🚫 No existing attempt found");
-                    }
-                  } catch (error) {
-                    console.log("❌ Error creating attempt:", error);
-                  }
-                  try {
-                    const attempt = await createAttemptTrigger({
-                      testId: testId,
-                      maxAttempts: 10000,
-                    }).unwrap();
-                    console.log("🆕 Created attempt:", attempt);
-                    setAttemptId(attempt?.data?._id);
-                    console.log("🆕 Created attempt:", attempt);
-                  } catch (error) {
-                    console.log("❌ Error fetching attempt info:", error);
-                  }
-                } catch (error) {
-                  console.log("❌ Error generating questions:", error);
-                }
-              } catch (error) {
-                console.log("❌ Error creating test pool:", error);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        if (error.status === 404) {
-          console.log(
-            "⚠️ Không tìm thấy test phù hợp — thử lấy attempt info..."
-          );
-          try {
-            const testInfo = await getAttemptInfoTrigger({
-              testId,
-              userId: user?._id,
-            }).unwrap();
-            console.log("✅ Found attempt info:", testInfo);
-          } catch (attemptError) {
-            if (attemptError.status === 404) {
-              try {
-                const newTestPool = await createTestPoolTrigger({
-                  baseTestId: testId,
-                  level: userLevel,
-                  createdBy: user?._id,
-                  usageCount: 0,
-                  maxReuse: 10,
-                  status: "active",
-                }).unwrap();
-                setTestPool(newTestPool.data);
-                console.log("🆕 Created new test pool:", newTestPool);
-
-                try {
-                  const newQuestions = await generateTestQuestionsTrigger({
-                    testId,
-                    exam_type: test?.data?.examType,
-                    topic: test?.data?.topic,
-                    question_types: test?.data?.questionTypes,
-                    num_questions: test?.data?.numQuestions,
-                    score_range: user?.currentLevel?.[test?.data?.examType],
-                  }).unwrap();
-                  setQuestions(newQuestions);
-                  setAnswersP(Array(questions?.data?.data?.length).fill(null));
-                  console.log("🧠 Created questions:", newQuestions);
-
-                  try {
-                    const attemptInfo = await getAttemptByTestAndUserTrigger({
-                      testId,
-                      userId: user?._id,
-                    }).unwrap();
-                    if (attemptInfo?.data?.length > 0) {
-                      setAttemptId(attemptInfo?.data[0]?._id);
-                      console.log("✅ Found existing attempt:", attemptInfo);
-                    } else {
-                      console.log("🚫 No existing attempt found");
-                    }
-                  } catch (error) {
-                    console.log("❌ Error creating attempt:", error);
-                  }
-                  try {
-                    const attempt = await createAttemptTrigger({
-                      testId: testId,
-                      maxAttempts: 10000,
-                    }).unwrap();
-                    setAttemptId(attempt?.data?._id);
-                    console.log("🆕 Created attempt:", attempt);
-                  } catch (error) {
-                    console.log("❌ Error fetching attempt info:", error);
-                  }
-                } catch (error) {
-                  console.log("❌ Error generating questions:", error);
-                }
-              } catch (error) {
-                console.log("❌ Error creating test pool:", error);
-              }
-            }
-          }
-        } else {
-          throw error;
+          console.log("No attempt info found:", error);
         }
       }
+
+      // const now = new Date();
+      // const isoString = now.toISOString();
+      // setDate(isoString);
+
+      // const test = await getTestByIdTrigger(testId).unwrap();
+      // setTest(test);
+      // const userLevel = `${test?.data?.examType} ${
+      //   user?.currentLevel?.[test?.data?.examType]
+      // }`;
+
+      // try {
+      //   const bylevel = await getTestPoolByLevelTrigger({
+      //     level: userLevel,
+      //   }).unwrap();
+      //   console.log("✅ Found test pools by level:", bylevel);
+      //   const testByLevel = bylevel.data.find(
+      //     (pool) => pool.baseTestId === testId
+      //   );
+
+      //   console.log("✅ Found test:", testByLevel);
+      //   setTestPool(testByLevel);
+
+      //   try {
+      //     const testPool = await getTestPoolByTestIdAndLevelTrigger({
+      //       testId: testId, // string, ID của test
+      //       exam_type: test?.data?.examType, // string, ví dụ "TOEIC"
+      //       score_range: user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
+      //       createdBy: user?._id, // string, ID của user
+      //     }).unwrap();
+
+      //     setTestPool(testPool);
+
+      //     setQuestions({ data: testPool });
+      //     setAnswersP(Array(questions?.data?.data?.length).fill(null));
+
+      //     try {
+      //       const attemptByTestPool = await getTestAttemptsByTestIdTrigger({
+      //         testPoolId: testByLevel?._id,
+      //         userId: user?._id,
+      //       }).unwrap();
+
+      //       setAttemptId(attemptByTestPool?.data[0]?._id);
+      //       console.log("✅ Found attempt by test pool:", attemptByTestPool);
+      //       if (!attemptByTestPool?.data?.length === 0) {
+      //         try {
+      //           const attempt = await createAttemptTrigger({
+      //             testId: testId,
+      //             maxAttempts: 10000,
+      //           }).unwrap();
+      //           setAttemptId(attempt?.data?._id);
+      //           console.log("🆕 Created attempt:", attempt);
+      //         } catch (error) {
+      //           console.log("❌ Lỗi khi tạo attempt:", error);
+      //         }
+      //       }
+      //     } catch (error) {
+      //       console.log("❌ Lỗi khi tạo attempt:", error);
+      //     }
+      //   } catch (error) {
+      //     if (error.status === 404) {
+      //       if (testByLevel?.usageCount !== testByLevel?.maxReuse) {
+      //         const testPoolin = await getTestPoolByTestIdAndLevelTrigger({
+      //           testId: testId, // string, ID của test
+      //           exam_type: test?.data?.examType, // string, ví dụ "TOEIC"
+      //           score_range: user?.currentLevel?.[test?.data?.examType], // string, ví dụ "550-650"
+      //           createdBy: testByLevel?.createdBy?._id, // string, ID của user
+      //         }).unwrap();
+      //         setQuestions({ data: testPoolin });
+      //         setAnswersP(Array(questions?.data?.data?.length).fill(null));
+      //         try {
+      //           const attemptInfo = await getAttemptByTestAndUserTrigger({
+      //             testId: testId,
+      //             userId: user?._id,
+      //           }).unwrap();
+      //           if (
+      //             attemptInfo?.data?.length > 0 &&
+      //             attemptInfo?.data[0]?.attemptNumber <
+      //               attemptInfo?.data[0]?.maxAttempts
+      //           ) {
+      //             setAttemptId(attemptInfo?.data[0]?._id);
+      //             console.log("✅ Found existing attempt:", attemptInfo);
+      //           } else {
+      //             try {
+      //               const attempt = await createAttemptTrigger({
+      //                 testId: testId,
+      //                 maxAttempts: 10000,
+      //               }).unwrap();
+      //               setAttemptId(attempt?.data?._id);
+      //               console.log("🆕 Created attempt:", attempt);
+      //             } catch (error) {
+      //               console.log("❌ Lỗi khi tạo attempt:", error);
+      //             }
+      //           }
+      //         } catch (error) {
+      //           console.log("❌ Lỗi khi lấy thông tin attempt:", error);
+      //         }
+      //       } else {
+      //         console.log("⚠️ Test pool đã đạt giới hạn sử dụng");
+      //         try {
+      //           const newTestPool = await createTestPoolTrigger({
+      //             baseTestId: testId,
+      //             level: userLevel,
+      //             createdBy: user?._id,
+      //             usageCount: 0,
+      //             maxReuse: 10,
+      //             status: "active",
+      //           }).unwrap();
+      //           console.log("🆕 Created new test pool:", newTestPool);
+
+      //           try {
+      //             const newQuestions = await generateTestQuestionsTrigger({
+      //               testId,
+      //               exam_type: test?.data?.examType,
+      //               topic: test?.data?.topic,
+      //               question_types: test?.data?.questionTypes,
+      //               num_questions: test?.data?.numQuestions,
+      //               score_range: user?.currentLevel?.[test?.data?.examType],
+      //             }).unwrap();
+      //             setQuestions(newQuestions);
+      //             console.log("🧠 Created questions:", newQuestions);
+
+      //             try {
+      //               const attemptInfo = await getAttemptByTestAndUserTrigger({
+      //                 testId,
+      //                 userId: user?._id,
+      //               }).unwrap();
+      //               if (attemptInfo?.data?.length > 0) {
+      //                 setAttemptId(attemptInfo?.data[0]?._id);
+      //                 console.log("✅ Found existing attempt:", attemptInfo);
+      //               } else {
+      //                 console.log("🚫 No existing attempt found");
+      //               }
+      //             } catch (error) {
+      //               console.log("❌ Error creating attempt:", error);
+      //             }
+      //             try {
+      //               const attempt = await createAttemptTrigger({
+      //                 testId: testId,
+      //                 maxAttempts: 10000,
+      //               }).unwrap();
+      //               console.log("🆕 Created attempt:", attempt);
+      //               setAttemptId(attempt?.data?._id);
+      //               console.log("🆕 Created attempt:", attempt);
+      //             } catch (error) {
+      //               console.log("❌ Error fetching attempt info:", error);
+      //             }
+      //           } catch (error) {
+      //             console.log("❌ Error generating questions:", error);
+      //           }
+      //         } catch (error) {
+      //           console.log("❌ Error creating test pool:", error);
+      //         }
+      //       }
+      //     }
+      //   }
+      // } catch (error) {
+      //   if (error.status === 404) {
+      //     console.log(
+      //       "⚠️ Không tìm thấy test phù hợp — thử lấy attempt info..."
+      //     );
+      //     try {
+      //       const testInfo = await getAttemptInfoTrigger({
+      //         testId,
+      //         userId: user?._id,
+      //       }).unwrap();
+      //       console.log("✅ Found attempt info:", testInfo);
+      //     } catch (attemptError) {
+      //       if (attemptError.status === 404) {
+      //         try {
+      //           const newTestPool = await createTestPoolTrigger({
+      //             baseTestId: testId,
+      //             level: userLevel,
+      //             createdBy: user?._id,
+      //             usageCount: 0,
+      //             maxReuse: 10,
+      //             status: "active",
+      //           }).unwrap();
+      //           setTestPool(newTestPool.data);
+      //           console.log("🆕 Created new test pool:", newTestPool);
+
+      //           try {
+      //             const newQuestions = await generateTestQuestionsTrigger({
+      //               testId,
+      //               exam_type: test?.data?.examType,
+      //               topic: test?.data?.topic,
+      //               question_types: test?.data?.questionTypes,
+      //               num_questions: test?.data?.numQuestions,
+      //               score_range: user?.currentLevel?.[test?.data?.examType],
+      //             }).unwrap();
+      //             setQuestions(newQuestions);
+      //             setAnswersP(Array(questions?.data?.data?.length).fill(null));
+      //             console.log("🧠 Created questions:", newQuestions);
+
+      //             try {
+      //               const attemptInfo = await getAttemptByTestAndUserTrigger({
+      //                 testId,
+      //                 userId: user?._id,
+      //               }).unwrap();
+      //               if (attemptInfo?.data?.length > 0) {
+      //                 setAttemptId(attemptInfo?.data[0]?._id);
+      //                 console.log("✅ Found existing attempt:", attemptInfo);
+      //               } else {
+      //                 console.log("🚫 No existing attempt found");
+      //               }
+      //             } catch (error) {
+      //               console.log("❌ Error creating attempt:", error);
+      //             }
+      //             try {
+      //               const attempt = await createAttemptTrigger({
+      //                 testId: testId,
+      //                 maxAttempts: 10000,
+      //               }).unwrap();
+      //               setAttemptId(attempt?.data?._id);
+      //               console.log("🆕 Created attempt:", attempt);
+      //             } catch (error) {
+      //               console.log("❌ Error fetching attempt info:", error);
+      //             }
+      //           } catch (error) {
+      //             console.log("❌ Error generating questions:", error);
+      //           }
+      //         } catch (error) {
+      //           console.log("❌ Error creating test pool:", error);
+      //         }
+      //       }
+      //     }
+      //   } else {
+      //     throw error;
+      //   }
+      // }
     } catch (error) {
       console.error("Error starting test:", error);
     } finally {
@@ -348,7 +381,7 @@ const TestMultipleChoice = () => {
   const handleChange = (e) => {
     const newAnswers = [...answersP];
     const selectedOptionText = e.target.value;
-    const selectedOption = questions.data.data[current].options.find(
+    const selectedOption = questions?.data[current].options.find(
       (opt) => opt.optionText === selectedOptionText
     );
     newAnswers[current] = selectedOption?._id || null;
@@ -356,7 +389,7 @@ const TestMultipleChoice = () => {
   };
 
   const handleNext = () =>
-    setCurrent((c) => Math.min(c + 1, questions.data.data.length - 1));
+    setCurrent((c) => Math.min(c + 1, questions?.data.length - 1));
   const handleBack = () => setCurrent((c) => Math.max(c - 1, 0));
   const handleJump = (idx) => setCurrent(idx);
 
@@ -377,7 +410,7 @@ const TestMultipleChoice = () => {
     setIsSubmitting(true);
     setIsPaused((prev) => !prev);
     const formattedAnswers = answersP.map((selectedOptionId, index) => ({
-      questionId: questions?.data?.data[index]._id,
+      questionId: questions?.data[index]._id,
       selectedOptionId: selectedOptionId,
     }));
 
@@ -709,62 +742,59 @@ const TestMultipleChoice = () => {
                         scrollbarWidth: "thin",
                       }}
                     >
-                      {current + 1}.{" "}
-                      {questions?.data?.data[current].questionText}
+                      {current + 1}. {questions?.data[current].questionText}
                     </Typography>
 
                     {/* Danh sách đáp án */}
                     <RadioGroup
                       value={
                         answersP[current]
-                          ? questions?.data?.data[current].options.find(
+                          ? questions?.data[current].options.find(
                               (opt) => opt._id === answersP[current]
                             )?.optionText || ""
                           : ""
                       }
                       onChange={handleChange}
                     >
-                      {questions?.data?.data[current].options.map(
-                        (opt, idx) => (
-                          <Box
-                            key={opt._id || idx}
-                            className="mb-3 border rounded-lg px-4 py-2 flex items-center hover:border-blue-400 transition"
-                            sx={{
-                              borderColor:
-                                answersP[current] === opt._id
-                                  ? "#2563eb"
-                                  : "#e5e7eb",
-                              background:
-                                answersP[current] === opt._id
-                                  ? "#f0f7ff"
-                                  : "#fff",
-                              height: 56,
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <FormControlLabel
-                              value={opt.optionText}
-                              control={<Radio color="primary" />}
-                              label={
-                                <Typography
-                                  fontWeight={500}
-                                  noWrap
-                                  sx={{
-                                    textOverflow: "ellipsis",
-                                    overflow: "hidden",
-                                    width: "100%",
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  {opt.optionText}
-                                </Typography>
-                              }
-                              className="w-full"
-                            />
-                          </Box>
-                        )
-                      )}
+                      {questions?.data[current].options.map((opt, idx) => (
+                        <Box
+                          key={opt._id || idx}
+                          className="mb-3 border rounded-lg px-4 py-2 flex items-center hover:border-blue-400 transition"
+                          sx={{
+                            borderColor:
+                              answersP[current] === opt._id
+                                ? "#2563eb"
+                                : "#e5e7eb",
+                            background:
+                              answersP[current] === opt._id
+                                ? "#f0f7ff"
+                                : "#fff",
+                            height: 56,
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <FormControlLabel
+                            value={opt.optionText}
+                            control={<Radio color="primary" />}
+                            label={
+                              <Typography
+                                fontWeight={500}
+                                noWrap
+                                sx={{
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                  width: "100%",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {opt.optionText}
+                              </Typography>
+                            }
+                            className="w-full"
+                          />
+                        </Box>
+                      ))}
                     </RadioGroup>
                   </Box>
 
@@ -787,7 +817,7 @@ const TestMultipleChoice = () => {
                         variant="contained"
                         color="primary"
                         onClick={handleNext}
-                        disabled={current === questions.data.data.length - 1}
+                        disabled={current === questions?.data.length - 1}
                         sx={{ textTransform: "none", width: 100 }}
                       >
                         Next
@@ -843,7 +873,7 @@ const TestMultipleChoice = () => {
                     className="grid grid-cols-5 gap-2 mb-3"
                     sx={{ flexShrink: 0 }}
                   >
-                    {questions.data.data.map((q, idx) => {
+                    {questions?.data.map((q, idx) => {
                       let color = "#e5e7eb";
                       if (answersP[idx] !== null) color = "#22c55e";
                       if (idx === current) color = "#2563eb";

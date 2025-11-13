@@ -36,6 +36,7 @@ const sampleQuestions = [
 
 const MultilExerciseScreen = ({ navigation, route }) => {
   const { testId } = route.params;
+  const user = useSelector((state) => state.auth.user);
 
   const [questions, setQuestions] = useState(sampleQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -57,16 +58,30 @@ const MultilExerciseScreen = ({ navigation, route }) => {
       const res = await testApi.getQuestionByTestId(testId);
       setQuestions(res.data);
 
+      let resAttempt;
       try {
-        const resStartAttempt = await testApi.startTestAttempt(testId, 10000);
-        console.log("Started test attempt:", resStartAttempt);
-        setAttempt(resStartAttempt.data);
-
-        const now = new Date();
-        const isoString = now.toISOString();
-        setDate(isoString);
+        resAttempt = await testApi.getAttemptByTestAndUser({
+          testId,
+          userId: user._id,
+        });
+        console.log("Loaded existing attempt:", resAttempt);
+        setAttempt(resAttempt.data);
       } catch (error) {
         console.log("No attempt info found:", error);
+      }
+
+      if (!resAttempt && !resAttempt.data && res.data.length === 0) {
+        try {
+          const resStartAttempt = await testApi.startTestAttempt(testId, 10000);
+          console.log("Started test attempt:", resStartAttempt);
+          setAttempt(resStartAttempt.data);
+
+          const now = new Date();
+          const isoString = now.toISOString();
+          setDate(isoString);
+        } catch (error) {
+          console.log("No attempt info found:", error);
+        }
       }
     } catch (error) {
       console.error("Error loading test:", error);

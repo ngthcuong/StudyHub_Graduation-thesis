@@ -106,6 +106,19 @@ const findCustomTestAttemptsByUser = async (userId) => {
   }
 };
 
+const deleteAttemptById = async (id) => {
+  try {
+    const deletedAttempt = await TestAttempt.findByIdAndDelete(id);
+    if (!deletedAttempt) {
+      throw new Error("Attempt not found");
+    }
+    return deletedAttempt;
+  } catch (error) {
+    console.error("Error deleting attempt:", error);
+    throw new Error("Failed to delete attempt");
+  }
+};
+
 module.exports = {
   createAttempt,
   findAttemptById,
@@ -116,4 +129,5 @@ module.exports = {
   findAttemptByUserAndPool,
   findAttemptsByTestPool,
   findCustomTestAttemptsByUser,
+  deleteAttemptById,
 };

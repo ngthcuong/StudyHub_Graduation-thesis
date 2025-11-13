@@ -55,8 +55,8 @@ const TestList = () => {
     try {
       setIsLoading(true);
       const res = await getAttemptDetailByUser().unwrap();
-      console.log("Fetched tests:", res);
-      setTests(res);
+      const filteredTests = res.data.filter((test) => test.maxAttempts === 3);
+      setTests({ data: filteredTests });
     } catch (error) {
       if (error.status === 404) {
         setTests({ data: [], total: 0 });
