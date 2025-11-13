@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
 import SubmittingTestLoader from "../../components/SubmittingTestLoader";
+import { useSelector } from "react-redux";
 
 const sampleQuestions = [
   {
@@ -56,16 +57,17 @@ const MultilExerciseScreen = ({ navigation, route }) => {
   const start = async () => {
     try {
       const res = await testApi.getQuestionByTestId(testId);
-      setQuestions(res.data);
+      setQuestions(res?.data);
 
       let resAttempt;
+      console.log("Fetching existing attempt for user:", user?._id, testId);
       try {
-        resAttempt = await testApi.getAttemptByTestAndUser({
-          testId,
-          userId: user._id,
-        });
+        resAttempt = await testApi.getAttemptByTestAndUser(testId, user?._id);
         console.log("Loaded existing attempt:", resAttempt);
-        setAttempt(resAttempt.data);
+        setAttempt(resAttempt?.data[0]);
+        const now = new Date();
+        const isoString = now.toISOString();
+        setDate(isoString);
       } catch (error) {
         console.log("No attempt info found:", error);
       }

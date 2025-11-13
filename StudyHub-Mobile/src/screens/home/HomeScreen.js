@@ -46,7 +46,6 @@ const HomeScreen = ({ navigation }) => {
 
       const res = await studyApi.getStudyStats(currentYear, currentMonth);
       setStats(res?.summary);
-      console.log("Fetched study stats:", res);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     }
@@ -142,25 +141,25 @@ const HomeScreen = ({ navigation }) => {
           <StatCard
             icon="book"
             title="Completed Lessons"
-            value={`${stats?.completedLessons} Lessons`}
+            value={`${stats?.completedLessons ?? 0} Lessons`}
             color="#3B82F6"
           />
           <StatCard
             icon="flame"
             title="Current Streak"
-            value={`${stats?.currentStreak} days`}
+            value={`${stats?.currentStreak ?? 0} days`}
             color="#F59E0B"
           />
           <StatCard
             icon="trophy"
             title="Longest Streak"
-            value={`${stats?.longestStreak} days`}
+            value={`${stats?.longestStreak ?? 0} days`}
             color="#10B981"
           />
           <StatCard
             icon="time"
             title="Study Time"
-            value={`${formatSeconds(stats?.studyTimeThisMonth)}`}
+            value={`${formatSeconds(stats?.studyTimeThisMonth ?? 0)}`}
             color="#8B5CF6"
           />
         </View>

@@ -94,7 +94,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
     <TouchableOpacity
       style={styles.lessonItem}
       onPress={() =>
-        navigation.navigate("CourseVideo", {
+        navigation.navigate("CourseVideoSeriesList", {
           courseId,
           lesson,
         })

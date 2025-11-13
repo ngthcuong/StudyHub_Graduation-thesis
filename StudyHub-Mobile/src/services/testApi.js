@@ -155,6 +155,7 @@ export const testApi = {
   },
 
   getAttemptByTestAndUser: async (testId, userId) => {
+    console.log("Fetching attempt for testId:", testId, "and userId:", userId);
     const response = await api.get(`/attempts/test/${testId}/user/${userId}`);
     return response.data;
   },

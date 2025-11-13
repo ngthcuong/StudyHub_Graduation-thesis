@@ -28,26 +28,6 @@ const CourseTestScreen = ({ navigation, route }) => {
     loadTests();
   }, []);
 
-  // Map dữ liệu backend
-  const mapTestFromApi = (apiTest) => {
-    const test = apiTest?.testId;
-    return {
-      id: apiTest._id,
-      title: test?.title || "Untitled Test",
-      description: test?.description || "No description available.",
-      duration: test?.durationMin || 0,
-      totalQuestions: test?.numQuestions || 0,
-      passingScore: test?.passingScore || 7,
-      difficulty: test?.skill || "Unknown",
-      category: test?.examType || "Unknown",
-      attempts: apiTest?.attemptNumber || 0,
-      maxAttempts: apiTest?.maxAttempts || 3,
-      score: apiTest?.score || 0,
-      isCompleted: apiTest?.isPassed || false,
-      createdAt: apiTest?.createdAt,
-    };
-  };
-
   const loadTests = async () => {
     try {
       setLoading(true);
