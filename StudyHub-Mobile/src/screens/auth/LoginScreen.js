@@ -31,10 +31,8 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       const resultAction = await dispatch(loginUser({ email, password }));
-
       if (loginUser.fulfilled.match(resultAction)) {
         const data = resultAction.payload;
-
         // navigation.replace("Home");
       } else {
         Alert.alert(

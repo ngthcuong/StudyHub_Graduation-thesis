@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { courseApi } from "../../services/courseApi";
-import { getMockCourseById } from "../../mock";
+import { testApi } from "../../services/testApi";
 
 const CourseDetailScreen = ({ navigation, route }) => {
   const { courseId } = route.params;
@@ -18,7 +18,6 @@ const CourseDetailScreen = ({ navigation, route }) => {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [enrolled, setEnrolled] = useState(false);
 
   useEffect(() => {
     loadCourseDetails();
@@ -27,15 +26,27 @@ const CourseDetailScreen = ({ navigation, route }) => {
   const loadCourseDetails = async () => {
     try {
       setLoading(true);
-      // Sử dụng mock data thay vì API calls
-      const mockCourse = getMockCourseById(courseId);
+      const res = await courseApi.getGrammarCoursesById(courseId);
+      try {
+        const updatedLessons = await populateExercises(res.data);
 
-      if (mockCourse) {
-        setCourse(mockCourse);
-        setLessons(mockCourse.lessons || []);
-        setEnrolled(mockCourse.isEnrolled || false);
-      } else {
-        Alert.alert("Error", "Course not found");
+        const reorderedLessons = [...updatedLessons].sort((a, b) => {
+          // Nếu a.exercises[0] là last test, đưa xuống cuối
+          const aIsLast = a.exercises[0]?.isTheLastTest ? 1 : 0;
+          const bIsLast = b.exercises[0]?.isTheLastTest ? 1 : 0;
+          return aIsLast - bIsLast;
+        });
+
+        setLessons({ data: reorderedLessons });
+      } catch (error) {
+        console.error("Error populating exercises:", error);
+      }
+
+      try {
+        const resCourse = await courseApi.getCourseById(courseId);
+        setCourse(resCourse);
+      } catch (error) {
+        console.error("Error fetching grammar courses:", error);
       }
     } catch (error) {
       console.error("Error loading course details:", error);
@@ -45,29 +56,47 @@ const CourseDetailScreen = ({ navigation, route }) => {
     }
   };
 
+  const getTestById = async (testId) => {
+    // Thay bằng call thực tế tới API của bạn
+    const response = await testApi.getTestById(testId);
+    return response.data;
+  };
+
+  const populateExercises = async (lessons) => {
+    for (const lesson of lessons) {
+      if (lesson.exercises && lesson.exercises.length > 0) {
+        const populatedExercises = [];
+        for (const exercise of lesson.exercises) {
+          const testId = exercise._id || exercise; // lấy _id nếu là object
+          try {
+            const testDetail = await getTestById(testId);
+            populatedExercises.push(testDetail);
+          } catch (err) {
+            console.error(
+              `Failed to fetch test ${testId}:`,
+              err.response?.data || err.message
+            );
+          }
+        }
+        lesson.exercises = populatedExercises;
+      }
+    }
+    return lessons;
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await loadCourseDetails();
     setRefreshing(false);
   };
 
-  const handleEnroll = async () => {
-    try {
-      await courseApi.enrollCourse(courseId);
-      setEnrolled(true);
-      Alert.alert("Success", "Successfully enrolled in the course!");
-    } catch (error) {
-      Alert.alert("Error", "Failed to enroll in the course");
-    }
-  };
-
   const LessonItem = ({ lesson, index }) => (
     <TouchableOpacity
       style={styles.lessonItem}
       onPress={() =>
-        navigation.navigate("CourseVideo", {
+        navigation.navigate("CourseVideoSeriesList", {
           courseId,
-          lessonId: lesson.id,
+          lesson,
         })
       }
     >
@@ -77,7 +106,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
       <View style={styles.lessonContent}>
         <Text style={styles.lessonTitle}>{lesson.title}</Text>
         <View style={styles.lessonMeta}>
-          <Text style={styles.lessonDuration}>{lesson.duration || "N/A"}</Text>
+          {/* <Text style={styles.lessonDuration}>{15 || "N/A"}</Text> */}
           <View style={styles.lessonType}>
             <Ionicons
               name={
@@ -125,6 +154,8 @@ const CourseDetailScreen = ({ navigation, route }) => {
     );
   }
 
+  // console.log("Lessons data:", lessons);
+
   return (
     <ScrollView
       style={styles.container}
@@ -143,7 +174,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
         <View style={styles.courseMeta}>
           <View style={styles.metaItem}>
             <Ionicons name="time-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{course.duration || "N/A"}</Text>
+            <Text style={styles.metaText}>{course.durationHours || "N/A"}</Text>
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="people-outline" size={16} color="#6B7280" />
@@ -153,24 +184,11 @@ const CourseDetailScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.metaText}>{course.rating || "4.5"}</Text>
+            <Text style={styles.metaText}>{course.review || "4.5"}</Text>
           </View>
         </View>
 
         {/* Course Progress (if enrolled) */}
-        {enrolled && course.progress !== undefined && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>Course Progress</Text>
-              <Text style={styles.progressPercentage}>{course.progress}%</Text>
-            </View>
-            <View style={styles.progressBar}>
-              <View
-                style={[styles.progressFill, { width: `${course.progress}%` }]}
-              />
-            </View>
-          </View>
-        )}
       </View>
 
       {/* Course Statistics */}
@@ -179,22 +197,26 @@ const CourseDetailScreen = ({ navigation, route }) => {
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
             <Ionicons name="book-outline" size={24} color="#3B82F6" />
-            <Text style={styles.statNumber}>{course.lessons?.length || 0}</Text>
+            <Text style={styles.statNumber}>{lessons?.total || 0}</Text>
             <Text style={styles.statLabel}>Lessons</Text>
           </View>
           <View style={styles.statItem}>
             <Ionicons name="library-outline" size={24} color="#10B981" />
-            <Text style={styles.statNumber}>{course.vocabulary || 0}</Text>
+            <Text style={styles.statNumber}>
+              {lessons.data.flatMap((item) => item.parts).length || 0}
+            </Text>
             <Text style={styles.statLabel}>Vocabulary</Text>
           </View>
           <View style={styles.statItem}>
             <Ionicons name="document-text-outline" size={24} color="#F59E0B" />
-            <Text style={styles.statNumber}>{course.grammar || 0}</Text>
+            <Text style={styles.statNumber}>
+              {lessons.data.flatMap((item) => item.parts).length || 0}
+            </Text>
             <Text style={styles.statLabel}>Grammar Points</Text>
           </View>
           <View style={styles.statItem}>
             <Ionicons name="trophy-outline" size={24} color="#EF4444" />
-            <Text style={styles.statNumber}>{course.targetScore || "N/A"}</Text>
+            <Text style={styles.statNumber}>{"70%" || "N/A"}</Text>
             <Text style={styles.statLabel}>Target Score</Text>
           </View>
         </View>
@@ -210,10 +232,10 @@ const CourseDetailScreen = ({ navigation, route }) => {
 
       {/* Lessons */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Lessons ({lessons.length})</Text>
-        {lessons.length > 0 ? (
-          lessons.map((lesson, index) => (
-            <LessonItem key={lesson.id} lesson={lesson} index={index} />
+        <Text style={styles.sectionTitle}>Lessons ({lessons.data.length})</Text>
+        {lessons.data.length > 0 ? (
+          lessons.data.map((lesson, index) => (
+            <LessonItem key={lesson._id} lesson={lesson} index={index} />
           ))
         ) : (
           <View style={styles.emptyLessons}>
@@ -224,24 +246,6 @@ const CourseDetailScreen = ({ navigation, route }) => {
       </View>
 
       {/* Enroll Button */}
-      {!enrolled && (
-        <View style={styles.enrollSection}>
-          <TouchableOpacity style={styles.enrollButton} onPress={handleEnroll}>
-            <Text style={styles.enrollButtonText}>
-              {course.price ? `Enroll for $${course.price}` : "Enroll for Free"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {enrolled && (
-        <View style={styles.enrolledSection}>
-          <View style={styles.enrolledBadge}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={styles.enrolledText}>Enrolled</Text>
-          </View>
-        </View>
-      )}
     </ScrollView>
   );
 };

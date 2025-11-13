@@ -43,4 +43,7 @@ router.get(
 // PATCH /attempts/:attemptId
 router.patch("/:attemptId", attemptController.updateAttempt);
 
+// DELETE /attempts/:attemptId
+router.delete("/:attemptId", attemptController.deleteAttemptById);
+
 module.exports = router;

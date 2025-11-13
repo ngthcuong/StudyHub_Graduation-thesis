@@ -292,8 +292,9 @@ import { useNavigate } from "react-router-dom";
 const TestResultDisplay = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const attempt = location.state;
-  const { attemptId, analysisResult } = attempt;
+  const { attempt, analysisResult } = location.state || {};
+  console.log(attempt);
+  console.log("Attempt Data:", analysisResult);
   const [activeTab, setActiveTab] = useState("weakTopics"); // State để quản lý tab đang hoạt động
 
   if (!analysisResult) {
@@ -334,13 +335,13 @@ const TestResultDisplay = () => {
 
       {/* Header */}
       <header style={styles.header}>
-        <h1 style={styles.mainTitle}>{attemptId.testId.title}</h1>
+        <h1 style={styles.mainTitle}>{attempt?.attemptId.testId.title}</h1>
         <p style={styles.studentInfo}>
           <i
             className="fas fa-user-graduate"
             style={{ marginRight: "8px" }}
           ></i>
-          <strong>Student:</strong> {attemptId.userId.fullName}
+          <strong>Student:</strong> {attempt?.attemptId?.userId.fullName}
         </p>
       </header>
 
@@ -477,7 +478,7 @@ const TestResultDisplay = () => {
               <div>
                 <h3 style={styles.tabContentTitle}>Here's how to improve:</h3>
                 <ul style={styles.list}>
-                  {recommendations.map((rec, index) => (
+                  {recommendations?.map((rec, index) => (
                     <li key={index}>
                       <i
                         className="fas fa-check-circle"
@@ -494,69 +495,71 @@ const TestResultDisplay = () => {
       </section>
 
       {/* Personalized Plan */}
-      <section style={styles.card}>
-        <h2 style={styles.sectionTitle}>
-          <i
-            className="fas fa-calendar-alt"
-            style={{ marginRight: "10px" }}
-          ></i>
-          Personalized Study Plan
-        </h2>
-        {personalized_plan.weekly_goals.map((week, index) => (
-          <div key={index} style={styles.weekCard}>
-            <h3 style={styles.weekTitle}>
-              <i
-                className="fas fa-bookmark"
-                style={{ marginRight: "8px", color: "#17a2b8" }}
-              ></i>
-              Week {week.week}: {week.topic}
-            </h3>
-            <p style={styles.weekDescription}>
-              <strong>Description:</strong> {week.description}
-            </p>
-            <h4>
-              <i
-                className="fas fa-book-open"
-                style={{ marginRight: "8px", color: "#6f42c1" }}
-              ></i>
-              Study Methods:
-            </h4>
-            <ul style={styles.list}>
-              {week.study_methods.map((method, i) => (
-                <li key={i}>
-                  <i
-                    className="fas fa-caret-right"
-                    style={{ marginRight: "8px", color: "#007bff" }}
-                  ></i>
-                  {method}
-                </li>
-              ))}
-            </ul>
-            <h4>
-              <i
-                className="fas fa-atlas"
-                style={{ marginRight: "8px", color: "#fd7e14" }}
-              ></i>
-              Materials:
-            </h4>
-            <ul style={styles.list}>
-              {week.materials.map((material, i) => (
-                <li key={i}>
-                  <i
-                    className="fas fa-caret-right"
-                    style={{ marginRight: "8px", color: "#007bff" }}
-                  ></i>
-                  {material}
-                </li>
-              ))}
-            </ul>
-            <p style={styles.hours}>
-              <i className="fas fa-clock" style={{ marginRight: "8px" }}></i>
-              <strong>Estimated Time:</strong> {week.hours} hours
-            </p>
-          </div>
-        ))}
-      </section>
+      {activeTab === "recommendations" && (
+        <section style={styles.card}>
+          <h2 style={styles.sectionTitle}>
+            <i
+              className="fas fa-calendar-alt"
+              style={{ marginRight: "10px" }}
+            ></i>
+            Personalized Study Plan
+          </h2>
+          {personalized_plan?.weekly_goals?.map((week, index) => (
+            <div key={index} style={styles.weekCard}>
+              <h3 style={styles.weekTitle}>
+                <i
+                  className="fas fa-bookmark"
+                  style={{ marginRight: "8px", color: "#17a2b8" }}
+                ></i>
+                Week {week.week}: {week.topic}
+              </h3>
+              <p style={styles.weekDescription}>
+                <strong>Description:</strong> {week.description}
+              </p>
+              <h4>
+                <i
+                  className="fas fa-book-open"
+                  style={{ marginRight: "8px", color: "#6f42c1" }}
+                ></i>
+                Study Methods:
+              </h4>
+              <ul style={styles.list}>
+                {week.study_methods.map((method, i) => (
+                  <li key={i}>
+                    <i
+                      className="fas fa-caret-right"
+                      style={{ marginRight: "8px", color: "#007bff" }}
+                    ></i>
+                    {method}
+                  </li>
+                ))}
+              </ul>
+              <h4>
+                <i
+                  className="fas fa-atlas"
+                  style={{ marginRight: "8px", color: "#fd7e14" }}
+                ></i>
+                Materials:
+              </h4>
+              <ul style={styles.list}>
+                {week.materials.map((material, i) => (
+                  <li key={i}>
+                    <i
+                      className="fas fa-caret-right"
+                      style={{ marginRight: "8px", color: "#007bff" }}
+                    ></i>
+                    {material}
+                  </li>
+                ))}
+              </ul>
+              <p style={styles.hours}>
+                <i className="fas fa-clock" style={{ marginRight: "8px" }}></i>
+                <strong>Estimated Time:</strong> {week.hours} hours
+              </p>
+            </div>
+          ))}
+        </section>
+      )}
     </div>
   );
 };

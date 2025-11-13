@@ -79,7 +79,7 @@ const CourseLessson = () => {
         // 1. Lấy lessons
         const result = await getLessonsByCourseId(courseId).unwrap();
         setData(result.data); // cập nhật state, nhưng đừng dùng ngay
-
+        console.log("LESSONS FETCHED:", result.data);
         // 2. Set course data from query
         // if (courseData) {
         //   setCourse(courseData);
@@ -129,27 +129,44 @@ const CourseLessson = () => {
           .map((t) => t?.data)
           .filter(Boolean);
 
-        console.log("ALL TESTS:", allTests);
+        const sortedTests = allTests.sort((a, b) => {
+          if (a.isTheLastTest && !b.isTheLastTest) return 1; // a xuống cuối
+          if (!a.isTheLastTest && b.isTheLastTest) return -1; // b xuống cuối
+          return 0; // giữ nguyên thứ tự nếu cùng loại
+        });
+
+        console.log("ALL TESTS:", sortedTests);
 
         // Kiểm tra có test nào chưa pass không
         const allPassed =
           newLessons.length > 0 &&
-          allTests.slice(0, -1).every((test) => test.isPassed === true);
+          sortedTests.slice(0, -1).every((test) => test.isPassed === true);
 
         setFinalTest(allPassed);
         console.log("Tổng số test:", newLessons.length);
         console.log(
           "Số test đã pass:",
-          allTests.every((test) => test.isPassed === true)
+          sortedTests.every((test) => test.isPassed === true)
         );
         console.log(
           "Danh sách test:",
-          allTests.slice(0, -1).every((test) => test.isPassed === true)
+          sortedTests.slice(0, -1).every((test) => test.isPassed === true)
         );
         console.log("Đã pass hết chưa:", allPassed);
 
+        // xếp final xuống cuối
+        const sortedLessons = newLessons.sort((a, b) => {
+          const aIsLast = a.tests.some((t) => t.data.isTheLastTest);
+          const bIsLast = b.tests.some((t) => t.data.isTheLastTest);
+
+          // nếu a là last, đưa xuống sau => return 1
+          if (aIsLast && !bIsLast) return 1;
+          if (!aIsLast && bIsLast) return -1;
+          return 0; // giữ nguyên thứ tự nếu cả hai cùng loại
+        });
+
         // cập nhật lessons với thông tin isPassed
-        setLessonsWithTests(newLessons);
+        setLessonsWithTests(sortedLessons);
       } catch (error) {
         console.error("Failed to fetch lessons or tests:", error);
       }
@@ -186,7 +203,10 @@ const CourseLessson = () => {
 
     try {
       const result = await getPartById(lesson._id).unwrap();
-      setLessonPlay(result.data);
+      console.log("FETCHED LESSON:", result.data);
+      const processedLesson = processSingleLessonPart(result.data);
+      console.log("PROCESSED LESSON:", processedLesson);
+      setLessonPlay(processedLesson);
       setStartTime(Date.now()); // reset thời gian bắt đầu cho lesson mới
     } catch (error) {
       console.error("Failed to fetch part data:", error);
@@ -200,9 +220,12 @@ const CourseLessson = () => {
     const durationMs = end - startTime;
     let durationSeconds = durationMs / 1000;
 
+    console.log(lesson._id, " - Thời gian học (giây):", durationSeconds);
+
     try {
       const res = await logStudySession({
-        lessonId: lesson._id,
+        day: new Date().getDate(),
+        lessons: lesson._id,
         durationSeconds,
       }).unwrap();
       console.log("✅ Response from backend:", res);
@@ -242,7 +265,8 @@ const CourseLessson = () => {
       setCurrentLessonId(nextLesson._id);
       try {
         const result = await getPartById(nextLesson._id).unwrap();
-        setLessonPlay(result.data);
+        const processedLesson = processSingleLessonPart(result.data);
+        setLessonPlay(processedLesson);
         setStartTime(Date.now()); // reset thời gian cho bài mới
       } catch (error) {
         console.error("Failed to fetch next lesson:", error);
@@ -311,7 +335,47 @@ const CourseLessson = () => {
     return updatedLessons;
   };
 
+  function getYouTubeId(url) {
+    if (!url) return null;
+
+    // Regex này xử lý các dạng link:
+    // - youtube.com/watch?v=ID
+    // - youtu.be/ID
+    // - youtube.com/embed/ID
+    // - youtube.com/shorts/ID
+    // - có hoặc không có www, http/https và các tham số (query params)
+    const regExp =
+      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regExp);
+
+    return match ? match[1] : null;
+  }
+
+  function processSingleLessonPart(lessonPart) {
+    // Tạo một bản sao của object gốc để không thay đổi object cũ
+    // (Đây là "best practice" trong JavaScript)
+    let newLessonPart = { ...lessonPart };
+
+    // 1. Kiểm tra xem đây có phải là video và có videoUrl không
+    if (newLessonPart.contentType === "video" && newLessonPart.videoUrl) {
+      // 2. Lấy ID video bằng hàm helper
+      const videoId = getYouTubeId(newLessonPart.videoUrl);
+
+      // 3. Xây dựng link embed
+      const newEmbedUrl = videoId
+        ? `https://www.youtube-nocookie.com/embed/${videoId}`
+        : null; // Sẽ là null nếu link gốc bị lỗi
+
+      // 4. Gán lại videoUrl trong object MỚI
+      newLessonPart.videoUrl = newEmbedUrl;
+    }
+
+    // 5. Trả về object mới (dù đã thay đổi hay chưa)
+    return newLessonPart;
+  }
+
   console.log("LESSONS WITH TESTS:", lessonsWithTests);
+  console.log("LESSON PLAY:", lessonPlay);
 
   return (
     <div className="flex h-screen bg-white">
@@ -412,7 +476,7 @@ const CourseLessson = () => {
                             />
                           ) : (
                             <div className="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center">
-                              {lesson?.type === "video" ? (
+                              {lesson?.contentType === "video" ? (
                                 <VideoIcon
                                   sx={{ fontSize: 14, color: "gray" }}
                                 />
@@ -520,10 +584,40 @@ const CourseLessson = () => {
         {/* .Content Area */}
         <div className="flex-1  bg-gray-50 overflow-auto flex flex-col w-full ">
           <div className="lesson-viewer flex-1">
-            <div
-              className="lesson-container max-h-[100vh] overflow-y-auto p-4 bg-white rounded-lg shadow-sm"
-              dangerouslySetInnerHTML={{ __html: lessonPlay?.content }}
-            />
+            {lessonPlay?.contentType === "text" && (
+              <div
+                className="lesson-container max-h-[100vh] overflow-y-auto p-4 bg-white rounded-lg shadow-sm"
+                dangerouslySetInnerHTML={{
+                  __html: lessonPlay?.content,
+                }}
+              />
+            )}
+
+            {lessonPlay?.contentType === "video" && lessonPlay?.videoUrl ? (
+              <div className="video-container w-full h-full bg-black flex items-center justify-center">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  // Chỉ cần dùng trực tiếp vì URL đã được chuẩn hóa
+                  src={lessonPlay?.videoUrl}
+                  title="Nội dung Video Bài học"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="aspect-video"
+                  style={{ minHeight: "400px" }}
+                  onError={(e) => {
+                    e.target.parentNode.innerHTML = `
+          <div class='p-4 text-white text-center'>
+            Video không thể nhúng. 
+            <a href='${lessonPlay.videoUrl}' target='_blank' rel='noopener noreferrer' class='text-blue-400 underline'>
+              Mở video trên YouTube
+            </a>
+          </div>`;
+                  }}
+                ></iframe>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

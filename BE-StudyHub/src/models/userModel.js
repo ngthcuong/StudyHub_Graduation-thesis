@@ -1,6 +1,6 @@
 const User = require("../schemas/User");
 const TestAttempt = require("../schemas/TestAttempt");
-const StudyStats = require("../schemas/studyStats,js");
+const StudyStats = require("../schemas/studyStats.js");
 const Test = require("../schemas/Test");
 const Certificate = require("../schemas/Certificate");
 
