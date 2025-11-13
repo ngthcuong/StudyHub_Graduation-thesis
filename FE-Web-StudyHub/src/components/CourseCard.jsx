@@ -189,7 +189,7 @@ const CourseCard = ({ course, variant = "market" }) => {
               ${course.originalPrice}
             </Typography> */}
             <Typography variant="h6" className="!font-bold text-teal-600">
-              {course.cost}đ
+              {course.cost} VND
             </Typography>
           </div>
         )}
