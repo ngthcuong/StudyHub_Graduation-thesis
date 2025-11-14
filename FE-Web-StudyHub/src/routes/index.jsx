@@ -17,7 +17,6 @@ import CourseList from "../pages/course/CourseList";
 import CourseLessson from "../components/CourseLessson";
 import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
-import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
 import UserInfo from "../pages/home/UserInfo";
 
@@ -30,12 +29,12 @@ import AdminCertificate from "../pages/admin/Certificate";
 import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
 import AdminCourse from "../pages/admin/Course";
+import AdminUser from "../pages/admin/User";
 
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 import TestInformationCustom from "../pages/test/TestInformationCustom";
 
 import FillInBlankTest from "../pages/test/FillInBlankTest";
-import CourseRecommend from "../pages/course/CourseRecommend";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 
@@ -79,10 +78,6 @@ export const router = createBrowserRouter([
                 path: "profile",
                 element: <UserInfo />,
               },
-              {
-                path: "settings",
-                element: <Settings />,
-              },
             ],
           },
           {
@@ -106,6 +101,7 @@ export const router = createBrowserRouter([
                 element: <AdminReview />,
               },
               { path: "course", element: <AdminCourse /> },
+              { path: "user", element: <AdminUser /> },
             ],
           },
           {

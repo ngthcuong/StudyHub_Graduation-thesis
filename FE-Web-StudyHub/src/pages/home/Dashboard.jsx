@@ -22,21 +22,13 @@ export default function Dashboard() {
     }
   );
 
-  function normalizeTimeString(str) {
-    const match = str?.match(/(\d+)h\s*(\d+)m\s*(\d+)s/);
-    if (!match) return str; // không đúng format thì trả lại nguyên
+  function normalizeTimeString(seconds) {
+    if (typeof seconds !== "number" || isNaN(seconds)) return "0h 0m";
 
-    let hours = parseInt(match[1]);
-    let minutes = parseInt(match[2]);
-    let seconds = parseInt(match[3]);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
 
-    // Chuẩn hóa lại thời gian
-    minutes += Math.floor(seconds / 60);
-    seconds = seconds % 60;
-    hours += Math.floor(minutes / 60);
-    minutes = minutes % 60;
-
-    return `${hours}h ${minutes}m`; // bỏ giây luôn
+    return `${hours}h ${minutes}m`;
   }
 
   useEffect(() => {
@@ -69,7 +61,7 @@ export default function Dashboard() {
             <BookIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Completed Lessons</h3>
             <p className="text-lg font-bold text-gray-800">
-              {data?.data?.completedLessons || 0} Lessons
+              {data?.summary?.completedLessons || 0} Lessons
             </p>
           </div>
 
@@ -77,7 +69,7 @@ export default function Dashboard() {
             <CalendarMonthIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Current Streak</h3>
             <p className="text-lg font-bold text-gray-800">
-              {data?.data?.currentStreak || 0} days
+              {data?.summary?.currentStreak || 0} days
             </p>
           </div>
 
@@ -85,7 +77,7 @@ export default function Dashboard() {
             <StreamIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Longest Streak</h3>
             <p className="text-lg font-bold text-gray-800">
-              {data?.data?.longestStreak || 0} days
+              {data?.summary?.longestStreak || 0} days
             </p>
           </div>
 
@@ -93,7 +85,8 @@ export default function Dashboard() {
             <AccessTimeIcon className="mx-auto mb-2 text-blue-500" />
             <h3 className="text-sm text-gray-600">Study Time This Month</h3>
             <p className="text-lg font-bold text-gray-800">
-              {normalizeTimeString(data?.data?.studyTimeThisMonth) || "0h 0m"}
+              {normalizeTimeString(data?.summary?.studyTimeThisMonth) ||
+                "0h 0m"}
             </p>
           </div>
         </div>

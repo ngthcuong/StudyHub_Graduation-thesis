@@ -205,6 +205,38 @@ const getReviewsByUser = async (userId) => {
 };
 
 /**
+ * Kiểm tra xem user đã review khóa học này chưa
+ * @param {String} userId ID của user
+ * @param {String} courseId ID của khóa học
+ * @returns {Object|null} Review nếu đã tồn tại, null nếu chưa
+ */
+const getUserReviewForCourse = async (userId, courseId) => {
+  try {
+    const review = await Review.findOne({ userId, courseId })
+      .populate({
+        path: "userId",
+        select: "fullName email",
+        options: { lean: true },
+      })
+      .lean();
+
+    if (!review) return null;
+
+    // Transform userId to user
+    const transformedReview = {
+      ...review,
+      user: review.userId,
+      userId: undefined,
+    };
+
+    return transformedReview;
+  } catch (error) {
+    console.error("Error getting user review for course:", error);
+    throw new Error("Failed to get user review for course");
+  }
+};
+
+/**
  * Tính rating trung bình của một khóa học
  * @param {String} courseId ID của khóa học
  * @returns {Object} Thông tin rating trung bình và số lượng reviews
@@ -339,6 +371,7 @@ module.exports = {
   updateReview,
   deleteReview,
   getReviewsByUser,
+  getUserReviewForCourse,
   getCourseRatingStats,
   getAdminReviewStats,
   getAllReviews,

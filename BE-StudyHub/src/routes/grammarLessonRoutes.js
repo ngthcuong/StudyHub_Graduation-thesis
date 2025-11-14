@@ -38,4 +38,11 @@ router.get("/course/:courseId", grammarLessonController.getLessonsByCourseId);
 // 7. Lấy part theo partId (công khai)
 router.get("/parts/:partId", grammarLessonController.getPartByIdController);
 
+// 8. Thêm test vào lesson (chỉ Admin)
+router.post(
+  "/:lessonId/tests",
+  verifyToken,
+  grammarLessonController.addTestToLesson
+);
+
 module.exports = router;

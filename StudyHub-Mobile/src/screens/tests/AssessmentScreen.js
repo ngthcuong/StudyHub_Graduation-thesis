@@ -13,6 +13,7 @@ import { testApi } from "../../services/testApi";
 
 const AssessmentScreen = ({ navigation, route }) => {
   const { testId } = route.params;
+
   const [test, setTest] = useState(null);
   const [attemptInfo, setAttemptInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -132,11 +133,15 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="repeat-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Attempts:</Text>
           <Text style={styles.infoValue}>
-            {attemptInfo
-              ? `${attemptInfo?.attemptNumber || 0}/${
-                  attemptInfo?.maxAttempts || 3
-                }`
-              : "0/3"}
+            <Ionicons
+              name="infinite"
+              size={32}
+              color={
+                attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts
+                  ? "black"
+                  : "gray"
+              }
+            />
           </Text>
         </View>
       </View>

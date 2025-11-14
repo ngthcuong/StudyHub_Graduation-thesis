@@ -1,4 +1,4 @@
-const GrammarLesson = require("../schemas/grammarLesson");
+const GrammarLesson = require("../schemas/GrammarLesson");
 
 // Chỉ nhận vào dữ liệu và trả về promise
 const createLesson = async (lessonData) => {
@@ -30,8 +30,8 @@ const updateLesson = async (id, updateData) => {
   });
 };
 
-const deleteLesson = async (slug) => {
-  return GrammarLesson.findOneAndDelete({ slug });
+const deleteLesson = async (id) => {
+  return GrammarLesson.findOneAndDelete({ _id: id });
 };
 
 const getLessonsByCourseId = async (courseId) => {
@@ -67,6 +67,22 @@ const getPartById = async (partId) => {
   }
 };
 
+const addTestToLesson = async (lessonId, testId) => {
+  try {
+    // Thêm testId vào exercises array của grammar lesson
+    const updatedLesson = await GrammarLesson.findByIdAndUpdate(
+      lessonId,
+      { $addToSet: { exercises: testId } }, // $addToSet để tránh duplicate
+      { new: true, runValidators: true }
+    ).populate("exercises", "title description");
+
+    return updatedLesson;
+  } catch (error) {
+    console.error("Error adding test to lesson:", error);
+    throw new Error("Failed to add test to lesson");
+  }
+};
+
 module.exports = {
   createLesson,
   getAllLessons,
@@ -75,4 +91,5 @@ module.exports = {
   deleteLesson,
   getLessonsByCourseId,
   getPartById,
+  addTestToLesson,
 };

@@ -19,13 +19,23 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import ModalCreateReview from "./ModalCreateReview";
 import CourseRatingSummary from "./CourseRatingSummary";
+import { useGetUserReviewForCourseQuery } from "../services/reviewApi";
 
 const CourseCard = ({ course, variant = "market" }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+  const user = useSelector((state) => state.auth.user);
+
+  // Fetch user's review for this course (only if user is logged in and it's owned variant)
+  const { data: userReviewData, refetch: refetchUserReview } =
+    useGetUserReviewForCourseQuery(course._id || course.id, {
+      skip: !user?._id || variant !== "owned",
+    });
 
   const handleMenuClick = (event) => {
     event.stopPropagation();
@@ -51,6 +61,10 @@ const CourseCard = ({ course, variant = "market" }) => {
   const handleReviewModalClose = (event) => {
     event?.stopPropagation();
     setReviewModalOpen(false);
+    // Refetch user review data to update the UI
+    if (variant === "owned" && user?._id) {
+      refetchUserReview();
+    }
   };
 
   const handleCardClick = () => {
@@ -63,7 +77,7 @@ const CourseCard = ({ course, variant = "market" }) => {
   return (
     <Card
       key={course.id}
-      className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
+      className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden w-77"
       onClick={handleCardClick}
     >
       {/* Course Image */}
@@ -227,7 +241,9 @@ const CourseCard = ({ course, variant = "market" }) => {
           <ListItemIcon>
             <RateReview fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Rate Course</ListItemText>
+          <ListItemText>
+            {userReviewData?.hasReview ? "Update Review" : "Write Review"}
+          </ListItemText>
         </MenuItem>
 
         <MenuItem
@@ -263,7 +279,10 @@ const CourseCard = ({ course, variant = "market" }) => {
           id: course._id,
           name: course.title,
         }}
-        isUpdate={false}
+        existingReview={
+          userReviewData?.hasReview ? userReviewData.review : null
+        }
+        isUpdate={userReviewData?.hasReview || false}
       />
     </Card>
   );

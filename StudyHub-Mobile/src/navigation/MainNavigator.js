@@ -12,6 +12,9 @@ import MyCoursesScreen from "../screens/courses/MyCoursesScreen";
 import CoursesListScreen from "../screens/courses/CoursesListScreen";
 import CourseDetailScreen from "../screens/courses/CourseDetailScreen";
 import CourseVideoScreen from "../screens/courses/CourseVideoScreen";
+import CoursePurchaseScreen from "../screens/courses/CoursePurchaseScreen";
+import CourseTestScreen from "../screens/courses/CourseTestSrceen";
+import CourseVideoSeriesListScreen from "../screens/courses/CourseVideoSeriesListScreen";
 
 // Tests Stack
 import AssessmentListScreen from "../screens/tests/AssessmentListScreen";
@@ -31,6 +34,10 @@ import CertificateDetailScreen from "../screens/Certificate/CertificateDetailMod
 // History Test Screen
 import HistoryTestResultScreen from "../screens/tests/HistoryTestResultScreen";
 import CompletedTestsScreen from "../screens/tests/CompletedTestsScreen";
+import MultilExerciseCustomScreen from "../screens/tests/MultilExerciseCustomScreen";
+
+// custom navigators
+import AssessmentCustomScreen from "../screens/tests/AssessmentCustomScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -78,6 +85,21 @@ const CoursesStackNavigator = () => (
       component={CourseVideoScreen}
       options={{ title: "Lesson" }}
     />
+    <CoursesStack.Screen
+      name="CoursePurchase"
+      component={CoursePurchaseScreen}
+      options={{ title: "Course Purchase" }}
+    />
+    <CoursesStack.Screen
+      name="CourseTest"
+      component={CourseTestScreen}
+      options={{ title: "Course Test" }}
+    />
+    <CoursesStack.Screen
+      name="CourseVideoSeriesList"
+      component={CourseVideoSeriesListScreen}
+      options={{ title: "Video Series" }}
+    />
   </CoursesStack.Navigator>
 );
 
@@ -105,9 +127,19 @@ const TestsStackNavigator = () => (
       options={{ title: "Multiple Choice" }}
     />
     <TestsStack.Screen
+      name="MultilExerciseCustom"
+      component={MultilExerciseCustomScreen}
+      options={{ title: "Multiple Choice Custom" }}
+    />
+    <TestsStack.Screen
       name="TestResults"
       component={TestResultsScreen}
       options={{ title: "Test Results" }}
+    />
+    <TestsStack.Screen
+      name="AssessmentCustom"
+      component={AssessmentCustomScreen}
+      options={{ title: "Assessment Custom" }}
     />
   </TestsStack.Navigator>
 );

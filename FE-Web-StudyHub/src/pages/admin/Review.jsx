@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Card,
@@ -46,7 +46,7 @@ const Review = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // Fetch reviews data from API
   const {
@@ -87,6 +87,11 @@ const Review = () => {
     5: 0,
   };
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterRating, startDate, endDate]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -96,6 +101,7 @@ const Review = () => {
     setFilterRating("all");
     setStartDate(null);
     setEndDate(null);
+    setPage(1); // Reset to first page when clearing filters
   };
 
   const filteredReviews = reviews.filter((review) => {
@@ -440,23 +446,62 @@ const Review = () => {
 
       {/* Review Cards List */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
-        {paginatedReviews.map((review) => (
+        {filteredReviews.length === 0 ? (
           <Card
-            key={review.id}
             sx={{
               borderRadius: 3,
               boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-              "&:hover": {
-                boxShadow:
-                  "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-              },
+              textAlign: "center",
             }}
           >
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <CardContent sx={{ p: 6 }}>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                No Reviews Found
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {searchTerm || filterRating !== "all" || startDate || endDate
+                  ? "Try adjusting your search criteria or filters"
+                  : "No reviews have been submitted yet"}
+              </Typography>
+            </CardContent>
+          </Card>
+        ) : (
+          paginatedReviews.map((review) => (
+            <Card
+              key={review.id}
+              sx={{
+                borderRadius: 3,
+                boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+                "&:hover": {
+                  boxShadow:
+                    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Rating:
+                    </Typography>
+                    <Rating value={review.rating} readOnly size="small" />
+                  </Box>
+                </Box>
+
                 <Box
                   sx={{
+                    mb: 1,
                     display: "flex",
+                    alignItems: "baseline",
                     gap: 1,
                   }}
                 >
@@ -465,79 +510,117 @@ const Review = () => {
                     color="text.secondary"
                     sx={{ mb: 0.5 }}
                   >
-                    Rating:
+                    Course Name:
                   </Typography>
-                  <Rating value={review.rating} readOnly size="small" />
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {review.courseName}
+                  </Typography>
                 </Box>
-              </Box>
 
-              <Box
-                sx={{ mb: 1, display: "flex", alignItems: "baseline", gap: 1 }}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 0.5 }}
-                >
-                  Course Name:
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {review.courseName}
-                </Typography>
-              </Box>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      mr: 2,
+                      bgcolor: "#1976d2",
+                    }}
+                  >
+                    {review.reviewerName.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {review.reviewerName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {review.reviewDate.split("-").reverse().join("-")}
+                    </Typography>
+                  </Box>
+                </Box>
 
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <Avatar
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    mr: 2,
-                    bgcolor: "#1976d2",
-                  }}
-                >
-                  {review.reviewerName.charAt(0)}
-                </Avatar>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {review.reviewerName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {review.reviewDate.split("-").reverse().join("-")}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {review.content}
                   </Typography>
                 </Box>
-              </Box>
-
-              <Box>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                  }}
-                >
-                  {review.content}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </Box>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handleChangePage}
-            color="primary"
-            size="large"
-          />
-        </Box>
+      {filteredReviews.length > 0 && (
+        <Card
+          sx={{
+            borderRadius: 3,
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            mt: 3,
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexDirection: { xs: "column", md: "row" },
+                gap: 2,
+              }}
+            >
+              {/* Left side - Items per page selector */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Items per page:
+                </Typography>
+                <FormControl size="small">
+                  <Select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(e.target.value);
+                      setPage(1); // Reset to first page when changing items per page
+                    }}
+                    sx={{ minWidth: 70 }}
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={15}>15</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {/* Right side - Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handleChangePage}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                />
+              )}
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
       {/* Review Detail Dialog */}

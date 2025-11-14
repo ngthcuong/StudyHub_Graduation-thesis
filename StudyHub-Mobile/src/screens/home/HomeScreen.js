@@ -9,18 +9,13 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
+import { studyApi } from "../../services/studyApi";
 import { courseApi } from "../../services/courseApi";
-import { testApi } from "../../services/testApi";
 import { mockMyCourses, mockTests, mockUser } from "../../mock";
 
 const HomeScreen = ({ navigation }) => {
   const { user } = useSelector((state) => state.auth);
-  const [stats, setStats] = useState({
-    completedLessons: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    totalStudyTime: 0,
-  });
+  const [stats, setStats] = useState({});
   const [recentCourses, setRecentCourses] = useState([]);
   const [upcomingTests, setUpcomingTests] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,17 +32,30 @@ const HomeScreen = ({ navigation }) => {
         mockTests.filter((test) => test.isAvailable).slice(0, 3)
       );
 
-      // Sử dụng mock user stats
-      setStats({
-        completedLessons: mockUser.stats.totalCourses * 4, // Giả sử mỗi course có 4 lessons
-        currentStreak: mockUser.stats.studyStreak,
-        longestStreak: 12, // Mock data
-        totalStudyTime: mockUser.stats.totalStudyTime,
-      });
+      const resCourses = await courseApi.getMyCourses(user?._id);
+      console.log("Fetched recent courses:", resCourses);
+      setRecentCourses(resCourses?.courses);
+      // Fetch recent courses from API
+      const now = new Date();
+
+      // Lấy năm (4 chữ số)
+      const currentYear = now.getFullYear(); // Ví dụ: 2025
+
+      // Lấy tháng (0-11, nên cần +1)
+      const currentMonth = now.getMonth() + 1;
+
+      const res = await studyApi.getStudyStats(currentYear, currentMonth);
+      setStats(res?.summary);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     }
   };
+
+  function formatSeconds(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+  }
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -133,25 +141,25 @@ const HomeScreen = ({ navigation }) => {
           <StatCard
             icon="book"
             title="Completed Lessons"
-            value={`${stats.completedLessons} Lessons`}
+            value={`${stats?.completedLessons ?? 0} Lessons`}
             color="#3B82F6"
           />
           <StatCard
             icon="flame"
             title="Current Streak"
-            value={`${stats.currentStreak} days`}
+            value={`${stats?.currentStreak ?? 0} days`}
             color="#F59E0B"
           />
           <StatCard
             icon="trophy"
             title="Longest Streak"
-            value={`${stats.longestStreak} days`}
+            value={`${stats?.longestStreak ?? 0} days`}
             color="#10B981"
           />
           <StatCard
             icon="time"
             title="Study Time"
-            value={`${stats.totalStudyTime} hours`}
+            value={`${formatSeconds(stats?.studyTimeThisMonth ?? 0)}`}
             color="#8B5CF6"
           />
         </View>
@@ -165,9 +173,9 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
-        {recentCourses.length > 0 ? (
-          recentCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
+        {recentCourses?.length > 0 ? (
+          recentCourses?.map((course) => (
+            <CourseCard key={course._id} course={course} />
           ))
         ) : (
           <View style={styles.emptyState}>
@@ -184,7 +192,7 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       {/* Upcoming Tests */}
-      <View style={styles.section}>
+      {/* <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Upcoming Tests</Text>
           <TouchableOpacity onPress={() => navigation.navigate("Tests")}>
@@ -199,7 +207,7 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.emptyStateText}>No upcoming tests</Text>
           </View>
         )}
-      </View>
+      </View> */}
     </ScrollView>
   );
 };

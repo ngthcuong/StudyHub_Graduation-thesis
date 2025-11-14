@@ -57,6 +57,15 @@ export const reviewApi = rootApi.injectEndpoints({
       providesTags: ["Review", "Course", "User"],
     }),
 
+    // Kiểm tra xem user đã đánh giá khóa học này chưa
+    getUserReviewForCourse: builder.query({
+      query: (courseId) => ({
+        url: `/reviews/course/${courseId}/user-review`,
+        method: "GET",
+      }),
+      providesTags: ["Review", "Course"],
+    }),
+
     // Lấy đánh giá theo ID
     getReviewById: builder.query({
       query: (reviewId) => ({
@@ -94,6 +103,7 @@ export const {
   useGetAdminReviewStatsQuery,
   useGetAllReviewsQuery,
   useGetReviewsByUserQuery,
+  useGetUserReviewForCourseQuery,
   useGetReviewByIdQuery,
   useUpdateReviewMutation,
   useDeleteReviewMutation,

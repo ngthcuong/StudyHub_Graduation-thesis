@@ -18,6 +18,8 @@ const {
   getUserByEmail,
   updateUserById,
   getAllUsers,
+  getUsersWithStats,
+  getUserDetailWithCourses,
 } = require("../controllers/userController");
 
 router.get("/profile", verifyToken, removePasswordFromResponse, getUserProfile);
@@ -60,6 +62,17 @@ router.get(
   requireAdmin,
   removePasswordFromResponse,
   getAllUsers
+);
+
+// Get all users with statistics for admin management
+router.get("/admin/stats", verifyToken, requireAdmin, getUsersWithStats);
+
+// Get user detail with courses and custom tests for admin
+router.get(
+  "/admin/:userId/detail",
+  verifyToken,
+  requireAdmin,
+  getUserDetailWithCourses
 );
 
 module.exports = router;

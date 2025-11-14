@@ -87,6 +87,7 @@ const TestInformation = () => {
             userId: user._id,
             testId,
           }).unwrap();
+
           setHistory(res.data);
         } catch (error) {
           console.error("Failed to fetch attempt detail:", error);
@@ -560,7 +561,10 @@ const TestInformation = () => {
                       variant="outlined"
                       onClick={() =>
                         navigate(`/attempt/${attempt._id}`, {
-                          state: attempt,
+                          state: {
+                            attempt: attempt,
+                            analysisResult: attempt.analysisResult,
+                          },
                         })
                       }
                       className=""
