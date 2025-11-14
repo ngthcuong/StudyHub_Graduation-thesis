@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import {
   View,
   Text,
@@ -9,15 +8,34 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { testApi } from "../../services/testApi";
 
-const AssessmentScreen = ({ navigation, route }) => {
-  const { testId } = route.params;
+// Fake API
+const fakeApi = {
+  getTest: async (testId, userId) => {
+    // Giả lập delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return {
+      test: {
+        _id: testId,
+        title: "TOEIC Practice Test",
+        description: "This is a mock TOEIC test for practice.",
+        durationMin: 30,
+        numQuestions: 20,
+        passingScore: 70,
+      },
+      attemptInfo: {
+        attemptNumber: 1,
+        maxAttempts: 3,
+      },
+    };
+  },
+};
 
+const AssessmentCustomScreen = ({ navigation, route }) => {
+  const { testId, attemptDetail } = route.params;
   const [test, setTest] = useState(null);
   const [attemptInfo, setAttemptInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     loadTest();
@@ -26,29 +44,10 @@ const AssessmentScreen = ({ navigation, route }) => {
   const loadTest = async () => {
     try {
       setLoading(true);
-      try {
-        // Gọi API attemptInfo trước
-        const res = await testApi.getAttemptInfo(user?._id, testId);
-        console.log("Found attempt info:", res);
-        setTest(res); // nếu thành công thì dùng res
-      } catch (error) {
-        if (error.response?.status === 404) {
-          // Nếu là 404 thì fallback sang getTestById
-          const response = await testApi.getTestById(testId);
-          console.log("Fetched test details:", response);
-          setTest(response.data);
-        } else {
-          // Các lỗi khác vẫn throw để nhảy xuống catch ngoài
-          throw error;
-        }
-      }
-
-      try {
-        const res = await testApi.getAttemptByTestAndUser(testId, user?._id);
-        setAttemptInfo(res.data[0]);
-      } catch (error) {
-        console.log("No attempt info found:", error);
-      }
+      console.log("Loading test with ID:", attemptDetail);
+      const res = await fakeApi.getTest(testId, "fakeUserId");
+      setTest(res.test);
+      setAttemptInfo(res.attemptInfo);
     } catch (error) {
       console.error("Error loading test:", error);
       Alert.alert("Error", "Failed to load test details");
@@ -65,7 +64,10 @@ const AssessmentScreen = ({ navigation, route }) => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Start",
-          onPress: () => navigation.navigate("MultilExercise", { testId }),
+          onPress: () =>
+            navigation.navigate("MultilExerciseCustom", {
+              attemptDetail: attemptDetail,
+            }),
         },
       ]
     );
@@ -95,11 +97,9 @@ const AssessmentScreen = ({ navigation, route }) => {
         <View style={styles.testIcon}>
           <Ionicons name="clipboard" size={60} color="#10B981" />
         </View>
-        <Text style={styles.testTitle}>
-          {test.title || test.testInfo.title}
-        </Text>
+        <Text style={styles.testTitle}>{attemptDetail.testId.title}</Text>
         <Text style={styles.testDescription}>
-          {test.description || test.testInfo.description}
+          {attemptDetail.testId.description}
         </Text>
       </View>
 
@@ -111,7 +111,7 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="time-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Duration:</Text>
           <Text style={styles.infoValue}>
-            {test.durationMin || test.testInfo.durationMin || "N/A"} minutes
+            {attemptDetail.testId.durationMin} minutes
           </Text>
         </View>
 
@@ -119,29 +119,25 @@ const AssessmentScreen = ({ navigation, route }) => {
           <Ionicons name="help-circle-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Questions:</Text>
           <Text style={styles.infoValue}>
-            {test.numQuestions || test.testInfo.numQuestions || 0} questions
+            {attemptDetail.testId.numQuestions} questions
           </Text>
         </View>
 
         <View style={styles.infoItem}>
           <Ionicons name="trophy-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Passing Score:</Text>
-          <Text style={styles.infoValue}>{test.passingScore || 70}%</Text>
+          <Text style={styles.infoValue}>
+            {attemptDetail.testId.passingScore * 10} %
+          </Text>
         </View>
 
         <View style={styles.infoItem}>
           <Ionicons name="repeat-outline" size={20} color="#6B7280" />
           <Text style={styles.infoLabel}>Attempts:</Text>
           <Text style={styles.infoValue}>
-            <Ionicons
-              name="infinite"
-              size={32}
-              color={
-                attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts
-                  ? "black"
-                  : "gray"
-              }
-            />
+            {attemptDetail
+              ? `${attemptDetail.attemptNumber}/${attemptDetail.maxAttempts}`
+              : "0/3"}
           </Text>
         </View>
       </View>
@@ -178,18 +174,15 @@ const AssessmentScreen = ({ navigation, route }) => {
       </View>
 
       {/* Start Button */}
-
       <View style={styles.actionSection}>
         <TouchableOpacity
           style={[
             styles.startButton,
-            // 3. Thay đổi style dựa trên trạng thái disabled
             attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts &&
               styles.startButtonDisabled,
           ]}
           onPress={handleStartTest}
-          // 2. Áp dụng thuộc tính disabled
-          disabled={attemptInfo?.attemptNumber >= attemptInfo?.maxAttempts}
+          disabled={attemptDetail?.attemptNumber >= attemptDetail?.maxAttempts}
         >
           <Ionicons name="play" size={20} color="#FFFFFF" />
           <Text style={styles.startButtonText}>Start Test</Text>
@@ -200,31 +193,21 @@ const AssessmentScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9FAFB",
-  },
+  container: { flex: 1, backgroundColor: "#F9FAFB" },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
   },
-  loadingText: {
-    fontSize: 16,
-    color: "#6B7280",
-  },
+  loadingText: { fontSize: 16, color: "#6B7280" },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
   },
-  errorText: {
-    fontSize: 18,
-    color: "#EF4444",
-    marginTop: 16,
-  },
+  errorText: { fontSize: 18, color: "#EF4444", marginTop: 16 },
   header: {
     backgroundColor: "#FFFFFF",
     padding: 20,
@@ -282,9 +265,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1F2937",
   },
-  instructionsList: {
-    marginTop: 8,
-  },
+  instructionsList: { marginTop: 8 },
   instructionItem: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -297,9 +278,7 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 20,
   },
-  actionSection: {
-    padding: 20,
-  },
+  actionSection: { padding: 20 },
   startButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -312,26 +291,14 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
     marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "bold",
   },
   startButtonDisabled: {
     backgroundColor: "#adb5bd",
     opacity: 0.7,
   },
-  startButtonText: {
-    color: "#FFFFFF",
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  limitText: {
-    marginTop: 10,
-    color: "red",
-    textAlign: "center",
-    fontSize: 14,
-  },
 });
 
-export default AssessmentScreen;
+export default AssessmentCustomScreen;

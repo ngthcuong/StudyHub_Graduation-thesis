@@ -23,6 +23,7 @@ import {
   useGetTestByIdMutation,
   useSubmitTestMutation,
 } from "../../services/testApi";
+import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
 
 // -------------------------------------------------------------------
 // MOCK DATA FIB
@@ -86,6 +87,7 @@ const FillInBlankTest = () => {
   const [createAttempt] = useCreateAttemptMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
   const [getQuestionsByAttemptId] = useGetQuestionsByAttemptIdMutation();
+  const [logStudySession] = useLogStudySessionMutation();
 
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -98,6 +100,7 @@ const FillInBlankTest = () => {
   const [attemptId, setAttemptId] = useState(null);
   const [test, setTest] = useState(null);
   const [submissionTipIndex, setSubmissionTipIndex] = useState(0);
+  const [day, setDay] = useState(null);
 
   const routeTestId = payloadForm?.testId;
 
@@ -128,6 +131,10 @@ const FillInBlankTest = () => {
           setTest(attemptDetail?.testId);
           setAttemptId(attemptDetail?._id);
           setLoading(false);
+
+          // lấy ngày hiện tại
+          const d = new Date().getDate();
+          setDay(d);
         } catch (error) {
           console.error("Error resuming existing attempt:", error);
         }
@@ -136,7 +143,6 @@ const FillInBlankTest = () => {
           setLoading(true);
 
           const attemptRes = await createAttempt({
-            testPoolId: "000000000000000000000000",
             testId: payloadForm?.testId,
             maxAttempts: 3,
           }).unwrap();
@@ -178,6 +184,9 @@ const FillInBlankTest = () => {
                 )
               );
               setLoading(false);
+              // lấy ngày hiện tại
+              const d = new Date().getDate();
+              setDay(d);
             } catch (error) {
               console.error("Error setting test data:", error);
             }
@@ -281,12 +290,27 @@ const FillInBlankTest = () => {
       }).unwrap();
 
       if (response) {
+        // const past = new Date(startTime);
+        // const now = new Date();
+
+        // const diffMs = now - past;
+
+        // const diffSeconds = Math.floor(diffMs / 1000);
+
+        // await logStudySession({
+        //   day,
+        //   exercises: attemptDetail?.testId?._id,
+        //   durationSeconds: diffSeconds,
+        // }).unwrap();
+
         navigate(`/test/${testId}/result`, {
           state: { resultData: response, formattedAnswers: formattedAnswers },
         });
       }
     } catch (error) {
       console.error("Error submitting test:", error);
+      alert("ERROR submitting test:", error.data?.message || error.message);
+      setIsSubmitting(false);
     }
 
     setIsSubmitting(false);

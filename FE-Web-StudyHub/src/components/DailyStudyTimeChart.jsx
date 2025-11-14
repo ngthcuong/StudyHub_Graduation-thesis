@@ -13,11 +13,16 @@ export default function DailyStudyTimeChart({ data }) {
     return <p className="text-center text-gray-500">Không có dữ liệu</p>;
   }
 
-  // ✨ Chuyển dữ liệu từ API → Recharts
-  const chartData = data.map((item) => ({
-    day: new Date(item.date).getDate().toString(),
-    studyTimeMinutes: Math.floor(item.studyTimeSeconds / 60),
-  }));
+  const chartData = Object.values(
+    data.reduce((acc, item) => {
+      const day = item.day.toString();
+      if (!acc[day]) {
+        acc[day] = { day, studyTimeMinutes: 0 };
+      }
+      acc[day].studyTimeMinutes += Math.floor(item.durationSeconds / 60);
+      return acc;
+    }, {})
+  );
 
   return (
     <div className="flex justify-center">

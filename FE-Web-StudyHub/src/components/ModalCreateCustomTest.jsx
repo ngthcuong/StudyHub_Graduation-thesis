@@ -287,10 +287,10 @@ export default function ModalCreateCustomTest({
     // Gọi API tạo Test với payload_DB
     let apiSuccess = false;
 
-    console.log(payload_form.questionType);
+    console.log(payload_form);
 
     try {
-      const response = await createTest(payload_DB);
+      const response = await createTest(payload_DB).unwrap();
       console.log("API Response:", response);
       apiSuccess = true;
       if (payload_form.questionType === "FIB") {
