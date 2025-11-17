@@ -341,6 +341,7 @@ const TestInformationCustom = () => {
                 fontSize: 18,
                 textTransform: "none",
                 mt: 1,
+                mb: 60,
               }}
               onClick={() => handleStartTest()}
             >

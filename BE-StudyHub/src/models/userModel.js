@@ -1,6 +1,7 @@
 const User = require("../schemas/User");
 const TestAttempt = require("../schemas/TestAttempt");
 const StudyStats = require("../schemas/studyStats.js");
+// const StudyStats = require("../schemas/studyStats");
 const Test = require("../schemas/Test");
 const Certificate = require("../schemas/Certificate");
 
@@ -93,13 +94,20 @@ const getUsersWithStats = async () => {
         const purchasedCoursesCount = user.courses ? user.courses.length : 0;
 
         // Get total study hours (sum of all purchased courses duration)
-        const totalStudyHours =
+        const totalStudyHoursOfCourses =
           user.courses?.reduce((total, course) => {
             return total + (course.durationHours || 0);
           }, 0) || 0;
 
         // Get completed lessons count (from StudyStats)
         const studyStats = await StudyStats.find({ userId: user._id });
+
+        // Hàm lấy thời gian học tổng từ studyStats
+        // Vì bạn chỉ có 1 record studyStats mỗi tháng:
+        const totalStudyHoursOfUser = studyStats[0]?.dailyStats.reduce(
+          (sum, day) => sum + (day.durationSeconds || 0),
+          0
+        );
         const completedLessonsCount = studyStats.reduce((total, stat) => {
           return (
             total + (stat.dailyStats?.filter((day) => day.lessons).length || 0)
@@ -130,8 +138,9 @@ const getUsersWithStats = async () => {
             completedLessonsCount,
             completedTestsCount: completedTestsCount + customTestsCount,
             customTestsCount,
-            totalStudyHours,
+            totalStudyHoursOfCourses,
             certificatesEarned,
+            totalStudyHoursOfUser,
           },
         };
       })

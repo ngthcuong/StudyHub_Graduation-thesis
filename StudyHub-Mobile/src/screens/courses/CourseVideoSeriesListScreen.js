@@ -370,6 +370,7 @@ const createStyles = (colors) =>
 
     // ⭐️ Nút làm bài tập (MỚI)
     exerciseButton: {
+      marginBottom: 60,
       backgroundColor: "#3B82F6", // Màu xanh dương
       shadowColor: "#3B82F6",
     },

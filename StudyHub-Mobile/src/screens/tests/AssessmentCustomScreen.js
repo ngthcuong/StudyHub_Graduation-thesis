@@ -288,6 +288,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     minWidth: 150,
+    marginBottom: 60,
   },
   startButtonText: {
     color: "#FFFFFF",

@@ -173,8 +173,8 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const questionTypes = [
     { value: "multiple_choice", label: "Multiple Choice" },
     { value: "fill_in_blank", label: "Fill in the Blank" },
-    { value: "rearrange", label: "Rearrange" },
-    { value: "essay", label: "Essay" },
+    // { value: "rearrange", label: "Rearrange" },
+    // { value: "essay", label: "Essay" },
   ];
 
   const examTypes = [

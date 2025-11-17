@@ -679,24 +679,27 @@ const TestResultsScreen = ({ navigation }) => {
           >
             View All Tests
           </Button>
-          <Button
-            mode="contained"
-            color={customColors.success} // Màu xanh lá cây
-            onPress={() =>
-              Alert.alert(
-                "Action",
-                "Start Learning Plan functionality triggered."
-              )
-            }
-            style={[
-              styles.actionButton,
-              { backgroundColor: customColors.success },
-            ]}
-            labelStyle={styles.actionButtonLabel}
-            icon="rocket"
-          >
-            Start Learning Plan
-          </Button>
+
+          {resultData.certificate && (
+            <Button
+              mode="contained"
+              color={customColors.success} // Màu xanh lá cây
+              onPress={() =>
+                navigation.navigate("Profile", {
+                  screen: "CertificateDetail",
+                  params: { item: resultData.certificate },
+                })
+              }
+              style={[
+                styles.actionButton,
+                { backgroundColor: customColors.success },
+              ]}
+              labelStyle={styles.actionButtonLabel}
+              icon="rocket"
+            >
+              View certificates obtained
+            </Button>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
