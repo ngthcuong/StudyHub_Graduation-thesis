@@ -76,17 +76,14 @@ const ModalCreateReview = ({
         content: reviewContent.trim(),
       };
 
-      let result;
       if (isUpdate && existingReview) {
-        result = await updateReview({
+        await updateReview({
           id: existingReview._id || existingReview.id,
           reviewData,
         }).unwrap();
       } else {
-        result = await createReview(reviewData).unwrap();
+        await createReview(reviewData).unwrap();
       }
-
-      console.log("Review operation result:", result);
 
       setSnackbar({
         open: true,
@@ -96,10 +93,7 @@ const ModalCreateReview = ({
         severity: "success",
       });
 
-      // Reset form và đóng modal sau khi thành công
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
+      handleClose();
     } catch (error) {
       console.error("Error submitting review:", error);
       setSnackbar({
@@ -320,7 +314,7 @@ const ModalCreateReview = ({
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           onClose={handleSnackbarClose}
