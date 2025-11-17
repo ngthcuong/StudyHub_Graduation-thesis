@@ -43,6 +43,7 @@ import {
 } from "../../services/courseApi";
 import { useGetMyCoursesMutation } from "../../services/grammarLessonApi";
 import { useGetUserReviewForCourseQuery } from "../../services/reviewApi";
+import { useCreatePaymentLinkMutation } from "../../services/paymentApi";
 import ModalCreateReview from "../../components/ModalCreateReview";
 
 const outcomes = [
@@ -72,6 +73,7 @@ const CourseDetail = () => {
   const [checkingOwnership, setCheckingOwnership] = React.useState(true);
   const [reviewModalOpen, setReviewModalOpen] = React.useState(false);
   const [existingReview, setExistingReview] = React.useState(null);
+  const [creatingPayment, setCreatingPayment] = React.useState(false);
 
   // Fetch course details using API
   // const {
@@ -83,6 +85,7 @@ const CourseDetail = () => {
   // });
   const [getCourseById] = useGetCourseByIdMutation();
   const [getMyCourses] = useGetMyCoursesMutation();
+  const [createPaymentLink] = useCreatePaymentLinkMutation();
 
   // Fetch user's review for this course
   const { data: userReviewData, refetch: refetchUserReview } =
@@ -152,6 +155,32 @@ const CourseDetail = () => {
     setExistingReview(null);
     // Refetch user review to update the UI
     refetchUserReview();
+  };
+
+  const handleBuyNow = async () => {
+    if (creatingPayment) return; // tránh nhấn nhiều lần
+    try {
+      const res = await createPaymentLink({
+        courseId: course?._id,
+        amount: 2000,
+        description: `${course?.title.slice(0, 25)}...`,
+      });
+
+      console.log("Payment link response:", res);
+
+      // Lấy link từ res.data.payOSLink
+      const paymentUrl = res.data?.payOSLink;
+      if (paymentUrl) {
+        // Chuyển hướng người dùng sang trang thanh toán
+        window.location.href = paymentUrl;
+      } else {
+        console.error("Payment link not found in response");
+      }
+    } catch (error) {
+      console.error("Error creating payment link:", error);
+    } finally {
+      setCreatingPayment(false);
+    }
   };
 
   // Loading state
@@ -347,8 +376,10 @@ const CourseDetail = () => {
                   }}
                   size="large"
                   onClick={() =>
-                    navigate("/course/payment", { state: { course } })
+                    // navigate("/course/payment", { state: { course } })
+                    handleBuyNow()
                   }
+                  disabled={creatingPayment}
                 >
                   Buy now
                 </Button>

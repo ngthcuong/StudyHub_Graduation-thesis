@@ -246,7 +246,7 @@ const CourseCard = ({ course, variant = "market" }) => {
           </ListItemText>
         </MenuItem>
 
-        <MenuItem
+        {/* <MenuItem
           onClick={(e) => {
             e.stopPropagation();
             handleDetailsClick(e);
@@ -256,7 +256,7 @@ const CourseCard = ({ course, variant = "market" }) => {
             <Info fontSize="small" />
           </ListItemIcon>
           <ListItemText>View Details</ListItemText>
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem
           onClick={(e) => {

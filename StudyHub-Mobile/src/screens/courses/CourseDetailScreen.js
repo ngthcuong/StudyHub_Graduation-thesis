@@ -11,13 +11,16 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { courseApi } from "../../services/courseApi";
 import { testApi } from "../../services/testApi";
+import { useSelector } from "react-redux";
 
 const CourseDetailScreen = ({ navigation, route }) => {
   const { courseId } = route.params;
+  const user = useSelector((state) => state.auth.user);
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isFullFinalTest, setIsFullFinalTest] = useState(null);
 
   useEffect(() => {
     loadCourseDetails();
@@ -37,7 +40,20 @@ const CourseDetailScreen = ({ navigation, route }) => {
           return aIsLast - bIsLast;
         });
 
-        setLessons({ data: reorderedLessons });
+        const lessonsWithPassStatus = await attachIsPassedToExercises(
+          reorderedLessons,
+          user?._id
+        );
+
+        const allExercisesPassed = lessonsWithPassStatus.every((lesson) =>
+          lesson.exercises
+            .filter((ex) => !ex.isTheLastTest) // bỏ qua bài cuối
+            .every((ex) => ex.isPassed === true)
+        );
+
+        setIsFullFinalTest(allExercisesPassed);
+
+        setLessons({ data: lessonsWithPassStatus });
       } catch (error) {
         console.error("Error populating exercises:", error);
       }
@@ -54,6 +70,45 @@ const CourseDetailScreen = ({ navigation, route }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const attachIsPassedToExercises = async (lessons, userId) => {
+    return await Promise.all(
+      lessons?.map(async (lesson) => {
+        const updatedExercises = await Promise.all(
+          lesson?.exercises?.map(async (exercise) => {
+            try {
+              // Gọi API lấy attempts của user cho test này
+              // const res = await fetch(
+              //   `http://localhost:3000/api/v1/attempts/test/${exercise._id}/user/${userId}`
+              // );
+              // const data = await res.json();
+
+              const res = await testApi.getAttemptByTestAndUser(
+                exercise?._id,
+                userId
+              );
+
+              const isPassed =
+                res?.data?.some((attempt) => attempt?.isPassed) || false;
+
+              return {
+                ...exercise,
+                isPassed,
+              };
+            } catch (err) {
+              console.error("Failed to fetch attempts:", err);
+              return exercise; // giữ nguyên nếu lỗi
+            }
+          })
+        );
+
+        return {
+          ...lesson,
+          exercises: updatedExercises,
+        };
+      })
+    );
   };
 
   const getTestById = async (testId) => {
@@ -90,52 +145,64 @@ const CourseDetailScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  const LessonItem = ({ lesson, index }) => (
-    <TouchableOpacity
-      style={styles.lessonItem}
-      onPress={() =>
-        navigation.navigate("CourseVideoSeriesList", {
-          courseId,
-          lesson,
-        })
-      }
-    >
-      <View style={styles.lessonNumber}>
-        <Text style={styles.lessonNumberText}>{index + 1}</Text>
-      </View>
-      <View style={styles.lessonContent}>
-        <Text style={styles.lessonTitle}>{lesson.title}</Text>
-        <View style={styles.lessonMeta}>
-          {/* <Text style={styles.lessonDuration}>{15 || "N/A"}</Text> */}
-          <View style={styles.lessonType}>
-            <Ionicons
-              name={
-                lesson.type === "video"
-                  ? "play-circle-outline"
-                  : "document-text-outline"
-              }
-              size={14}
-              color="#6B7280"
-            />
-            <Text style={styles.lessonTypeText}>
-              {lesson.type === "video"
-                ? "Video"
-                : lesson.type === "test"
-                ? "Practice Test"
-                : "Lesson"}
-            </Text>
+  const LessonItem = ({ lesson, index }) => {
+    let isFinalTest = false;
+    if (lesson.exercises[0]?.isTheLastTest) {
+      isFinalTest = true;
+    } else {
+      isFinalTest = false;
+    }
+    return (
+      <TouchableOpacity
+        style={[
+          styles.lessonItem,
+          isFinalTest && !isFullFinalTest && { opacity: 0.5 }, // mờ nếu disabled
+        ]}
+        disabled={isFinalTest && !isFullFinalTest} // disable nếu là bài cuối và chưa đủ điều kiện
+        onPress={() =>
+          navigation.navigate("CourseVideoSeriesList", {
+            courseId,
+            lesson,
+          })
+        }
+      >
+        <View style={styles.lessonNumber}>
+          <Text style={styles.lessonNumberText}>{index + 1}</Text>
+        </View>
+        <View style={styles.lessonContent}>
+          <Text style={styles.lessonTitle}>{lesson.title}</Text>
+          <View style={styles.lessonMeta}>
+            {/* <Text style={styles.lessonDuration}>{15 || "N/A"}</Text> */}
+            <View style={styles.lessonType}>
+              <Ionicons
+                name={
+                  lesson.type === "video"
+                    ? "play-circle-outline"
+                    : "document-text-outline"
+                }
+                size={14}
+                color="#6B7280"
+              />
+              <Text style={styles.lessonTypeText}>
+                {lesson.type === "video"
+                  ? "Video"
+                  : lesson.type === "test"
+                  ? "Practice Test"
+                  : "Lesson"}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-      <View style={styles.lessonStatus}>
-        {lesson.isCompleted ? (
-          <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-        ) : (
-          <Ionicons name="play-circle-outline" size={24} color="#6B7280" />
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+        <View style={styles.lessonStatus}>
+          {lesson.exercises[0]?.isPassed ? (
+            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+          ) : (
+            <Ionicons name="play-circle-outline" size={24} color="#6B7280" />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -154,7 +221,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
     );
   }
 
-  // console.log("Lessons data:", lessons);
+  console.log("Lessons data:", lessons.data[0]);
 
   return (
     <ScrollView

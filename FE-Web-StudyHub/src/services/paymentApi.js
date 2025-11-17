@@ -56,6 +56,16 @@ export const paymentApi = rootApi.injectEndpoints({
       }),
       providesTags: ["Payment"],
     }),
+
+    // Tạo payment link
+    createPaymentLink: builder.mutation({
+      query: (linkData) => ({
+        url: "/payments/create-payment-link",
+        method: "POST",
+        body: linkData,
+      }),
+      invalidatesTags: ["Payment", "Course"],
+    }),
   }),
 });
 
@@ -66,6 +76,7 @@ export const {
   useGetPaymentsByCourseQuery,
   useGetAllPaymentsQuery,
   useGetPaymentStatisticsQuery,
+  useCreatePaymentLinkMutation,
 } = paymentApi;
 
 export default paymentApi;

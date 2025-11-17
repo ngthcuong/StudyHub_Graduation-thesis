@@ -347,6 +347,7 @@ const createStyles = (colors) =>
 
     // ⭐️ Nút hoàn thành (Cập nhật)
     completeButton: {
+      marginBottom: 60,
       backgroundColor: "#10B981", // Màu xanh lá cây
       shadowColor: "#10B981",
     },
