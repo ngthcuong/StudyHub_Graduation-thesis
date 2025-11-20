@@ -244,8 +244,6 @@ export default function ModalCreateCustomTest({
       type = ["multiple_choice"];
     }
     const REQUIRED_DB_FIELDS = {
-      // ⚠️ CẦN THAY BẰNG ID COURSE THỰC TẾ
-      courseId: "000000000000000000000000",
       // Mặc định Question Type
       questionTypes: type,
       // Giá trị mặc định

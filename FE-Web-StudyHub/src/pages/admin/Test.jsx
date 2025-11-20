@@ -93,19 +93,6 @@ const Test = () => {
     }));
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "Easy":
-        return { bg: "#d1fae5", color: "#10b981" };
-      case "Medium":
-        return { bg: "#fef3c7", color: "#f59e0b" };
-      case "Hard":
-        return { bg: "#fee2e2", color: "#ef4444" };
-      default:
-        return { bg: "#e5e7eb", color: "#6b7280" };
-    }
-  };
-
   const handleClearAll = () => {
     setSearchTerm("");
     setCategoryFilter("All");
@@ -696,7 +683,7 @@ const Test = () => {
                           </TableCell>
                         </TableRow>
 
-                        {/* Expanded Row - Levels Detail */}
+                        {/* Expanded Row - Test Details */}
                         <TableRow>
                           <TableCell
                             style={{ paddingBottom: 0, paddingTop: 0 }}
@@ -707,140 +694,144 @@ const Test = () => {
                               timeout="auto"
                               unmountOnExit
                             >
-                              <Box sx={{ margin: 2 }}>
+                              <Box sx={{ my: 1, mx: 6 }}>
                                 <Typography
-                                  variant="h6"
                                   gutterBottom
                                   component="div"
-                                  sx={{ fontWeight: 600, mb: 2 }}
+                                  sx={{ fontWeight: 600 }}
                                 >
-                                  Level Details
+                                  Test Information
                                 </Typography>
-                                <Table size="small">
-                                  <TableHead>
-                                    <TableRow
-                                      sx={{ backgroundColor: "#f9fafb" }}
-                                    >
-                                      <TableCell sx={{ fontWeight: 600 }}>
-                                        Level
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{ fontWeight: 600 }}
-                                        align="center"
-                                      >
-                                        Questions
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{ fontWeight: 600 }}
-                                        align="center"
-                                      >
-                                        Participants
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{ fontWeight: 600 }}
-                                        align="center"
-                                      >
-                                        Attempts
-                                      </TableCell>
-                                      <TableCell sx={{ fontWeight: 600 }}>
-                                        Question Percentage
-                                      </TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    {test.levels?.map((level, index) => {
-                                      const diffColor = getDifficultyColor(
-                                        level.level
-                                      );
-                                      return (
-                                        <TableRow key={index}>
-                                          <TableCell>
-                                            <Chip
-                                              label={level.level}
-                                              size="small"
+                                {(test.courseId &&
+                                  test.courseId.toString() !==
+                                    "000000000000000000000000") ||
+                                test.courseId === null ? (
+                                  // Custom Test Information
+                                  <Box>
+                                    {test.creatorInfo ? (
+                                      <Table size="small">
+                                        <TableBody>
+                                          <TableRow>
+                                            <TableCell
                                               sx={{
-                                                backgroundColor: diffColor.bg,
-                                                color: diffColor.color,
                                                 fontWeight: 600,
+                                                width: "30%",
                                               }}
-                                            />
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Chip
-                                              label={level.totalQuestions}
-                                              size="small"
+                                            >
+                                              Creator Name:
+                                            </TableCell>
+                                            <TableCell>
+                                              {test.creatorInfo.fullName}
+                                            </TableCell>
+                                          </TableRow>
+                                          <TableRow>
+                                            <TableCell
                                               sx={{
-                                                backgroundColor: "#dbeafe",
-                                                color: "#1976d2",
                                                 fontWeight: 600,
+                                                width: "30%",
                                               }}
-                                            />
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Typography
-                                              variant="body2"
-                                              sx={{ fontWeight: 600 }}
                                             >
-                                              {level.totalParticipants}
-                                            </Typography>
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Typography
-                                              variant="body2"
-                                              sx={{ fontWeight: 600 }}
-                                            >
-                                              {level.totalAttempts}
-                                            </Typography>
-                                          </TableCell>
-                                          <TableCell>
-                                            <Box sx={{ width: 120 }}>
+                                              Current Level:
+                                            </TableCell>
+                                            <TableCell>
                                               <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                  justifyContent:
-                                                    "space-between",
-                                                  mb: 0.5,
-                                                }}
+                                                sx={{ display: "flex", gap: 1 }}
                                               >
-                                                <Typography
-                                                  variant="caption"
-                                                  sx={{ fontWeight: 600 }}
-                                                >
-                                                  {level.questionPercentage ||
-                                                    0}
-                                                  %
-                                                </Typography>
+                                                {test.creatorInfo.currentLevel
+                                                  ?.TOEIC && (
+                                                  <Chip
+                                                    label={`TOEIC: ${test.creatorInfo.currentLevel.TOEIC}`}
+                                                    size="small"
+                                                    sx={{
+                                                      backgroundColor:
+                                                        "#dbeafe",
+                                                      color: "#1976d2",
+                                                      fontWeight: 500,
+                                                    }}
+                                                  />
+                                                )}
+                                                {test.creatorInfo.currentLevel
+                                                  ?.IELTS && (
+                                                  <Chip
+                                                    label={`IELTS: ${test.creatorInfo.currentLevel.IELTS}`}
+                                                    size="small"
+                                                    sx={{
+                                                      backgroundColor:
+                                                        "#fef3c7",
+                                                      color: "#f59e0b",
+                                                      fontWeight: 500,
+                                                    }}
+                                                  />
+                                                )}
+                                                {!test.creatorInfo.currentLevel
+                                                  ?.TOEIC &&
+                                                  !test.creatorInfo.currentLevel
+                                                    ?.IELTS && (
+                                                    <Typography
+                                                      variant="body2"
+                                                      sx={{ color: "#6b7280" }}
+                                                    >
+                                                      Not set
+                                                    </Typography>
+                                                  )}
                                               </Box>
-                                              <LinearProgress
-                                                variant="determinate"
-                                                value={
-                                                  level.questionPercentage || 0
-                                                }
-                                                sx={{
-                                                  height: 6,
-                                                  borderRadius: 1,
-                                                  backgroundColor: "#e5e7eb",
-                                                  "& .MuiLinearProgress-bar": {
-                                                    backgroundColor:
-                                                      (level.questionPercentage ||
-                                                        0) >= 40
-                                                        ? "#10b981"
-                                                        : (level.questionPercentage ||
-                                                            0) >= 20
-                                                        ? "#3b82f6"
-                                                        : "#f59e0b",
-                                                    borderRadius: 1,
-                                                  },
-                                                }}
-                                              />
-                                            </Box>
-                                          </TableCell>
-                                        </TableRow>
-                                      );
-                                    })}
-                                  </TableBody>
-                                </Table>
+                                            </TableCell>
+                                          </TableRow>
+                                        </TableBody>
+                                      </Table>
+                                    ) : (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ color: "#6b7280" }}
+                                      >
+                                        Creator information not available
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                ) : (
+                                  // Course Test Information
+                                  <Box>
+                                    {test.courseInfo ? (
+                                      <Table size="small">
+                                        <TableBody>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Course Name:
+                                            </TableCell>
+                                            <TableCell>
+                                              {test.courseInfo.courseTitle}
+                                            </TableCell>
+                                          </TableRow>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Lesson Name:
+                                            </TableCell>
+                                            <TableCell>
+                                              {test.courseInfo.lessonTitle}
+                                            </TableCell>
+                                          </TableRow>
+                                        </TableBody>
+                                      </Table>
+                                    ) : (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ color: "#6b7280" }}
+                                      >
+                                        Course information not available
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                )}
                               </Box>
                             </Collapse>
                           </TableCell>
