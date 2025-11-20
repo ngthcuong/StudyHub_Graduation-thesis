@@ -2,15 +2,15 @@ import {
   Button,
   Container,
   Avatar,
-  Badge,
   Box,
   MenuItem,
   Menu,
   Divider,
+  Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   DashboardOutlined,
@@ -18,44 +18,80 @@ import {
   PersonOutline,
   SettingsOutlined,
   Verified,
+  ArrowBack,
 } from "@mui/icons-material";
 import { logout } from "../redux/slices/auth";
 
-const Header = () => {
+const Header = ({ title, subtitle, disableBack = false, onBack }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   const user = useSelector((state) => state.auth.user);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const isHomePage = location.pathname.startsWith("/home");
+  const showBackButton = !isHomePage && !!user && !disableBack;
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
   };
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+
+    const historyIndex = window.history.state?.idx ?? 0;
+    if (historyIndex > 0) {
+      navigate(-1);
+    } else {
+      navigate("/home/dashboard");
+    }
+  };
+
   if (user) {
     // Đã đăng nhập
     return (
-      <header className="border rounded-lg border-gray-200 bg-white mb-3">
+      <header className="border rounded-lg border-gray-200 bg-white mb-3 max-w-6xl w-full mx-auto">
         <Container maxWidth="lg" className="pb-2 pt-3">
           <Box className="flex items-center justify-between">
             <Box>
-              <div className="font-bold text-2xl mb-1">
-                Welcome back, {user.fullName}!
-              </div>
-              <div className="text-gray-500 text-base">
-                Ready to continue your English learning journey?
-              </div>
+              {showBackButton ? (
+                <Button
+                  variant="text"
+                  size="large"
+                  onClick={handleBack}
+                  startIcon={<ArrowBack fontSize="large" />}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: 20,
+                    px: 0,
+                  }}
+                >
+                  Back
+                </Button>
+              ) : (
+                <>
+                  <div className="font-bold text-2xl mb-1">
+                    {title ? title : `Welcome back, ${user.fullName}!`}
+                  </div>
+                  <div className="text-gray-500 text-base">
+                    {subtitle ||
+                      "Ready to continue your English learning journey?"}
+                  </div>
+                </>
+              )}
             </Box>
             <Box className="flex items-center gap-6">
-              <Badge
-                color="error"
-                variant="dot"
-                overlap="circular"
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              >
-                <NotificationsNoneIcon sx={{ fontSize: 28 }} />
-              </Badge>
+              {showBackButton && (
+                <Typography variant="h6" fontWeight={600}>
+                  {user.fullName}
+                </Typography>
+              )}
               <Box sx={{ position: "relative" }}>
                 <Avatar
                   sx={{

@@ -10,7 +10,7 @@ import {
 
 export default function DailyStudyTimeChart({ data }) {
   if (!data || !Array.isArray(data)) {
-    return <p className="text-center text-gray-500">Không có dữ liệu</p>;
+    return <p className="text-center text-gray-500">No data.</p>;
   }
 
   const chartData = Object.values(
