@@ -11,7 +11,7 @@ import {
 export default function DailyLessonsChart({ data }) {
   // Nếu không có data thì render rỗng
   if (!data || !Array.isArray(data)) {
-    return <p className="text-center text-gray-500">Không có dữ liệu</p>;
+    return <p className="text-center text-gray-500">No data.</p>;
   }
 
   // ✨ Chuyển dữ liệu API → format cho Recharts

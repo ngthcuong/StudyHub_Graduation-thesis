@@ -1,5 +1,6 @@
 const config = require("../configs/config");
 const crypto = require("crypto");
+const { ethers } = require("ethers");
 
 // Chuyển dữ liệu từ BigInt -> String
 function toPlain(value) {
@@ -85,7 +86,7 @@ function generateCertCode(issueDate = new Date(), learnerId, courseId) {
   // Sinh chuỗi gốc để hash (dựa trên learnerId + courseId + thời gian + random salt)
   const raw = `${learnerId}-${courseId}-${Date.now()}-${Math.random()}`;
 
-  // Hash → base36 để rút gọn
+  // Hash -> base36 để rút gọn
   const hash = crypto.createHash("sha256").update(raw).digest("hex");
   const encoded = parseInt(hash.slice(0, 12), 16).toString(36).toUpperCase();
 
@@ -135,10 +136,154 @@ function isCertificateConsistent(mongoCert, blockchainCert, pinataMetadata) {
   return issuerMatch && studentMatch && courseMatch;
 }
 
+/**
+ * Xác thực chữ ký điện tử của metadata chứng chỉ
+ *
+ * 1. Tách signature ra khỏi payload
+ * 2. Tạo canonical string từ unsigned payload (sorted keys)
+ * 3. So sánh hash
+ * 4. Recover signer address từ signature
+ * 5. Verify signer khớp với signature.signedBy
+ *
+ * @param {Object} metadata - Metadata có chứa signature block
+ * @returns {Object} { isValid, message?, recoveredAddress?, expectedSigner?, signedHash? }
+ */
+function verifyMetadataSignature(metadata) {
+  if (!metadata || typeof metadata !== "object") {
+    return { isValid: false, message: "Metadata is empty" };
+  }
+
+  const { signature, ...unsignedPayload } = metadata;
+
+  if (!signature) {
+    return { isValid: false, message: "Metadata missing signature block" };
+  }
+
+  // Phải tạo canonical string giống hệt lúc sign
+  // Sort keys để đảm bảo deterministic (tính toán ra cùng một kết quả)
+  const sortedKeys = Object.keys(unsignedPayload).sort();
+  const canonicalString = JSON.stringify(unsignedPayload, sortedKeys);
+  const expectedHash = ethers.hashMessage(canonicalString);
+
+  // Step 1: Verify hash integrity
+  if (signature.signedHash && signature.signedHash !== expectedHash) {
+    return {
+      isValid: false,
+      message: "Signed hash mismatch - payload may have been altered",
+      expectedHash,
+      providedHash: signature.signedHash,
+    };
+  }
+
+  // Step 2: Recover signer and verify
+  try {
+    const recoveredAddress = ethers.verifyMessage(
+      canonicalString,
+      signature.value
+    );
+    const isValid =
+      recoveredAddress?.toLowerCase() === signature.signedBy?.toLowerCase();
+    return {
+      isValid,
+      message: isValid ? null : "Signer mismatch - signature may be forged",
+      recoveredAddress,
+      expectedSigner: signature.signedBy,
+      signedHash: expectedHash,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      message: `Signature verification failed: ${error.message}`,
+    };
+  }
+}
+
+/**
+ * Xác thực chứng chỉ dựa trên chữ ký
+ *
+ * 1. Ưu tiên xác thực chữ ký từ IPFS metadata
+ * 2. Nếu chữ ký hợp lệ -> Certificate TRUSTED (không cần check blockchain/DB)
+ * 3. Nếu chữ ký không hợp lệ -> REJECT
+ * 4. Cross-source validation chỉ dùng để DETECT sync issues (optional warning)
+ *
+ * @param {Object} options - { mongoCert, blockchainCert, pinataMetadata }
+ * @returns {Object} Verification result với trust level
+ */
+function verifyCertificateBySignature({
+  mongoCert,
+  blockchainCert,
+  pinataMetadata,
+}) {
+  const result = {
+    trustLevel: "unknown", // unknown | trusted | warning | rejected
+    isValid: false,
+    verification: {
+      signature: null,
+      crossSourceConsistency: null,
+      sources: {
+        database: Boolean(mongoCert),
+        blockchain: Boolean(blockchainCert),
+        ipfs: Boolean(pinataMetadata),
+      },
+    },
+    warnings: [],
+    errors: [],
+  };
+
+  // Step 1: Xác thực chữ ký (phải pass)
+  if (!pinataMetadata) {
+    result.errors.push("IPFS metadata not found - cannot verify signature");
+    result.trustLevel = "rejected";
+    return result;
+  }
+
+  const signatureVerification = verifyMetadataSignature(pinataMetadata);
+  result.verification.signature = signatureVerification;
+
+  if (!signatureVerification.isValid) {
+    result.errors.push(`Signature invalid: ${signatureVerification.message}`);
+    result.trustLevel = "rejected";
+    result.isValid = false;
+    return result;
+  }
+
+  // Step 2: Chữ ký hợp lệ → Certificate TRUSTED
+  result.trustLevel = "trusted";
+  result.isValid = true;
+
+  // Step 3: Cross-source validation (OPTIONAL - chỉ để detect sync issues)
+  if (mongoCert && blockchainCert) {
+    const isConsistent = isCertificateConsistent(
+      mongoCert,
+      blockchainCert,
+      pinataMetadata
+    );
+    result.verification.crossSourceConsistency = {
+      isConsistent,
+      checkedAt: new Date().toISOString(),
+    };
+
+    if (!isConsistent) {
+      result.warnings.push(
+        "Data inconsistency detected between MongoDB/Blockchain/IPFS - signature is valid but sources are out of sync"
+      );
+      result.trustLevel = "warning";
+    }
+  } else {
+    result.warnings.push(
+      "Cannot perform cross-source validation - some sources unavailable"
+    );
+  }
+
+  return result;
+}
+
 module.exports = {
   toPlain,
   structureCertificateData,
   structureCertificateList,
   generateCertCode,
   isCertificateConsistent,
+  verifyMetadataSignature,
+  verifyCertificateBySignature,
 };

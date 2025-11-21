@@ -35,11 +35,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { FilterAltOffOutlined, FilterAltOutlined } from "@mui/icons-material";
 import CertificateTemplate from "../../components/CertificateTemplate";
+import CertificateVerificationBadge from "../../components/CertificateVerificationBadge";
 
-const statusOptions = ["All", "Pending", "Active", "Rejected"];
+const statusOptions = ["All", "Trusted", "Warning", "Rejected", "Unknown"];
 
-export default function Certificate({ item }) {
-  console.log("Certificate item prop:", item);
+export default function Certificate() {
   const [filteredCertificates, setFilteredCertificates] = useState([]);
 
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -72,6 +72,17 @@ export default function Certificate({ item }) {
     return certs;
   }, [apiCertificates]);
 
+  const verificationSummary = useMemo(() => {
+    return (
+      apiCertificates?.verificationSummary || {
+        total: 0,
+        trusted: 0,
+        warning: 0,
+        rejected: 0,
+      }
+    );
+  }, [apiCertificates]);
+
   const handleClearAll = () => {
     setSearchKeyword("");
     setStatus("All");
@@ -97,15 +108,14 @@ export default function Certificate({ item }) {
       );
     }
 
-    // Filter by status
+    // Filter by verification status
     if (status && status !== "All") {
       filtered = filtered.filter((cert) => {
-        const certStatus = cert.status || cert.verified;
-        if (status === "Pending")
-          return certStatus === "pending" || certStatus === false;
-        if (status === "Active")
-          return certStatus === "verified" || certStatus === true;
-        if (status === "Rejected") return certStatus === "rejected";
+        const trustLevel = cert.verification?.trustLevel?.toLowerCase();
+        if (status === "Trusted") return trustLevel === "trusted";
+        if (status === "Warning") return trustLevel === "warning";
+        if (status === "Rejected") return trustLevel === "rejected";
+        if (status === "Unknown") return trustLevel === "unknown";
         return true;
       });
     }
@@ -252,20 +262,29 @@ export default function Certificate({ item }) {
               spacing={2}
               alignItems="center"
             >
-              {/* Status */}
+              {/* Verification Status Filter */}
               <Box className="flex flex-col w-full md:w-auto">
                 <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
-                  Completion Status
+                  Verification Status
                 </Typography>
                 <Select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   size="small"
-                  sx={{ minWidth: 140 }}
+                  sx={{ minWidth: 160 }}
                 >
                   {statusOptions.map((opt) => (
                     <MenuItem key={opt} value={opt}>
                       {opt}
+                      {opt !== "All" && verificationSummary && (
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          sx={{ ml: 1, color: "#94a3b8" }}
+                        >
+                          ({verificationSummary[opt.toLowerCase()] || 0})
+                        </Typography>
+                      )}
                     </MenuItem>
                   ))}
                 </Select>
@@ -373,9 +392,9 @@ export default function Certificate({ item }) {
                       <TableCell className="font-bold text-blue-800">
                         Issue Date
                       </TableCell>
-                      {/* <TableCell className="font-bold text-blue-800">
-                        Status
-                      </TableCell> */}
+                      <TableCell className="font-bold text-blue-800">
+                        Verification
+                      </TableCell>
                       <TableCell className="font-bold text-blue-800 !text-center">
                         Actions
                       </TableCell>
@@ -387,8 +406,8 @@ export default function Certificate({ item }) {
                         page * rowsPerPage,
                         page * rowsPerPage + rowsPerPage
                       )
-                      .map((certificate) => (
-                        <TableRow key={certificate.id} hover>
+                      .map((certificate, index) => (
+                        <TableRow key={index} hover>
                           <TableCell className="font-medium">
                             {certificate.certificateCode}
                           </TableCell>
@@ -396,24 +415,12 @@ export default function Certificate({ item }) {
                           <TableCell>
                             {formatDate(certificate.validity.issueDate)}
                           </TableCell>
-                          {/* <TableCell>
-                            <Chip
-                              label={
-                                certificate.verified === true ||
-                                certificate.status === "verified"
-                                  ? "Verified"
-                                  : "Pending"
-                              }
-                              color={
-                                certificate.verified === true ||
-                                certificate.status === "verified"
-                                  ? "success"
-                                  : "warning"
-                              }
+                          <TableCell>
+                            <CertificateVerificationBadge
+                              verification={certificate.verification}
                               size="small"
-                              variant="outlined"
                             />
-                          </TableCell> */}
+                          </TableCell>
                           <TableCell align="center">
                             <Tooltip title="View Details">
                               <IconButton
@@ -424,17 +431,6 @@ export default function Certificate({ item }) {
                                 <VisibilityIcon />
                               </IconButton>
                             </Tooltip>
-                            {/* <Tooltip title="Delete">
-                              <IconButton
-                                color="error"
-                                onClick={() =>
-                                  handleOpenDeleteDialog(certificate)
-                                }
-                                size="small"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip> */}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -498,8 +494,8 @@ export default function Certificate({ item }) {
         onClose={handleCloseDetailModal}
         certificate={selectedCertificate}
       />
-      {/* 
-      <CertificateTemplate
+
+      {/* <CertificateTemplate
         open={openDetailModal}
         onClose={handleCloseDetailModal}
         certificate={selectedCertificate}

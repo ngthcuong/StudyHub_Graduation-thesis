@@ -45,6 +45,7 @@ import { useGetMyCoursesMutation } from "../../services/grammarLessonApi";
 import { useGetUserReviewForCourseQuery } from "../../services/reviewApi";
 import { useCreatePaymentLinkMutation } from "../../services/paymentApi";
 import ModalCreateReview from "../../components/ModalCreateReview";
+import Header from "../../components/Header";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -227,26 +228,10 @@ const CourseDetail = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Back Button */}
-      <div className="px-6 pt-6">
-        <Container maxWidth="lg">
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate(-1)}
-            className="mb-4 text-gray-600 hover:text-gray-800"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 24,
-            }}
-          >
-            Back
-          </Button>
-        </Container>
-      </div>
+      <Header />
 
       {/* Main Course Detail Section */}
-      <main className="px-6 pb-8">
+      <main className="px-6 pb-8 mt-6">
         <Container maxWidth="lg">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Course Image */}

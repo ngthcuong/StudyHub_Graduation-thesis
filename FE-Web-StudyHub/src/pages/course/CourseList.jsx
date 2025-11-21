@@ -110,7 +110,7 @@ const CourseList = () => {
   }
 
   return (
-    <Box className="bg-gray-50 py-10 px-4 md:px-10 min-h-screen">
+    <Box className="bg-gray-50    min-h-screen">
       <Box className="max-w-7xl mx-auto">
         <Paper elevation={2} sx={{ borderRadius: "16px", overflow: "hidden" }}>
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
