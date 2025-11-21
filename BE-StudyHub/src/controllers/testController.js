@@ -1,6 +1,9 @@
 const testModel = require("../models/testModel");
 const Question = require("../schemas/Question");
 const TestAttempt = require("../schemas/TestAttempt");
+const User = require("../schemas/User");
+const Course = require("../schemas/Course");
+const GrammarLesson = require("../schemas/GrammarLesson");
 
 const createTest = async (req, res) => {
   try {
@@ -173,11 +176,57 @@ const getTestStatistics = async (req, res) => {
             return sum + (attempt.attemptNumber || 0);
           }, 0);
 
-          // Thống kê theo level
-          const levelStatistics = await getLevelStatistics(
-            test._id,
-            test.examType
-          );
+          // Kiểm tra xem test là custom test hay course test
+          const defaultCourseId = "000000000000000000000000";
+          const isCustomTest =
+            test.courseId && test.courseId.toString() !== defaultCourseId;
+
+          // Nếu courseId là null, cũng coi là custom test
+          const isCustomTestFinal = isCustomTest || !test.courseId;
+
+          let creatorInfo = null;
+          let courseInfo = null;
+
+          if (isCustomTestFinal) {
+            // Nếu là custom test, lấy thông tin người tạo
+            if (test.createdBy) {
+              const creator = await User.findById(test.createdBy)
+                .select("fullName currentLevel")
+                .lean();
+              if (creator) {
+                creatorInfo = {
+                  fullName: creator.fullName,
+                  currentLevel: creator.currentLevel || {},
+                };
+              }
+            }
+          } else {
+            // Nếu là course test, tìm grammar lesson và course
+            const grammarLesson = await GrammarLesson.findOne({
+              exercises: test._id,
+            })
+              .populate("courseId", "title")
+              .select("title courseId")
+              .lean();
+
+            if (grammarLesson && grammarLesson.courseId) {
+              courseInfo = {
+                courseTitle: grammarLesson.courseId.title || "Unknown Course",
+                lessonTitle: grammarLesson.title || "Unknown Lesson",
+              };
+            } else {
+              // Fallback: nếu không tìm thấy grammar lesson, vẫn lấy course info
+              const course = await Course.findById(test.courseId)
+                .select("title")
+                .lean();
+              if (course) {
+                courseInfo = {
+                  courseTitle: course.title || "Unknown Course",
+                  lessonTitle: "N/A",
+                };
+              }
+            }
+          }
 
           return {
             id: test._id,
@@ -188,7 +237,8 @@ const getTestStatistics = async (req, res) => {
             totalQuestions,
             totalParticipants,
             totalAttempts,
-            levels: levelStatistics,
+            creatorInfo,
+            courseInfo,
             createdAt: test.createdAt,
             updatedAt: test.updatedAt,
           };
@@ -203,7 +253,8 @@ const getTestStatistics = async (req, res) => {
             totalQuestions: 0,
             totalParticipants: 0,
             totalAttempts: 0,
-            levels: [],
+            creatorInfo: null,
+            courseInfo: null,
             createdAt: test.createdAt,
             updatedAt: test.updatedAt,
           };
@@ -222,108 +273,6 @@ const getTestStatistics = async (req, res) => {
       error: "Failed to get test statistics",
       details: error.message,
     });
-  }
-};
-
-// Hàm helper để lấy thống kê theo level
-const getLevelStatistics = async (testId, examType) => {
-  try {
-    // Lấy tất cả câu hỏi của test này
-    const questions = await Question.find({ testId: testId });
-
-    // Group câu hỏi theo level
-    const levelGroups = {};
-
-    questions.forEach((question) => {
-      let level = null;
-
-      // Lấy level dựa trên examType
-      if (examType === "TOEIC" && question.level && question.level.TOEIC) {
-        level = question.level.TOEIC;
-      } else if (
-        examType === "IELTS" &&
-        question.level &&
-        question.level.IELTS
-      ) {
-        level = question.level.IELTS;
-      }
-
-      // Nếu không có level hoặc level rỗng, đặt là "Unknown"
-      if (!level || level.trim() === "") {
-        level = "Unknown";
-      }
-
-      if (!levelGroups[level]) {
-        levelGroups[level] = {
-          level: level,
-          questionIds: [],
-          totalQuestions: 0,
-        };
-      }
-
-      levelGroups[level].questionIds.push(question._id);
-      levelGroups[level].totalQuestions += 1;
-    });
-
-    // Tính thống kê cho từng level
-    const levelStatistics = await Promise.all(
-      Object.values(levelGroups).map(async (levelGroup) => {
-        try {
-          // Lấy tất cả TestAttempt có chứa câu hỏi của level này
-          // Vì TestAttempt chỉ có testId, chúng ta sẽ đếm dựa trên testId
-          // và giả định rằng mỗi attempt sẽ làm tất cả câu hỏi trong test
-
-          // Đếm số participants duy nhất đã làm test này (giả định họ làm tất cả levels)
-          const participantsForLevel = await TestAttempt.distinct("userId", {
-            testId: testId,
-          });
-
-          // Đếm tổng số attempts cho level này
-          const attemptsForLevel = await TestAttempt.find(
-            {
-              testId: testId,
-            },
-            "attemptNumber"
-          );
-
-          const totalAttemptsForLevel = attemptsForLevel.reduce(
-            (sum, attempt) => {
-              return sum + (attempt.attemptNumber || 0);
-            },
-            0
-          );
-
-          return {
-            level: levelGroup.level,
-            totalQuestions: levelGroup.totalQuestions,
-            totalParticipants: participantsForLevel.length,
-            totalAttempts: totalAttemptsForLevel,
-            // Tính phần trăm câu hỏi của level này so với tổng câu hỏi
-            questionPercentage:
-              questions.length > 0
-                ? Math.round(
-                    (levelGroup.totalQuestions / questions.length) * 100
-                  )
-                : 0,
-          };
-        } catch (error) {
-          console.error(`Error processing level ${levelGroup.level}:`, error);
-          return {
-            level: levelGroup.level,
-            totalQuestions: levelGroup.totalQuestions,
-            totalParticipants: 0,
-            totalAttempts: 0,
-            questionPercentage: 0,
-          };
-        }
-      })
-    );
-
-    // Sắp xếp theo level name
-    return levelStatistics.sort((a, b) => a.level.localeCompare(b.level));
-  } catch (error) {
-    console.error(`Error getting level statistics for test ${testId}:`, error);
-    return [];
   }
 };
 

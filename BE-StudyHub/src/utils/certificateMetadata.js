@@ -1,3 +1,12 @@
+/**
+ * Build certificate metadata với format chuẩn hóa
+ *
+ *  Normalize tất cả dữ liệu để đảm bảo canonical form
+ * - Date -> ISO string
+ * - Address -> lowercase
+ * - ObjectId -> string
+ * - Boolean -> explicit true/false
+ */
 const buildCertificateMetadata = ({
   certCode,
   issuer,
@@ -6,43 +15,57 @@ const buildCertificateMetadata = ({
   issueDate,
   expireDate = null,
   isRevoked = false,
-  // certificateHash = null,
   network = "Sepolia",
   extra, //optional
 }) => {
-  return {
+  // Normalize issueDate to ISO string
+  const normalizedIssueDate =
+    issueDate instanceof Date
+      ? issueDate.toISOString()
+      : new Date(issueDate).toISOString();
+
+  // Normalize expireDate if provided
+  const normalizedExpireDate = expireDate
+    ? expireDate instanceof Date
+      ? expireDate.toISOString()
+      : new Date(expireDate).toISOString()
+    : null;
+
+  const metadata = {
     version: "1.0",
     type: "studyhub-certificate",
-    certCode: certCode,
+    certCode: String(certCode),
     student: {
-      id: student._id,
-      walletAddress: student.walletAddress,
-      name: student.fullName,
+      id: String(student._id),
+      walletAddress: String(student.walletAddress).toLowerCase(),
+      name: String(student.fullName),
     },
     course: {
-      id: course._id,
-      title: course.title,
-      type: course?.courseType,
-      level: course?.courseLevel,
+      id: String(course._id),
+      title: String(course.title),
+      type: course?.courseType || null,
+      level: course?.courseLevel || null,
     },
     issuer: {
-      walletAddress: issuer.walletAddress,
-      name: issuer.name,
+      walletAddress: String(issuer.walletAddress).toLowerCase(),
+      name: String(issuer.name),
     },
     validity: {
-      issueDate: issueDate || Date.now(),
-      // issueDate: issueDate
-      //   ? new Date(issueDate).toISOString()
-      //   : new Date().toISOString(),
-      expireDate: typeof expireDate !== "undefined" ? expireDate : null,
-      isRevoked: typeof isRevoked !== "undefined" ? isRevoked : false,
+      issueDate: normalizedIssueDate,
+      expireDate: normalizedExpireDate,
+      isRevoked: Boolean(isRevoked),
     },
     blockchain: {
-      // certificateHash,
-      network,
+      network: String(network),
     },
-    ...extra,
   };
+
+  // Merge extra fields if provided
+  if (extra && typeof extra === "object") {
+    Object.assign(metadata, extra);
+  }
+
+  return metadata;
 };
 
 module.exports = { buildCertificateMetadata };

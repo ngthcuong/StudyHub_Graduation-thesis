@@ -34,13 +34,14 @@ import {
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import CertificateVerificationBadge from "../../components/CertificateVerificationBadge";
 
 const Certificate = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilter, setShowFilter] = useState(false);
-  const [status, setStatus] = useState("All");
+  const [verificationStatus, setVerificationStatus] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [filteredCertificates, setFilteredCertificates] = useState([]);
@@ -62,6 +63,17 @@ const Certificate = () => {
     return certs;
   }, [apiCertificates]);
 
+  const verificationSummary = useMemo(() => {
+    return (
+      apiCertificates?.verificationSummary || {
+        total: 0,
+        trusted: 0,
+        warning: 0,
+        rejected: 0,
+      }
+    );
+  }, [apiCertificates]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -73,7 +85,7 @@ const Certificate = () => {
 
   const handleClearAll = () => {
     setSearchTerm("");
-    setStatus("All");
+    setVerificationStatus("All");
     setStartDate(null);
     setEndDate(null);
   };
@@ -103,13 +115,14 @@ const Certificate = () => {
       );
     }
 
-    // Filter by status
-    if (status && status !== "All") {
+    // Filter by verification status
+    if (verificationStatus && verificationStatus !== "All") {
       filtered = filtered.filter((cert) => {
-        if (status === "Active")
-          return cert.status === "Active" || cert.verified === true;
-        if (status === "Revoked")
-          return cert.status === "Revoked" || cert.verified === false;
+        const trustLevel = cert.verification?.trustLevel?.toLowerCase();
+        if (verificationStatus === "Trusted") return trustLevel === "trusted";
+        if (verificationStatus === "Warning") return trustLevel === "warning";
+        if (verificationStatus === "Rejected") return trustLevel === "rejected";
+        if (verificationStatus === "Unknown") return trustLevel === "unknown";
         return true;
       });
     }
@@ -134,7 +147,7 @@ const Certificate = () => {
 
     setFilteredCertificates(filtered);
     setPage(0);
-  }, [certificates, searchTerm, status, startDate, endDate]);
+  }, [certificates, searchTerm, verificationStatus, startDate, endDate]);
 
   // View certificate details
   const handleViewDetails = (certificate) => {
@@ -242,17 +255,13 @@ const Certificate = () => {
                   color="text.secondary"
                   sx={{ mb: 1 }}
                 >
-                  Active Certificates
+                  Verified & Trusted
                 </Typography>
                 <Typography
                   variant="h4"
                   sx={{ fontWeight: 700, color: "#10b981" }}
                 >
-                  {isLoading
-                    ? "..."
-                    : certificates.filter(
-                        (c) => c.status === "Active" || c.verified === true
-                      ).length}
+                  {isLoading ? "..." : verificationSummary.trusted}
                 </Typography>
               </Box>
               <Box
@@ -289,17 +298,56 @@ const Certificate = () => {
                   color="text.secondary"
                   sx={{ mb: 1 }}
                 >
-                  Revoked Certificates
+                  With Warnings
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 700, color: "#f59e0b" }}
+                >
+                  {isLoading ? "..." : verificationSummary.warning}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  backgroundColor: "#fef3c7",
+                  borderRadius: 2,
+                  p: 1.5,
+                }}
+              >
+                <CertificateIcon sx={{ color: "#f59e0b", fontSize: 32 }} />
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Card
+          sx={{
+            flex: 1,
+            borderRadius: 3,
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
+                  Invalid/Rejected
                 </Typography>
                 <Typography
                   variant="h4"
                   sx={{ fontWeight: 700, color: "#ef4444" }}
                 >
-                  {isLoading
-                    ? "..."
-                    : certificates.filter(
-                        (c) => c.status === "Revoked" || c.verified === false
-                      ).length}
+                  {isLoading ? "..." : verificationSummary.rejected}
                 </Typography>
               </Box>
               <Box
@@ -384,6 +432,69 @@ const Certificate = () => {
                 spacing={2}
                 alignItems="center"
               >
+                {/* Verification Status Filter */}
+                <Box sx={{ minWidth: 200 }}>
+                  <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
+                    Verification Status
+                  </Typography>
+                  <Select
+                    value={verificationStatus}
+                    onChange={(e) => setVerificationStatus(e.target.value)}
+                    size="small"
+                    fullWidth
+                  >
+                    <MenuItem value="All">
+                      All
+                      {verificationSummary && (
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          sx={{ ml: 1, color: "#94a3b8" }}
+                        >
+                          ({verificationSummary.total || 0})
+                        </Typography>
+                      )}
+                    </MenuItem>
+                    <MenuItem value="Trusted">
+                      Trusted
+                      {verificationSummary && (
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          sx={{ ml: 1, color: "#94a3b8" }}
+                        >
+                          ({verificationSummary.trusted || 0})
+                        </Typography>
+                      )}
+                    </MenuItem>
+                    <MenuItem value="Warning">
+                      Warning
+                      {verificationSummary && (
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          sx={{ ml: 1, color: "#94a3b8" }}
+                        >
+                          ({verificationSummary.warning || 0})
+                        </Typography>
+                      )}
+                    </MenuItem>
+                    <MenuItem value="Rejected">
+                      Rejected
+                      {verificationSummary && (
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          sx={{ ml: 1, color: "#94a3b8" }}
+                        >
+                          ({verificationSummary.rejected || 0})
+                        </Typography>
+                      )}
+                    </MenuItem>
+                    <MenuItem value="Unknown">Unknown</MenuItem>
+                  </Select>
+                </Box>
+
                 {/* Date Range */}
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
@@ -460,6 +571,7 @@ const Certificate = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Student</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Course</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Issue Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Verification</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Actions
                     </TableCell>
@@ -504,6 +616,12 @@ const Certificate = () => {
                                 : "N/A"}
                             </Typography>
                           </TableCell>
+                          <TableCell>
+                            <CertificateVerificationBadge
+                              verification={cert.verification}
+                              size="small"
+                            />
+                          </TableCell>
                           <TableCell align="center">
                             <IconButton
                               size="small"
@@ -520,7 +638,7 @@ const Certificate = () => {
                       ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                         <Typography color="text.secondary">
                           {certificates.length === 0
                             ? "No certificates available"

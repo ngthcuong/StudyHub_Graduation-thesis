@@ -1,6 +1,7 @@
 import React from "react";
 import { Divider, Modal } from "@mui/material";
 import VerifiedIcon from "@mui/icons-material/Verified";
+import StudyHubLogo from "../assets/Logo.jpg";
 
 const CertificateTemplate = ({ open, onClose, certificate }) => {
   if (!certificate) return null;
@@ -89,8 +90,12 @@ const CertificateTemplate = ({ open, onClose, certificate }) => {
         <div className="flex items-end justify-between mt-16 mb-2">
           {/* Seal */}
           <div className="flex flex-col items-center w-40 mx-auto md:mx-0">
-            <div className="w-28 h-28 rounded-full bg-[#284a9f] flex items-center justify-center text-white text-[14px] font-medium tracking-wide shadow-2xl">
-              LOGO
+            <div className="w-28 h-28 rounded-full bg-white flex items-center justify-center shadow-2xl overflow-hidden">
+              <img
+                src={StudyHubLogo}
+                alt="StudyHub Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="mt-2 text-sm tracking-wide text-slate-500">
               Official Seal
