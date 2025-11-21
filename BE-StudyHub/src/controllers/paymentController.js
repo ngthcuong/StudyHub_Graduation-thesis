@@ -1,5 +1,13 @@
 const paymentModel = require("../models/paymentModel");
 
+const { PayOS } = require("@payos/node");
+
+const payOS = new PayOS(
+  process.env.PAYOS_CLIENT_ID,
+  process.env.PAYOS_API_KEY,
+  process.env.PAYOS_CHECKSUM_KEY
+);
+
 /**
  * Tạo payment mới (thanh toán khóa học)
  */
@@ -163,6 +171,52 @@ const getAdminPaymentStats = async (req, res) => {
   }
 };
 
+const createPaymentLink = async (req, res) => {
+  try {
+    const { courseId, amount, description } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId || !courseId || amount === undefined) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const YOUR_DOMAIN = process.env.FRONTEND_URL || "http://localhost:5173";
+
+    const paymentBody = {
+      orderCode: Number(String(Date.now()).slice(-6)), // mã đơn hàng 6 số
+      amount,
+      description: "Khóa học của StudyHub",
+      items: [
+        {
+          name: `Course ${courseId}`,
+          quantity: 1,
+          price: amount,
+        },
+      ],
+      returnUrl: `${YOUR_DOMAIN}/payment-success`,
+      cancelUrl: `${YOUR_DOMAIN}/payment-cancel`,
+    };
+
+    const paymentLinkResponse = await payOS.paymentRequests.create(paymentBody);
+
+    // Lưu thông tin payment vào DB
+    // const savedPayment = await paymentModel.createPayment({
+    //   courseId,
+    //   studentId: userId,
+    //   amount,
+    // });
+
+    res.status(201).json({
+      message: "Payment link created successfully",
+      // payment: savedPayment,
+      payOSLink: paymentLinkResponse.checkoutUrl,
+    });
+  } catch (error) {
+    console.error("Error creating payment link:", error);
+    res.status(500).json({ error: "Failed to create payment link" });
+  }
+};
+
 module.exports = {
   createPayment,
   getMyPayments,
@@ -170,4 +224,5 @@ module.exports = {
   getPaymentsByCourse,
   getAllPayments,
   getAdminPaymentStats,
+  createPaymentLink,
 };

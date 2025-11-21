@@ -135,7 +135,7 @@ const CourseLessson = () => {
           return 0; // giữ nguyên thứ tự nếu cùng loại
         });
 
-        console.log("ALL TESTS:", sortedTests);
+        console.log("ALL TESTS:", allTests);
 
         // Kiểm tra có test nào chưa pass không
         const allPassed =

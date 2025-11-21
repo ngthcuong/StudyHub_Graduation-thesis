@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+
 // Home Stack
 import HomeScreen from "../screens/home/HomeScreen";
 import DashboardScreen from "../screens/home/DashboardScreen";
@@ -124,7 +126,10 @@ const TestsStackNavigator = () => (
     <TestsStack.Screen
       name="MultilExercise"
       component={MultilExerciseScreen}
-      options={{ title: "Multiple Choice" }}
+      options={{
+        title: "Multiple Choice",
+        tabBarStyle: { display: "none" }, // <-- Thêm dòng này
+      }}
     />
     <TestsStack.Screen
       name="MultilExerciseCustom"
@@ -182,7 +187,10 @@ const ProfileStackNavigator = () => (
     <ProfileStack.Screen
       name="TestResults"
       component={TestResultsScreen}
-      options={{ title: "Test Results" }}
+      options={{
+        title: "Test Results",
+        tabBarStyle: { display: "none" }, // Ẩn footer (tabBar)
+      }}
     />
   </ProfileStack.Navigator>
 );
@@ -210,6 +218,47 @@ const MainNavigator = () => {
         tabBarActiveTintColor: "#3B82F6",
         tabBarInactiveTintColor: "gray",
         headerShown: false,
+
+        // --- LOGIC ẨN TAB BAR NÂNG CẤP ---
+        tabBarStyle: ((route) => {
+          // Lấy tên màn hình đang focus bên trong Stack
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "";
+
+          // Danh sách TẤT CẢ các màn hình con mà bạn muốn ẩn tab bar
+          const tabHiddenScreens = [
+            // HomeStack
+            "Dashboard",
+            "MyCourses",
+            // CoursesStack
+            "CourseDetail",
+            "CourseVideo",
+            "CoursePurchase",
+            "CourseTest",
+            "CourseVideoSeriesList",
+            // TestsStack
+            "Assessment",
+            "FillExercise",
+            "MultilExercise",
+            "MultilExerciseCustom",
+            "TestResults",
+            "AssessmentCustom",
+            // ProfileStack
+            "EditProfile",
+            "CertificatesList",
+            "CertificateDetail",
+            "HistoryTest",
+            "CompletedTests",
+            // "TestResults" đã có ở trên
+          ];
+
+          // Nếu tên màn hình nằm trong danh sách, ẩn nó đi
+          if (tabHiddenScreens.includes(routeName)) {
+            return { display: "none" };
+          }
+
+          // Nếu không thì hiện nó ra
+          return { display: "flex" };
+        })(route),
       })}
     >
       <Tab.Screen name="Home" component={HomeStackNavigator} />

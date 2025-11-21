@@ -132,6 +132,11 @@ const User = () => {
     page * rowsPerPage + rowsPerPage
   );
 
+  // Convert seconds to hours
+  const secondsToHours = (totalSeconds) => {
+    return Number(totalSeconds) / 3600;
+  };
+
   // Show loading state
   if (usersLoading) {
     return (
@@ -230,7 +235,9 @@ const User = () => {
                     {Math.round(
                       users.reduce(
                         (total, user) =>
-                          total + (user.stats?.totalStudyHours || 0),
+                          total +
+                          (secondsToHours(user.stats?.totalStudyHoursOfUser) ||
+                            0),
                         0
                       )
                     )}

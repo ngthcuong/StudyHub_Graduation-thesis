@@ -38,6 +38,10 @@ import FillInBlankTest from "../pages/test/FillInBlankTest";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 
+import PaymentSuccessPage from "../components/PaymentSuccessPage";
+import PaymentFailedPage from "../components/PaymentFailedPage";
+import CancelPaymentPage from "../components/CancelPaymentPage";
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -49,6 +53,18 @@ export const router = createBrowserRouter([
       {
         path: "/verify-certificate",
         element: <VerifyCertificatePage />,
+      },
+      {
+        path: "payment-success",
+        element: <PaymentSuccessPage />,
+      },
+      {
+        path: "payment-failed",
+        element: <PaymentFailedPage />,
+      },
+      {
+        path: "payment-cancel",
+        element: <CancelPaymentPage />,
       },
       {
         element: <ProtectedLayout />,

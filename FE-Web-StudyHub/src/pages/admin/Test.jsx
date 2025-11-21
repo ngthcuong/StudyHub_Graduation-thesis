@@ -118,8 +118,11 @@ const Test = () => {
 
       const matchesCustomTest =
         customTestFilter === "All" ||
-        (customTestFilter === "Custom" && !test.courseId) ||
-        (customTestFilter === "Course" && test.courseId);
+        (customTestFilter === "Custom" &&
+          (!test.courseId || test.courseId === "000000000000000000000000")) ||
+        (customTestFilter === "Course" &&
+          test.courseId &&
+          test.courseId !== "000000000000000000000000");
 
       return (
         matchesSearch &&
@@ -606,14 +609,23 @@ const Test = () => {
                           <TableCell>
                             <Chip
                               label={
-                                test.courseId ? "Course Test" : "Custom Test"
+                                test.courseId &&
+                                test.courseId !== "000000000000000000000000"
+                                  ? "Course Test"
+                                  : "Custom Test"
                               }
                               size="small"
                               sx={{
-                                backgroundColor: test.courseId
-                                  ? "#e0f2fe"
-                                  : "#fff3e0",
-                                color: test.courseId ? "#0277bd" : "#f57c00",
+                                backgroundColor:
+                                  test.courseId &&
+                                  test.courseId !== "000000000000000000000000"
+                                    ? "#e0f2fe"
+                                    : "#fff3e0",
+                                color:
+                                  test.courseId &&
+                                  test.courseId !== "000000000000000000000000"
+                                    ? "#0277bd"
+                                    : "#f57c00",
                                 fontWeight: 500,
                               }}
                             />

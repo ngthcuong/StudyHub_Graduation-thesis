@@ -20,8 +20,6 @@ const CourseRatingStats = ({ courseId }) => {
     skip: !courseId,
   });
 
-  console.log(statsData);
-
   if (!courseId) return null;
 
   if (isLoading) {

@@ -16,7 +16,8 @@ const CertificateDetailScreen = () => {
   const route = useRoute();
   const { item } = route.params || {};
 
-  const transactionHash = item?.blockchain?.certificateHash || "";
+  const transactionHash =
+    item?.blockchain?.certificateHash || item?.blockchain?.certHash || "";
   const metadata = item?.ipfs?.metadataURI || "";
 
   const handleCopy = async (text) => {
@@ -77,11 +78,17 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Student Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Student Name:</Text>
-          <Text style={styles.value}>{item?.student?.name || ""}</Text>
+          <Text style={styles.value}>
+            {item?.student?.name || item?.metadata?.student?.name || ""}
+          </Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Student Address:</Text>
-          <Text style={styles.value}>{item?.student?.walletAddress || ""}</Text>
+          <Text style={styles.value}>
+            {item?.student?.walletAddress ||
+              item?.metadata?.student?.walletAddress ||
+              ""}
+          </Text>
         </View>
       </View>
 
@@ -90,11 +97,17 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Issuer Organization</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Organization Name:</Text>
-          <Text style={styles.value}>{item?.issuer?.name || ""}</Text>
+          <Text style={styles.value}>
+            {item?.issuer?.name || item?.metadata?.issuer?.name || ""}
+          </Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Organization Address:</Text>
-          <Text style={styles.value}>{item?.issuer?.walletAddress || ""}</Text>
+          <Text style={styles.value}>
+            {item?.issuer?.walletAddress ||
+              item?.metadata?.issuer?.walletAddress ||
+              ""}
+          </Text>
         </View>
       </View>
 
@@ -103,7 +116,9 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Course Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Course Name:</Text>
-          <Text style={styles.value}>{item?.course?.title || ""}</Text>
+          <Text style={styles.value}>
+            {item?.course?.title || item?.metadata?.course?.title || ""}
+          </Text>
         </View>
       </View>
 

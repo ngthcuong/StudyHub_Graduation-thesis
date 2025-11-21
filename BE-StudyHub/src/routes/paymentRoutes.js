@@ -35,4 +35,10 @@ router.get(
 // Lấy tất cả payments (admin only) - Đặt cuối để tránh conflict
 router.get("/all", verifyToken, requireAdmin, paymentController.getAllPayments);
 
+router.post(
+  "/create-payment-link",
+  verifyToken,
+  paymentController.createPaymentLink
+);
+
 module.exports = router;
