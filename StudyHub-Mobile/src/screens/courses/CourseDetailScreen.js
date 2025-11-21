@@ -163,6 +163,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
           navigation.navigate("CourseVideoSeriesList", {
             courseId,
             lesson,
+            isFinalTest,
           })
         }
       >

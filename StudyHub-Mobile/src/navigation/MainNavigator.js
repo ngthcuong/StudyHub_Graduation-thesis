@@ -128,13 +128,13 @@ const TestsStackNavigator = () => (
       component={MultilExerciseScreen}
       options={{
         title: "Multiple Choice",
-        tabBarStyle: { display: "none" }, // <-- Thêm dòng này
+        headerShown: false, // <-- Thêm dòng này
       }}
     />
     <TestsStack.Screen
       name="MultilExerciseCustom"
       component={MultilExerciseCustomScreen}
-      options={{ title: "Multiple Choice Custom" }}
+      options={{ title: "Multiple Choice Custom", headerShown: false }}
     />
     <TestsStack.Screen
       name="TestResults"

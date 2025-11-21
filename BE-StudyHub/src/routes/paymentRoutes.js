@@ -41,4 +41,7 @@ router.post(
   paymentController.createPaymentLink
 );
 
+// webHook using ngork https://capaciously-unclimbed-xavier.ngrok-free.dev/api/v1/payments/webhook
+router.post("/webhook", paymentController.receiveHookPayment);
+
 module.exports = router;

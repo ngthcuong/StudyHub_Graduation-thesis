@@ -692,7 +692,7 @@ const TestResultsScreen = ({ navigation }) => {
               }
               style={[
                 styles.actionButton,
-                { backgroundColor: customColors.success },
+                { backgroundColor: customColors.success, marginBottom: 30 },
               ]}
               labelStyle={styles.actionButtonLabel}
               icon="rocket"

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -15,6 +15,8 @@ import {
 } from "react-native";
 // Import icon
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+
+import { courseApi } from "../../services/courseApi";
 
 // --- Bảng màu cho Light/Dark Mode ---
 // Dựa trên các màu "primary", "background-light", "surface-dark", v.v. trong HTML
@@ -119,7 +121,21 @@ const VideoListItem = ({
 
 // --- Màn hình chính ---
 const CourseVideoSeriesListScreen = ({ navigation }) => {
-  const { courseId, lesson } = useRoute().params;
+  const { courseId, lesson, isFinalTest } = useRoute().params;
+  const [course, setCourse] = useState(null);
+
+  const fetchCourseId = async () => {
+    try {
+      const data = await courseApi.getCourseById(courseId);
+      setCourse(data);
+    } catch (error) {
+      console.error("Error fetching course data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourseId();
+  }, []);
 
   const videoParts = lesson.parts.filter(
     (part) => part.contentType === "video"
@@ -154,7 +170,7 @@ const CourseVideoSeriesListScreen = ({ navigation }) => {
             color={colors.textPrimary}
           />
         </TouchableOpacity> */}
-        <Text style={styles.appBarTitle}>Bài 3: Giao tiếp nhà hàng</Text>
+        <Text style={styles.appBarTitle}>{lesson.title}</Text>
         {/* Thêm 1 View trống để căn giữa tiêu đề */}
         <View style={styles.iconButton} />
       </View>
@@ -167,7 +183,7 @@ const CourseVideoSeriesListScreen = ({ navigation }) => {
         {/* HeaderImage */}
         <View style={styles.paddingContainer}>
           <ImageBackground
-            source={{ uri: "https://picsum.photos/seed/restaurant/400/218" }} // Thay thế link ảnh
+            source={{ uri: course ? course.thumbnailUrl : null }} // Thay thế link ảnh
             style={styles.headerImage}
             imageStyle={styles.headerImageStyle}
             resizeMode="cover"
@@ -175,18 +191,21 @@ const CourseVideoSeriesListScreen = ({ navigation }) => {
         </View>
 
         {/* ProgressBar */}
-        <View style={styles.progressSection}>
+        {/* <View style={styles.progressSection}>
           <Text style={styles.progressText}>Hoàn thành 1/3 video</Text>
           <View style={styles.progressBarBackground}>
             <View style={styles.progressBarFill} />
           </View>
-        </View>
+        </View> */}
 
         {/* BodyText */}
         <Text style={styles.bodyText}>
-          Trong bài học này, bạn sẽ học các từ vựng và mẫu câu cần thiết để tự
-          tin giao tiếp khi gọi món, thanh toán và tương tác với nhân viên tại
-          nhà hàng.
+          {lesson.exercises.map((exercise, index) => (
+            <Text key={exercise._id}>
+              {exercise.description}
+              {"\n\n"}
+            </Text>
+          ))}
         </Text>
 
         {/* Video List */}
@@ -197,7 +216,7 @@ const CourseVideoSeriesListScreen = ({ navigation }) => {
                 key={part._id}
                 title={`Video ${index + 1}: ${part.title}`}
                 duration=""
-                thumbnailUri="https://picsum.photos/seed/vocab/140/140" // Thay thế link ảnh
+                thumbnailUri={course ? course.thumbnailUrl : null} // Thay thế link ảnh
                 status="completed"
                 colors={colors}
                 navigation={navigation}

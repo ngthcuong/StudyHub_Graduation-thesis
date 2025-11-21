@@ -395,10 +395,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#D1D5DB",
+    marginBottom: 30,
   },
   primaryButton: { backgroundColor: "#3B82F6", borderColor: "#3B82F6" },
   disabledButton: { opacity: 0.5 },
-  navButtonText: { fontSize: 16, color: "#6B7280", marginLeft: 8 },
+  navButtonText: {
+    fontSize: 16,
+    color: "#6B7280",
+    marginLeft: 8,
+  },
   primaryButtonText: { fontSize: 16, color: "#FFF", fontWeight: "600" },
 });
 

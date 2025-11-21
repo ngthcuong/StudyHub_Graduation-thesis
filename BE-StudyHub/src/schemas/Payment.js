@@ -16,6 +16,18 @@ const paymentSchem = mongoose.Schema(
       type: Number,
       require: true,
     },
+    orderCode: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    status: {
+      type: String,
+      enum: ["PENDING", "PAID", "CANCELLED"],
+      default: "PENDING",
+    },
+    payOSLink: String,
+    paymentLinkId: String,
   },
   { timestamps: true }
 );

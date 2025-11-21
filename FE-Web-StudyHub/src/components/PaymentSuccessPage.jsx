@@ -1,8 +1,41 @@
-import React from "react";
+import React, { useEffect } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useCreatePaymentMutation } from "../services/paymentApi";
 
 const PaymentSuccessPage = () => {
+  const [searchParams] = useSearchParams();
+
+  const code = searchParams.get("code");
+  const id = searchParams.get("id");
+  const cancel = searchParams.get("cancel");
+  const status = searchParams.get("status");
+  const orderCode = searchParams.get("orderCode");
+
+  console.log({ code, id, cancel, status, orderCode });
+  const [createPayment] = useCreatePaymentMutation();
+
+  useEffect(() => {
+    if (cancel === "false" && status === "PASSED") {
+      // Xử lý khi thanh toán thành công
+      handlePaymentSuccess();
+    }
+  }, [cancel, status]);
+
+  const handlePaymentSuccess = async () => {
+    try {
+      const paymentData = {
+        courseId: id,
+        amount: 2000, // Giả sử số tiền là 2000đ, bạn có thể thay đổi theo logic của mình
+      };
+
+      const response = await createPayment(paymentData).unwrap();
+      console.log("Payment record created:", response);
+    } catch (error) {
+      console.error("Error creating payment record:", error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-slate-50">
       {/* ==================== Header ==================== */}
@@ -125,12 +158,19 @@ const PaymentSuccessPage = () => {
 
           {/* 5. Nút Bấm */}
           <div className="flex flex-col gap-4 sm:flex-row">
-            <button className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-              Bắt đầu học ngay
-            </button>
-            <button className="w-full rounded-lg bg-gray-100 px-6 py-3 font-semibold text-gray-800 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
+            <Link
+              to="/home/courses"
+              className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              {" "}
+              Bắt đầu học ngay{" "}
+            </Link>
+            <Link
+              to="/home/dashboard"
+              className="w-full rounded-lg bg-gray-100 px-6 py-3 font-semibold text-gray-800 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 text-center"
+            >
               Về trang chủ
-            </button>
+            </Link>
           </div>
         </div>
       </main>

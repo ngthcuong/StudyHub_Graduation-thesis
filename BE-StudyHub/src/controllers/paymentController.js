@@ -1,4 +1,6 @@
 const paymentModel = require("../models/paymentModel");
+const payment = require("../schemas/Payment");
+const User = require("../schemas/User");
 
 const { PayOS } = require("@payos/node");
 
@@ -182,10 +184,12 @@ const createPaymentLink = async (req, res) => {
 
     const YOUR_DOMAIN = process.env.FRONTEND_URL || "http://localhost:5173";
 
+    const orderCode = Number(String(Date.now()).slice(-6));
+
     const paymentBody = {
-      orderCode: Number(String(Date.now()).slice(-6)), // mã đơn hàng 6 số
+      orderCode, // mã đơn hàng 6 số
       amount,
-      description: "Khóa học của StudyHub",
+      description: `${courseId}`,
       items: [
         {
           name: `Course ${courseId}`,
@@ -199,21 +203,62 @@ const createPaymentLink = async (req, res) => {
 
     const paymentLinkResponse = await payOS.paymentRequests.create(paymentBody);
 
-    // Lưu thông tin payment vào DB
-    // const savedPayment = await paymentModel.createPayment({
-    //   courseId,
-    //   studentId: userId,
-    //   amount,
-    // });
+    console.log("Payment link created:", paymentLinkResponse);
+
+    const savedPayment = await payment.create({
+      studentId: userId,
+      courseId,
+      amount,
+      orderCode,
+      status: "PENDING",
+      payOSLink: paymentLinkResponse.checkoutUrl,
+      paymentLinkId: paymentLinkResponse.paymentLinkId,
+    });
 
     res.status(201).json({
       message: "Payment link created successfully",
-      // payment: savedPayment,
+      payment: savedPayment,
       payOSLink: paymentLinkResponse.checkoutUrl,
     });
   } catch (error) {
     console.error("Error creating payment link:", error);
     res.status(500).json({ error: "Failed to create payment link" });
+  }
+};
+
+const receiveHookPayment = async (req, res) => {
+  try {
+    const payload = req.body;
+
+    const { data } = payload;
+    const { orderCode, code, success } = data;
+
+    if (!orderCode) {
+      return res.status(400).json({ error: "Missing orderCode" });
+    }
+
+    const paymentOrder = await payment.findOne({ orderCode });
+    if (!paymentOrder)
+      return res.status(404).json({ error: "Payment not found" });
+
+    // Cập nhật trạng thái
+    if (code === "00" && success === true) {
+      paymentOrder.status = "PAID";
+    } else {
+      paymentOrder.status = "CANCELLED";
+    }
+    await paymentOrder.save();
+
+    await User.findByIdAndUpdate(
+      paymentOrder.studentId,
+      { $addToSet: { courses: paymentOrder.courseId } }, // $addToSet để tránh duplicate
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Webhook processed" });
+  } catch (error) {
+    console.error("Error processing PayOS webhook:", error);
+    res.status(500).json({ error: "Webhook error" });
   }
 };
 
@@ -225,4 +270,5 @@ module.exports = {
   getAllPayments,
   getAdminPaymentStats,
   createPaymentLink,
+  receiveHookPayment,
 };

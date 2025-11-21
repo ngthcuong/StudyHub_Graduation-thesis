@@ -294,15 +294,15 @@ export default function ModalCreateCustomTest({
       console.log("API Response:", response);
       apiSuccess = true;
       if (payload_form.questionType === "FIB") {
-        navigate(`/test/${response?.data?.data?._id}/fill-in-blank`, {
+        navigate(`/test/${response?.data?._id}/fill-in-blank`, {
           state: {
-            payloadForm: { ...payload_form, testId: response?.data?.data?._id },
+            payloadForm: { ...payload_form, testId: response?.data?._id },
           },
         });
       } else if (payload_form.questionType === "MCQ") {
-        navigate(`/test/${response?.data?.data?._id}/custom`, {
+        navigate(`/test/${response?.data?._id}/custom`, {
           state: {
-            payloadForm: { ...payload_form, testId: response?.data?.data?._id },
+            payloadForm: { ...payload_form, testId: response?.data?._id },
           },
         });
       } else {
