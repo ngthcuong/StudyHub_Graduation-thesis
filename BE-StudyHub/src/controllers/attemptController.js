@@ -6,7 +6,7 @@ const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
 
-const StudyStats = require("../schemas/studyStats");
+// const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
 const dayjs = require("dayjs");
 
@@ -151,29 +151,17 @@ const submitAttempt = async (req, res) => {
       });
 
       // lấy thời gian học hằng tuần
-      // let timeWeekly = {};
-      // try {
-      //   const timedata = await getStudyStats(userId);
-      //   console.log("Study stats data sent to grading service:", timedata);
-      //   const result = getWeekWithMaxHours(dailyStats);
-      //   // { maxWeek: "42", maxHours: 0.167 }
-      //   console.log(result);
-      //   timeWeekly = result;
-      // } catch (error) {
-      //   console.error("Error submitting answers to grading service:", error);
-      // }
-
-      // mới
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const year = now.getFullYear();
-      const stats = await StudyStats.findOne({
-        userId,
-        year,
-        month,
-      });
-
-      const result = getMaxStudyWeek(stats);
+      let timeWeekly = {};
+      try {
+        const timedata = await getStudyStats(userId);
+        console.log("Study stats data sent to grading service:", timedata);
+        const result = getWeekWithMaxHours(dailyStats);
+        // { maxWeek: "42", maxHours: 0.167 }
+        console.log(result);
+        timeWeekly = result;
+      } catch (error) {
+        console.error("Error submitting answers to grading service:", error);
+      }
 
       // --- Lấy thông tin học sinh ---
       const userInfo = await attemptModel.findAttemptById(attemptId);
@@ -181,7 +169,7 @@ const submitAttempt = async (req, res) => {
         student_id: userInfo?.userId._id.toString(),
         name: userInfo?.userId.fullName,
         current_level: `TOEIC ${userInfo?.userId?.currentLevel?.TOEIC}`,
-        study_hours_per_week: Math.ceil(parseFloat(result.totalHours)) || 2,
+        study_hours_per_week: timeWeekly.maxHours || 2,
         learning_goals:
           userInfo?.userId?.learningGoals || "Đạt TOEIC 750 trong vòng 6 tháng",
         learning_preferences: userInfo?.userId?.learningPreferences || [],
@@ -204,6 +192,8 @@ const submitAttempt = async (req, res) => {
       const history = await attemptDetailModel.getAllAttemptDetailsByUserId(
         userInfo?.userId._id
       );
+
+      console.log("Full test history:", history);
 
       const simplifiedResults = history.slice(0, 3).map((item) => ({
         test_date:
@@ -706,6 +696,13 @@ function getWeekNumber(d) {
   return Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
 }
 
+function extractLevel(levelStr) {
+  if (!levelStr) return null;
+  // Dùng regex lấy 2 số cách nhau dấu -
+  const match = levelStr.match(/(\d+\s*-\s*\d+)/);
+  return match ? match[1] : levelStr; // nếu ko match thì giữ nguyên
+}
+
 const updateAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
@@ -736,62 +733,6 @@ const deleteAttemptById = async (req, res) => {
     throw new Error("Failed to delete attempt");
   }
 };
-
-// Hàm tính số tuần theo chuẩn ISO Week
-function getISOWeek(date) {
-  const tmp = new Date(date.getTime());
-  tmp.setHours(0, 0, 0, 0);
-
-  // Thứ 5 quyết định tuần ISO
-  tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
-
-  const week1 = new Date(tmp.getFullYear(), 0, 4);
-  return (
-    1 +
-    Math.round(((tmp - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
-  );
-}
-
-// Hàm chính: tính tuần học nhiều nhất
-function getMaxStudyWeek(stats) {
-  const { year, month, dailyStats } = stats;
-
-  // JS month index
-  const jsMonth = month - 1;
-
-  const weekTotals = {}; // chứa tổng thời gian theo tuần
-
-  dailyStats.forEach((item) => {
-    // Lấy ngày đầy đủ
-    const date = new Date(year, jsMonth, item.day);
-
-    // Tính số tuần
-    const week = getISOWeek(date);
-
-    if (!weekTotals[week]) {
-      weekTotals[week] = 0;
-    }
-    weekTotals[week] += item.durationSeconds;
-  });
-
-  // Tìm tuần có tổng lớn nhất
-  let maxWeek = null;
-  let maxSeconds = 0;
-
-  Object.entries(weekTotals).forEach(([week, total]) => {
-    if (total > maxSeconds) {
-      maxSeconds = total;
-      maxWeek = week;
-    }
-  });
-
-  return {
-    week: Number(maxWeek),
-    totalSeconds: maxSeconds,
-    totalMinutes: (maxSeconds / 60).toFixed(2),
-    totalHours: (maxSeconds / 3600).toFixed(2),
-  };
-}
 
 module.exports = {
   startAttempt,

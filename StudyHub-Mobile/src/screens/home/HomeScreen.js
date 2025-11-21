@@ -88,9 +88,9 @@ const HomeScreen = ({ navigation }) => {
         <Text style={styles.courseTitle} numberOfLines={2}>
           {course.title}
         </Text>
-        <Text style={styles.courseProgress}>
+        {/* <Text style={styles.courseProgress}>
           Progress: {course.progress || 0}%
-        </Text>
+        </Text> */}
       </View>
     </TouchableOpacity>
   );

@@ -23,7 +23,7 @@ import { Picker } from "@react-native-picker/picker";
 
 // MỚI: Định nghĩa 2 mảng dữ liệu cho Picker
 const TOEIC_LEVELS = [
-  { label: "Chọn cấp độ TOEIC", value: "" },
+  { label: "choise TOEIC", value: "" },
   { label: "10 - 250 (Beginner - A1)", value: "10-250" },
   { label: "255 - 400 (Elementary - A2)", value: "255-400" },
   { label: "405 - 600 (Intermediate - B1)", value: "405-600" },
@@ -33,7 +33,7 @@ const TOEIC_LEVELS = [
 ];
 
 const IELTS_LEVELS = [
-  { label: "Chọn cấp độ IELTS", value: "" },
+  { label: "choise IELTS", value: "" },
   { label: "0-3.5 (Beginner - A1/A2)", value: "0-3.5" },
   { label: "4.0-5.0 (Elementary - B1 Low)", value: "4.0-5.0" },
   { label: "5.5-6.0 (Intermediate - B1/B2)", value: "5.5-6.0" },
