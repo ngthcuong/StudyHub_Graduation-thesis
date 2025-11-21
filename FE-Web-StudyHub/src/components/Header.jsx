@@ -177,7 +177,7 @@ const Header = ({ title, subtitle, disableBack = false, onBack }) => {
         maxWidth="lg"
         className="flex items-center justify-between py-4"
       >
-        <div className="font-bold text-2xl">Logo</div>
+        <div className="font-bold text-2xl">StudyHub</div>
         <nav className="flex items-center gap-8">
           <a href="/" className="text-gray-700 hover:text-blue-600">
             Home

@@ -1,8 +1,8 @@
 # Certificate Verification Flow - Visual Summary
 
-## 🎯 OLD vs NEW Approach
+## OLD vs NEW Approach
 
-### ❌ OLD APPROACH: Cross-Source Validation Only
+### OLD APPROACH: Cross-Source Validation Only
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -30,20 +30,20 @@ User Request
                     ┌───────────────┴───────────────┐
                     │                               │
                     ▼                               ▼
-              ✅ VALID                        ❌ INVALID
+              VALID                        INVALID
          (Consistent data)            (Don't know which is correct)
 
 PROBLEMS:
-❌ Must query 3 systems to verify
-❌ Don't know who issued the certificate
-❌ Don't know if data was tampered
-❌ Cannot verify offline
-❌ No cryptographic proof
+- Must query 3 systems to verify
+- Don't know who issued the certificate
+- Don't know if data was tampered
+- Cannot verify offline
+- No cryptographic proof
 ```
 
 ---
 
-### ✅ NEW APPROACH: Signature-Based Verification
+### NEW APPROACH: Signature-Based Verification
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -72,10 +72,10 @@ User Request
 │ Signature Valid?│
 └─────────────────┘
      │
-     ├─────── NO ────────▶ ❌ REJECTED
+     ├─────── NO ────────▶ REJECTED
      │                     (Certificate forged/tampered)
      │
-     └─────── YES ───────▶ ✅ TRUSTED
+     └─────── YES ───────▶ TRUSTED
                           (Cryptographic proof valid)
                                    │
                                    ▼
@@ -91,20 +91,20 @@ User Request
                     Consistent        Inconsistent
                           │                 │
                           ▼                 ▼
-                    ✅ TRUSTED       ⚠️ WARNING
+                    TRUSTED       WARNING
                  (All good)    (Valid but sync issue)
 
 BENEFITS:
-✅ Only need IPFS metadata to verify
-✅ Know exactly who issued (cryptographic proof)
-✅ Detect any tampering instantly
-✅ Can verify offline
-✅ Don't need DB/Blockchain to trust
+- Only need IPFS metadata to verify
+- Know exactly who issued (cryptographic proof)
+- Detect any tampering instantly
+- Can verify offline
+- Don't need DB/Blockchain to trust
 ```
 
 ---
 
-## 🔐 Signature Structure
+## Signature Structure
 
 ```
 ┌───────────────────────────────────────────────────────────┐
@@ -117,29 +117,29 @@ BENEFITS:
 │    "student": { ... },                                     │
 │    "course": { ... },                                      │
 │    "issuer": {                                             │
-│      "walletAddress": "0x...",  ◄── Known trusted issuer  │
+│      "walletAddress": "0x...",  <- Known trusted issuer   │
 │      "name": "StudyHub"                                    │
 │    },                                                      │
 │    "validity": { ... },                                    │
 │    "blockchain": { ... },                                  │
 │                                                            │
-│    "signature": {                  ◄── CRYPTOGRAPHIC PROOF│
-│      "algorithm": "secp256k1",     ◄── Ethereum standard  │
-│      "signedHash": "0x...",        ◄── Hash of metadata   │
-│      "value": "0x...",             ◄── Digital signature  │
-│      "signedBy": "0x..."           ◄── Issuer address     │
+│    "signature": {                  <- CRYPTOGRAPHIC PROOF │
+│      "algorithm": "secp256k1",     <- Ethereum standard   │
+│      "signedHash": "0x...",        <- Hash of metadata    │
+│      "value": "0x...",             <- Digital signature   │
+│      "signedBy": "0x..."           <- Issuer address      │
 │    }                                                       │
 │  }                                                         │
 │                                                            │
-│  ↓ Upload to IPFS (immutable storage)                     │
-│  ↓ Anyone can verify with just this metadata              │
-│  ↓ No need to access DB or Blockchain                     │
+│  -> Upload to IPFS (immutable storage)                    │
+│  -> Anyone can verify with just this metadata             │
+│  -> No need to access DB or Blockchain                    │
 └───────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🎯 Trust Level Decision Tree
+## Trust Level Decision Tree
 
 ```
                     ┌──────────────┐
@@ -184,22 +184,22 @@ BENEFITS:
 
 ---
 
-## 📊 Comparison Table
+## Comparison Table
 
-| Aspect                 | OLD (Cross-validation)  | NEW (Signature-based)  |
-| ---------------------- | ----------------------- | ---------------------- |
-| **Security**           | ⚠️ Data comparison only | ✅ Cryptographic proof |
-| **Trust**              | ❓ Don't know issuer    | ✅ Know exact issuer   |
-| **Tampering**          | ❌ Hard to detect       | ✅ Instant detection   |
-| **Dependencies**       | ❌ Need 3 systems       | ✅ Only need IPFS      |
-| **Offline**            | ❌ Cannot verify        | ✅ Can verify          |
-| **Performance**        | ⚠️ Query 3 sources      | ✅ Query 1 source      |
-| **Reliability**        | ⚠️ Fail if 1 down       | ✅ Work if IPFS up     |
-| **Forgery Protection** | ❌ Weak                 | ✅ Strong              |
+| Aspect                 | OLD (Cross-validation) | NEW (Signature-based) |
+| ---------------------- | ---------------------- | --------------------- |
+| **Security**           | Data comparison only   | Cryptographic proof   |
+| **Trust**              | Don't know issuer      | Know exact issuer     |
+| **Tampering**          | Hard to detect         | Instant detection     |
+| **Dependencies**       | Need 3 systems         | Only need IPFS        |
+| **Offline**            | Cannot verify          | Can verify            |
+| **Performance**        | Query 3 sources        | Query 1 source        |
+| **Reliability**        | Fail if 1 down         | Work if IPFS up       |
+| **Forgery Protection** | Weak                   | Strong                |
 
 ---
 
-## 🔄 Certificate Issuance Flow
+## Certificate Issuance Flow
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -251,7 +251,7 @@ Student Request
 └──────────────────────────────────────┘
      │
      ▼
-✅ Certificate Issued Successfully
+Certificate Issued Successfully
    - Stored in 3 places (DB, Blockchain, IPFS)
    - Signature ensures authenticity
    - Can verify with just IPFS data
@@ -259,7 +259,7 @@ Student Request
 
 ---
 
-## 🛡️ Security Model
+## Security Model
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -268,31 +268,31 @@ Student Request
 │                                                            │
 │  Layer 1: Digital Signature (CRITICAL)                     │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │ ✓ Proves issuer identity (who issued)             │   │
-│  │ ✓ Ensures data integrity (not tampered)           │   │
-│  │ ✓ Non-repudiation (cannot deny)                   │   │
-│  │ ✓ Cryptographically secure (secp256k1)            │   │
+│  │ - Proves issuer identity (who issued)             │   │
+│  │ - Ensures data integrity (not tampered)           │   │
+│  │ - Non-repudiation (cannot deny)                   │   │
+│  │ - Cryptographically secure (secp256k1)            │   │
 │  └────────────────────────────────────────────────────┘   │
-│                        ↓                                    │
+│                        |                                    │
 │  Layer 2: IPFS Storage (IMMUTABLE)                         │
 │  ┌────────────────────────────────────────────────────┐   │
-│  │ ✓ Content-addressed (CID based on content)        │   │
-│  │ ✓ Cannot modify without changing CID              │   │
-│  │ ✓ Distributed storage (no single point failure)   │   │
+│  │ - Content-addressed (CID based on content)        │   │
+│  │ - Cannot modify without changing CID              │   │
+│  │ - Distributed storage (no single point failure)   │   │
 │  └────────────────────────────────────────────────────┘   │
-│                        ↓                                    │
+│                        |                                    │
 │  Layer 3: Blockchain (PERMANENT)                           │
 │  ┌────────────────────────────────────────────────────┐   │
-│  │ ✓ Certificate hash recorded on-chain              │   │
-│  │ ✓ Immutable transaction history                   │   │
-│  │ ✓ Public verifiable                               │   │
+│  │ - Certificate hash recorded on-chain              │   │
+│  │ - Immutable transaction history                   │   │
+│  │ - Public verifiable                               │   │
 │  └────────────────────────────────────────────────────┘   │
-│                        ↓                                    │
+│                        |                                    │
 │  Layer 4: Cross-validation (OPTIONAL)                      │
 │  ┌────────────────────────────────────────────────────┐   │
-│  │ ✓ Detect sync issues between systems              │   │
-│  │ ✓ Additional integrity check                      │   │
-│  │ ✓ Warning if inconsistent (not reject)            │   │
+│  │ - Detect sync issues between systems              │   │
+│  │ - Additional integrity check                      │   │
+│  │ - Warning if inconsistent (not reject)            │   │
 │  └────────────────────────────────────────────────────┘   │
 │                                                             │
 └────────────────────────────────────────────────────────────┘
@@ -300,25 +300,25 @@ Student Request
 ATTACK SCENARIOS:
 
 1. Hacker uploads fake metadata to IPFS
-   → ❌ Signature invalid (no private key)
+   -> Signature invalid (no private key)
 
 2. MITM modifies metadata in transit
-   → ❌ Signature verification fails
+   -> Signature verification fails
 
 3. Malicious admin modifies database
-   → ⚠️ Cross-validation detects mismatch
-   → ✅ IPFS signature still valid (source of truth)
+   -> Cross-validation detects mismatch
+   -> IPFS signature still valid (source of truth)
 
 4. Blockchain data corrupted
-   → ✅ IPFS metadata + signature sufficient
+   -> IPFS metadata + signature sufficient
 
 5. Replay attack (use old certificate)
-   → ✅ Unique cert code + timestamp prevents
+   -> Unique cert code + timestamp prevents
 ```
 
 ---
 
-## 📈 Performance Impact
+## Performance Impact
 
 ```
 BEFORE (Cross-validation):
@@ -341,18 +341,8 @@ AFTER (Signature-based):
 └─────────────────────────────────────┘
 
 ADDITIONAL BENEFITS:
-✅ No MongoDB/Blockchain dependency
-✅ Can cache IPFS results
-✅ Parallel verification possible
-✅ Offline verification supported
+- No MongoDB/Blockchain dependency
+- Can cache IPFS results
+- Parallel verification possible
+- Offline verification supported
 ```
-
----
-
-**Legend**:
-
-- ✅ = Success / Benefit
-- ❌ = Failure / Problem
-- ⚠️ = Warning / Caution
-- 🚀 = Performance improvement
-- 🔒 = Security feature
