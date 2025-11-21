@@ -241,7 +241,7 @@ const submitAttempt = async (req, res) => {
         gradingPayload.use_gemini = false; // nếu là bài test cuối, ko dùng gemini
       }
       const response = await axios.post(
-        "http://localhost:8000/grade/",
+        "https://ai-service-studyhub.onrender.com/grade/",
         gradingPayload
       );
 

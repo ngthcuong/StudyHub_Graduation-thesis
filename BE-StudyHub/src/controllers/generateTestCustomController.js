@@ -96,7 +96,7 @@ const generateTestCustomController = async (req, res) => {
     // 4. GỌI DỊCH VỤ AI VỚI CẤU TRÚC MỚI
     // -----------------------------------------------------
     const aiResponse = await axios.post(
-      "http://localhost:8000/generate-test-custom/", // ✅ Cập nhật Endpoint
+      "https://ai-service-studyhub.onrender.com/generate-test-custom/", // ✅ Cập nhật Endpoint
       aiPayload // ✅ Sử dụng Payload mới
     );
 

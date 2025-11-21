@@ -142,7 +142,7 @@ const submitAnswers = async (req, res) => {
     };
 
     const response = await axios.post(
-      "http://localhost:8000/grade",
+      "https://ai-service-studyhub.onrender.com/grade",
       gradingPayload
     );
 
