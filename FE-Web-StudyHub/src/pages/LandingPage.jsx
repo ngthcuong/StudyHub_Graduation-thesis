@@ -8,6 +8,8 @@ import {
   Card,
   CardContent,
   Rating,
+  CircularProgress,
+  Avatar,
 } from "@mui/material";
 import {
   X,
@@ -20,61 +22,55 @@ import Footer from "../components/Footer";
 import LecturerImage from "../assets/lecture.png";
 import StudentImage from "../assets/student.png";
 import CourseRecommend from "./course/CourseRecommend";
-
-const testimonials = [
-  {
-    name: "Jane Doe 1 ",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Jane Doe 2",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Jane Doe 3",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Jane Doe 4",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Jane Doe 5",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Jane Doe 6",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Jane Doe 7",
-    course: "Course name",
-    text: `"Byway's tech courses are top-notch! As someone who's always looking to stay ahead in the rapidly evolving tech world, I appreciate the up-to-date content and engaging multimedia."`,
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-];
-
-const stats = [
-  { value: "4.8", label: "Average Rating", icon: true },
-  { value: "2,847", label: "Total Reviews" },
-  { value: "96%", label: "Satisfaction Rate" },
-  { value: "15k+", label: "Students Enrolled" },
-];
+import {
+  useGetAllReviewsQuery,
+  useGetAdminReviewStatsQuery,
+} from "../services/reviewApi";
 
 const LandingPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { data: reviewsData, isLoading: isLoadingReviews } =
+    useGetAllReviewsQuery();
+  const { data: statsData, isLoading: isLoadingStats } =
+    useGetAdminReviewStatsQuery();
+
+  const allReviews = reviewsData?.reviews || [];
+  const testimonials = allReviews
+    .filter((review) => review.rating === 5)
+    .slice(0, 10);
+
+  const reviewStats = statsData?.stats || {};
+
+  const calculateSatisfactionRate = () => {
+    if (!reviewStats.ratingDistribution) return 0;
+    const { ratingDistribution, totalReviews } = reviewStats;
+    const satisfiedCount =
+      (ratingDistribution[4] || 0) + (ratingDistribution[5] || 0);
+    return totalReviews > 0
+      ? Math.round((satisfiedCount / totalReviews) * 100)
+      : 0;
+  };
+
+  const stats = [
+    {
+      value: reviewStats?.averageRating
+        ? reviewStats.averageRating.toFixed(1)
+        : "0.0",
+      label: "Average Rating",
+      icon: true,
+    },
+    {
+      value: reviewStats?.totalReviews
+        ? reviewStats.totalReviews.toLocaleString()
+        : "0",
+      label: "Total Reviews",
+    },
+    {
+      value: `${calculateSatisfactionRate()}%`,
+      label: "Satisfaction Rate",
+    },
+  ];
 
   return (
     <div className="bg-white min-h-screen font-sans">
@@ -195,7 +191,7 @@ const LandingPage = () => {
 
       {/* Testimonials */}
       <section className="py-16 bg-gray-50">
-        {/* Tiêu đề và nút chuyển */}
+        {/* Title and Navigation Buttons */}
         <Container maxWidth="lg">
           <Box
             sx={{
@@ -208,67 +204,99 @@ const LandingPage = () => {
             <Typography variant="h4" className="!font-bold ">
               What our students say about us
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-              }}
-            >
-              <Button
-                className="!bg-gray-200 !rounded-sm w-16 h-fit"
-                size="small"
-                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 3))}
-                disabled={currentIndex === 0}
+            {!isLoadingReviews && testimonials.length > 3 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                }}
               >
-                <KeyboardArrowLeft />
-              </Button>
-              <Button
-                className="!bg-gray-200 !rounded-sm w-16 h-fit"
-                size="small"
-                onClick={() =>
-                  setCurrentIndex(
-                    Math.min(testimonials.length - 3, currentIndex + 3)
-                  )
-                }
-                disabled={currentIndex >= testimonials.length - 3}
-              >
-                <KeyboardArrowRight />
-              </Button>
-            </Box>
+                <Button
+                  className="!bg-gray-200 !rounded-sm w-16 h-fit"
+                  size="small"
+                  onClick={() => setCurrentIndex(Math.max(0, currentIndex - 3))}
+                  disabled={currentIndex === 0}
+                >
+                  <KeyboardArrowLeft />
+                </Button>
+                <Button
+                  className="!bg-gray-200 !rounded-sm w-16 h-fit"
+                  size="small"
+                  onClick={() =>
+                    setCurrentIndex(
+                      Math.min(testimonials.length - 3, currentIndex + 3)
+                    )
+                  }
+                  disabled={currentIndex >= testimonials.length - 3}
+                >
+                  <KeyboardArrowRight />
+                </Button>
+              </Box>
+            )}
+            {!isLoadingReviews && testimonials.length > 0 && (
+              <Typography variant="caption" className="text-gray-500 mt-2">
+                Showing {testimonials.length} five-star reviews
+              </Typography>
+            )}
           </Box>
 
-          {/* Danh sách các đánh giá */}
-          <Box className="grid gap-4 grid-cols-1 sm:grid-cols-3 relative overflow-hidden pb-0.5">
-            {testimonials
-              .slice(currentIndex, currentIndex + 3)
-              .map((t, idx) => (
-                <Card key={idx} className="min-w-[320px] shadow-lg px-2">
-                  <CardContent>
-                    <Typography variant="body1" className="mb-4 text-blue-700">
-                      <FormatQuote />
-                    </Typography>
-                    <Typography variant="body1" className="!mb-3">
-                      {t.text}
-                    </Typography>
-                    <Box className="flex items-center gap-2">
-                      <img
-                        src={t.avatar}
-                        alt={t.name}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <Box>
-                        <Typography variant="body1" className="!font-semibold">
-                          {t.name}
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-500">
-                          {t.course}
-                        </Typography>
+          {/* Reviews List */}
+          {isLoadingReviews ? (
+            <Box className="flex justify-center items-center py-12">
+              <CircularProgress />
+            </Box>
+          ) : testimonials.length === 0 ? (
+            <Box className="text-center py-12">
+              <Typography variant="body1" className="text-gray-500">
+                No 5-star reviews available yet. Be the first to share your
+                experience!
+              </Typography>
+            </Box>
+          ) : (
+            <Box className="grid gap-4 grid-cols-1 sm:grid-cols-3 relative overflow-hidden pb-0.5">
+              {testimonials
+                .slice(currentIndex, currentIndex + 3)
+                .map((review, idx) => (
+                  <Card
+                    key={review._id || idx}
+                    className="min-w-[320px] shadow-lg px-2"
+                  >
+                    <CardContent>
+                      <Box className="flex items-center justify-between mb-3">
+                        <FormatQuote className="text-blue-700" />
+                        <Rating value={review.rating} readOnly size="small" />
                       </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
-          </Box>
+                      <Typography
+                        variant="body1"
+                        className="!mb-4 line-clamp-4"
+                      >
+                        "{review.content}"
+                      </Typography>
+                      <Box className="flex items-center gap-2">
+                        <Avatar
+                          src={review.user?.avatar}
+                          alt={review.user?.fullName || "User"}
+                          className="w-10 h-10"
+                        >
+                          {review.user?.fullName?.charAt(0) || "U"}
+                        </Avatar>
+                        <Box>
+                          <Typography
+                            variant="body1"
+                            className="!font-semibold"
+                          >
+                            {review.user?.fullName || "Anonymous"}
+                          </Typography>
+                          <Typography variant="body2" className="text-gray-500">
+                            {review.course?.title || "Course"}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
+            </Box>
+          )}
         </Container>
       </section>
 
@@ -280,30 +308,36 @@ const LandingPage = () => {
           <Typography variant="h4" className="!font-bold !mb-6 text-center">
             Course Review Statistics
           </Typography>
-          <Grid container spacing={4} justifyContent="center">
-            {stats.map((stat, idx) => (
-              <Grid item size={{ xs: 12, md: 3 }} key={idx}>
-                <Card className="shadow-sm text-center h-full">
-                  <CardContent>
-                    <Typography variant="h5" className="!font-semibold mb-2">
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="body2" className="text-gray-600">
-                      {stat.label}
-                    </Typography>
-                    {stat.icon && (
-                      <Rating
-                        name="half-rating"
-                        value={4.5}
-                        readOnly
-                        precision={0.5}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+          {isLoadingStats ? (
+            <Box className="flex justify-center items-center py-12">
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={4} justifyContent="center">
+              {stats.map((stat, idx) => (
+                <Grid item size={{ xs: 12, md: 3 }} key={idx}>
+                  <Card className="shadow-sm text-center h-full">
+                    <CardContent>
+                      <Typography variant="h5" className="!font-semibold mb-2">
+                        {stat.value}
+                      </Typography>
+                      <Typography variant="body2" className="text-gray-600">
+                        {stat.label}
+                      </Typography>
+                      {stat.icon && (
+                        <Rating
+                          name="average-rating"
+                          value={parseFloat(stat.value)}
+                          readOnly
+                          precision={0.1}
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Container>
       </section>
 

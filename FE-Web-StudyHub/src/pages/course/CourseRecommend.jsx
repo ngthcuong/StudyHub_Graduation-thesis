@@ -8,8 +8,11 @@ import {
 } from "@mui/material";
 import CourseCard from "../../components/CourseCard";
 import { useGetAllCoursesMutation } from "../../services/grammarLessonApi";
+import { useNavigate } from "react-router-dom";
 
 const CourseRecommend = () => {
+  const navigate = useNavigate();
+
   const [selectedCurrentLevel, setSelectedCurrentLevel] = useState("");
   const [selectedGoalLevel, setSelectedGoalLevel] = useState("");
   const [showRecommendations, setShowRecommendations] = useState(false);
@@ -159,18 +162,27 @@ const CourseRecommend = () => {
     }
   };
 
-  const LevelButton = ({ level, isSelected, onClick, variant = "current" }) => (
+  const LevelButton = ({
+    level,
+    isSelected,
+    onClick,
+    variant = "current",
+    disabled = false,
+  }) => (
     <button
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
       className={`
         w-full px-6 py-4 rounded-full text-lg font-semibold
-        transition-all duration-300 transform hover:scale-105 max-w-lg
+        transition-all duration-300 max-w-lg
         ${
-          isSelected
-            ? "bg-white text-blue-600 shadow-lg "
+          disabled
+            ? "bg-white/10 text-white/40 cursor-not-allowed opacity-50"
+            : isSelected
+            ? "bg-white text-blue-600 shadow-lg transform hover:scale-105"
             : variant === "current"
-            ? "bg-blue-800/30 text-white hover:bg-blue-800/50"
-            : "bg-white/20 text-white hover:bg-white/30"
+            ? "bg-blue-800/30 text-white hover:bg-blue-800/50 transform hover:scale-105"
+            : "bg-white/20 text-white hover:bg-white/30 transform hover:scale-105"
         }
       `}
     >
@@ -245,20 +257,26 @@ const CourseRecommend = () => {
                   My Goal
                 </Typography>
 
-                {goalLevels.map((level) => (
-                  <LevelButton
-                    key={level.id}
-                    level={level}
-                    isSelected={selectedGoalLevel === level.id}
-                    onClick={() => handleLevelSelect(level.id, "goal")}
-                    variant="goal"
-                  />
-                ))}
+                {goalLevels.map((level) => {
+                  const isDisabled =
+                    selectedCurrentLevel &&
+                    !allowedGoals[selectedCurrentLevel]?.includes(level.id);
+                  return (
+                    <LevelButton
+                      key={level.id}
+                      level={level}
+                      isSelected={selectedGoalLevel === level.id}
+                      onClick={() => handleLevelSelect(level.id, "goal")}
+                      variant="goal"
+                      disabled={isDisabled}
+                    />
+                  );
+                })}
               </div>
             </Grid>
           </Grid>
 
-          <div className="text-center mt-8">
+          {/* <div className="text-center mt-8">
             <Typography className="!text-white">
               Not sure about your current level?{" "}
               <a
@@ -268,7 +286,7 @@ const CourseRecommend = () => {
                 Take a placement test
               </a>
             </Typography>
-          </div>
+          </div> */}
         </Container>
       </div>
 
@@ -297,7 +315,10 @@ const CourseRecommend = () => {
 
             {recommendedCourses.length > 0 && (
               <div className="text-center mt-8">
-                <button className="px-8 py-3 bg-blue-600 cursor-pointer text-white rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-xl">
+                <button
+                  onClick={() => navigate("/course")}
+                  className="px-8 py-3 bg-blue-600 cursor-pointer text-white rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-xl"
+                >
                   View More Courses
                 </button>
               </div>

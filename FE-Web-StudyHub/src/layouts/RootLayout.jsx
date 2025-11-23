@@ -7,7 +7,7 @@ const RootLayout = () => {
   const user = useSelector((state) => state.auth.user);
   const location = useLocation();
 
-  if (user && location.pathname === "/") {
+  if (user && location.pathname === "/home") {
     if (user.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     }
