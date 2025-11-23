@@ -23,7 +23,7 @@ const generateTestController = async (req, res) => {
 
     // Call AI service
     const response = await axios.post(
-      "https://ai-service-studyhub.onrender.com/generate-test/",
+      "http://localhost:5173/8000/generate-test/",
       {
         topic,
         question_types,

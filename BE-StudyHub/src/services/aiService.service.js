@@ -4,7 +4,7 @@ const axios = require("axios");
 const gradeTestWithAI = async (payload) => {
   try {
     const response = await axios.post(
-      "https://ai-service-studyhub.onrender.com/grade",
+      "http://localhost:5173/8000/grade",
       payload,
       {
         headers: { "Content-Type": "application/json" },
