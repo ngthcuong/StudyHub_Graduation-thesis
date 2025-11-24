@@ -81,12 +81,18 @@ const CourseCard = ({ course, variant = "market" }) => {
       onClick={handleCardClick}
     >
       {/* Course Image */}
-      <div className="h-48 w-full relative">
-        <img
-          src={course.thumbnailUrl}
-          alt={course.title}
-          className="w-full h-full object-cover"
-        />
+      <div className="h-48 w-full relative bg-gray-200 flex items-center justify-center">
+        {course.thumbnailUrl ? (
+          <img
+            src={course.thumbnailUrl}
+            alt={course.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            No Image
+          </Typography>
+        )}
 
         {/* Menu Button for owned variant */}
         {variant === "owned" && (

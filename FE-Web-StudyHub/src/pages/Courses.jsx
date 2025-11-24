@@ -209,6 +209,13 @@ const Courses = () => {
     if (minRating > 0) {
       filtered = filtered.filter((course) => {
         const avgRating = course.averageRating || 0;
+        console.log(
+          `Course: ${
+            course.title
+          }, averageRating: ${avgRating}, minRating: ${minRating}, pass: ${
+            avgRating >= minRating
+          }`
+        );
         return avgRating >= minRating;
       });
     }
