@@ -111,10 +111,10 @@ const CoursePurchaseScreen = ({ route, navigation }) => {
 
         <View style={styles.contentContainer}>
           {/* Title and author */}
-          <Text style={styles.title}>{course?.title}</Text>
+          {/* <Text style={styles.title}>{course?.title}</Text>
           <Text style={styles.author}>
             Author: {teacher?.fullName || "Teacher A"}
-          </Text>
+          </Text> */}
 
           {/* Short description */}
           <Text style={styles.description}>
@@ -158,7 +158,7 @@ const CoursePurchaseScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={styles.buyButton}
           onPress={() => handleBuyNow()}
-          disabled={true}
+          disabled={loading}
         >
           <Text style={styles.buyButtonText}>Buy Now</Text>
         </TouchableOpacity>
