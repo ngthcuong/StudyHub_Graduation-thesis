@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const aiServiceUrl = process.env.AI_SERVICE_URL;
 
 const attemptModel = require("../models/testAttemptModel");
 const attemptDetailModel = require("../models/attemptDetailModel");
@@ -6,7 +7,7 @@ const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
 
-// const StudyStats = require("../schemas/studyStats");
+const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
 const dayjs = require("dayjs");
 
@@ -227,11 +228,11 @@ const submitAttempt = async (req, res) => {
       };
 
       console.log("Grading payload:", gradingPayload);
-      if (testDetail.isTheLastTest) {
+      if (testDetail?.isTheLastTest) {
         gradingPayload.use_gemini = false; // nếu là bài test cuối, ko dùng gemini
       }
       const response = await axios.post(
-        "https://ai-service-studyhub.onrender.com/grade/",
+        `${aiServiceUrl}/grade/`,
         gradingPayload
       );
 

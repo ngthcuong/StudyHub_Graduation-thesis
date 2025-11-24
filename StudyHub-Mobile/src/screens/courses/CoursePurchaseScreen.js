@@ -158,7 +158,7 @@ const CoursePurchaseScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={styles.buyButton}
           onPress={() => handleBuyNow()}
-          disabled={loading}
+          disabled={true}
         >
           <Text style={styles.buyButtonText}>Buy Now</Text>
         </TouchableOpacity>

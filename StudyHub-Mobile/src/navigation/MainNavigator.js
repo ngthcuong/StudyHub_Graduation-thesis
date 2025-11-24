@@ -173,7 +173,7 @@ const TestsStackNavigator = () => (
     <TestsStack.Screen
       name="TestResults"
       component={TestResultsScreen}
-      options={{ title: "Test Results" }}
+      options={{ title: "Test Results", headerShown: false }}
     />
     <TestsStack.Screen
       name="AssessmentCustom"

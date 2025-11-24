@@ -89,6 +89,7 @@ const CompletedTestsScreen = ({ navigation }) => {
         onPress={() =>
           navigation.navigate("TestResults", {
             resultData: test.fullResultData,
+            completedTests: true,
           })
         }
       >
