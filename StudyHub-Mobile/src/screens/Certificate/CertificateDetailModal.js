@@ -16,6 +16,8 @@ const CertificateDetailScreen = () => {
   const route = useRoute();
   const { item } = route.params || {};
 
+  console.log("Certificate Detail Item:", item);
+
   const transactionHash =
     item?.blockchain?.certificateHash || item?.blockchain?.certHash || "";
   const metadata = item?.ipfs?.metadataURI || "";

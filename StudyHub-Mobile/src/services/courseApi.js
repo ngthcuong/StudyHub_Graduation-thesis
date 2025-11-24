@@ -63,4 +63,10 @@ export const courseApi = {
     const response = await api.get(`/grammar-lessons/parts/${partId}`);
     return response.data;
   },
+
+  // buy course
+  buyCourse: async (linkData) => {
+    const response = await api.post(`/payments/create-payment-link`, linkData);
+    return response.data;
+  },
 };

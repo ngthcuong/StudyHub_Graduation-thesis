@@ -230,6 +230,8 @@ const receiveHookPayment = async (req, res) => {
   try {
     const payload = req.body;
 
+    console.log("Received PayOS webhook:", payload);
+
     const { data } = payload;
     const { orderCode, code, success } = data;
 

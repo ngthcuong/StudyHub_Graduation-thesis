@@ -142,9 +142,9 @@ const CompletedTestsScreen = ({ navigation }) => {
   const EmptyState = () => (
     <View style={styles.emptyState}>
       <Ionicons name="stats-chart-outline" size={64} color="#9CA3AF" />
-      <Text style={styles.emptyStateTitle}>Chưa có bài kiểm tra nào</Text>
+      <Text style={styles.emptyStateTitle}>There are no tests yet</Text>
       <Text style={styles.emptyStateText}>
-        Hãy tham gia một bài đánh giá để xem tiến độ của bạn tại đây.
+        Please take a test to see your progress here.
       </Text>
     </View>
   );
@@ -152,7 +152,7 @@ const CompletedTestsScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Đang tải kết quả...</Text>
+        <Text style={styles.loadingText}>Loading results...</Text>
       </View>
     );
   }

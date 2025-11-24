@@ -41,6 +41,15 @@ import MultilExerciseCustomScreen from "../screens/tests/MultilExerciseCustomScr
 // custom navigators
 import AssessmentCustomScreen from "../screens/tests/AssessmentCustomScreen";
 
+// payment
+import PaymentWebView from "../components/PaymentWebView";
+import PaymentSuccess from "../components/PaymentSuccess";
+import PaymentCancel from "../components/PaymentCancel";
+
+// review course
+import ReviewModal from "../components/ReviewModal";
+import CourseReviews from "../components/CourseReviews";
+
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const CoursesStack = createStackNavigator();
@@ -101,6 +110,31 @@ const CoursesStackNavigator = () => (
       name="CourseVideoSeriesList"
       component={CourseVideoSeriesListScreen}
       options={{ title: "Video Series" }}
+    />
+    <CoursesStack.Screen
+      name="PaymentWebView"
+      component={PaymentWebView}
+      options={{ headerShown: false }}
+    />
+    <CoursesStack.Screen
+      name="PaymentSuccess"
+      component={PaymentSuccess}
+      options={{ headerShown: false }}
+    />
+    <CoursesStack.Screen
+      name="PaymentCancel"
+      component={PaymentCancel}
+      options={{ headerShown: false }}
+    />
+    <CoursesStack.Screen
+      name="ReviewModal"
+      component={ReviewModal}
+      options={{ title: "Create Review" }}
+    />
+    <CoursesStack.Screen
+      name="CourseReviews"
+      component={CourseReviews}
+      options={{ title: "Course Reviews" }}
     />
   </CoursesStack.Navigator>
 );
@@ -249,6 +283,11 @@ const MainNavigator = () => {
             "HistoryTest",
             "CompletedTests",
             // "TestResults" đã có ở trên
+            "PaymentWebView",
+            "PaymentSuccess",
+            "PaymentCancel",
+            "ReviewModal",
+            "CourseReviews",
           ];
 
           // Nếu tên màn hình nằm trong danh sách, ẩn nó đi

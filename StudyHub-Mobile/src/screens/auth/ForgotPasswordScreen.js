@@ -15,6 +15,7 @@ import { authApi } from "../../services/authApi";
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleForgotPassword = async () => {
     if (!email) {
@@ -25,6 +26,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
     setIsLoading(true);
     try {
       await authApi.forgotPassword(email);
+      setSent(true); // ← thêm dòng này
       Alert.alert(
         "Success",
         "Password reset instructions have been sent to your email.",
@@ -98,6 +100,12 @@ const ForgotPasswordScreen = ({ navigation }) => {
               {isLoading ? "Sending..." : "Send Reset Instructions"}
             </Text>
           </TouchableOpacity>
+
+          {sent && (
+            <Text style={styles.subtitle}>
+              Check your inbox for further instructions.
+            </Text>
+          )}
 
           <TouchableOpacity
             onPress={handleBackToLogin}
