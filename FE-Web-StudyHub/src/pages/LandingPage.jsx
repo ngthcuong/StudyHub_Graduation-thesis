@@ -26,8 +26,11 @@ import {
   useGetAllReviewsQuery,
   useGetAdminReviewStatsQuery,
 } from "../services/reviewApi";
+import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const { data: reviewsData, isLoading: isLoadingReviews } =
@@ -105,10 +108,11 @@ const LandingPage = () => {
                   sx={{
                     textTransform: "none",
                   }}
+                  onClick={() => navigate("/home")}
                 >
                   Get started
                 </Button>
-                <Button
+                {/* <Button
                   variant="outlined"
                   size="large"
                   className="rounded-md px-6 py-2"
@@ -117,7 +121,7 @@ const LandingPage = () => {
                   }}
                 >
                   Learn more
-                </Button>
+                </Button> */}
               </Box>
             </Grid>
 
@@ -353,6 +357,7 @@ const LandingPage = () => {
               stories
             </Typography>
             <Button
+              onClick={() => navigate("/courses")}
               variant="contained"
               sx={{
                 textTransform: "none",

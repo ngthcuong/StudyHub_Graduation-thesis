@@ -454,7 +454,7 @@ const CoursePayment = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="text-gray-800">
-                      {course.cost || 0} VND
+                      {(course.cost || 0).toLocaleString("vi-VN")} VND
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -471,7 +471,7 @@ const CoursePayment = () => {
                   <div className="flex justify-between text-lg font-semibold">
                     <span className="text-gray-800">Total:</span>
                     <span className="text-gray-800">
-                      {course.cost || 0} VND
+                      {(course.cost || 0).toLocaleString("vi-VN")} VND
                     </span>
                   </div>
                 </div>

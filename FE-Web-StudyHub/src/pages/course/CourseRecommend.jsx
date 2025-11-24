@@ -316,7 +316,7 @@ const CourseRecommend = () => {
             {recommendedCourses.length > 0 && (
               <div className="text-center mt-8">
                 <button
-                  onClick={() => navigate("/course")}
+                  onClick={() => navigate("/courses")}
                   className="px-8 py-3 bg-blue-600 cursor-pointer text-white rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-xl"
                 >
                   View More Courses

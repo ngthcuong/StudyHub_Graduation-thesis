@@ -31,7 +31,7 @@ const CourseCard = ({ course, variant = "market" }) => {
 
   const user = useSelector((state) => state.auth.user);
 
-  // Fetch user's review for this course (only if user is logged in and it's owned variant)
+  // Fetch user's review for this course
   const { data: userReviewData, refetch: refetchUserReview } =
     useGetUserReviewForCourseQuery(course._id || course.id, {
       skip: !user?._id || variant !== "owned",
@@ -52,11 +52,11 @@ const CourseCard = ({ course, variant = "market" }) => {
     handleMenuClose();
   };
 
-  const handleDetailsClick = (event) => {
-    event?.stopPropagation();
-    navigate(`/course/${course._id}`);
-    handleMenuClose();
-  };
+  // const handleDetailsClick = (event) => {
+  //   event?.stopPropagation();
+  //   navigate(`/course/${course._id}`);
+  //   handleMenuClose();
+  // };
 
   const handleReviewModalClose = (event) => {
     event?.stopPropagation();
@@ -189,7 +189,7 @@ const CourseCard = ({ course, variant = "market" }) => {
               ${course.originalPrice}
             </Typography> */}
             <Typography variant="h6" className="!font-bold text-teal-600">
-              {course.cost} VND
+              {course.cost?.toLocaleString("vi-VN")} VND
             </Typography>
           </div>
         )}
