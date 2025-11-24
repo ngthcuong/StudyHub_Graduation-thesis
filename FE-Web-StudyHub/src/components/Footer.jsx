@@ -21,9 +21,8 @@ const Footer = () => {
           }}
         >
           <Grid item size={{ xs: 12, md: 6 }}>
-            {/* TODO: Thay bằng logic được thiết kế */}
             <Typography variant="h5" className="font-bold !mb-2">
-              Logo
+              StudyHub
             </Typography>
             <Typography variant="body2" className="!mb-4 text-gray-600">
               Join our newsletter to stay up to date on features and releases.
