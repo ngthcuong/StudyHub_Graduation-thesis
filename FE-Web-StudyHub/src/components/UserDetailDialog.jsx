@@ -795,7 +795,7 @@ const UserDetailDialog = ({
                                   variant="body2"
                                   sx={{ fontWeight: 600, color: "#10b981" }}
                                 >
-                                  {course.cost} VND
+                                  {course.cost?.toLocaleString("vi-VN")} VND
                                 </Typography>
                               </TableCell>
                             </TableRow>

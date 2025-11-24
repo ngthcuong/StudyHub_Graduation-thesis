@@ -52,8 +52,26 @@ const updateCourseById = async (id, updateData) => {
 
 const getAllCourses = async () => {
   try {
-    const courses = await Course.find();
-    return courses;
+    const courses = await Course.find().populate("reviews");
+
+    // Tính toán averageRating cho mỗi khóa học
+    const coursesWithRating = courses.map((course) => {
+      const courseObj = course.toObject();
+
+      if (courseObj.reviews && courseObj.reviews.length > 0) {
+        const totalRating = courseObj.reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        );
+        courseObj.averageRating = totalRating / courseObj.reviews.length;
+      } else {
+        courseObj.averageRating = 0;
+      }
+
+      return courseObj;
+    });
+
+    return coursesWithRating;
   } catch (error) {
     console.error("Error getting all courses:", error);
     throw new Error("Failed to get all courses");

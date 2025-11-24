@@ -31,6 +31,7 @@ import { useSelector } from "react-redux";
 import Snackbar from "../../components/Snackbar";
 import { useDispatch } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
+import Header from "../../components/Header";
 
 const TestInformation = () => {
   const navigate = useNavigate();
@@ -42,8 +43,6 @@ const TestInformation = () => {
   const [attempt, setAttempt] = useState();
   const [history, setHistory] = useState([]);
   const [testInfoState, setTestInfoState] = useState(testInfor);
-
-  console.log("testInfo: ", testInfor);
 
   const user = useSelector((state) => state.auth.user);
 
@@ -149,6 +148,15 @@ const TestInformation = () => {
         );
         return;
       }
+      if (testInfor.isTheLastTest && !user.walletAddress) {
+        dispatch(
+          openSnackbar({
+            message: `Please add wallet address in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
       // Nếu có currentLevel phù hợp, bắt đầu làm bài
       navigate(`/test/${testPool._id || testId}/attempt`, {
         state: { testId: testPool._id || testId },
@@ -241,26 +249,12 @@ const TestInformation = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
-      <Box className="w-full max-w-3xl ">
-        <Button
-          startIcon={<ArrowBack />}
-          variant="text"
-          onClick={() => navigate(-1)}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: 24,
-            color: "#2563eb",
-          }}
-        >
-          Back
-        </Button>
-      </Box>
+    <Box className="flex justify-center items-center  bg-gray-50 flex-col ">
+      <Header />
 
       <Card
         className="w-full max-w-3xl"
-        sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
+        sx={{ borderRadius: 4, p: { xs: 1, md: 2 }, mt: 2 }}
       >
         <CardContent>
           {/* Tên và nội dung */}

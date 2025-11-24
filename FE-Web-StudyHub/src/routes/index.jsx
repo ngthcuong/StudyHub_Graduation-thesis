@@ -12,8 +12,8 @@ import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
 import TestLayout from "../layouts/TestLayout";
-import TestList from "../pages/test/TestList";
-import CourseList from "../pages/course/CourseList";
+import TestList from "../pages/home/TestList";
+import CourseList from "../pages/home/CourseList";
 import CourseLessson from "../components/CourseLessson";
 import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
@@ -41,6 +41,7 @@ import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 import PaymentSuccessPage from "../components/PaymentSuccessPage";
 import PaymentFailedPage from "../components/PaymentFailedPage";
 import CancelPaymentPage from "../components/CancelPaymentPage";
+import Courses from "../pages/Courses";
 
 export const router = createBrowserRouter([
   {
@@ -51,24 +52,28 @@ export const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
+        path: "/courses",
+        element: <Courses />,
+      },
+      {
         path: "/verify-certificate",
         element: <VerifyCertificatePage />,
       },
       {
-        path: "payment-success",
-        element: <PaymentSuccessPage />,
-      },
-      {
-        path: "payment-failed",
-        element: <PaymentFailedPage />,
-      },
-      {
-        path: "payment-cancel",
-        element: <CancelPaymentPage />,
-      },
-      {
         element: <ProtectedLayout />,
         children: [
+          {
+            path: "payment-success",
+            element: <PaymentSuccessPage />,
+          },
+          {
+            path: "payment-failed",
+            element: <PaymentFailedPage />,
+          },
+          {
+            path: "payment-cancel",
+            element: <CancelPaymentPage />,
+          },
           {
             path: "/home",
             element: <HomeLayout />,
