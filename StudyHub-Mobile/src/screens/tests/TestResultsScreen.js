@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -21,10 +21,26 @@ import {
 } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Hoặc bất kỳ bộ icon nào bạn thích
 import { useRoute } from "@react-navigation/native";
+import ProgressSpeedCard from "../../components/ProgressSpeedCard";
+import CourseCard from "../../components/CourseCard";
+import { courseApi } from "../../services/courseApi";
+import { useSelector } from "react-redux";
+import { testApi } from "../../services/testApi";
+
+const scoreRanges = {
+  "TOEIC 10-250": ["TOEIC 10-250", "TOEIC 255-400"],
+  "TOEIC 255-400": ["TOEIC 255-400"],
+  "TOEIC 405-600": ["TOEIC 405-600"],
+  "TOEIC 605-780": ["TOEIC 605-780"],
+  "TOEIC 785-900": ["TOEIC 785-900"],
+  "TOEIC 905-990": ["TOEIC 905-990"],
+};
 
 // --- Hàm tiện ích (Utility Functions) ---
 
 const formatTime = (s) => {
+  console.log("Formatting time:", s);
+
   const m = Math.floor(s / 60);
   const sec = s % 60;
   return `${m}m ${sec}s`;
@@ -36,8 +52,64 @@ const TestResultsScreen = ({ navigation }) => {
   const route = useRoute();
   const theme = useTheme(); // Lấy theme để custom style
   const resultData = route.params?.resultData; // Lấy dữ liệu từ route params
+  const completedTests = route.params?.completedTests || false;
+  const user = useSelector((state) => state.auth.user);
+
+  const [recommendedCourses, setRecommendedCourses] = useState([]);
 
   console.log("TestResultsScreen received resultData:", resultData);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const res = await courseApi.getAllCourses();
+
+      const resCourse = await courseApi.getMyCourses(user._id);
+      const filteredCourse = res.filter(
+        (course2) =>
+          !resCourse?.courses?.some((course1) => course1._id === course2._id)
+      );
+
+      let recommended = [];
+      if (
+        resultData.attemptDetail.analysisResult.post_test_level ===
+        "Unknown".trim()
+      ) {
+        recommended = resultData?.attemptDetail.analysisResult.current_level;
+      } else {
+        recommended = resultData?.attemptDetail.analysisResult.post_test_level;
+      }
+      const filtered = filteredCourse.filter((course) =>
+        scoreRanges[recommended].includes(
+          `${course.courseType} ${course.courseLevel}`
+        )
+      );
+
+      setRecommendedCourses(filtered);
+
+      // update attempt pass
+      if (resultData.attemptDetail.totalScore >= 7) {
+        await testApi.updateAttempt({
+          attemptId: resultData.attempt._id,
+          updateData: {
+            isPassed: true,
+          },
+        });
+      }
+
+      // take test
+      const testDetailRes = await testApi.getTestById(
+        resultData.attempt.testId
+      );
+    } catch (error) {
+      console.error("Error fetching courses for recommendations:", error);
+    }
+  };
+
+  console.log("Recommended courses based on test result:", recommendedCourses);
 
   const [tab, setTab] = useState(0);
 
@@ -97,37 +169,22 @@ const TestResultsScreen = ({ navigation }) => {
     skill_summary = [],
     weak_topics = [],
     recommendations = [],
-    personalized_plan = {
-      overall_goal: "No goal specified",
-      progress_speed: "Not determined",
-      weekly_goals: [],
-      study_methods: [],
-      notes: null,
-    },
+    personalized_plan = {},
   } = analysisResult;
 
   // Kết hợp dữ liệu từ `analysisPerQuestion` và `answers`
-  const per_question = analysisPerQuestion.map((analysisItem, index) => {
-    const answerItem = answers[index] || {};
-    return {
-      ...analysisItem,
-      question:
-        answerItem.questionText ||
-        analysisItem.question ||
-        `Question ${analysisItem.id}`,
-      user_answer: answerItem.selectedOptionText || analysisItem.user_answer,
-    };
-  });
+  const per_question = analysisPerQuestion.map((item, idx) => ({
+    ...item,
+    user_answer: answers[idx]?.selectedOptionText || item.user_answer,
+    question: answers[idx]?.questionText || item.question,
+  }));
 
   // Tính toán stats
-  const correctCount = per_question.filter(
-    (q) => q && q.correct === true
-  ).length;
+  const correctCount = per_question.filter((q) => q.correct).length;
   const incorrectCount = total_questions - correctCount;
-  const scorePercent =
-    total_questions > 0
-      ? Math.round((correctCount / total_questions) * 100)
-      : 0;
+  const scorePercent = total_questions
+    ? Math.round((correctCount / total_questions) * 100)
+    : 0;
 
   const resultStats = {
     score: scorePercent,
@@ -156,10 +213,7 @@ const TestResultsScreen = ({ navigation }) => {
       explain: q.explain || "No explanation",
     }));
 
-  const avgTime =
-    resultStats.total > 0
-      ? Math.round(resultStats.time / resultStats.total)
-      : 0;
+  const avgTime = total_questions ? Math.round(timeTaken / total_questions) : 0;
 
   // --- Components con (Sub Components) ---
 
@@ -234,16 +288,13 @@ const TestResultsScreen = ({ navigation }) => {
         {skill_summary.length > 0 && (
           <Card style={styles.card}>
             <Card.Content>
-              <Title style={styles.cardTitle}>Skill Performance</Title>
+              <Title>Skill Performance</Title>
               {skill_summary.map((skill, idx) => (
                 <View key={idx} style={styles.skillItem}>
                   <View style={styles.skillHeader}>
-                    <Text style={styles.skillText}>
-                      {skill.skill || "Unknown Skill"}
-                    </Text>
-                    <Text style={styles.skillAccuracy}>
-                      {skill.correct || 0}/{skill.total || 0} (
-                      {skill.accuracy || 0}%)
+                    <Text>{skill.skill}</Text>
+                    <Text>
+                      {skill.correct}/{skill.total} ({skill.accuracy}%)
                     </Text>
                   </View>
                   <ProgressBar
@@ -261,17 +312,10 @@ const TestResultsScreen = ({ navigation }) => {
         {weak_topics.length > 0 && (
           <Card style={styles.card}>
             <Card.Content>
-              <Title style={styles.cardTitle}>Areas for Improvement</Title>
+              <Title>Areas for Improvement</Title>
               <View style={styles.chipContainer}>
                 {weak_topics.map((topic, idx) => (
-                  <Chip
-                    key={idx}
-                    icon="alert-octagon"
-                    style={{ margin: 4 }}
-                    textStyle={{ color: customColors.warning }}
-                    mode="outlined"
-                    theme={{ colors: { outline: customColors.warning } }}
-                  >
+                  <Chip key={idx} icon="alert-octagon" mode="outlined">
                     {topic}
                   </Chip>
                 ))}
@@ -463,7 +507,7 @@ const TestResultsScreen = ({ navigation }) => {
                 </Title>
 
                 {/* Overall Goal */}
-                <Card
+                {/* <Card
                   style={[
                     styles.planCard,
                     { backgroundColor: "#e3f2fd", borderColor: "#90caf9" },
@@ -484,31 +528,10 @@ const TestResultsScreen = ({ navigation }) => {
                       </View>
                     </View>
                   </Card.Content>
-                </Card>
+                </Card> */}
 
                 {/* Progress Speed */}
-                <Card
-                  style={[
-                    styles.planCard,
-                    { backgroundColor: "#e8f5e9", borderColor: "#a5d6a7" },
-                  ]}
-                >
-                  <Card.Content>
-                    <View style={styles.planHeader}>
-                      <Icon
-                        name="calendar-clock"
-                        size={24}
-                        color={customColors.success}
-                      />
-                      <View style={{ marginLeft: 8 }}>
-                        <Text style={styles.planTitle}>Progress Speed</Text>
-                        <Paragraph style={styles.planSubtitle}>
-                          {personalized_plan.progress_speed}
-                        </Paragraph>
-                      </View>
-                    </View>
-                  </Card.Content>
-                </Card>
+                <ProgressSpeedCard personalized_plan={personalized_plan} />
 
                 {/* General Recommendations */}
                 {recommendations.length > 0 && (
@@ -657,50 +680,81 @@ const TestResultsScreen = ({ navigation }) => {
           </Card.Content>
         </Card>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <Button
-            mode="contained"
-            onPress={() =>
-              Alert.alert("Action", "Retake Test functionality triggered.")
-            }
-            style={styles.actionButton}
-            labelStyle={styles.actionButtonLabel}
-            icon="redo"
-          >
-            Retake Test
-          </Button>
-          <Button
-            mode="outlined"
-            onPress={() => navigation.navigate("AssessmentList")}
-            style={styles.actionButton}
-            labelStyle={styles.actionButtonLabel}
-            icon="format-list-bulleted"
-          >
-            View All Tests
-          </Button>
+        {/* Recommend course */}
+        <View style={styles.containerRecommend}>
+          <Text style={styles.titleRecommend}>Recommended Courses for You</Text>
+          <Text style={styles.subtitleRecommend}>
+            Based on your test results, we suggest these courses to help you
+            improve.
+          </Text>
 
-          {resultData.certificate && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.cardContainerRecommend}
+          >
+            {recommendedCourses?.map((course, index) => {
+              return (
+                <View key={index} style={styles.cardWrapperRecommend}>
+                  <CourseCard
+                    course={course}
+                    variant="market"
+                    navigation={navigation}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Action Buttons */}
+        {!completedTests && (
+          <View style={styles.actionButtons}>
             <Button
               mode="contained"
-              color={customColors.success} // Màu xanh lá cây
               onPress={() =>
-                navigation.navigate("Profile", {
-                  screen: "CertificateDetail",
-                  params: { item: resultData.certificate },
-                })
+                Alert.alert("Action", "Retake Test functionality triggered.")
               }
-              style={[
-                styles.actionButton,
-                { backgroundColor: customColors.success, marginBottom: 30 },
-              ]}
+              style={styles.actionButton}
               labelStyle={styles.actionButtonLabel}
-              icon="rocket"
+              icon="redo"
             >
-              View certificates obtained
+              Retake Test
             </Button>
-          )}
-        </View>
+            <Button
+              mode="outlined"
+              onPress={() =>
+                navigation.navigate("Tests", { screen: "AssessmentList" })
+              }
+              style={styles.actionButton}
+              labelStyle={styles.actionButtonLabel}
+              icon="format-list-bulleted"
+            >
+              View All Tests
+            </Button>
+
+            {resultData.certificate && (
+              <Button
+                mode="contained"
+                color={customColors.success} // Màu xanh lá cây
+                onPress={() =>
+                  navigation.navigate("Profile", {
+                    screen: "CertificateDetail",
+                    params: { item: resultData.certificate },
+                  })
+                }
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: customColors.success, marginBottom: 30 },
+                ]}
+                labelStyle={styles.actionButtonLabel}
+                icon="rocket"
+              >
+                View certificates obtained
+              </Button>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -718,6 +772,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 16,
+    marginTop: 16,
   },
   loadingContainer: {
     flex: 1,
@@ -778,6 +833,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
     elevation: 3,
+    marginBottom: 30,
   },
   cardTitle: {
     fontSize: 18,
@@ -938,6 +994,7 @@ const styles = StyleSheet.create({
     flexDirection: "column", // Thay đổi thành column trên mobile để tránh tràn
     justifyContent: "center",
     marginTop: 20,
+    marginBottom: 40,
   },
   actionButton: {
     marginVertical: 4,
@@ -946,6 +1003,30 @@ const styles = StyleSheet.create({
   actionButtonLabel: {
     fontWeight: "600",
     textTransform: "none",
+  },
+
+  // recommended courses
+  containerRecommend: {
+    marginTop: 32,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  titleRecommend: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  subtitleRecommend: {
+    fontSize: 14,
+    color: "#64748b",
+    marginBottom: 16,
+  },
+  cardContainerRecommend: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  cardWrapperRecommend: {
+    width: 200, // You can adjust the card width as per the design
   },
 });
 

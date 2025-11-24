@@ -189,4 +189,10 @@ export const testApi = {
     const response = await api.get(`/questions/test/${testId}`);
     return response.data;
   },
+
+  // update attempt
+  updateAttempt: async (attemptId, updateData) => {
+    const response = await api.patch(`/attempts/${attemptId}`, updateData);
+    return response.data;
+  },
 };

@@ -1,4 +1,5 @@
 const axios = require("axios");
+const aiServiceUrl = process.env.AI_SERVICE_URL;
 
 // Hàm ánh xạ loại câu hỏi từ AI sang loại câu hỏi trong DB
 function mapQuestionTypeToDb(aiType) {
@@ -96,7 +97,7 @@ const generateTestCustomController = async (req, res) => {
     // 4. GỌI DỊCH VỤ AI VỚI CẤU TRÚC MỚI
     // -----------------------------------------------------
     const aiResponse = await axios.post(
-      "http://localhost:8000/generate-test-custom/", // ✅ Cập nhật Endpoint
+      `${aiServiceUrl}/generate-test-custom/`, // ✅ Cập nhật Endpoint
       aiPayload // ✅ Sử dụng Payload mới
     );
 

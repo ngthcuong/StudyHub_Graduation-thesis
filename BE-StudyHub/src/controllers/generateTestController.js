@@ -1,5 +1,7 @@
 const axios = require("axios");
 
+const aiServiceUrl = process.env.AI_SERVICE_URL;
+
 const generateTestController = async (req, res) => {
   try {
     const {
@@ -19,10 +21,16 @@ const generateTestController = async (req, res) => {
     if (!testId) {
       return res.status(400).json({ error: "testId is required" });
     }
-    console.log("Generating test with:");
+    console.log("Generating test with:", {
+      topic,
+      question_types,
+      num_questions,
+      score_range,
+      exam_type,
+    });
 
     // Call AI service
-    const response = await axios.post("http://localhost:8000/generate-test/", {
+    const response = await axios.post(`${aiServiceUrl}/generate-test/`, {
       topic,
       question_types,
       num_questions,

@@ -201,7 +201,7 @@ const ProfileScreen = ({ navigation }) => {
           onPress={handleHistoryTest}
         />
 
-        <MenuItem
+        {/* <MenuItem
           icon="notifications-outline"
           title="Notifications"
           subtitle="Manage your notification preferences"
@@ -211,7 +211,7 @@ const ProfileScreen = ({ navigation }) => {
               "Notifications feature will be available soon"
             )
           }
-        />
+        /> */}
 
         <MenuItem
           icon="help-circle-outline"
