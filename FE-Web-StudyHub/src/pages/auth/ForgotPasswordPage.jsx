@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography, Button, Divider } from "@mui/material";
 import { Email, Send } from "@mui/icons-material";
 import * as yup from "yup";
@@ -10,9 +10,11 @@ import SnackBar from "../../components/Snackbar";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import { useForgotPasswordMutation } from "../../services/authApi";
+import LogoStudyHub from "../../assets/Logo.jpg";
 
 const ForgotPasswordPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
   const [isLoading, setIsLoading] = useState(false);
   const [forgotPassword] = useForgotPasswordMutation();
@@ -21,8 +23,8 @@ const ForgotPasswordPage = () => {
   const formSchema = yup.object({
     email: yup
       .string()
-      .required("Email là bắt buộc")
-      .email("Email không hợp lệ"),
+      .required("Email is required")
+      .email("Invalid email address"),
   });
 
   const { control, handleSubmit, reset } = useForm({
@@ -65,6 +67,15 @@ const ForgotPasswordPage = () => {
         }}
       >
         {/* Header */}
+        <Box className="flex justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="h-1/3 w-1/3 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </Box>
+
         <Box className="text-center space-y-2">
           <Typography
             variant="h4"
@@ -109,7 +120,7 @@ const ForgotPasswordPage = () => {
               fontWeight: 600,
             }}
           >
-            {isLoading ? "Đang gửi..." : "Gửi liên kết đặt lại mật khẩu"}
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </Button>
         </Box>
 

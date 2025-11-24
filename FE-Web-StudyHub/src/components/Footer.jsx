@@ -144,7 +144,7 @@ const Footer = () => {
           </Grid>
         </Grid>
         <Box className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 text-gray-500 text-sm">
-          <span>© 2024 StudyHub. All rights reserved.</span>
+          <span>© 2025 StudyHub. All rights reserved.</span>
           <Box className="flex gap-4">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>
