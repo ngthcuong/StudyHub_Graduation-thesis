@@ -17,7 +17,7 @@ const CourseRecommend = () => {
   const [selectedGoalLevel, setSelectedGoalLevel] = useState("");
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [recommendedCourses, setRecommendedCourses] = useState([]);
-  const [courses, setCourses] = useState([]);
+  // const [courses, setCourses] = useState([]);
 
   const [getAllCourse] = useGetAllCoursesMutation();
 
@@ -111,14 +111,13 @@ const CourseRecommend = () => {
     const fetchAllCourses = async () => {
       try {
         const response = await getAllCourse().unwrap();
-        setCourses(response);
+        // setCourses(response);
         if (selectedCurrentLevel && selectedGoalLevel) {
           const path = learningPaths.find(
             (p) =>
               p.currentLevel === selectedCurrentLevel &&
               p.goalLevel === selectedGoalLevel
           );
-          console.log("Selected Learning Path:", response, path.courses);
           const filteredCourses = response.filter((course) =>
             path.courses.includes(course.title)
           );
