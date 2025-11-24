@@ -89,7 +89,12 @@ const CourseCard = ({ course, variant = "market" }) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          <Typography variant="body1" color="text.secondary">
+          <Typography
+            variant="h6"
+            color="gray"
+            fontWeight={500}
+            textTransform={"capitalize"}
+          >
             No Image
           </Typography>
         )}
