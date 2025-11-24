@@ -89,15 +89,12 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
     } else {
       try {
         setLoadingTest(true);
-        const testPoolId = "000000000000000000000000";
         const testId = payloadForm?.testId;
         const maxAttempts = 3;
 
-        const attemptRes = await testApi.startTestAttempt(
-          testPoolId,
-          testId,
-          maxAttempts
-        );
+        console.log("Starting test with:", { testId, maxAttempts });
+
+        const attemptRes = await testApi.startTestAttempt(testId, maxAttempts);
         console.log("🚀 Test Attempt Response:", attemptRes);
         setAttemptId(attemptRes?.data?._id || null);
         try {

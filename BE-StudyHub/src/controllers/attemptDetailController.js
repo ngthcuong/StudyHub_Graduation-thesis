@@ -192,12 +192,8 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
     // Lấy tất cả các attempt của user này
     const attempts = await TestAttempt.find({ userId })
       .populate({
-        path: "testPoolId",
-        populate: {
-          path: "baseTestId",
-          model: "Test",
-          select: "title skill level examType durationMin",
-        },
+        path: "testId",
+        select: "title skill level examType durationMin",
       })
       .lean();
 
@@ -231,20 +227,13 @@ const getAllAttemptDetailsByUserId = async (req, res) => {
 
       return {
         attemptId: detail.attemptId,
-        testTitle: relatedAttempt?.testPoolId?.baseTestId?.title,
-        skill: relatedAttempt?.testPoolId?.baseTestId?.skill,
-        level: relatedAttempt?.testPoolId?.baseTestId?.level,
-        examType: relatedAttempt?.testPoolId?.baseTestId?.examType,
-        durationMin: relatedAttempt?.testPoolId?.baseTestId?.durationMin,
+        testTitle: relatedAttempt?.testId?.title,
+        skill: relatedAttempt?.testId?.skill,
+        level: relatedAttempt?.testId?.level,
+        examType: relatedAttempt?.testId?.examType,
+        durationMin: relatedAttempt?.testId?.durationMin,
         startTime: detail?.startTime,
         endTime: detail?.endTime,
-        // answers: detail.answers.map((a) => ({
-        //   questionId: a.questionId?._id,
-        //   questionText: a.questionText || a.questionId?.questionText,
-        //   selectedOptionText: a.selectedOptionText,
-        //   isCorrect: a.isCorrect,
-        //   score: a.score,
-        // })),
         analysisResult: detail.analysisResult || {},
       };
     });

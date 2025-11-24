@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Image,
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import ReviewModal from "../../components/ReviewModal";
 import { courseApi } from "../../services/courseApi";
 import { testApi } from "../../services/testApi";
 import { useSelector } from "react-redux";
+import { reviewApi } from "../../services/reviewApi";
 
 const CourseDetailScreen = ({ navigation, route }) => {
   const { courseId } = route.params;
@@ -21,9 +24,13 @@ const CourseDetailScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isFullFinalTest, setIsFullFinalTest] = useState(null);
+  const [reviewsByUser, setReviewsByUser] = useState([]);
+  const [ratingsStats, setRatingStats] = useState(null);
 
   useEffect(() => {
     loadCourseDetails();
+    fetchReviewsByUser(user?._id);
+    fetchRating();
   }, [courseId]);
 
   const loadCourseDetails = async () => {
@@ -70,6 +77,26 @@ const CourseDetailScreen = ({ navigation, route }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchReviewsByUser = async (userId) => {
+    try {
+      const res = await reviewApi.getReviewsByUser(userId);
+      console.log("Reviews by user:", res.reviews);
+      const filteredReviews = res.reviews.filter(
+        (review) => review.courseId === course?._id
+      );
+      setReviewsByUser(filteredReviews);
+    } catch (error) {
+      console.error("Error fetching reviews by user:", error);
+      return [];
+    }
+  };
+
+  const fetchRating = async () => {
+    // Call API to get rating summary for the course
+    const ratingStats = await reviewApi.getCourseRatingStats(course?._id);
+    setRatingStats(ratingStats?.stats);
   };
 
   const attachIsPassedToExercises = async (lessons, userId) => {
@@ -222,99 +249,167 @@ const CourseDetailScreen = ({ navigation, route }) => {
     );
   }
 
+  const Star = ({ type }) => {
+    // type: "full" | "half" | "empty"
+    let name = "star-outline";
+    if (type === "full") name = "star";
+    else if (type === "half") name = "star-half";
+
+    return (
+      <Ionicons
+        name={name}
+        size={20}
+        color={type !== "empty" ? "#f59e0b" : "#d1d5db"}
+      />
+    );
+  };
+
   console.log("Lessons data:", lessons.data[0]);
+  console.log("Reviews by user:", reviewsByUser);
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Course Header */}
-      <View style={styles.header}>
-        <View style={styles.courseImage}>
-          <Ionicons name="book" size={60} color="#3B82F6" />
+    <>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Course Header */}
+        <View style={styles.header}>
+          <View style={styles.courseImage}>
+            <Ionicons name="book" size={60} color="#3B82F6" />
+          </View>
+          <Text style={styles.courseTitle}>{course.title}</Text>
+          <Text style={styles.courseDescription}>{course.description}</Text>
+
+          <View style={styles.courseMeta}>
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={16} color="#6B7280" />
+              <Text style={styles.metaText}>
+                {course.durationHours || "N/A"}
+              </Text>
+            </View>
+            {/* <View style={styles.metaItem}>
+              <Ionicons name="people-outline" size={16} color="#6B7280" />
+              <Text style={styles.metaText}>
+                {course.studentsCount || 0} students
+              </Text>
+            </View> */}
+            <View style={styles.metaItem}>
+              <Ionicons name="star" size={16} color="#F59E0B" />
+              <Text style={styles.metaText}>
+                {ratingsStats?.averageRating || "4.5"}
+              </Text>
+            </View>
+          </View>
+
+          {/* Course Progress (if enrolled) */}
         </View>
-        <Text style={styles.courseTitle}>{course.title}</Text>
-        <Text style={styles.courseDescription}>{course.description}</Text>
 
-        <View style={styles.courseMeta}>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>{course.durationHours || "N/A"}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>
-              {course.studentsCount || 0} students
-            </Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.metaText}>{course.review || "4.5"}</Text>
+        {/* Course Statistics */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Course Statistics</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <Ionicons name="book-outline" size={24} color="#3B82F6" />
+              <Text style={styles.statNumber}>
+                {lessons?.data?.length || 0}
+              </Text>
+              <Text style={styles.statLabel}>Lessons</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Ionicons name="library-outline" size={24} color="#10B981" />
+              <Text style={styles.statNumber}>
+                {lessons.data.flatMap((item) => item.exercises).length || 0}
+              </Text>
+              <Text style={styles.statLabel}>Exercises</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Ionicons
+                name="document-text-outline"
+                size={24}
+                color="#F59E0B"
+              />
+              <Text style={styles.statNumber}>
+                {lessons.data.flatMap((item) =>
+                  item.parts.filter((part) => part.contentType === "video")
+                ).length || 0}
+              </Text>
+              <Text style={styles.statLabel}>Grammar Points</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Ionicons name="trophy-outline" size={24} color="#EF4444" />
+              <Text style={styles.statNumber}>{"70%" || "N/A"}</Text>
+              <Text style={styles.statLabel}>Target Score</Text>
+            </View>
           </View>
         </View>
 
-        {/* Course Progress (if enrolled) */}
-      </View>
-
-      {/* Course Statistics */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Course Statistics</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statItem}>
-            <Ionicons name="book-outline" size={24} color="#3B82F6" />
-            <Text style={styles.statNumber}>{lessons?.total || 0}</Text>
-            <Text style={styles.statLabel}>Lessons</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Ionicons name="library-outline" size={24} color="#10B981" />
-            <Text style={styles.statNumber}>
-              {lessons.data.flatMap((item) => item.parts).length || 0}
-            </Text>
-            <Text style={styles.statLabel}>Vocabulary</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Ionicons name="document-text-outline" size={24} color="#F59E0B" />
-            <Text style={styles.statNumber}>
-              {lessons.data.flatMap((item) => item.parts).length || 0}
-            </Text>
-            <Text style={styles.statLabel}>Grammar Points</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Ionicons name="trophy-outline" size={24} color="#EF4444" />
-            <Text style={styles.statNumber}>{"70%" || "N/A"}</Text>
-            <Text style={styles.statLabel}>Target Score</Text>
-          </View>
+        {/* Course Info */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About This Course</Text>
+          <Text style={styles.courseInfo}>
+            {course.detailedDescription || course.description}
+          </Text>
         </View>
-      </View>
 
-      {/* Course Info */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About This Course</Text>
-        <Text style={styles.courseInfo}>
-          {course.detailedDescription || course.description}
-        </Text>
-      </View>
+        {/* User Reviews */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Reviews</Text>
 
-      {/* Lessons */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Lessons ({lessons.data.length})</Text>
-        {lessons.data.length > 0 ? (
-          lessons.data.map((lesson, index) => (
-            <LessonItem key={lesson._id} lesson={lesson} index={index} />
-          ))
-        ) : (
-          <View style={styles.emptyLessons}>
-            <Ionicons name="book-outline" size={48} color="#9CA3AF" />
-            <Text style={styles.emptyLessonsText}>No lessons available</Text>
+          {reviewsByUser.map((review) => (
+            <View key={review._id} style={styles.reviewCard}>
+              <View style={styles.reviewHeader}>
+                <View>
+                  <Text style={styles.reviewDate}>
+                    {new Date(review?.createdAt).toLocaleString("vi-VN")}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.starsRow}>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star key={i} type={i < review?.rating ? "full" : "empty"} />
+                ))}
+              </View>
+              <Text style={styles.reviewComment}>{review?.content}</Text>
+            </View>
+          ))}
+        </View>
+
+        {course && (
+          <View style={styles.enrollSection}>
+            <TouchableOpacity
+              style={styles.enrollButton}
+              onPress={() => navigation.navigate("ReviewModal", { course })}
+            >
+              <Text style={styles.enrollButtonText}>
+                {reviewsByUser.length > 0 ? "Edit Review" : "Write Review"}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
-      </View>
 
-      {/* Enroll Button */}
-    </ScrollView>
+        {/* Lessons */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Lessons ({lessons.data.length})
+          </Text>
+          {lessons.data.length > 0 ? (
+            lessons.data.map((lesson, index) => (
+              <LessonItem key={lesson._id} lesson={lesson} index={index} />
+            ))
+          ) : (
+            <View style={styles.emptyLessons}>
+              <Ionicons name="book-outline" size={48} color="#9CA3AF" />
+              <Text style={styles.emptyLessonsText}>No lessons available</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Enroll Button */}
+      </ScrollView>
+    </>
   );
 };
 
@@ -555,6 +650,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
+  },
+
+  // review styles
+  reviewCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  reviewName: {
+    fontWeight: "600",
+    color: "#111827",
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: "#6b7280",
+  },
+  reviewComment: {
+    marginTop: 4,
+    color: "#374151",
+  },
+
+  // start styles
+  starsRow: {
+    flexDirection: "row",
+    marginVertical: 4,
+  },
+  star: {
+    fontSize: 20,
+    color: "#d1d5db", // gray
+  },
+  starFilled: {
+    color: "#f59e0b", // amber
   },
 });
 

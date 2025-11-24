@@ -92,6 +92,8 @@ const getMonthlyStats = async (req, res) => {
       .populate("dailyStats.exercises", "title")
       .populate("dailyStats.lessons", "title");
 
+    console.log("Fetched monthly stats:", stats);
+
     if (!stats) {
       return res.status(404).json({ message: "No stats found for this month" });
     }
@@ -107,6 +109,7 @@ const getMonthlyStats = async (req, res) => {
     const allLessons = stats.dailyStats.flatMap(
       (d) => d.lessons?.map((l) => l._id.toString()) || []
     );
+
     const completedLessons = new Set(allLessons).size;
 
     // Tính streaks (chuỗi ngày học liên tục)

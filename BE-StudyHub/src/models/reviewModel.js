@@ -52,7 +52,7 @@ const getReviewsByCourse = async (courseId) => {
     const reviews = await Review.find({ courseId })
       .populate({
         path: "userId",
-        select: "fullName email",
+        select: "fullName email avatarUrl",
         options: { lean: true },
       })
       .sort({ createdAt: -1 })

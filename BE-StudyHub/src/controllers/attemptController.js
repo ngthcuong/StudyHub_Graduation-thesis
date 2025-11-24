@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const aiServiceUrl = process.env.AI_SERVICE_URL;
 
 const attemptModel = require("../models/testAttemptModel");
 const attemptDetailModel = require("../models/attemptDetailModel");
@@ -6,7 +7,7 @@ const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
 
-// const StudyStats = require("../schemas/studyStats");
+const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
 const dayjs = require("dayjs");
 
@@ -152,16 +153,16 @@ const submitAttempt = async (req, res) => {
 
       // lấy thời gian học hằng tuần
       let timeWeekly = {};
-      try {
-        const timedata = await getStudyStats(userId);
-        console.log("Study stats data sent to grading service:", timedata);
-        const result = getWeekWithMaxHours(dailyStats);
-        // { maxWeek: "42", maxHours: 0.167 }
-        console.log(result);
-        timeWeekly = result;
-      } catch (error) {
-        console.error("Error submitting answers to grading service:", error);
-      }
+      // try {
+      //   const timedata = await getStudyStats(userId);
+      //   console.log("Study stats data sent to grading service:", timedata);
+      //   const result = getWeekWithMaxHours(dailyStats);
+      //   // { maxWeek: "42", maxHours: 0.167 }
+      //   console.log(result);
+      //   timeWeekly = result;
+      // } catch (error) {
+      //   console.error("Error submitting answers to grading service:", error);
+      // }
 
       // --- Lấy thông tin học sinh ---
       const userInfo = await attemptModel.findAttemptById(attemptId);
@@ -169,7 +170,7 @@ const submitAttempt = async (req, res) => {
         student_id: userInfo?.userId._id.toString(),
         name: userInfo?.userId.fullName,
         current_level: `TOEIC ${userInfo?.userId?.currentLevel?.TOEIC}`,
-        study_hours_per_week: timeWeekly.maxHours || 2,
+        study_hours_per_week: timeWeekly?.maxHours || 2,
         learning_goals:
           userInfo?.userId?.learningGoals || "Đạt TOEIC 750 trong vòng 6 tháng",
         learning_preferences: userInfo?.userId?.learningPreferences || [],
@@ -227,11 +228,11 @@ const submitAttempt = async (req, res) => {
       };
 
       console.log("Grading payload:", gradingPayload);
-      if (testDetail.isTheLastTest) {
+      if (testDetail?.isTheLastTest) {
         gradingPayload.use_gemini = false; // nếu là bài test cuối, ko dùng gemini
       }
       const response = await axios.post(
-        "http://localhost:8000/grade/",
+        `${aiServiceUrl}/grade/`,
         gradingPayload
       );
 
@@ -541,124 +542,124 @@ const getCustomTestAttemptsByUser = async (req, res) => {
   }
 };
 
-const getStudyStats = async (userId) => {
-  try {
-    const now = new Date();
-    const month = now.getMonth() + 1; // getMonth() trả về 0-11, nên +1
-    const year = now.getFullYear();
+// const getStudyStats = async (userId) => {
+//   try {
+//     const now = new Date();
+//     const month = now.getMonth() + 1; // getMonth() trả về 0-11, nên +1
+//     const year = now.getFullYear();
 
-    // Nếu không có query, mặc định là tháng hiện tại
-    const targetMonth = !isNaN(month) ? month : dayjs().month() + 1; // month trong dayjs là 0-index
-    const targetYear = !isNaN(year) ? year : dayjs().year();
+//     // Nếu không có query, mặc định là tháng hiện tại
+//     const targetMonth = !isNaN(month) ? month : dayjs().month() + 1; // month trong dayjs là 0-index
+//     const targetYear = !isNaN(year) ? year : dayjs().year();
 
-    const startOfMonth = dayjs(`${targetYear}-${targetMonth}-01`).startOf(
-      "month"
-    );
-    const endOfMonth = startOfMonth.endOf("month");
+//     const startOfMonth = dayjs(`${targetYear}-${targetMonth}-01`).startOf(
+//       "month"
+//     );
+//     const endOfMonth = startOfMonth.endOf("month");
 
-    // 1️⃣ Lấy toàn bộ log trong tháng đó
-    const logs = await StudyLog.find({
-      user: userId,
-      date: { $gte: startOfMonth.toDate(), $lte: endOfMonth.toDate() },
-    }).sort({ date: 1 });
+//     // 1️⃣ Lấy toàn bộ log trong tháng đó
+//     const logs = await StudyLog.find({
+//       user: userId,
+//       date: { $gte: startOfMonth.toDate(), $lte: endOfMonth.toDate() },
+//     }).sort({ date: 1 });
 
-    if (!logs.length) {
-      return res.json({
-        message: `No study logs found for ${targetMonth}/${targetYear}`,
-        data: {
-          completedLessons: 0,
-          currentStreak: 0,
-          longestStreak: 0,
-          studyTimeThisMonth: "0h 0m",
-          studyTimeThisMonthMinutes: 0,
-          dailyStats: [],
-        },
-      });
-    }
+//     if (!logs.length) {
+//       return res.json({
+//         message: `No study logs found for ${targetMonth}/${targetYear}`,
+//         data: {
+//           completedLessons: 0,
+//           currentStreak: 0,
+//           longestStreak: 0,
+//           studyTimeThisMonth: "0h 0m",
+//           studyTimeThisMonthMinutes: 0,
+//           dailyStats: [],
+//         },
+//       });
+//     }
 
-    // 2️⃣ Tính tổng bài học & thời gian học trong tháng
-    const completedLessons = new Set(logs.map((l) => l.lesson?.toString()))
-      .size;
-    const studyTimeThisMonthMinutes = logs.reduce(
-      (acc, l) => acc + (l.durationMinutes || 0),
-      0
-    );
-    const hours = Math.floor(studyTimeThisMonthMinutes / 60);
-    const minutes = studyTimeThisMonthMinutes % 60;
-    const studyTimeThisMonth = `${hours}h ${minutes}m`;
+//     // 2️⃣ Tính tổng bài học & thời gian học trong tháng
+//     const completedLessons = new Set(logs.map((l) => l.lesson?.toString()))
+//       .size;
+//     const studyTimeThisMonthMinutes = logs.reduce(
+//       (acc, l) => acc + (l.durationMinutes || 0),
+//       0
+//     );
+//     const hours = Math.floor(studyTimeThisMonthMinutes / 60);
+//     const minutes = studyTimeThisMonthMinutes % 60;
+//     const studyTimeThisMonth = `${hours}h ${minutes}m`;
 
-    // 3️⃣ Tính streak trong tháng
-    let currentStreak = 0;
-    let longestStreak = 0;
+//     // 3️⃣ Tính streak trong tháng
+//     let currentStreak = 0;
+//     let longestStreak = 0;
 
-    const dates = [
-      ...new Set(logs.map((l) => dayjs(l.date).format("YYYY-MM-DD"))),
-    ].sort();
+//     const dates = [
+//       ...new Set(logs.map((l) => dayjs(l.date).format("YYYY-MM-DD"))),
+//     ].sort();
 
-    for (let i = 0; i < dates.length; i++) {
-      if (i === 0) {
-        currentStreak = 1;
-        longestStreak = 1;
-      } else {
-        const prev = dayjs(dates[i - 1]);
-        const curr = dayjs(dates[i]);
-        const diff = curr.diff(prev, "day");
+//     for (let i = 0; i < dates.length; i++) {
+//       if (i === 0) {
+//         currentStreak = 1;
+//         longestStreak = 1;
+//       } else {
+//         const prev = dayjs(dates[i - 1]);
+//         const curr = dayjs(dates[i]);
+//         const diff = curr.diff(prev, "day");
 
-        if (diff === 1) currentStreak++;
-        else if (diff > 1) {
-          longestStreak = Math.max(longestStreak, currentStreak);
-          currentStreak = 1;
-        }
-      }
-    }
-    longestStreak = Math.max(longestStreak, currentStreak);
+//         if (diff === 1) currentStreak++;
+//         else if (diff > 1) {
+//           longestStreak = Math.max(longestStreak, currentStreak);
+//           currentStreak = 1;
+//         }
+//       }
+//     }
+//     longestStreak = Math.max(longestStreak, currentStreak);
 
-    // 4️⃣ Tổng hợp theo ngày (để hiển thị biểu đồ)
-    const dailyStats = [];
-    const daysInMonth = endOfMonth.date();
-    let cumulativeTime = 0; // 👉 thêm biến tích lũy
+//     // 4️⃣ Tổng hợp theo ngày (để hiển thị biểu đồ)
+//     const dailyStats = [];
+//     const daysInMonth = endOfMonth.date();
+//     let cumulativeTime = 0; // 👉 thêm biến tích lũy
 
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = dayjs(`${targetYear}-${targetMonth}-${d}`).format(
-        "YYYY-MM-DD"
-      );
-      const dayLogs = logs.filter((l) => dayjs(l.date).isSame(dateStr, "day"));
+//     for (let d = 1; d <= daysInMonth; d++) {
+//       const dateStr = dayjs(`${targetYear}-${targetMonth}-${d}`).format(
+//         "YYYY-MM-DD"
+//       );
+//       const dayLogs = logs.filter((l) => dayjs(l.date).isSame(dateStr, "day"));
 
-      const totalLessons = new Set(dayLogs.map((l) => l.lesson?.toString()))
-        .size;
-      const totalTime = dayLogs.reduce(
-        (acc, l) => acc + (l.durationMinutes || 0),
-        0
-      );
+//       const totalLessons = new Set(dayLogs.map((l) => l.lesson?.toString()))
+//         .size;
+//       const totalTime = dayLogs.reduce(
+//         (acc, l) => acc + (l.durationMinutes || 0),
+//         0
+//       );
 
-      cumulativeTime += totalTime; // 👉 cộng dồn theo ngày
+//       cumulativeTime += totalTime; // 👉 cộng dồn theo ngày
 
-      dailyStats.push({
-        date: dateStr,
-        completedLessons: totalLessons,
-        studyTimeMinutes: totalTime,
-        cumulativeStudyTimeMinutes: cumulativeTime, // 👉 thêm trường mới
-      });
-    }
+//       dailyStats.push({
+//         date: dateStr,
+//         completedLessons: totalLessons,
+//         studyTimeMinutes: totalTime,
+//         cumulativeStudyTimeMinutes: cumulativeTime, // 👉 thêm trường mới
+//       });
+//     }
 
-    // ✅ Trả kết quả
-    return {
-      data: {
-        month: targetMonth,
-        year: targetYear,
-        completedLessons,
-        currentStreak,
-        longestStreak,
-        studyTimeThisMonth,
-        studyTimeThisMonthMinutes,
-        dailyStats,
-      },
-    };
-  } catch (error) {
-    console.error("Error getting study stats:", error);
-    res.status(500).json({ error: "Failed to get study stats" });
-  }
-};
+//     // ✅ Trả kết quả
+//     return {
+//       data: {
+//         month: targetMonth,
+//         year: targetYear,
+//         completedLessons,
+//         currentStreak,
+//         longestStreak,
+//         studyTimeThisMonth,
+//         studyTimeThisMonthMinutes,
+//         dailyStats,
+//       },
+//     };
+//   } catch (error) {
+//     console.error("Error getting study stats:", error);
+//     res.status(500).json({ error: "Failed to get study stats" });
+//   }
+// };
 
 const dailyStats = [
   /* dữ liệu dailyStats bạn đã đưa */

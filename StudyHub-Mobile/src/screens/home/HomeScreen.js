@@ -17,7 +17,7 @@ const HomeScreen = ({ navigation }) => {
   const { user } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({});
   const [recentCourses, setRecentCourses] = useState([]);
-  const [upcomingTests, setUpcomingTests] = useState([]);
+  // const [upcomingTests, setUpcomingTests] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -28,12 +28,11 @@ const HomeScreen = ({ navigation }) => {
     try {
       // Sử dụng mock data thay vì API calls
       setRecentCourses(mockMyCourses.slice(0, 3));
-      setUpcomingTests(
-        mockTests.filter((test) => test.isAvailable).slice(0, 3)
-      );
+      // setUpcomingTests(
+      //   mockTests.filter((test) => test.isAvailable).slice(0, 3)
+      // );
 
       const resCourses = await courseApi.getMyCourses(user?._id);
-      console.log("Fetched recent courses:", resCourses);
       setRecentCourses(resCourses?.courses);
       // Fetch recent courses from API
       const now = new Date();
@@ -45,6 +44,7 @@ const HomeScreen = ({ navigation }) => {
       const currentMonth = now.getMonth() + 1;
 
       const res = await studyApi.getStudyStats(currentYear, currentMonth);
+      console.log("Dashboard Stats API Response:", res?.data?.dailyStats); // Giữ lại log để debug
       setStats(res?.summary);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -129,7 +129,7 @@ const HomeScreen = ({ navigation }) => {
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
         <Text style={styles.welcomeText}>
-          Welcome back, {user?.firstName || "Student"}!
+          Welcome back, {user?.fullName || "Student"}!
         </Text>
         <Text style={styles.subtitleText}>Continue your learning journey</Text>
       </View>
@@ -175,7 +175,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
         {recentCourses?.length > 0 ? (
           recentCourses?.map((course) => (
-            <CourseCard key={course._id} course={course} />
+            <CourseCard key={course?._id} course={course} />
           ))
         ) : (
           <View style={styles.emptyState}>
@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#FFFFFF",
     marginBottom: 16,
+    marginTop: 16,
   },
   welcomeText: {
     fontSize: 24,
