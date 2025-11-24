@@ -231,7 +231,7 @@ const submitAttempt = async (req, res) => {
         gradingPayload.use_gemini = false; // nếu là bài test cuối, ko dùng gemini
       }
       const response = await axios.post(
-        "http://localhost:5173/8000/grade/",
+        "http://localhost:8000/grade/",
         gradingPayload
       );
 
