@@ -7,20 +7,14 @@ const { verifyToken, requireAdmin } = require("../middlewares/authMiddleware");
 router.post("/", verifyToken, reviewController.createReview);
 
 // Lấy thống kê tổng quan reviews
-router.get(
-  "/statistics",
-  verifyToken,
-  requireAdmin,
-  reviewController.getAdminReviewStats
-);
+router.get("/statistics", reviewController.getAdminReviewStats);
 
 // Lấy tất cả reviews (admin only)
-router.get("/all", verifyToken, requireAdmin, reviewController.getAllReviews);
+router.get("/all", reviewController.getAllReviews);
 
 // Lấy thống kê rating của khóa học
 router.get(
   "/course/:courseId/statistics",
-  verifyToken,
   reviewController.getCourseRatingStats
 );
 

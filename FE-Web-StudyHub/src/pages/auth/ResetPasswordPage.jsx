@@ -23,6 +23,7 @@ import SnackBar from "../../components/Snackbar";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import { useResetPasswordMutation } from "../../services/authApi";
+import LogoStudyHub from "../../assets/Logo.jpg";
 
 const ResetPasswordPage = () => {
   const dispatch = useDispatch();
@@ -43,16 +44,16 @@ const ResetPasswordPage = () => {
   const schema = yup.object({
     newPassword: yup
       .string()
-      .required("Mật khẩu là bắt buộc")
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
       .matches(
         /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
-        "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
+        "Password must contain uppercase, lowercase, number and special character"
       ),
     confirmPassword: yup
       .string()
-      .oneOf([yup.ref("newPassword")], "Mật khẩu xác nhận không khớp")
-      .required("Vui lòng xác nhận mật khẩu"),
+      .oneOf([yup.ref("newPassword")], "Passwords do not match")
+      .required("Please confirm your password"),
   });
 
   const { control, handleSubmit, reset } = useForm({
@@ -71,14 +72,12 @@ const ResetPasswordPage = () => {
 
       dispatch(openSnackbar({ message: res.message, severity: "success" }));
       reset();
-
-      // Chuyển hướng sau 1 giây
-      setTimeout(() => navigate("/login"), 1000);
+      navigate("/login");
     } catch (error) {
       console.error("Reset password error:", error);
       dispatch(
         openSnackbar({
-          message: error?.data?.message || "Đặt lại mật khẩu thất bại",
+          message: error?.data?.message || "Failed to reset password",
           severity: "error",
         })
       );
@@ -99,6 +98,15 @@ const ResetPasswordPage = () => {
         }}
       >
         {/* Header */}
+        <Box className="flex justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="h-1/3 w-1/3 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </Box>
+
         <Box className="text-center space-y-2">
           <Typography
             variant="h4"
@@ -170,7 +178,7 @@ const ResetPasswordPage = () => {
               fontWeight: 600,
             }}
           >
-            {isLoading ? "Đang cập nhật..." : "Đặt lại mật khẩu"}
+            {isLoading ? "Updating..." : "Reset Password"}
           </Button>
         </Box>
 

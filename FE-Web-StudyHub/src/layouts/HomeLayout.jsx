@@ -1,15 +1,15 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import PortraitIcon from "@mui/icons-material/Portrait";
 import { Person } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import LogoutIcon from "@mui/icons-material/Logout";
+import LogoStudyHub from "../assets/Logo.jpg";
 
 export default function HomeLayout() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -47,13 +47,14 @@ export default function HomeLayout() {
     <div className="flex ">
       {/* Sidebar */}
       <div className="w-64 bg-white h-screen fixed top-0 left-0 shadow-md py-5 z-50 flex flex-col">
-        <h2 className="flex items-center text-xl font-semibold mb-6 px-5">
-          <PortraitIcon className="w-8 h-8 mr-2 text-blue-500" />
-          <div className="flex flex-col">
-            <span className="text-lg font-semibold">StudyHub</span>
-            <span className="text-xs text-gray-500">Student Portal</span>
-          </div>
-        </h2>
+        <div className="flex items-center mb-1 justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="w-1/2 bg-cover cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </div>
 
         <nav className="flex flex-col flex-1">
           <button

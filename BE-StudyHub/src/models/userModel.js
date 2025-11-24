@@ -68,14 +68,35 @@ const getAllUsers = async () => {
 
 const getMyCourses = async (userId) => {
   try {
-    const course = await User.findById(userId)
+    const user = await User.findById(userId)
       .populate({
         path: "courses",
         select:
-          "title description teacherId courseType courseLevel thumbnailUrl category tags cost durationHours reviews grammarLessons",
+          "title description teacherId courseType courseLevel thumbnailUrl category tags cost durationHours reviews grammarLessons createdAt",
+        populate: {
+          path: "reviews",
+          select: "rating",
+        },
       })
       .lean();
-    return course;
+
+    // Tính toán averageRating cho mỗi khóa học
+    if (user && user.courses) {
+      user.courses = user.courses.map((course) => {
+        if (course.reviews && course.reviews.length > 0) {
+          const totalRating = course.reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          );
+          course.averageRating = totalRating / course.reviews.length;
+        } else {
+          course.averageRating = 0;
+        }
+        return course;
+      });
+    }
+
+    return user;
   } catch (error) {
     console.error("Error getting user's courses:", error);
   }

@@ -283,7 +283,7 @@ const CourseDetail = () => {
                 {isOwned
                   ? "Already Purchased"
                   : course.cost
-                  ? `${course.cost} VND`
+                  ? `${course.cost.toLocaleString("vi-VN")} VND`
                   : "Free"}
               </Typography>
 

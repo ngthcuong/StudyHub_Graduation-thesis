@@ -22,6 +22,7 @@ import { useRegisterMutation } from "../../services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
+import LogoStudyHub from "../../assets/Logo.jpg";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -184,6 +185,15 @@ const RegisterPage = () => {
         }}
       >
         {/* Header */}
+        <Box className="flex justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="h-1/3 w-1/3 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </Box>
+
         <Box className="text-center mb-4">
           <Typography
             variant="h4"
