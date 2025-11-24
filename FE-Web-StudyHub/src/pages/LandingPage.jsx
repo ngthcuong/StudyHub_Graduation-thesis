@@ -395,11 +395,6 @@ const LandingPage = () => {
                 </Button>
               </Box>
             )}
-            {!isLoadingReviews && testimonials.length > 0 && (
-              <Typography variant="caption" className="text-gray-500 mt-2">
-                Showing {testimonials.length} five-star reviews
-              </Typography>
-            )}
           </Box>
 
           {/* Reviews List */}
