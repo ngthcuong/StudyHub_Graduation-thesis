@@ -44,8 +44,6 @@ const TestInformation = () => {
   const [history, setHistory] = useState([]);
   const [testInfoState, setTestInfoState] = useState(testInfor);
 
-  console.log("testInfo: ", testInfor);
-
   const user = useSelector((state) => state.auth.user);
 
   const [testPool, setTestPool] = useState();
@@ -145,6 +143,15 @@ const TestInformation = () => {
         dispatch(
           openSnackbar({
             message: `Please update your ${testInfor?.examType} level in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
+      if (testInfor.isTheLastTest && !user.walletAddress) {
+        dispatch(
+          openSnackbar({
+            message: `Please add wallet address in your profile before taking this test.`,
             severity: "error",
           })
         );

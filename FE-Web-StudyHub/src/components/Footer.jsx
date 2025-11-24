@@ -20,7 +20,7 @@ const Footer = () => {
             padding: "0 10px",
           }}
         >
-          <Grid item size={{ xs: 12, md: 6 }}>
+          <Grid item size={{ xs: 12, md: 5.5 }}>
             <Typography variant="h5" className="font-bold !mb-2">
               StudyHub
             </Typography>
@@ -65,7 +65,7 @@ const Footer = () => {
               </li>
             </ul>
           </Grid>
-          <Grid item size={{ xs: 12, md: 2 }}>
+          <Grid item size={{ xs: 12, md: 2.5 }}>
             <Typography variant="subtitle1" className="!font-bold mb-2">
               About us
             </Typography>
