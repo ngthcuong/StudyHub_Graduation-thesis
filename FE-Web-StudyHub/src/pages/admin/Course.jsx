@@ -1239,7 +1239,7 @@ const Course = () => {
                 component="span"
                 sx={{ display: "block", mt: 1, color: "#ef4444" }}
               >
-                ⚠️ This action will delete all related lessons and cannot be
+                This action will delete all related lessons and cannot be
                 undone!
               </Typography>
             )}

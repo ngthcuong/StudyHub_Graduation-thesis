@@ -459,33 +459,15 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
           ...courseData,
         };
 
-        // Smart sections handling:
-        // - If sections have content (length > 0): Include them for update
-        // - If sections is empty but original course had sections loaded in form: User wants to delete all
-        // - If sections is empty and wasn't loaded: Don't send (no change to lessons)
-
         const originalSectionsCount = course?.sections?.length || 0;
         const currentSectionsCount = sections?.length || 0;
 
         if (currentSectionsCount > 0) {
-          // User has sections with content - send for update
           updatePayload.sections = sections;
-          console.log(
-            `Sending ${currentSectionsCount} sections for update:`,
-            sections
-          );
         } else if (originalSectionsCount > 0 && currentSectionsCount === 0) {
-          // Original had sections, now empty - user explicitly deleted all
-          // Only send empty array if we're sure sections were loaded
-          // Check if form was properly initialized with sections
           if (course.sections) {
             updatePayload.sections = [];
-            console.log("User deleted all sections - sending empty array");
-          } else {
-            console.log("Sections not loaded yet - skipping sections update");
           }
-        } else {
-          console.log("No sections to update - skipping");
         }
 
         const result = await updateCourse(updatePayload).unwrap();
@@ -493,23 +475,22 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
         onSuccess?.(result);
       } else {
         // Create new course
-        console.log("Creating course with data:", data);
-        if (data.sections && data.sections.length > 0) {
-          console.log("Sections data:", data.sections);
-          data.sections.forEach((section, idx) => {
-            console.log(`Section ${idx}:`, section);
-            if (section.lessons) {
-              section.lessons.forEach((lesson, lessonIdx) => {
-                console.log(`  Lesson ${lessonIdx}:`, lesson);
-                if (lesson.content) {
-                  console.log(`    Content length: ${lesson.content.length}`);
-                }
-              });
-            }
-          });
-        }
+        // console.log("Creating course with data:", data);
+        // if (data.sections && data.sections.length > 0) {
+        //   console.log("Sections data:", data.sections);
+        //   data.sections.forEach((section, idx) => {
+        //     console.log(`Section ${idx}:`, section);
+        //     if (section.lessons) {
+        //       section.lessons.forEach((lesson, lessonIdx) => {
+        //         console.log(`  Lesson ${lessonIdx}:`, lesson);
+        //         if (lesson.content) {
+        //           console.log(`    Content length: ${lesson.content.length}`);
+        //         }
+        //       });
+        //     }
+        //   });
+        // }
         const result = await createCourse(data).unwrap();
-        toast.success("Create course successfully!");
         onSuccess?.(result);
       }
 
@@ -520,10 +501,6 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
       console.error(
         `Error ${isEditMode ? "updating" : "creating"} course:`,
         error
-      );
-      toast.error(
-        error?.data?.message ||
-          `Cannot ${isEditMode ? "update" : "create"} course!`
       );
     }
   };
@@ -943,7 +920,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                     <TextField
                       {...field}
                       label="Thumbnail URL"
-                      placeholder="https://example.com/thumbnail.jpg"
+                      placeholder=""
                       fullWidth
                       error={!!errors.thumbnailUrl}
                       helperText={errors.thumbnailUrl?.message}
