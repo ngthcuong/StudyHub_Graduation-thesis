@@ -20,20 +20,12 @@ import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
-  useGetTestByIdMutation,
-  useGetTestPoolByLevelMutation,
-  useGetTestPoolByTestIdAndLevelMutation,
-  useGetTestAttemptsByTestIdMutation,
   useGetAttemptByTestAndUserMutation,
   useCreateAttemptMutation,
-  useGetAttemptInfoMutation,
-  useCreateTestPoolMutation,
-  useGenerateTestQuestionsMutation,
   useSubmitTestMutation,
   useGetQuestionsByTestIdMutation,
   // useUpdateTestPoolMutation,
 } from "../../services/testApi";
-import { array } from "prop-types";
 
 const TestMultipleChoice = () => {
   const navigate = useNavigate();
