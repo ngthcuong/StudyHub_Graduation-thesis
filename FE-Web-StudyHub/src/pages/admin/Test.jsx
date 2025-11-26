@@ -37,9 +37,21 @@ import {
   FilterAltOutlined,
   FilterAltOffOutlined,
   Add as AddIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import ModalCreateTest from "../../components/ModalCreateTest";
-import { useGetTestStatisticsQuery } from "../../services/testApi";
+import {
+  useGetTestStatisticsQuery,
+  useDeleteTestMutation,
+} from "../../services/testApi";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import SnackBar from "../../components/Snackbar";
+import { useSelector, useDispatch } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
 
 const Test = () => {
   const [page, setPage] = useState(0);
@@ -54,6 +66,10 @@ const Test = () => {
   const [theLastTestFilter, setTheLastTestFilter] = useState("All");
   const [customTestFilter, setCustomTestFilter] = useState("All");
 
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [testToDelete, setTestToDelete] = useState(null);
+
   // Fetch test statistics from API
   const {
     data: testStatisticsData,
@@ -61,6 +77,11 @@ const Test = () => {
     error: testsError,
     refetch,
   } = useGetTestStatisticsQuery();
+
+  const [deleteTest, { isLoading: isDeleting }] = useDeleteTestMutation();
+
+  const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -99,6 +120,44 @@ const Test = () => {
     setSortBy("title");
     setTheLastTestFilter("All");
     setCustomTestFilter("All");
+  };
+
+  const handleDeleteClick = (test) => {
+    setTestToDelete(test);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!testToDelete) return;
+
+    try {
+      await deleteTest(testToDelete.id).unwrap();
+      refetch();
+      dispatch(
+        openSnackbar({
+          message: `Test "${testToDelete.title}" deleted successfully!`,
+          severity: "success",
+        })
+      );
+      setDeleteDialogOpen(false);
+      setTestToDelete(null);
+    } catch (error) {
+      console.error("Error deleting test:", error);
+      dispatch(
+        openSnackbar({
+          message:
+            error?.data?.error ||
+            error?.data?.message ||
+            "Failed to delete test. Please try again.",
+          severity: "error",
+        })
+      );
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setTestToDelete(null);
   };
 
   // Filter and sort logic
@@ -587,13 +646,20 @@ const Test = () => {
                               )}
                             </IconButton>
                           </TableCell>
-                          <TableCell>
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {test.title}
-                            </Typography>
+                          <TableCell sx={{ py: 1.5 }}>
+                            <Tooltip title={test.title} placement="top-start">
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {test.title.length > 25
+                                  ? `${test.title.substring(0, 25)}...`
+                                  : test.title}
+                              </Typography>
+                            </Tooltip>
                           </TableCell>
                           <TableCell>
                             <Chip
@@ -673,25 +739,32 @@ const Test = () => {
                             />
                           </TableCell>
                           <TableCell align="center">
-                            {/* <IconButton
-                              size="small"
-                              sx={{
-                                color: "#1976d2",
-                                "&:hover": { backgroundColor: "#dbeafe" },
-                                mr: 0.5,
-                              }}
-                            >
-                              <VisibilityIcon fontSize="small" />
-                            </IconButton> */}
-                            <IconButton
-                              size="small"
-                              sx={{
-                                color: "#f59e0b",
-                                "&:hover": { backgroundColor: "#fef3c7" },
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
+                            <Tooltip title="Edit test">
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  color: "#f59e0b",
+                                  "&:hover": { backgroundColor: "#fef3c7" },
+                                  mr: 0.5,
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete test">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteClick(test)}
+                                sx={{
+                                  color: "#ef4444",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
 
@@ -723,6 +796,17 @@ const Test = () => {
                                     {test.creatorInfo ? (
                                       <Table size="small">
                                         <TableBody>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Test name:
+                                            </TableCell>
+                                            <TableCell>{test.title}</TableCell>
+                                          </TableRow>
                                           <TableRow>
                                             <TableCell
                                               sx={{
@@ -876,6 +960,80 @@ const Test = () => {
         onClose={closeModal}
         onSuccess={handleCreateTest}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle
+          id="delete-dialog-title"
+          sx={{
+            fontWeight: 700,
+            color: "#ef4444",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <DeleteIcon />
+          Delete Test
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete the test{" "}
+            <strong>"{testToDelete?.title}"</strong>? This action cannot be
+            undone and will permanently remove all associated data including
+            questions and attempts.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleDeleteCancel}
+            variant="outlined"
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            autoFocus
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+              bgcolor: "#ef4444",
+              "&:hover": {
+                bgcolor: "#dc2626",
+              },
+              "&:disabled": {
+                bgcolor: "#fca5a5",
+              },
+            }}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <SnackBar isOpen={isOpen} message={message} severity={severity} />
     </Box>
   );
 };

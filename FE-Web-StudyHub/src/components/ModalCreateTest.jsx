@@ -40,12 +40,12 @@ import {
 // Validation schema
 const schema = yup.object({
   title: yup.string().required("Test title is required"),
-  description: yup.string(),
+  description: yup.string().required("Description is required"),
   courseId: yup.string().required("Course is required"),
   grammarLessonId: yup.string().nullable(),
   topic: yup.array().min(1, "At least one topic is required"),
   skill: yup.string().required("Primary skill is required"),
-  questionTypes: yup.array().min(1, "At least one question type is required"),
+  questionTypes: yup.array().min(1, "Question type is required"),
   examType: yup.string().required("Exam type is required"),
   numQuestions: yup
     .number()
@@ -87,16 +87,16 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const [createdTestData, setCreatedTestData] = useState(null);
 
   // Debug logging
-  // useEffect(() => {
-  //   if (coursesData) {
-  //     console.log("Courses data structure:", coursesData);
-  //     console.log("Type of coursesData:", typeof coursesData);
-  //     console.log("Is coursesData an array:", Array.isArray(coursesData));
-  //   }
-  //   if (coursesError) {
-  //     console.error("Courses API error:", coursesError);
-  //   }
-  // }, [coursesData, coursesError]);
+  useEffect(() => {
+    if (coursesData) {
+      console.log("Courses data structure:", coursesData);
+      console.log("Type of coursesData:", typeof coursesData);
+      console.log("Is coursesData an array:", Array.isArray(coursesData));
+    }
+    if (coursesError) {
+      console.error("Courses API error:", coursesError);
+    }
+  }, [coursesData, coursesError]);
 
   const {
     control,
@@ -126,7 +126,7 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const passingScore = watch("passingScore");
   const selectedCourseId = watch("courseId");
 
-  // Load lessons when course changes
+  // Load lessons when course changes and set exam type from course
   useEffect(() => {
     const loadLessons = async () => {
       if (selectedCourseId) {
@@ -142,13 +142,24 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
         } finally {
           setLessonsLoading(false);
         }
+
+        // Set exam type from selected course's courseType
+        const selectedCourse = coursesData?.find(
+          (course) => course._id === selectedCourseId
+        );
+        if (selectedCourse?.courseType) {
+          reset((formValues) => ({
+            ...formValues,
+            examType: selectedCourse.courseType,
+          }));
+        }
       } else {
         setLessons([]);
       }
     };
 
     loadLessons();
-  }, [selectedCourseId, getLessonsByCourseId]);
+  }, [selectedCourseId, getLessonsByCourseId, coursesData, reset]);
 
   const courses = (() => {
     if (!coursesData) return [];
@@ -162,10 +173,10 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   })();
 
   const skills = [
-    { value: "reading", label: "Reading" },
-    { value: "writing", label: "Writing" },
-    { value: "listening", label: "Listening" },
-    { value: "speaking", label: "Speaking" },
+    // { value: "reading", label: "Reading" },
+    // { value: "writing", label: "Writing" },
+    // { value: "listening", label: "Listening" },
+    // { value: "speaking", label: "Speaking" },
     { value: "vocabulary", label: "Vocabulary" },
     { value: "grammar", label: "Grammar" },
   ];
@@ -173,8 +184,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const questionTypes = [
     { value: "multiple_choice", label: "Multiple Choice" },
     { value: "fill_in_blank", label: "Fill in the Blank" },
-    // { value: "rearrange", label: "Rearrange" },
-    // { value: "essay", label: "Essay" },
   ];
 
   const examTypes = [
@@ -231,20 +240,30 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
       }
 
       // Bước 2: Tự động tạo questions
+      const selectedCourse = coursesData?.find(
+        (course) => course._id === data.courseId
+      );
+
+      const topicString = Array.isArray(data.topic)
+        ? data.topic.join(", ")
+        : data.topic;
+
+      const scoreRange = selectedCourse?.courseLevel
+        ? `${selectedCourse.courseType} ${selectedCourse.courseLevel}`
+        : `${data.examType} 605-780`;
+
       const questionData = {
         testId: result.data._id,
         exam_type: data.examType,
         num_questions: data.numQuestions,
-        topic: data.topic,
+        topic: topicString,
         question_types: data.questionTypes,
-        score_range: coursesData.courseLevel,
+        score_range: scoreRange,
       };
 
       await generateQuestions(questionData).unwrap();
 
-      setTimeout(() => {
-        handleCloseModal();
-      }, 1500);
+      handleCloseModal();
     } catch (error) {
       console.error("Error in test creation process:", error);
       setIsProcessing(false);
@@ -485,6 +504,7 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                         <Select
                           {...field}
                           label="Exam Type *"
+                          disabled
                           sx={{
                             borderRadius: 2,
                             "&:hover .MuiOutlinedInput-notchedOutline": {
@@ -520,11 +540,10 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                             </MenuItem>
                           ))}
                         </Select>
-                        {errors.examType && (
-                          <FormHelperText>
-                            {errors.examType.message}
-                          </FormHelperText>
-                        )}
+                        <FormHelperText>
+                          {errors.examType?.message ||
+                            "Auto-filled from selected course"}
+                        </FormHelperText>
                       </FormControl>
                     )}
                   />
@@ -636,21 +655,15 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                     control={control}
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.questionTypes}>
-                        <InputLabel>Question Types *</InputLabel>
+                        <InputLabel>Question Type *</InputLabel>
                         <Select
                           {...field}
-                          multiple
-                          label="Question Types *"
-                          renderValue={(selected) =>
-                            selected
-                              .map(
-                                (value) =>
-                                  questionTypes.find(
-                                    (type) => type.value === value
-                                  )?.label
-                              )
-                              .join(", ")
-                          }
+                          label="Question Type *"
+                          value={field.value?.[0] || ""}
+                          onChange={(e) => {
+                            // Convert single value to array
+                            field.onChange([e.target.value]);
+                          }}
                           sx={{
                             borderRadius: 2,
                             "&:hover .MuiOutlinedInput-notchedOutline": {
@@ -663,9 +676,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                         >
                           {questionTypes.map((type) => (
                             <MenuItem key={type.value} value={type.value}>
-                              <Checkbox
-                                checked={field.value?.includes(type.value)}
-                              />
                               {type.label}
                             </MenuItem>
                           ))}

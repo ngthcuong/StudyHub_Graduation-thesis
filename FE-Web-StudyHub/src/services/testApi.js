@@ -290,6 +290,15 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Attempt"],
     }),
+
+    // 31. deleteTest
+    deleteTest: builder.mutation({
+      query: (testId) => ({
+        url: `/tests/${testId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Test"],
+    }),
   }),
 });
 
@@ -324,6 +333,7 @@ export const {
   useGetAttemptDetailByUserMutation,
   useGetQuestionsByAttemptIdMutation,
   useUpdateAttemptMutation,
+  useDeleteTestMutation,
 } = testApi;
 
 export default testApi;

@@ -13,6 +13,7 @@ import {
   ListItem,
   CircularProgress,
   Tooltip,
+  Pagination,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -24,11 +25,19 @@ import {
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import { useNavigate } from "react-router-dom";
 import {
-  useGetMyTestsMutation,
   useGetAttemptDetailByUserMutation,
+  useDeleteTestMutation,
 } from "../../services/testApi";
 import ModalCreateCustomTest from "../../components/ModalCreateCustomTest";
 import { useEffect } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { toast } from "react-toastify";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
 
 const typeOptions = ["All Types", "Test", "Assignment"];
 const statusOptions = ["All Status", "Completed", "Not Completed"];
@@ -48,8 +57,16 @@ const TestList = () => {
   // const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
 
-  const [getMyTests] = useGetMyTestsMutation();
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
   const [getAttemptDetailByUser] = useGetAttemptDetailByUserMutation();
+  const [deleteTest] = useDeleteTestMutation();
+
+  // State for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [testToDelete, setTestToDelete] = useState(null);
 
   const fetchTests = async () => {
     try {
@@ -68,7 +85,8 @@ const TestList = () => {
 
   useEffect(() => {
     fetchTests();
-  }, [getMyTests]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Lọc dữ liệu
   const filtered = useMemo(() => {
@@ -88,6 +106,25 @@ const TestList = () => {
     });
   }, [search, type, status, difficulty, tests?.data]);
 
+  // Tính toán pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedTests = useMemo(() => {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  }, [filtered, page, itemsPerPage]);
+
+  // Reset page khi filter thay đổi
+  useEffect(() => {
+    setPage(1);
+  }, [search, type, status, difficulty]);
+
+  const handlePageChange = (_event, value) => {
+    setPage(value);
+    // Scroll to top of list
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleClearAll = () => {
     setSearch("");
     setType("All Types");
@@ -106,6 +143,34 @@ const TestList = () => {
 
   const openModal = () => {
     setOpen(true);
+  };
+
+  const handleDeleteClick = (e, testId, testTitle) => {
+    e.stopPropagation(); // Prevent navigation when clicking delete
+    setTestToDelete({ id: testId, title: testTitle });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!testToDelete) return;
+
+    try {
+      await deleteTest(testToDelete.id).unwrap();
+      toast.success(`Test "${testToDelete.title}" deleted successfully!`);
+      setDeleteDialogOpen(false);
+      setTestToDelete(null);
+      fetchTests(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting test:", error);
+      toast.error(
+        error?.data?.message || "Failed to delete test. Please try again."
+      );
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setTestToDelete(null);
   };
 
   console.log("Data created test in TestList:", filtered);
@@ -284,7 +349,7 @@ const TestList = () => {
 
         {/* Danh sách bài */}
         <List className="rounded-xl">
-          {filtered.map((item) => (
+          {paginatedTests.map((item) => (
             <ListItem
               key={item.testId._id}
               className="flex items-center justify-between !py-4  border rounded-xl mb-5 !shadow-md !bg-white cursor-pointer"
@@ -297,6 +362,25 @@ const TestList = () => {
                   },
                 });
               }}
+              secondaryAction={
+                <Tooltip title="Delete test">
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={(e) =>
+                      handleDeleteClick(e, item.testId._id, item.testId.title)
+                    }
+                    sx={{
+                      color: "#ef4444",
+                      "&:hover": {
+                        backgroundColor: "rgba(239, 68, 68, 0.1)",
+                      },
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              }
             >
               <Stack
                 direction="row"
@@ -353,6 +437,39 @@ const TestList = () => {
             </ListItem>
           ))}
         </List>
+
+        {/* Pagination */}
+        {filtered.length > 0 && totalPages > 1 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 4,
+              mb: 2,
+            }}
+          >
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  borderRadius: 2,
+                  fontWeight: 600,
+                },
+                "& .Mui-selected": {
+                  backgroundColor: "#1976d2 !important",
+                  color: "white",
+                },
+              }}
+            />
+          </Box>
+        )}
       </Box>
       <ModalCreateCustomTest
         open={open}
@@ -364,6 +481,72 @@ const TestList = () => {
           setDataCreatedTest(newTestData);
         }}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle
+          id="delete-dialog-title"
+          sx={{
+            fontWeight: 700,
+            color: "#ef4444",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <DeleteIcon />
+          Delete Test
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete the test{" "}
+            <strong>"{testToDelete?.title}"</strong>? This action cannot be
+            undone and will permanently remove all associated data including
+            questions and attempts.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleDeleteCancel}
+            variant="outlined"
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            autoFocus
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+              bgcolor: "#ef4444",
+              "&:hover": {
+                bgcolor: "#dc2626",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
