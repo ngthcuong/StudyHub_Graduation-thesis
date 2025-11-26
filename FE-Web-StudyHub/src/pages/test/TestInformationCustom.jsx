@@ -106,7 +106,7 @@ const TestInformationCustom = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
+    <Box className="flex justify-center items-center  bg-gray-50 flex-col ">
       <Header />
 
       <Card

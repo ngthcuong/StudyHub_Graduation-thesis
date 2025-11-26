@@ -249,7 +249,7 @@ const TestInformation = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center  bg-gray-50 flex-col ">
+    <Box className="flex justify-center items-center bg-gray-50 flex-col ">
       <Header />
 
       <Card
@@ -479,9 +479,8 @@ const TestInformation = () => {
                 }}
               >
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  ⚠️ You need to update your{" "}
-                  <strong>{testInfor.examType}</strong> level in your profile
-                  before taking this test.
+                  You need to update your <strong>{testInfor.examType}</strong>{" "}
+                  level in your profile before taking this test.
                 </Typography>
                 <Button
                   variant="outlined"
@@ -522,7 +521,6 @@ const TestInformation = () => {
                 fontSize: 18,
                 textTransform: "none",
                 mt: 1,
-                mb: 60,
               }}
               onClick={() => handleStartTest()}
             >
