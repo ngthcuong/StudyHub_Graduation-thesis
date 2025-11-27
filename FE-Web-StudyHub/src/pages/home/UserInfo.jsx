@@ -344,8 +344,12 @@ const UserInfo = () => {
   };
 
   const handleCancel = () => {
+    if (userData) {
+      const formattedData = formatUserData(userData);
+      reset(formattedData);
+    }
     clearErrors();
-    setIsEditing(!isEditing);
+    setIsEditing(false);
   };
 
   return (

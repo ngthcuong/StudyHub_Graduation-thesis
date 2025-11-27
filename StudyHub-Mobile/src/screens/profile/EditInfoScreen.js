@@ -96,7 +96,7 @@ const EditInfoScreen = () => {
     dob: userInfo?.dob || "2000-01-01T00:00:00.000Z",
     gender: userInfo?.gender || "male",
     organization: userInfo?.organization || "ABC Corp",
-    walletAddress: userInfo?.walletAddress || null,
+    walletAddress: userInfo?.walletAddress || "",
     // SỬA 1: Thêm avatarUrl vào state
     avatarUrl: userInfo?.avatarUrl || null,
     // SỬA 2: Thêm currentLevel (dưới dạng phẳng)
@@ -180,7 +180,7 @@ const EditInfoScreen = () => {
       dob: userInfo?.dob || "2000-01-01T00:00:00.000Z",
       gender: userInfo?.gender || "male",
       organization: userInfo?.organization || "ABC Corp",
-      walletAddress: userInfo?.walletAddress || null,
+      walletAddress: userInfo?.walletAddress || "",
       avatarUrl: userInfo?.avatarUrl || null,
       currentLevelToeic: userInfo?.currentLevel?.TOEIC || "",
       currentLevelIelts: userInfo?.currentLevel?.IELTS || "",
