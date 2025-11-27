@@ -177,11 +177,8 @@ const Test = () => {
 
       const matchesCustomTest =
         customTestFilter === "All" ||
-        (customTestFilter === "Custom" &&
-          (!test.courseId || test.courseId === "000000000000000000000000")) ||
-        (customTestFilter === "Course" &&
-          test.courseId &&
-          test.courseId !== "000000000000000000000000");
+        (customTestFilter === "Custom" && test.creatorInfo !== null) ||
+        (customTestFilter === "Course" && test.courseInfo !== null);
 
       return (
         matchesSearch &&
@@ -633,11 +630,44 @@ const Test = () => {
                     .map((test) => (
                       <React.Fragment key={test.id}>
                         {/* Main Row */}
-                        <TableRow hover>
+                        <TableRow
+                          hover
+                          sx={{
+                            backgroundColor: expandedRows[test.id]
+                              ? "#f8fafc"
+                              : "inherit",
+                            transition: "background-color 0.2s ease",
+                            borderLeft: expandedRows[test.id]
+                              ? "2px solid #64748b"
+                              : "2px solid transparent",
+                            borderBottom: expandedRows[test.id]
+                              ? "2px solid #94a3b8"
+                              : undefined,
+                            "& td": {
+                              borderBottom: expandedRows[test.id]
+                                ? "none"
+                                : undefined,
+                            },
+                          }}
+                        >
                           <TableCell>
                             <IconButton
                               size="small"
                               onClick={() => handleRowExpand(test.id)}
+                              sx={{
+                                backgroundColor: expandedRows[test.id]
+                                  ? "#64748b"
+                                  : "transparent",
+                                color: expandedRows[test.id]
+                                  ? "#fff"
+                                  : "inherit",
+                                "&:hover": {
+                                  backgroundColor: expandedRows[test.id]
+                                    ? "#475569"
+                                    : "rgba(0, 0, 0, 0.04)",
+                                },
+                                transition: "all 0.2s ease",
+                              }}
                             >
                               {expandedRows[test.id] ? (
                                 <KeyboardArrowUpIcon />
@@ -652,11 +682,12 @@ const Test = () => {
                                 variant="body2"
                                 sx={{
                                   fontWeight: 600,
+                                  minWidth: 250,
                                   whiteSpace: "nowrap",
                                 }}
                               >
-                                {test.title.length > 25
-                                  ? `${test.title.substring(0, 25)}...`
+                                {test.title.length > 30
+                                  ? `${test.title.substring(0, 30)}...`
                                   : test.title}
                               </Typography>
                             </Tooltip>
@@ -675,23 +706,14 @@ const Test = () => {
                           <TableCell>
                             <Chip
                               label={
-                                test.courseId &&
-                                test.courseId !== "000000000000000000000000"
-                                  ? "Course Test"
-                                  : "Custom Test"
+                                test.courseInfo ? "Course Test" : "Custom Test"
                               }
                               size="small"
                               sx={{
-                                backgroundColor:
-                                  test.courseId &&
-                                  test.courseId !== "000000000000000000000000"
-                                    ? "#e0f2fe"
-                                    : "#fff3e0",
-                                color:
-                                  test.courseId &&
-                                  test.courseId !== "000000000000000000000000"
-                                    ? "#0277bd"
-                                    : "#f57c00",
+                                backgroundColor: test.courseInfo
+                                  ? "#e0f2fe"
+                                  : "#fff3e0",
+                                color: test.courseInfo ? "#0277bd" : "#f57c00",
                                 fontWeight: 500,
                               }}
                             />
@@ -738,7 +760,10 @@ const Test = () => {
                               }}
                             />
                           </TableCell>
-                          <TableCell align="center">
+                          <TableCell
+                            align="center"
+                            sx={{ whiteSpace: "nowrap" }}
+                          >
                             <Tooltip title="Edit test">
                               <IconButton
                                 size="small"
@@ -769,17 +794,41 @@ const Test = () => {
                         </TableRow>
 
                         {/* Expanded Row - Test Details */}
-                        <TableRow>
+                        <TableRow
+                          sx={{
+                            backgroundColor: expandedRows[test.id]
+                              ? "#f8fafc"
+                              : "inherit",
+                            borderLeft: expandedRows[test.id]
+                              ? "2px solid #64748b"
+                              : "2px solid transparent",
+                          }}
+                        >
                           <TableCell
                             style={{ paddingBottom: 0, paddingTop: 0 }}
                             colSpan={9}
+                            sx={{
+                              borderBottom: expandedRows[test.id]
+                                ? "2px solid #e2e8f0 !important"
+                                : undefined,
+                            }}
                           >
                             <Collapse
                               in={expandedRows[test.id]}
                               timeout="auto"
                               unmountOnExit
                             >
-                              <Box sx={{ my: 1, mx: 6 }}>
+                              <Box
+                                sx={{
+                                  my: 2,
+                                  mx: 6,
+                                  p: 2,
+                                  backgroundColor: "#fff",
+                                  borderRadius: 2,
+                                  border: "1px solid #e2e8f0",
+                                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                                }}
+                              >
                                 <Typography
                                   gutterBottom
                                   component="div"
@@ -787,11 +836,8 @@ const Test = () => {
                                 >
                                   Test Information
                                 </Typography>
-                                {(test.courseId &&
-                                  test.courseId.toString() !==
-                                    "000000000000000000000000") ||
-                                test.courseId === null ? (
-                                  // Custom Test Information
+                                {!test.courseId ||
+                                test.courseId === "000000000000000000000000" ? (
                                   <Box>
                                     {test.creatorInfo ? (
                                       <Table size="small">
@@ -885,11 +931,21 @@ const Test = () => {
                                     )}
                                   </Box>
                                 ) : (
-                                  // Course Test Information
                                   <Box>
                                     {test.courseInfo ? (
                                       <Table size="small">
                                         <TableBody>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Test name:
+                                            </TableCell>
+                                            <TableCell>{test.title}</TableCell>
+                                          </TableRow>
                                           <TableRow>
                                             <TableCell
                                               sx={{

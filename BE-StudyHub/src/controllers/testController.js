@@ -158,7 +158,7 @@ const getTestStatistics = async (req, res) => {
             testId: test._id,
           });
 
-          // Đếm số lượng participants duy nhất (distinct userId)
+          // Đếm số lượng participants duy nhất
           const uniqueParticipants = await TestAttempt.distinct("userId", {
             testId: test._id,
           });
@@ -179,16 +179,12 @@ const getTestStatistics = async (req, res) => {
           // Kiểm tra xem test là custom test hay course test
           const defaultCourseId = "000000000000000000000000";
           const isCustomTest =
-            test.courseId && test.courseId.toString() !== defaultCourseId;
-
-          // Nếu courseId là null, cũng coi là custom test
-          const isCustomTestFinal = isCustomTest || !test.courseId;
+            !test.courseId || test.courseId.toString() === defaultCourseId;
 
           let creatorInfo = null;
           let courseInfo = null;
 
-          if (isCustomTestFinal) {
-            // Nếu là custom test, lấy thông tin người tạo
+          if (isCustomTest) {
             if (test.createdBy) {
               const creator = await User.findById(test.createdBy)
                 .select("fullName currentLevel")
@@ -201,7 +197,6 @@ const getTestStatistics = async (req, res) => {
               }
             }
           } else {
-            // Nếu là course test, tìm grammar lesson và course
             const grammarLesson = await GrammarLesson.findOne({
               exercises: test._id,
             })

@@ -653,8 +653,25 @@ const Course = () => {
                       <TableRow
                         hover
                         sx={{
+                          backgroundColor: expandedRows[course._id]
+                            ? "#f8fafc"
+                            : "inherit",
+                          transition: "background-color 0.2s ease",
+                          borderLeft: expandedRows[course._id]
+                            ? "2px solid #64748b"
+                            : "2px solid transparent",
+                          borderBottom: expandedRows[course._id]
+                            ? "2px solid #94a3b8"
+                            : undefined,
+                          "& td": {
+                            borderBottom: expandedRows[course._id]
+                              ? "none"
+                              : undefined,
+                          },
                           "&:hover": {
-                            bgcolor: "#f9fafb",
+                            bgcolor: expandedRows[course._id]
+                              ? "#f8fafc"
+                              : "#f9fafb",
                           },
                         }}
                       >
@@ -662,6 +679,20 @@ const Course = () => {
                           <IconButton
                             size="small"
                             onClick={() => handleRowExpand(course._id)}
+                            sx={{
+                              backgroundColor: expandedRows[course._id]
+                                ? "#64748b"
+                                : "transparent",
+                              color: expandedRows[course._id]
+                                ? "#fff"
+                                : "inherit",
+                              "&:hover": {
+                                backgroundColor: expandedRows[course._id]
+                                  ? "#475569"
+                                  : "rgba(0, 0, 0, 0.04)",
+                              },
+                              transition: "all 0.2s ease",
+                            }}
                           >
                             {expandedRows[course._id] ? (
                               <ExpandLessIcon />
@@ -670,7 +701,7 @@ const Course = () => {
                             )}
                           </IconButton>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ py: 1.5 }}>
                           <Box display="flex" alignItems="center">
                             <Avatar
                               sx={{ width: 40, height: 40, mr: 2 }}
@@ -678,14 +709,21 @@ const Course = () => {
                             >
                               <ImageIcon />
                             </Avatar>
-                            <Box>
+                            <Tooltip title={course.title} placement="top-start">
                               <Typography
                                 variant="subtitle2"
-                                sx={{ fontWeight: 600, color: "#1f2937" }}
+                                sx={{
+                                  fontWeight: 600,
+                                  color: "#1f2937",
+                                  minWidth: 250,
+                                  whiteSpace: "nowrap",
+                                }}
                               >
-                                {course.title}
+                                {course.title.length > 30
+                                  ? `${course.title.substring(0, 30)}...`
+                                  : course.title}
                               </Typography>
-                            </Box>
+                            </Tooltip>
                           </Box>
                         </TableCell>
                         <TableCell>
@@ -763,8 +801,26 @@ const Course = () => {
                       </TableRow>
 
                       {/* Expanded Row - Grammar Lessons */}
-                      <TableRow>
-                        <TableCell colSpan={9} sx={{ p: 0, border: "none" }}>
+                      <TableRow
+                        sx={{
+                          backgroundColor: expandedRows[course._id]
+                            ? "#f8fafc"
+                            : "inherit",
+                          borderLeft: expandedRows[course._id]
+                            ? "2px solid #64748b"
+                            : "2px solid transparent",
+                        }}
+                      >
+                        <TableCell
+                          colSpan={9}
+                          sx={{
+                            p: 0,
+                            border: "none",
+                            borderBottom: expandedRows[course._id]
+                              ? "2px solid #e2e8f0 !important"
+                              : undefined,
+                          }}
+                        >
                           <Collapse
                             in={expandedRows[course._id]}
                             timeout="auto"
@@ -772,9 +828,12 @@ const Course = () => {
                           >
                             <Box
                               sx={{
-                                px: 2,
-                                py: 1.5,
-                                bgcolor: "#f9fafb",
+                                m: 2,
+                                p: 2,
+                                bgcolor: "#fff",
+                                borderRadius: 2,
+                                border: "1px solid #e2e8f0",
+                                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
                               }}
                             >
                               <Box
@@ -785,10 +844,16 @@ const Course = () => {
                                   gap: 1,
                                 }}
                               >
-                                <MenuBookIcon sx={{ color: "#667eea" }} />
+                                <MenuBookIcon
+                                  sx={{ color: "#667eea", fontSize: 20 }}
+                                />
                                 <Typography
                                   variant="body1"
-                                  sx={{ fontWeight: 600, color: "#1f2937" }}
+                                  sx={{
+                                    fontWeight: 600,
+                                    color: "#1f2937",
+                                    fontSize: 16,
+                                  }}
                                 >
                                   Grammar Lessons
                                 </Typography>
