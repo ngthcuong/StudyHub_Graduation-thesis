@@ -22,7 +22,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "axios": "^1.12.2",
     "cors": "^2.8.5",
-    "ethers": "^6.15.0",
+    "ethers": "^5.8.0",
     "expo": "~54.0.9",
     "expo-clipboard": "^8.0.7",
     "expo-image-picker": "~17.0.8",

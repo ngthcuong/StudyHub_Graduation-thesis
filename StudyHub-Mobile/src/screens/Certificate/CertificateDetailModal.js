@@ -192,17 +192,6 @@ const CertificateDetailScreen = () => {
           )}
         </TouchableOpacity>
       </View>
-
-      {/* Certificate Preview with OK Button */}
-      <View style={styles.previewSection}>
-        <Text style={styles.previewTitle}>Certificate Preview</Text>
-        <View style={styles.certificateWrapper}>
-          <CertificateTemplate certificate={item} />
-        </View>
-        {/* <TouchableOpacity style={[styles.button, styles.blue]}>
-          <Text style={styles.buttonText}>OK</Text>
-        </TouchableOpacity> */}
-      </View>
     </ScrollView>
   );
 };
