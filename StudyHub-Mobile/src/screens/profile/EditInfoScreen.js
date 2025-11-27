@@ -18,8 +18,8 @@ import { authApi } from "../../services/authApi";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-// MỚI: Import Picker
 import { Picker } from "@react-native-picker/picker";
+import { isAddress } from "ethers";
 
 // MỚI: Định nghĩa 2 mảng dữ liệu cho Picker
 const TOEIC_LEVELS = [
@@ -140,6 +140,27 @@ const EditInfoScreen = () => {
           "Please enter a valid Vietnamese phone number."
         );
         return;
+      }
+    }
+
+    if (key === "walletAddress") {
+      if (value) {
+        try {
+          const isValid = isAddress(value.trim());
+          if (!isValid) {
+            Alert.alert(
+              "❌ Wallet Address Error",
+              "Please enter a valid Ethereum wallet address.\n\nFormat: 0x followed by 40 hexadecimal characters.\nExample: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            );
+            return;
+          }
+        } catch (error) {
+          Alert.alert(
+            "❌ Wallet Address Error",
+            "Invalid Ethereum wallet address format."
+          );
+          return;
+        }
       }
     }
 
