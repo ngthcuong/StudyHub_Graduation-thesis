@@ -53,18 +53,31 @@ api.interceptors.response.use(
         const refreshTokenValue = state.auth.refreshTokenValue;
 
         if (refreshTokenValue) {
-          await store.dispatch(refreshToken(refreshTokenValue)).unwrap();
+          const refreshResponse = await axios.post(
+            `${API_BASE_URL_HOME}/auth/refreshToken`,
+            { refreshToken: refreshTokenValue },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-          // Retry the original request with new token
-          const newState = store.getState();
-          originalRequest.headers.Authorization = `Bearer ${newState.auth.token}`;
-          return api(originalRequest);
+          if (refreshResponse.data && refreshResponse.data.accessToken) {
+            await store.dispatch(refreshToken(refreshTokenValue)).unwrap();
+
+            const newState = store.getState();
+            originalRequest.headers.Authorization = `Bearer ${newState.auth.token}`;
+
+            return api(originalRequest);
+          } else {
+            store.dispatch(logout());
+          }
         } else {
-          // No refresh token, logout user
           store.dispatch(logout());
         }
       } catch (refreshError) {
-        // Refresh failed, logout user
+        console.error("Token refresh failed:", refreshError);
         store.dispatch(logout());
       }
     }
