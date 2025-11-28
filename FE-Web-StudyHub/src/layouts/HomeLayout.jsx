@@ -4,6 +4,7 @@ import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 import { Person } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -30,6 +31,9 @@ export default function HomeLayout() {
         break;
       case "exercises":
         setActiveTab("exercises");
+        break;
+      case "results":
+        setActiveTab("results");
         break;
       case "certificates":
         setActiveTab("certificates");
@@ -100,6 +104,21 @@ export default function HomeLayout() {
           >
             <DescriptionIcon className="w-4 h-4 mr-2" />
             Exercises
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("results");
+              navigate("/home/results");
+            }}
+            className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
+              activeTab === "results"
+                ? "bg-blue-500 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <AssessmentIcon className="w-4 h-4 mr-2" />
+            Test Results
           </button>
 
           <button

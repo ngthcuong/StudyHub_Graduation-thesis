@@ -22,6 +22,7 @@ import UserInfo from "../pages/home/UserInfo";
 
 import TestResultDisplay from "../pages/test/TestResultDisplay";
 import LessonContentViewer from "../pages/course/LessonContentViewer";
+import TestResults from "../pages/home/TestResults";
 
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
               {
                 path: "exercises",
                 element: <TestList />,
+              },
+              {
+                path: "results",
+                element: <TestResults />,
               },
               {
                 path: "certificates",
