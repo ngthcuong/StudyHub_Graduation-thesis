@@ -274,13 +274,24 @@ const TestResults = () => {
               return (
                 <Box
                   key={item.id}
-                  onClick={() =>
+                  onClick={() => {
+                    if (!item.attemptId) {
+                      alert("Cannot view this result. Attempt ID is missing.");
+                      return;
+                    }
+
+                    const attemptData = {
+                      ...item.fullResultData,
+                      testTitle: item.title,
+                    };
+
                     navigate(`/attempt/${item.attemptId}`, {
                       state: {
-                        resultData: item.fullResultData,
+                        attempt: attemptData,
+                        analysisResult: item.fullResultData?.analysisResult,
                       },
-                    })
-                  }
+                    });
+                  }}
                   sx={{
                     backgroundColor: "#FFFFFF",
                     borderRadius: 3,

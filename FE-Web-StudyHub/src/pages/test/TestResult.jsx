@@ -70,8 +70,6 @@ const TestResult = () => {
   const [updateAttempt] = useUpdateAttemptMutation();
   const [getTestById] = useGetTestByIdMutation();
 
-  console.log("Result Data in TestResult page:", resultData);
-
   // Check if certificate exists and show snackbar
   useEffect(() => {
     if (resultData?.certificate) {
@@ -79,6 +77,7 @@ const TestResult = () => {
     }
 
     fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultData]);
 
   // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi
@@ -923,13 +922,13 @@ const TestResult = () => {
 
         {/* Action Buttons */}
         <Box className="flex justify-center gap-4 mt-6">
-          <Button
+          {/* <Button
             variant="contained"
             color="primary"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
           >
             Retake Test
-          </Button>
+          </Button> */}
           <Button
             variant="outlined"
             color="inherit"
@@ -938,14 +937,6 @@ const TestResult = () => {
             href={formattedAnswers ? "/home/exercises" : "/home/courses"}
           >
             {formattedAnswers ? "View All Tests" : "Back to Courses"}
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
-            href="/home/courses"
-          >
-            Start Learning Plan
           </Button>
         </Box>
 

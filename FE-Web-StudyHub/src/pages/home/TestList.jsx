@@ -173,8 +173,6 @@ const TestList = () => {
     setTestToDelete(null);
   };
 
-  console.log("Data created test in TestList:", filtered);
-
   return (
     <Box className="min-h-fit bg-white py-8 px-6 rounded-xl">
       <Box className="max-w-6xl mx-auto">
