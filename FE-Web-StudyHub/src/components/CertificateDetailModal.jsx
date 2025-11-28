@@ -41,7 +41,9 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       await downloadCertificateAsImage(certificate);
     } catch (error) {
       console.error("Error downloading certificate image:", error);
-      alert("Có lỗi xảy ra khi tải certificate. Vui lòng thử lại.");
+      alert(
+        "An error occurred while downloading the certificate. Please try again."
+      );
     } finally {
       setIsDownloading(false);
     }

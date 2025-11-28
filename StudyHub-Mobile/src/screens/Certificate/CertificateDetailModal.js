@@ -18,6 +18,7 @@ import {
   saveCertificateToGallery,
   shareCertificateImage,
 } from "../../utils/certificateDownload";
+import CertificateVerificationBadge from "../../components/CertificateVerificationBadge";
 
 const CertificateDetailScreen = () => {
   const route = useRoute();
@@ -79,6 +80,11 @@ const CertificateDetailScreen = () => {
         <View style={styles.field}>
           <Text style={styles.label}>Issue Date:</Text>
           <Text style={styles.value}>02/10/2025</Text>
+        </View>
+        {/* Verification Badge */}
+        <View style={styles.field}>
+          <Text style={styles.label}>Verification Status:</Text>
+          <CertificateVerificationBadge verification={item?.verification} />
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Transaction Hash:</Text>
