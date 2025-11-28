@@ -297,11 +297,15 @@ const getStudentCertificatesByStudent = async (req, res, next) => {
     const [list, total] = await readByStudent(studentAddress);
     const structuredList = structureCertificateList(toPlain(list));
 
-    console.log(structuredList);
+    const sortedList = structuredList.sort((a, b) => {
+      const aDate = new Date(a.createdAt || a.updatedAt || 0);
+      const bDate = new Date(b.createdAt || b.updatedAt || 0);
+      return bDate - aDate;
+    });
 
     return res.json({
       total: Number(total),
-      certificates: structuredList,
+      certificates: sortedList,
     });
   } catch (error) {
     console.error("Can not get list certificates by student: ", error);
@@ -325,11 +329,19 @@ const getStudentCertificatesByStudent = async (req, res, next) => {
 const getStudentCertificatesHybrid = async (req, res, next) => {
   try {
     const { address } = req.params;
+    const studentId = req.user.userId || address;
+
+    const sortByIssueDateDesc = (a, b) => {
+      const aDate = new Date(a.validity?.issueDate || 0);
+      const bDate = new Date(b.validity?.issueDate || 0);
+      return bDate - aDate;
+    };
 
     // 1. Lấy từ database trước
     try {
       const dbCertificates =
-        await certificateModel.findCertificatesByStudentAddress(address);
+        // await certificateModel.findCertificatesByStudentAddress(address);
+        await certificateModel.getCertificateByStudentId(studentId);
 
       if (dbCertificates && dbCertificates.length > 0) {
         // Verify signature cho từng certificate
@@ -393,9 +405,12 @@ const getStudentCertificatesHybrid = async (req, res, next) => {
             cert.verification.trustLevel === "unknown"
         );
 
+        const sortedVerifiedCertificates =
+          verifiedCertificates.sort(sortByIssueDateDesc);
+
         return res.json({
-          total: verifiedCertificates.length,
-          certificates: verifiedCertificates, // Trả về tất cả, kể cả rejected
+          total: sortedVerifiedCertificates.length,
+          certificates: sortedVerifiedCertificates, // Trả về tất cả, kể cả rejected
           source: "database",
           verificationSummary: {
             total: dbCertificates.length,
@@ -415,9 +430,12 @@ const getStudentCertificatesHybrid = async (req, res, next) => {
     }
 
     // 2. Fallback: Lấy từ Pinata và verify signature
+    //  studentWalletAddress: { value: String(address).toLowerCase(), op: "eq", },
     const keyvalues = {
-      studentWalletAddress: { value: String(address).toLowerCase(), op: "eq" },
+      studentId: { value: String(studentId), op: "eq" },
     };
+
+    console.log(keyvalues);
 
     const pinataCerts = await searchMetadataByKeyvalues(keyvalues, 100, 0);
 
@@ -519,9 +537,12 @@ const getStudentCertificatesHybrid = async (req, res, next) => {
         cert.verification.trustLevel === "unknown"
     );
 
+    const sortedPinataCertificates =
+      verifiedPinataCertificates.sort(sortByIssueDateDesc);
+
     return res.json({
-      total: verifiedPinataCertificates.length,
-      certificates: verifiedPinataCertificates,
+      total: sortedPinataCertificates.length,
+      certificates: sortedPinataCertificates,
       source: "pinata",
       verificationSummary: {
         total: pinataCerts.length,
@@ -653,9 +674,15 @@ const getAllCertificates = async (req, res, next) => {
         cert.verification.trustLevel === "unknown"
     );
 
+    const sortedVerifiedCertificates = verifiedCertificates.sort((a, b) => {
+      const aDate = new Date(a.createdAt || a.updatedAt || 0);
+      const bDate = new Date(b.createdAt || b.updatedAt || 0);
+      return bDate - aDate;
+    });
+
     return res.json({
       total: certificates.length,
-      certificates: verifiedCertificates,
+      certificates: sortedVerifiedCertificates,
       verificationSummary: {
         total: certificates.length,
         trusted: trusted.length,

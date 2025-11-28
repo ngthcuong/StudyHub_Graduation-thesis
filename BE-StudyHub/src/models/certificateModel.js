@@ -189,6 +189,7 @@ const uploadCertificateMetadata = async (certificateData) => {
     name: "studyhub-certificate.json",
     keyvalues: {
       type: "studyhub-certificate",
+      studentId: String(student._id),
       studentWalletAddress: String(student.walletAddress).toLowerCase(),
       issuerWalletAddress: String(defaultIssuer.walletAddress).toLowerCase(),
       certificateCode: String(certCode),
@@ -245,6 +246,7 @@ const updateMetadataWithBlockchainInfo = async (cid, blockchainInfo) => {
   await updatePinataKeyvalues(cid, {
     certificateHash: String(certHash),
     transactionHash: String(txHash),
+    studentId: String(student._id),
     studentWalletAddress: String(student.walletAddress).toLowerCase(),
     issuerWalletAddress: String(issuer.walletAddress).toLowerCase(),
     network: "Sepolia",
