@@ -8,6 +8,7 @@ import {
   Grid,
   CircularProgress,
   Typography,
+  Divider,
 } from "@mui/material";
 import {
   AccountBalanceWallet,
@@ -20,8 +21,11 @@ import {
   PhoneIphone,
   School,
   Transgender,
+  CrisisAlert,
+  AutoStories,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
+import { useCallback } from "react";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -35,6 +39,7 @@ import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
 import dayjs from "dayjs";
 import { updateUser } from "../../redux/slices/auth";
+import { isAddress } from "ethers";
 
 const levelTOEIC = [
   { value: "0", label: "No level" },
@@ -65,8 +70,6 @@ const UserInfo = () => {
 
   const { data } = useGetUserInfoQuery();
   const userData = data?.data;
-
-  console.log(userData);
 
   const [updateUserInfo, { isLoading }] = useUpdateUserInfoMutation();
 
@@ -116,7 +119,12 @@ const UserInfo = () => {
       .transform((value) => (value === "" ? null : value))
       .test("wallet-format", "Wallet Address is invalid", (value) => {
         if (!value) return true;
-        return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
+        // Use ethers library for robust Ethereum address validation
+        try {
+          return isAddress(value.trim());
+        } catch {
+          return false;
+        }
       }),
 
     currentLevel: yup.object({
@@ -145,45 +153,155 @@ const UserInfo = () => {
           "Current level IELTS is invalid"
         ),
     }),
+
+    type: yup.string().nullable(),
+
+    target: yup
+      .number()
+      .typeError("Target must be a number")
+      .nullable()
+      .when("type", {
+        is: "TOEIC",
+        then: (schema) =>
+          schema
+            .required("Target is required")
+            .min(10, "TOEIC score must be at least 10")
+            .max(990, "TOEIC score must not exceed 990")
+            .test(
+              "is-integer",
+              "TOEIC score must be a whole number (no decimals)",
+              (value) => {
+                if (value === undefined || value === null) return false;
+                return Number.isInteger(value);
+              }
+            ),
+        otherwise: (schema) =>
+          schema.when("type", {
+            is: "IELTS",
+            then: (schema) =>
+              schema
+                .required("Target is required")
+                .min(0, "IELTS score must be at least 0")
+                .max(9, "IELTS score must not exceed 9")
+                .test(
+                  "is-valid-ielts",
+                  "IELTS score must be in 0.5 increments (e.g., 6.0, 6.5, 7.0)",
+                  (value) => {
+                    if (value === undefined || value === null) return false;
+                    return Number.isInteger(value * 2);
+                  }
+                ),
+            otherwise: (schema) => schema.nullable(),
+          }),
+      }),
+
+    time: yup
+      .number()
+      .typeError("Time must be a number")
+      .nullable()
+      .when("type", {
+        is: (value) => value && value !== "",
+        then: (schema) =>
+          schema
+            .required("Time is required")
+            .min(1, "Time must be at least 1 month")
+            .max(24, "Time must not exceed 24 months"),
+        otherwise: (schema) => schema.nullable(),
+      }),
   });
 
-  const { control, handleSubmit, reset, clearErrors } = useForm({
-    resolver: yupResolver(formSchema),
-    defaultValues: {
-      fullName: "",
-      dob: "",
-      gender: "",
-      email: "",
-      phone: "",
-      organization: "",
-      walletAddress: "",
-      toeic: "0",
-      ielts: "0",
-    },
-    mode: "onChange",
-  });
+  const { control, handleSubmit, reset, clearErrors, watch, setValue } =
+    useForm({
+      resolver: yupResolver(formSchema),
+      defaultValues: {
+        fullName: "",
+        dob: "",
+        gender: "",
+        email: "",
+        phone: "",
+        organization: "",
+        walletAddress: "",
+        toeic: "0",
+        ielts: "0",
+        type: "",
+        target: "",
+        time: "",
+      },
+      mode: "onChange",
+    });
 
-  const formatUserData = (userData) => ({
-    fullName: userData.fullName || "",
-    email: userData.email || "",
-    phone: userData.phone || "",
-    dob: userData.dob ? dayjs(userData.dob).format("YYYY-MM-DD") : "",
-    gender: userData.gender || "",
-    organization: userData.organization || "",
-    walletAddress: userData.walletAddress || "",
-    toeic: userData.currentLevel?.TOEIC || "0",
-    ielts: userData.currentLevel?.IELTS || "0",
-  });
+  // Parse learning goals from string to separate fields
+  const parseLearningGoals = (learningGoals) => {
+    if (!learningGoals) return { type: "", target: "", time: "" };
+
+    // Parse format: "Đạt TOEIC 750 trong vòng 12 tháng." hoặc "Đạt IELTS 6.0 trong vòng 12 tháng."
+    const toeicMatch = learningGoals.match(
+      /Đạt TOEIC (\d+) trong vòng (\d+) tháng/
+    );
+    const ieltsMatch = learningGoals.match(
+      /Đạt IELTS ([\d.]+) trong vòng (\d+) tháng/
+    );
+
+    if (toeicMatch) {
+      return {
+        type: "TOEIC",
+        target: parseInt(toeicMatch[1]),
+        time: parseInt(toeicMatch[2]),
+      };
+    } else if (ieltsMatch) {
+      return {
+        type: "IELTS",
+        target: parseFloat(ieltsMatch[1]),
+        time: parseInt(ieltsMatch[2]),
+      };
+    }
+
+    return { type: "", target: "", time: "" };
+  };
+
+  const formatUserData = useCallback((userData) => {
+    const goalData = parseLearningGoals(userData.learningGoals);
+
+    return {
+      fullName: userData.fullName || "",
+      email: userData.email || "",
+      phone: userData.phone || "",
+      dob: userData.dob ? dayjs(userData.dob).format("YYYY-MM-DD") : "",
+      gender: userData.gender || "",
+      organization: userData.organization || "",
+      walletAddress: userData.walletAddress || "",
+      toeic: userData.currentLevel?.TOEIC || "0",
+      ielts: userData.currentLevel?.IELTS || "0",
+      type: goalData.type || "",
+      target: goalData.target || "",
+      time: goalData.time || "",
+    };
+  }, []);
+
+  const watchedType = watch("type");
 
   useEffect(() => {
     if (userData) {
       const formattedData = formatUserData(userData);
       reset(formattedData);
     }
-  }, [userData, reset]);
+  }, [userData, reset, formatUserData]);
+
+  // Reset target field when type changes (similar to RegisterPage)
+  useEffect(() => {
+    if (watchedType && isEditing) {
+      setValue("target", "");
+    }
+  }, [watchedType, setValue, isEditing]);
 
   const onSubmit = async (data) => {
     try {
+      // Create learningGoals from type, target, time with format: "Đạt TOEIC 750 trong vòng 12 tháng."
+      let learningGoals = "";
+      if (data.type && data.target && data.time) {
+        learningGoals = `Đạt ${data.type} ${data.target} trong vòng ${data.time} tháng.`;
+      }
+
       const payload = {
         ...data,
         dob: dayjs(data.dob).toISOString(),
@@ -191,12 +309,12 @@ const UserInfo = () => {
           IELTS: data.ielts,
           TOEIC: data.toeic,
         },
+        learningGoals: learningGoals,
       };
 
       const response = await updateUserInfo(payload);
       if (!response) return;
 
-      console.log("res: ", response);
       dispatch(updateUser(response.data.data));
       dispatch(
         openSnackbar({
@@ -205,13 +323,13 @@ const UserInfo = () => {
         })
       );
 
-      // Cập nhật form với dữ liệu mới
+      // Update form with new data
       const updatedData = formatUserData(response.data.data);
 
       reset(updatedData);
       setIsEditing(false);
     } catch (error) {
-      console.error("Lỗi thay đổi thông tin người dùng: ", error);
+      console.error("Error updating user information: ", error);
       dispatch(
         openSnackbar({
           message: "Cannot update user information",
@@ -226,15 +344,19 @@ const UserInfo = () => {
   };
 
   const handleCancel = () => {
+    if (userData) {
+      const formattedData = formatUserData(userData);
+      reset(formattedData);
+    }
     clearErrors();
-    setIsEditing(!isEditing);
+    setIsEditing(false);
   };
 
   return (
     <Box className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-5xl mx-auto">
         <Paper elevation={8} className="overflow-hidden">
-          {/* Header với background gradient */}
+          {/* Header with background gradient */}
           <div className="h-32 bg-gradient-to-r from-purple-500 to-blue-500 relative">
             <div className="absolute -bottom-16 left-8">
               <div className="relative">
@@ -298,7 +420,7 @@ const UserInfo = () => {
               </Grid>
             </Grid>
 
-            {/* Form thông tin */}
+            {/* User information form */}
             <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 12 }}>
@@ -317,7 +439,7 @@ const UserInfo = () => {
                   />
                 </Grid>
 
-                {/* Email và Số điện thoại */}
+                {/* Email and Phone Number */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormField
                     name="email"
@@ -426,6 +548,147 @@ const UserInfo = () => {
                     startIcon={<School className="text-gray-400" />}
                   />
                 </Grid>
+
+                {/* Learning Goals */}
+                <Grid size={{ xs: 12, md: 12 }}>
+                  <Typography variant="h6" fontWeight={"600"} mb={-1}>
+                    Your Goal
+                    <div className="text-[13px] font-normal">
+                      <strong>Examples:</strong>{" "}
+                      {watchedType === "TOEIC"
+                        ? "I want to get 750 TOEIC in 6 months."
+                        : watchedType === "IELTS"
+                        ? "I want to get 7.5 IELTS in 8 months."
+                        : "I want to get 750 TOEIC in 6 months."}
+                    </div>
+                  </Typography>
+                </Grid>
+
+                <Grid size={4}>
+                  <FormField
+                    name="type"
+                    control={control}
+                    label="Type"
+                    type="select"
+                    options={[
+                      { value: "", label: "Select type" },
+                      { value: "TOEIC", label: "TOEIC" },
+                      { value: "IELTS", label: "IELTS" },
+                    ]}
+                    disable={!isEditing}
+                    startIcon={<AutoStories className="text-gray-400" />}
+                  />
+                </Grid>
+
+                <Grid size={4}>
+                  <FormField
+                    name="target"
+                    control={control}
+                    label={
+                      watchedType === "TOEIC"
+                        ? "Target Score"
+                        : watchedType === "IELTS"
+                        ? "Target Band"
+                        : "Target"
+                    }
+                    placeholder={
+                      watchedType === "TOEIC"
+                        ? "e.g., 750"
+                        : watchedType === "IELTS"
+                        ? "e.g., 7.0"
+                        : "Enter target"
+                    }
+                    type="number"
+                    step={watchedType === "IELTS" ? "0.5" : "1"}
+                    min={
+                      watchedType === "TOEIC"
+                        ? "10"
+                        : watchedType === "IELTS"
+                        ? "0"
+                        : undefined
+                    }
+                    max={
+                      watchedType === "TOEIC"
+                        ? "990"
+                        : watchedType === "IELTS"
+                        ? "9"
+                        : undefined
+                    }
+                    disable={!isEditing}
+                    startIcon={<CrisisAlert className="text-gray-400" />}
+                  />
+                </Grid>
+
+                <Grid size={4}>
+                  <FormField
+                    name="time"
+                    control={control}
+                    label="In time (months)"
+                    type="number"
+                    placeholder="e.g., 6"
+                    disable={!isEditing}
+                    startIcon={<CalendarMonth className="text-gray-400" />}
+                  />
+                </Grid>
+
+                {/* Goal validation info */}
+                {watchedType && isEditing && (
+                  <Grid size={12}>
+                    <Box className="bg-blue-50 py-4 px-6 rounded-lg">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        className="font-semibold mb-2"
+                      >
+                        {watchedType} Target Requirements:
+                      </Typography>
+                      {watchedType === "TOEIC" ? (
+                        <>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            component={"li"}
+                          >
+                            Score range: 10 - 990 points (whole numbers only)
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            component={"li"}
+                          >
+                            Popular targets: 450 (basic), 600 (intermediate),
+                            750 (advanced), 850+ (expert)
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            component={"li"}
+                          >
+                            Band range: 0 - 9.0 (in 0.5 increments)
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            component={"li"}
+                          >
+                            Popular targets: 5.5 (basic), 6.5 (intermediate),
+                            7.5 (advanced), 8.0+ (expert)
+                          </Typography>
+                        </>
+                      )}
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        component={"li"}
+                      >
+                        Time frame: 1 - 24 months
+                      </Typography>
+                    </Box>
+                  </Grid>
+                )}
               </Grid>
 
               {/* Nút lưu khi đang chỉnh sửa */}
@@ -443,7 +706,7 @@ const UserInfo = () => {
                       fontWeight: 400,
                     }}
                   >
-                    Hủy
+                    Cancel
                   </Button>
                   <Button
                     variant="contained"

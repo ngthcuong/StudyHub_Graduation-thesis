@@ -19,13 +19,23 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import ModalCreateReview from "./ModalCreateReview";
 import CourseRatingSummary from "./CourseRatingSummary";
+import { useGetUserReviewForCourseQuery } from "../services/reviewApi";
 
 const CourseCard = ({ course, variant = "market" }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+  const user = useSelector((state) => state.auth.user);
+
+  // Fetch user's review for this course
+  const { data: userReviewData, refetch: refetchUserReview } =
+    useGetUserReviewForCourseQuery(course._id || course.id, {
+      skip: !user?._id || variant !== "owned",
+    });
 
   const handleMenuClick = (event) => {
     event.stopPropagation();
@@ -42,15 +52,19 @@ const CourseCard = ({ course, variant = "market" }) => {
     handleMenuClose();
   };
 
-  const handleDetailsClick = (event) => {
-    event?.stopPropagation();
-    navigate(`/course/${course._id}`);
-    handleMenuClose();
-  };
+  // const handleDetailsClick = (event) => {
+  //   event?.stopPropagation();
+  //   navigate(`/course/${course._id}`);
+  //   handleMenuClose();
+  // };
 
   const handleReviewModalClose = (event) => {
     event?.stopPropagation();
     setReviewModalOpen(false);
+    // Refetch user review data to update the UI
+    if (variant === "owned" && user?._id) {
+      refetchUserReview();
+    }
   };
 
   const handleCardClick = () => {
@@ -63,16 +77,27 @@ const CourseCard = ({ course, variant = "market" }) => {
   return (
     <Card
       key={course.id}
-      className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden"
+      className="bg-white border border-gray-200 !rounded-xl hover:!shadow-2xl transition-shadow cursor-pointer overflow-hidden w-77"
       onClick={handleCardClick}
     >
       {/* Course Image */}
-      <div className="h-48 w-full relative">
-        <img
-          src={course.thumbnailUrl}
-          alt={course.title}
-          className="w-full h-full object-cover"
-        />
+      <div className="h-48 w-full relative bg-gray-200 flex items-center justify-center">
+        {course.thumbnailUrl ? (
+          <img
+            src={course.thumbnailUrl}
+            alt={course.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <Typography
+            variant="h6"
+            color="gray"
+            fontWeight={500}
+            textTransform={"capitalize"}
+          >
+            No Image
+          </Typography>
+        )}
 
         {/* Menu Button for owned variant */}
         {variant === "owned" && (
@@ -175,7 +200,7 @@ const CourseCard = ({ course, variant = "market" }) => {
               ${course.originalPrice}
             </Typography> */}
             <Typography variant="h6" className="!font-bold text-teal-600">
-              {course.cost}đ
+              {course.cost?.toLocaleString("vi-VN")} VND
             </Typography>
           </div>
         )}
@@ -227,10 +252,12 @@ const CourseCard = ({ course, variant = "market" }) => {
           <ListItemIcon>
             <RateReview fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Rate Course</ListItemText>
+          <ListItemText>
+            {userReviewData?.hasReview ? "Update Review" : "Write Review"}
+          </ListItemText>
         </MenuItem>
 
-        <MenuItem
+        {/* <MenuItem
           onClick={(e) => {
             e.stopPropagation();
             handleDetailsClick(e);
@@ -240,7 +267,7 @@ const CourseCard = ({ course, variant = "market" }) => {
             <Info fontSize="small" />
           </ListItemIcon>
           <ListItemText>View Details</ListItemText>
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem
           onClick={(e) => {
@@ -263,7 +290,10 @@ const CourseCard = ({ course, variant = "market" }) => {
           id: course._id,
           name: course.title,
         }}
-        isUpdate={false}
+        existingReview={
+          userReviewData?.hasReview ? userReviewData.review : null
+        }
+        isUpdate={userReviewData?.hasReview || false}
       />
     </Card>
   );

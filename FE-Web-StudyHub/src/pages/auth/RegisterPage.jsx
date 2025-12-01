@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Typography, Box, Paper, Divider, Grid } from "@mui/material";
 import {
@@ -10,8 +10,6 @@ import {
   PersonAdd,
   CalendarMonth,
   PhoneIphone,
-  Google,
-  FacebookOutlined,
   Transgender,
   AutoStories,
   CrisisAlert,
@@ -24,6 +22,7 @@ import { useRegisterMutation } from "../../services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import SnackBar from "../../components/Snackbar";
+import LogoStudyHub from "../../assets/Logo.jpg";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -85,15 +84,44 @@ const RegisterPage = () => {
     target: yup
       .number()
       .typeError("Target must be a number")
-      .required("Target is required"),
+      .required("Target is required")
+      .when("type", {
+        is: "TOEIC",
+        then: (schema) =>
+          schema
+            .min(10, "TOEIC score must be at least 10")
+            .max(990, "TOEIC score must not exceed 990")
+            .test(
+              "is-integer",
+              "TOEIC score must be a whole number (no decimals)",
+              (value) => {
+                if (value === undefined || value === null) return false;
+                return Number.isInteger(value);
+              }
+            ),
+        otherwise: (schema) =>
+          schema
+            .min(0, "IELTS score must be at least 0")
+            .max(9, "IELTS score must not exceed 9")
+            .test(
+              "is-valid-ielts",
+              "IELTS score must be in 0.5 increments (e.g., 6.0, 6.5, 7.0)",
+              (value) => {
+                if (value === undefined || value === null) return false;
+                return Number.isInteger(value * 2);
+              }
+            ),
+      }),
 
     time: yup
       .number()
       .typeError("Time must be a number")
-      .required("Time is required"),
+      .required("Time is required")
+      .min(1, "Time must be at least 1 month")
+      .max(24, "Time must not exceed 24 months"),
   });
 
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit, watch, setValue } = useForm({
     resolver: yupResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -110,7 +138,16 @@ const RegisterPage = () => {
     mode: "onChange",
   });
 
+  const watchedType = watch("type");
+
   const [register, { isLoading }] = useRegisterMutation();
+
+  // Reset target field when type changes
+  useEffect(() => {
+    if (watchedType) {
+      setValue("target", "");
+    }
+  }, [watchedType, setValue]);
 
   const onSubmit = async (data) => {
     try {
@@ -121,7 +158,7 @@ const RegisterPage = () => {
       const response = await register({ ...registerData, learningGoals });
       if (!response.error) {
         navigate("/login", {
-          state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
+          state: { message: "Registration successful! Please login." },
         });
       } else {
         dispatch(
@@ -132,7 +169,7 @@ const RegisterPage = () => {
         );
       }
     } catch (error) {
-      console.error("Lỗi đăng ký:", error);
+      console.error("Registration error:", error);
     }
   };
 
@@ -148,6 +185,15 @@ const RegisterPage = () => {
         }}
       >
         {/* Header */}
+        <Box className="flex justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="h-1/3 w-1/3 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </Box>
+
         <Box className="text-center mb-4">
           <Typography
             variant="h4"
@@ -283,57 +329,9 @@ const RegisterPage = () => {
               />
             </Grid>
 
-            {/* Mục tiêu học tập */}
-            <Grid size={12}>
-              <Divider className="my-4" />
-              <Typography
-                variant="h6"
-                className="font-semibold mb-4 text-gray-800"
-              >
-                Your Goal
-                <div className="text-[13px]">
-                  <strong>Ex:</strong> I want to get 750 TOEIC in 6 months.
-                </div>
-              </Typography>
-            </Grid>
-
-            <Grid size={4}>
-              <FormField
-                name="type"
-                control={control}
-                label="Type"
-                type="select"
-                options={[
-                  { value: "TOEIC", label: "TOEIC" },
-                  { value: "IELTS", label: "IELTS" },
-                ]}
-                startIcon={<AutoStories className="text-gray-400" />}
-              />
-            </Grid>
-
-            <Grid size={4}>
-              <FormField
-                name="target"
-                control={control}
-                label="Target"
-                type="tel"
-                startIcon={<CrisisAlert className="text-gray-400" />}
-              />
-            </Grid>
-
-            <Grid size={4}>
-              <FormField
-                name="time"
-                control={control}
-                label="In time (months)"
-                type="tel"
-                startIcon={<CalendarMonth className="text-gray-400" />}
-              />
-            </Grid>
-
             {/* Yêu cầu mật khẩu */}
             <Grid size={12}>
-              <Box className="bg-blue-50 p-4 rounded-lg">
+              <Box className="bg-blue-50 py-4 px-6 rounded-lg">
                 <Typography
                   variant="body2"
                   color="textSecondary"
@@ -371,6 +369,147 @@ const RegisterPage = () => {
                 </Typography>
               </Box>
             </Grid>
+
+            {/* Mục tiêu học tập */}
+            <Grid size={12}>
+              <Divider className="my-4" />
+              <Typography
+                variant="h6"
+                className="font-semibold mb-4 text-gray-800"
+              >
+                Your Goal
+                <div className="text-[13px]">
+                  <strong>Examples:</strong>{" "}
+                  {watchedType === "TOEIC"
+                    ? "I want to get 750 TOEIC in 6 months."
+                    : watchedType === "IELTS"
+                    ? "I want to get 7.5 IELTS in 8 months."
+                    : "I want to get 750 TOEIC in 6 months."}
+                </div>
+              </Typography>
+            </Grid>
+
+            <Grid size={4}>
+              <FormField
+                name="type"
+                control={control}
+                label="Type"
+                type="select"
+                options={[
+                  { value: "TOEIC", label: "TOEIC" },
+                  { value: "IELTS", label: "IELTS" },
+                ]}
+                startIcon={<AutoStories className="text-gray-400" />}
+              />
+            </Grid>
+
+            <Grid size={4}>
+              <FormField
+                name="target"
+                control={control}
+                label={
+                  watchedType === "TOEIC"
+                    ? "Target Score"
+                    : watchedType === "IELTS"
+                    ? "Target Band"
+                    : "Target"
+                }
+                placeholder={
+                  watchedType === "TOEIC"
+                    ? "e.g., 750"
+                    : watchedType === "IELTS"
+                    ? "e.g., 7.0"
+                    : "Enter target"
+                }
+                type="number"
+                step={watchedType === "IELTS" ? "0.5" : "1"}
+                min={
+                  watchedType === "TOEIC"
+                    ? "10"
+                    : watchedType === "IELTS"
+                    ? "0"
+                    : undefined
+                }
+                max={
+                  watchedType === "TOEIC"
+                    ? "990"
+                    : watchedType === "IELTS"
+                    ? "9"
+                    : undefined
+                }
+                startIcon={<CrisisAlert className="text-gray-400" />}
+              />
+            </Grid>
+
+            <Grid size={4}>
+              <FormField
+                name="time"
+                control={control}
+                label="In time (months)"
+                type="number"
+                placeholder="e.g., 6"
+                startIcon={<CalendarMonth className="text-gray-400" />}
+              />
+            </Grid>
+
+            {/* Goal validation info */}
+            {watchedType && (
+              <Grid size={12}>
+                <Box className="bg-blue-50 py-4 px-6 rounded-lg">
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    className="font-semibold mb-2"
+                  >
+                    {watchedType} Target Requirements:
+                  </Typography>
+                  {watchedType === "TOEIC" ? (
+                    <>
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        component={"li"}
+                      >
+                        Score range: 10 - 990 points (whole numbers only)
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        component={"li"}
+                      >
+                        Popular targets: 450 (basic), 600 (intermediate), 750
+                        (advanced), 850+ (expert)
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        component={"li"}
+                      >
+                        Band range: 0 - 9.0 (in 0.5 increments)
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        component={"li"}
+                      >
+                        Popular targets: 5.5 (basic), 6.5 (intermediate), 7.5
+                        (advanced), 8.0+ (expert)
+                      </Typography>
+                    </>
+                  )}
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    component={"li"}
+                  >
+                    Time frame: 1 - 24 months
+                  </Typography>
+                </Box>
+              </Grid>
+            )}
 
             {/* Submit Button */}
             <Grid size={12}>

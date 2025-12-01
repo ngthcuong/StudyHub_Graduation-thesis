@@ -28,6 +28,8 @@ const createPayment = async (paymentData) => {
       courseId: paymentData.courseId,
     });
     if (existingPayment) {
+      console.log("existingPayment:", existingPayment);
+
       throw new Error("You have already purchased this course");
     }
 
@@ -36,13 +38,13 @@ const createPayment = async (paymentData) => {
     const expectedAmount = parseFloat(course.cost);
     const providedAmount = parseFloat(paymentData.amount);
 
-    if (Math.abs(expectedAmount - providedAmount) > 0.01) {
-      throw new Error(
-        `Invalid payment amount. Expected: $${expectedAmount.toFixed(
-          2
-        )}, Received: $${providedAmount.toFixed(2)}`
-      );
-    }
+    // if (Math.abs(expectedAmount - providedAmount) > 0.01) {
+    //   throw new Error(
+    //     `Invalid payment amount. Expected: $${expectedAmount.toFixed(
+    //       2
+    //     )}, Received: $${providedAmount.toFixed(2)}`
+    //   );
+    // }
 
     const newPayment = new Payment(paymentData);
     const savedPayment = await newPayment.save();

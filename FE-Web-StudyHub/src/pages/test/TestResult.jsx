@@ -70,8 +70,6 @@ const TestResult = () => {
   const [updateAttempt] = useUpdateAttemptMutation();
   const [getTestById] = useGetTestByIdMutation();
 
-  console.log("Result Data in TestResult page:", resultData);
-
   // Check if certificate exists and show snackbar
   useEffect(() => {
     if (resultData?.certificate) {
@@ -79,6 +77,7 @@ const TestResult = () => {
     }
 
     fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultData]);
 
   // Kiểm tra nếu không có resultData thì không render gì cả để tránh lỗi
@@ -151,6 +150,7 @@ const TestResult = () => {
   };
 
   console.log("Result Data:", resultData.certificate);
+  console.log("FormattedAnswers:", formattedAnswers);
 
   const startTime = new Date(resultData.attemptDetail.startTime);
   const endTime = new Date(resultData.attemptDetail.endTime);
@@ -741,15 +741,15 @@ const TestResult = () => {
                 )}
 
                 {/* Weekly Study Plan */}
-                {personalized_plan.weekly_goals &&
-                  personalized_plan.weekly_goals.length > 0 && (
+                {personalized_plan?.weekly_goals &&
+                  personalized_plan?.weekly_goals?.length > 0 && (
                     <>
                       <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                         Weekly Study Plan (
-                        {personalized_plan.weekly_goals.length} weeks)
+                        {personalized_plan?.weekly_goals?.length} weeks)
                       </Typography>
 
-                      {personalized_plan.weekly_goals.map((week, idx) => (
+                      {personalized_plan?.weekly_goals?.map((week, idx) => (
                         <Accordion key={idx} sx={{ mb: 2 }}>
                           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Stack
@@ -908,7 +908,7 @@ const TestResult = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)", // 4 thẻ ngang
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: 3,
             }}
           >
@@ -922,13 +922,13 @@ const TestResult = () => {
 
         {/* Action Buttons */}
         <Box className="flex justify-center gap-4 mt-6">
-          <Button
+          {/* <Button
             variant="contained"
             color="primary"
             sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
           >
             Retake Test
-          </Button>
+          </Button> */}
           <Button
             variant="outlined"
             color="inherit"
@@ -937,14 +937,6 @@ const TestResult = () => {
             href={formattedAnswers ? "/home/exercises" : "/home/courses"}
           >
             {formattedAnswers ? "View All Tests" : "Back to Courses"}
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ px: 4, fontWeight: 600, textTransform: "none" }}
-            href="/home/courses"
-          >
-            Start Learning Plan
           </Button>
         </Box>
 

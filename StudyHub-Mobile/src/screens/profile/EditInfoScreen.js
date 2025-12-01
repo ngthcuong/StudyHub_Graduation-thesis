@@ -18,6 +18,29 @@ import { authApi } from "../../services/authApi";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import { Picker } from "@react-native-picker/picker";
+import { isAddress } from "ethers";
+
+// MỚI: Định nghĩa 2 mảng dữ liệu cho Picker
+const TOEIC_LEVELS = [
+  { label: "choise TOEIC", value: "" },
+  { label: "10 - 250 (Beginner - A1)", value: "10-250" },
+  { label: "255 - 400 (Elementary - A2)", value: "255-400" },
+  { label: "405 - 600 (Intermediate - B1)", value: "405-600" },
+  { label: "605 - 780 (Upper-Intermediate - B2)", value: "605-780" },
+  { label: "785 - 900 (Advanced - C1)", value: "785-900" },
+  { label: "905 - 990 (Proficiency - C2)", value: "905-990" },
+];
+
+const IELTS_LEVELS = [
+  { label: "choise IELTS", value: "" },
+  { label: "0-3.5 (Beginner - A1/A2)", value: "0-3.5" },
+  { label: "4.0-5.0 (Elementary - B1 Low)", value: "4.0-5.0" },
+  { label: "5.5-6.0 (Intermediate - B1/B2)", value: "5.5-6.0" },
+  { label: "6.5-7.0 (Upper-Intermediate - B2/C1)", value: "6.5-7.0" },
+  { label: "7.5-8.0 (Advanced - C1)", value: "7.5-8.0" },
+  { label: "8.5-9.0 (Expert - C2)", value: "8.5-9.0" },
+];
 
 const EditInfoScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -32,6 +55,7 @@ const EditInfoScreen = () => {
 
   const route = useRoute();
   const { userInfo } = route.params || {};
+  console.log("User info from route params:", userInfo);
 
   const pickImage = async () => {
     // xin quyền truy cập
@@ -72,8 +96,12 @@ const EditInfoScreen = () => {
     dob: userInfo?.dob || "2000-01-01T00:00:00.000Z",
     gender: userInfo?.gender || "male",
     organization: userInfo?.organization || "ABC Corp",
-    walletAddress:
-      userInfo?.walletAddress || "0x1234567890abcdef1234567890abcdef12345678",
+    walletAddress: userInfo?.walletAddress || "",
+    // SỬA 1: Thêm avatarUrl vào state
+    avatarUrl: userInfo?.avatarUrl || null,
+    // SỬA 2: Thêm currentLevel (dưới dạng phẳng)
+    currentLevelToeic: userInfo?.currentLevel?.TOEIC || "",
+    currentLevelIelts: userInfo?.currentLevel?.IELTS || "",
   });
 
   // cập nhật dữ liệu
@@ -81,7 +109,7 @@ const EditInfoScreen = () => {
     // Nếu là fullName thì kiểm tra
     if (key === "fullName") {
       const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/; // cho phép chữ cái và khoảng trắng
-      if (!nameRegex.test(value)) {
+      if (value && !nameRegex.test(value)) {
         Alert.alert(
           "❌ Input error",
           "Full name cannot contain numbers or special characters."
@@ -93,7 +121,7 @@ const EditInfoScreen = () => {
     // Kiểm tra email
     if (key === "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) {
+      if (value && !emailRegex.test(value)) {
         Alert.alert(
           "❌ Email error",
           "Please enter a valid email address (ví dụ: abc@gmail.com)."
@@ -105,7 +133,7 @@ const EditInfoScreen = () => {
     // Kiểm tra số điện thoại
     if (key === "phone") {
       const phoneRegex = /^(0|\+84)[0-9]{9}$/; // cho phép 0xxxxxxxxx hoặc +84xxxxxxxxx
-      if (!phoneRegex.test(value)) {
+      if (value && !phoneRegex.test(value)) {
         Alert.alert(
           "❌ Phone number error",
           "Please enter a valid Vietnamese phone number."
@@ -114,19 +142,68 @@ const EditInfoScreen = () => {
       }
     }
 
+    if (key === "walletAddress") {
+      if (value) {
+        try {
+          const isValid = isAddress(value.trim());
+          if (!isValid) {
+            Alert.alert(
+              "❌ Wallet Address Error",
+              "Please enter a valid Ethereum wallet address.\n\nFormat: 0x followed by 40 hexadecimal characters.\nExample: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            );
+            return;
+          }
+        } catch (error) {
+          Alert.alert(
+            "❌ Wallet Address Error",
+            "Invalid Ethereum wallet address format."
+          );
+          return;
+        }
+      }
+    }
+
     setFormData({ ...formData, [key]: value });
   };
 
   const handleEdit = () => setIsEditing(true);
 
+  // SỬA 3: Cập nhật handleCancel để reset state
   const handleCancel = () => {
     Alert.alert("Hủy thay đổi", "Các thay đổi chưa được lưu sẽ mất.");
     setIsEditing(false);
+    // Reset state về ban đầu
+    setFormData({
+      fullName: userInfo?.fullName || "Nguyen Van A",
+      email: userInfo?.email || "abc@gmail.com",
+      phone: userInfo?.phone || "0123456789",
+      dob: userInfo?.dob || "2000-01-01T00:00:00.000Z",
+      gender: userInfo?.gender || "male",
+      organization: userInfo?.organization || "ABC Corp",
+      walletAddress: userInfo?.walletAddress || "",
+      avatarUrl: userInfo?.avatarUrl || null,
+      currentLevelToeic: userInfo?.currentLevel?.TOEIC || "",
+      currentLevelIelts: userInfo?.currentLevel?.IELTS || "",
+    });
   };
 
+  // SỬA 4: Cập nhật handleSave để "gói" currentLevel
   const handleSave = async () => {
-    console.log(formData);
-    await userApi.updateProfile(formData);
+    // Tách các trường currentLevel phẳng ra
+    const { currentLevelToeic, currentLevelIelts, ...restOfFormData } =
+      formData;
+
+    // Tạo payload mới đúng với schema
+    const payload = {
+      ...restOfFormData, // Gồm fullName, email, phone, avatarUrl...
+      currentLevel: {
+        TOEIC: currentLevelToeic,
+        IELTS: currentLevelIelts,
+      },
+    };
+
+    console.log("Saving data:", payload);
+    await userApi.updateProfile(payload); // Gửi payload đã được cấu trúc lại
     setIsEditing(false);
   };
 
@@ -163,15 +240,19 @@ const EditInfoScreen = () => {
         {/* Avatar + Header */}
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
+            {/* SỬA 5: Đọc ảnh từ state và thêm placeholder */}
             <Image
               source={{
-                uri: userInfo?.avatarUrl || "null",
+                uri:
+                  formData.avatarUrl ||
+                  "https://placehold.co/96x96/E0E0E0/BDBDBD?text=N/A",
               }}
               style={styles.avatar}
             />
             <TouchableOpacity
               style={styles.editAvatarButton}
               onPress={pickImage}
+              disabled={!isEditing} // Chỉ cho sửa khi isEditing
             >
               <Ionicons name="pencil-outline" size={16} color="#fff" />
             </TouchableOpacity>
@@ -292,6 +373,64 @@ const EditInfoScreen = () => {
               editable={isEditing}
               onChangeText={(text) => handleChange("organization", text)}
             />
+          </View>
+
+          {/* MỚI: Current Level - TOEIC (Dropdown) */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Current Level (TOEIC)</Text>
+            <View
+              style={[
+                styles.pickerContainer,
+                !isEditing && styles.disabledPickerContainer,
+              ]}
+            >
+              <Picker
+                selectedValue={formData.currentLevelToeic}
+                style={styles.picker}
+                onValueChange={(itemValue) =>
+                  handleChange("currentLevelToeic", itemValue)
+                }
+                enabled={isEditing} // Chỉ cho phép thay đổi khi 'isEditing'
+              >
+                {TOEIC_LEVELS.map((level) => (
+                  <Picker.Item
+                    key={level.value}
+                    label={level.label}
+                    value={level.value}
+                    color={level.value === "" ? "#9CA3AF" : "#000"} // Màu placeholder
+                  />
+                ))}
+              </Picker>
+            </View>
+          </View>
+
+          {/* MỚI: Current Level - IELTS (Dropdown) */}
+          <View style={styles.formField}>
+            <Text style={styles.label}>Current Level (IELTS)</Text>
+            <View
+              style={[
+                styles.pickerContainer,
+                !isEditing && styles.disabledPickerContainer,
+              ]}
+            >
+              <Picker
+                selectedValue={formData.currentLevelIelts}
+                style={styles.picker}
+                onValueChange={(itemValue) =>
+                  handleChange("currentLevelIelts", itemValue)
+                }
+                enabled={isEditing}
+              >
+                {IELTS_LEVELS.map((level) => (
+                  <Picker.Item
+                    key={level.value}
+                    label={level.label}
+                    value={level.value}
+                    color={level.value === "" ? "#9CA3AF" : "#000"} // Màu placeholder
+                  />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           {/* Wallet Address */}
@@ -523,6 +662,25 @@ const styles = StyleSheet.create({
     borderColor: "#d1d5db",
   },
   disabledInput: { backgroundColor: "#e5e7eb" },
+
+  // MỚI: Style cho Picker
+  pickerContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    justifyContent: "center",
+  },
+  disabledPickerContainer: {
+    backgroundColor: "#e5e7eb",
+  },
+  picker: {
+    color: "#000",
+    // Căn chỉnh Picker
+    marginVertical: Platform.OS === "ios" ? -8 : 0,
+  },
+  // Hết style Picker
+
   actionButtons: {
     flexDirection: "row",
     justifyContent: "flex-end",

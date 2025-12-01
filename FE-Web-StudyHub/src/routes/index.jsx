@@ -12,17 +12,17 @@ import TestInformation from "../pages/test/TestInformation";
 import TestMultipleChoice from "../pages/test/TestMultipleChoice";
 import TestResult from "../pages/test/TestResult";
 import TestLayout from "../layouts/TestLayout";
-import TestList from "../pages/test/TestList";
-import CourseList from "../pages/course/CourseList";
+import TestList from "../pages/home/TestList";
+import CourseList from "../pages/home/CourseList";
 import CourseLessson from "../components/CourseLessson";
 import HomeLayout from "../layouts/HomeLayout";
 import Dashboard from "../pages/home/Dashboard";
-import Settings from "../pages/home/Settings";
 import Certificate from "../pages/home/Certificates";
 import UserInfo from "../pages/home/UserInfo";
 
 import TestResultDisplay from "../pages/test/TestResultDisplay";
 import LessonContentViewer from "../pages/course/LessonContentViewer";
+import TestResults from "../pages/home/TestResults";
 
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -30,14 +30,19 @@ import AdminCertificate from "../pages/admin/Certificate";
 import AdminTest from "../pages/admin/Test";
 import AdminReview from "../pages/admin/Review";
 import AdminCourse from "../pages/admin/Course";
+import AdminUser from "../pages/admin/User";
 
 import TestMultipleChoiceCustom from "../pages/test/TestMultipleChoiceCustom";
 import TestInformationCustom from "../pages/test/TestInformationCustom";
 
 import FillInBlankTest from "../pages/test/FillInBlankTest";
-import CourseRecommend from "../pages/course/CourseRecommend";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
+
+import PaymentSuccessPage from "../components/PaymentSuccessPage";
+import PaymentFailedPage from "../components/PaymentFailedPage";
+import CancelPaymentPage from "../components/CancelPaymentPage";
+import Courses from "../pages/Courses";
 
 export const router = createBrowserRouter([
   {
@@ -48,12 +53,28 @@ export const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
+        path: "/courses",
+        element: <Courses />,
+      },
+      {
         path: "/verify-certificate",
         element: <VerifyCertificatePage />,
       },
       {
         element: <ProtectedLayout />,
         children: [
+          {
+            path: "payment-success",
+            element: <PaymentSuccessPage />,
+          },
+          {
+            path: "payment-failed",
+            element: <PaymentFailedPage />,
+          },
+          {
+            path: "payment-cancel",
+            element: <CancelPaymentPage />,
+          },
           {
             path: "/home",
             element: <HomeLayout />,
@@ -72,16 +93,16 @@ export const router = createBrowserRouter([
                 element: <TestList />,
               },
               {
+                path: "results",
+                element: <TestResults />,
+              },
+              {
                 path: "certificates",
                 element: <Certificate />,
               },
               {
                 path: "profile",
                 element: <UserInfo />,
-              },
-              {
-                path: "settings",
-                element: <Settings />,
               },
             ],
           },
@@ -106,6 +127,7 @@ export const router = createBrowserRouter([
                 element: <AdminReview />,
               },
               { path: "course", element: <AdminCourse /> },
+              { path: "user", element: <AdminUser /> },
             ],
           },
           {

@@ -14,6 +14,40 @@ const {
   issueCertificate: issueOnChain,
 } = require("../services/ethers.service");
 
+/**
+ * Tạo chữ ký điện tử cho metadata chứng chỉ
+ * Sử dụng canonical JSON để đảm bảo signature consistency
+ * @param {Object} metadataPayload - Metadata cần ký (chưa có signature)
+ * @returns {Object} { signature, canonicalString }
+ */
+const signCertificateMetadata = async (metadataPayload) => {
+  if (!config.adminPk || config.adminPk.length === 0) {
+    throw new Error(
+      "Admin private key is missing. Cannot sign certificate metadata."
+    );
+  }
+
+  // Tạo ví từ khóa riêng tư
+  const wallet = new ethers.Wallet(config.adminPk);
+
+  // Tạo canonical string với sorted keys để đảm bảo deterministic
+  const sortedKeys = Object.keys(metadataPayload).sort();
+  const canonicalString = JSON.stringify(metadataPayload, sortedKeys);
+
+  const signedHash = ethers.hashMessage(canonicalString);
+  const value = await wallet.signMessage(canonicalString);
+
+  return {
+    signature: {
+      algorithm: "secp256k1",
+      signedHash,
+      value,
+      signedBy: wallet.address,
+    },
+    canonicalString,
+  };
+};
+
 const createCertificate = async (certificateData) => {
   try {
     const newCertificate = new Certificate(certificateData);
@@ -121,7 +155,7 @@ const validateCertificateData = async (studentId, courseId) => {
 /**
  * Upload certificate metadata to IPFS/Pinata
  * @param {Object} certificateData - Certificate data for metadata
- * @returns {Promise<{cid: string, uri: string}>}
+ * @returns {Promise<{cid: string, uri: string, signature: Object}>}
  */
 const uploadCertificateMetadata = async (certificateData) => {
   const { certCode, student, course } = certificateData;
@@ -132,8 +166,8 @@ const uploadCertificateMetadata = async (certificateData) => {
   };
   const issueDate = new Date();
 
-  // Build JSON metadata
-  const metadata = buildCertificateMetadata({
+  // Build JSON metadata (WITHOUT signature)
+  const baseMetadata = buildCertificateMetadata({
     certCode,
     student,
     issuer: defaultIssuer,
@@ -141,13 +175,23 @@ const uploadCertificateMetadata = async (certificateData) => {
     issueDate,
   });
 
-  // Upload JSON to IPFS (Pinata)
-  const meta = await uploadJSON(metadata, {
+  // Sign metadata
+  const { signature } = await signCertificateMetadata(baseMetadata);
+
+  // Add signature to metadata
+  const signedMetadata = {
+    ...baseMetadata,
+    signature,
+  };
+
+  // Upload signed metadata to IPFS (Pinata)
+  const meta = await uploadJSON(signedMetadata, {
     name: "studyhub-certificate.json",
     keyvalues: {
       type: "studyhub-certificate",
-      studentWalletAddress: String(student.walletAddress),
-      issuerWalletAddress: String(defaultIssuer.walletAddress),
+      studentId: String(student._id),
+      studentWalletAddress: String(student.walletAddress).toLowerCase(),
+      issuerWalletAddress: String(defaultIssuer.walletAddress).toLowerCase(),
       certificateCode: String(certCode),
     },
   });
@@ -157,6 +201,7 @@ const uploadCertificateMetadata = async (certificateData) => {
     uri: meta.uri,
     issuer: defaultIssuer,
     issueDate,
+    signature, // Return signature để lưu vào DB
   };
 };
 
@@ -201,8 +246,9 @@ const updateMetadataWithBlockchainInfo = async (cid, blockchainInfo) => {
   await updatePinataKeyvalues(cid, {
     certificateHash: String(certHash),
     transactionHash: String(txHash),
-    studentWalletAddress: String(student.walletAddress),
-    issuerWalletAddress: String(issuer.walletAddress),
+    studentId: String(student._id),
+    studentWalletAddress: String(student.walletAddress).toLowerCase(),
+    issuerWalletAddress: String(issuer.walletAddress).toLowerCase(),
     network: "Sepolia",
   });
 };
@@ -232,7 +278,7 @@ const saveCertificateToDatabase = async (certificateInfo) => {
     student: {
       id: student._id,
       name: student.fullName,
-      walletAddress: student.walletAddress,
+      walletAddress: student.walletAddress.toLowerCase(),
     },
     course: {
       id: course._id,
@@ -241,7 +287,7 @@ const saveCertificateToDatabase = async (certificateInfo) => {
       level: course.courseLevel,
     },
     issuer: {
-      walletAddress: issuer.walletAddress,
+      walletAddress: issuer.walletAddress.toLowerCase(),
       name: issuer.name,
     },
     validity: {
@@ -392,4 +438,5 @@ module.exports = {
   saveCertificateToDatabase,
   issueCertificate,
   getAllCertificates,
+  signCertificateMetadata,
 };

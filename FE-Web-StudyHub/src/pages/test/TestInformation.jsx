@@ -31,6 +31,7 @@ import { useSelector } from "react-redux";
 import Snackbar from "../../components/Snackbar";
 import { useDispatch } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
+import Header from "../../components/Header";
 
 const TestInformation = () => {
   const navigate = useNavigate();
@@ -42,8 +43,6 @@ const TestInformation = () => {
   const [attempt, setAttempt] = useState();
   const [history, setHistory] = useState([]);
   const [testInfoState, setTestInfoState] = useState(testInfor);
-
-  console.log("testInfo: ", testInfor);
 
   const user = useSelector((state) => state.auth.user);
 
@@ -87,6 +86,7 @@ const TestInformation = () => {
             userId: user._id,
             testId,
           }).unwrap();
+
           setHistory(res.data);
         } catch (error) {
           console.error("Failed to fetch attempt detail:", error);
@@ -143,6 +143,15 @@ const TestInformation = () => {
         dispatch(
           openSnackbar({
             message: `Please update your ${testInfor?.examType} level in your profile before taking this test.`,
+            severity: "error",
+          })
+        );
+        return;
+      }
+      if (testInfor.isTheLastTest && !user.walletAddress) {
+        dispatch(
+          openSnackbar({
+            message: `Please add wallet address in your profile before taking this test.`,
             severity: "error",
           })
         );
@@ -240,26 +249,12 @@ const TestInformation = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
-      <Box className="w-full max-w-3xl ">
-        <Button
-          startIcon={<ArrowBack />}
-          variant="text"
-          onClick={() => navigate(-1)}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: 24,
-            color: "#2563eb",
-          }}
-        >
-          Back
-        </Button>
-      </Box>
+    <Box className="flex justify-center items-center bg-gray-50 flex-col ">
+      <Header />
 
       <Card
         className="w-full max-w-3xl"
-        sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
+        sx={{ borderRadius: 4, p: { xs: 1, md: 2 }, mt: 2 }}
       >
         <CardContent>
           {/* Tên và nội dung */}
@@ -484,9 +479,8 @@ const TestInformation = () => {
                 }}
               >
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  ⚠️ You need to update your{" "}
-                  <strong>{testInfor.examType}</strong> level in your profile
-                  before taking this test.
+                  You need to update your <strong>{testInfor.examType}</strong>{" "}
+                  level in your profile before taking this test.
                 </Typography>
                 <Button
                   variant="outlined"
@@ -560,7 +554,10 @@ const TestInformation = () => {
                       variant="outlined"
                       onClick={() =>
                         navigate(`/attempt/${attempt._id}`, {
-                          state: attempt,
+                          state: {
+                            attempt: attempt,
+                            analysisResult: attempt.analysisResult,
+                          },
                         })
                       }
                       className=""

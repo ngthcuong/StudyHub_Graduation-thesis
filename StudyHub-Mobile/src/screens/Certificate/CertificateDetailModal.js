@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,27 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import ViewShot from "react-native-view-shot";
+import CertificateTemplate from "../../components/CertificateTemplate";
+import {
+  saveCertificateToGallery,
+  shareCertificateImage,
+} from "../../utils/certificateDownload";
+import CertificateVerificationBadge from "../../components/CertificateVerificationBadge";
 
 const CertificateDetailScreen = () => {
   const route = useRoute();
   const { item } = route.params || {};
+  const viewShotRef = useRef(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const transactionHash = item?.blockchain?.certificateHash || "";
+  const transactionHash =
+    item?.blockchain?.certificateHash || item?.blockchain?.certHash || "";
   const metadata = item?.ipfs?.metadataURI || "";
 
   const handleCopy = async (text) => {
@@ -24,15 +35,41 @@ const CertificateDetailScreen = () => {
     Alert.alert("Just copied", "Content has been copied to clipboard!");
   };
 
-  const handleDownload = () => {
-    Alert.alert("Download", "Downloading certificate image...");
+  const handleSaveToGallery = async () => {
+    try {
+      setIsProcessing(true);
+      await saveCertificateToGallery(item, viewShotRef);
+    } catch (error) {
+      console.error("Error saving certificate:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
-  const handleOk = () => {
-    Alert.alert("OK", "You pressed OK.");
+
+  const handleShare = async () => {
+    try {
+      setIsProcessing(true);
+      await shareCertificateImage(item, viewShotRef);
+    } catch (error) {
+      console.error("Error sharing certificate:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
     <ScrollView style={styles.container}>
+      {/* Hidden Certificate Template for Capture */}
+      <View style={styles.hiddenView}>
+        <ViewShot
+          ref={viewShotRef}
+          options={{ format: "png", quality: 1.0 }}
+          style={styles.viewShot}
+        >
+          <CertificateTemplate certificate={item} />
+        </ViewShot>
+      </View>
+
       {/* Thông Tin Chứng Chỉ */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Certificate Information</Text>
@@ -43,6 +80,11 @@ const CertificateDetailScreen = () => {
         <View style={styles.field}>
           <Text style={styles.label}>Issue Date:</Text>
           <Text style={styles.value}>02/10/2025</Text>
+        </View>
+        {/* Verification Badge */}
+        <View style={styles.field}>
+          <Text style={styles.label}>Verification Status:</Text>
+          <CertificateVerificationBadge verification={item?.verification} />
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Transaction Hash:</Text>
@@ -77,11 +119,17 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Student Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Student Name:</Text>
-          <Text style={styles.value}>{item?.student?.name || ""}</Text>
+          <Text style={styles.value}>
+            {item?.student?.name || item?.metadata?.student?.name || ""}
+          </Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Student Address:</Text>
-          <Text style={styles.value}>{item?.student?.walletAddress || ""}</Text>
+          <Text style={styles.value}>
+            {item?.student?.walletAddress ||
+              item?.metadata?.student?.walletAddress ||
+              ""}
+          </Text>
         </View>
       </View>
 
@@ -90,11 +138,17 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Issuer Organization</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Organization Name:</Text>
-          <Text style={styles.value}>{item?.issuer?.name || ""}</Text>
+          <Text style={styles.value}>
+            {item?.issuer?.name || item?.metadata?.issuer?.name || ""}
+          </Text>
         </View>
         <View style={styles.field}>
           <Text style={styles.label}>Organization Address:</Text>
-          <Text style={styles.value}>{item?.issuer?.walletAddress || ""}</Text>
+          <Text style={styles.value}>
+            {item?.issuer?.walletAddress ||
+              item?.metadata?.issuer?.walletAddress ||
+              ""}
+          </Text>
         </View>
       </View>
 
@@ -103,23 +157,45 @@ const CertificateDetailScreen = () => {
         <Text style={styles.sectionTitle}>Course Information</Text>
         <View style={styles.field}>
           <Text style={styles.label}>Course Name:</Text>
-          <Text style={styles.value}>{item?.course?.title || ""}</Text>
+          <Text style={styles.value}>
+            {item?.course?.title || item?.metadata?.course?.title || ""}
+          </Text>
         </View>
       </View>
 
       {/* Buttons */}
       <View style={styles.buttons}>
         <TouchableOpacity
-          style={[styles.button, styles.green]}
-          onPress={() => handleDownload()}
+          style={[styles.button, styles.green, isProcessing && styles.disabled]}
+          onPress={handleSaveToGallery}
+          disabled={isProcessing}
         >
-          <Text style={styles.buttonText}>Download Image</Text>
+          {isProcessing ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <>
+              <Ionicons name="save-outline" size={18} color="#fff" />
+              <Text style={styles.buttonText}>Save to Gallery</Text>
+            </>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.button, styles.blue]}
-          onPress={() => handleOk()}
+          style={[
+            styles.button,
+            styles.orange,
+            isProcessing && styles.disabled,
+          ]}
+          onPress={handleShare}
+          disabled={isProcessing}
         >
-          <Text style={styles.buttonText}>OK</Text>
+          {isProcessing ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <>
+              <Ionicons name="share-social-outline" size={18} color="#fff" />
+              <Text style={styles.buttonText}>Share</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -178,6 +254,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   button: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -186,8 +266,14 @@ const styles = StyleSheet.create({
   green: {
     backgroundColor: "#28a745",
   },
+  orange: {
+    backgroundColor: "#ff9800",
+  },
   blue: {
     backgroundColor: "#007bff",
+  },
+  disabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: "#fff",
@@ -208,5 +294,37 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingVertical: 6,
     color: "#333",
+  },
+  hiddenView: {
+    position: "absolute",
+    left: -9999,
+    top: 0,
+  },
+  viewShot: {
+    backgroundColor: "#fff",
+  },
+  previewSection: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 30,
+    alignItems: "center",
+  },
+  previewTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#0055cc",
+    marginBottom: 15,
+  },
+  certificateWrapper: {
+    transform: [{ scale: 0.35 }],
+    marginVertical: -180,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });

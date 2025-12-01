@@ -65,7 +65,7 @@ const ProfileScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  const handleLogout = (navigation) => {
+  const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -152,7 +152,7 @@ const ProfileScreen = ({ navigation }) => {
       </View>
 
       {/* Stats Section */}
-      <View style={styles.statsSection}>
+      {/* <View style={styles.statsSection}>
         <Text style={styles.sectionTitle}>Your Progress</Text>
         <View style={styles.statsGrid}>
           <StatCard
@@ -174,10 +174,10 @@ const ProfileScreen = ({ navigation }) => {
             color="#F59E0B"
           />
         </View>
-      </View>
+      </View> */}
 
       {/* Menu Section */}
-      <View style={styles.menuSection}>
+      <View style={styles.statsSection}>
         <Text style={styles.sectionTitle}>Account</Text>
 
         <MenuItem
@@ -201,7 +201,7 @@ const ProfileScreen = ({ navigation }) => {
           onPress={handleHistoryTest}
         />
 
-        <MenuItem
+        {/* <MenuItem
           icon="notifications-outline"
           title="Notifications"
           subtitle="Manage your notification preferences"
@@ -211,7 +211,7 @@ const ProfileScreen = ({ navigation }) => {
               "Notifications feature will be available soon"
             )
           }
-        />
+        /> */}
 
         <MenuItem
           icon="help-circle-outline"

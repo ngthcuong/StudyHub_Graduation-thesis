@@ -29,19 +29,29 @@ import {
 } from "@mui/material";
 import {
   Search as SearchIcon,
-  Visibility as VisibilityIcon,
   Edit as EditIcon,
   Quiz as QuizIcon,
   People as PeopleIcon,
-  ExpandMore as ExpandMoreIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   FilterAltOutlined,
   FilterAltOffOutlined,
   Add as AddIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import ModalCreateTest from "../../components/ModalCreateTest";
-import { useGetTestStatisticsQuery } from "../../services/testApi";
+import {
+  useGetTestStatisticsQuery,
+  useDeleteTestMutation,
+} from "../../services/testApi";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import SnackBar from "../../components/Snackbar";
+import { useSelector, useDispatch } from "react-redux";
+import { openSnackbar } from "../../redux/slices/snackbar";
 
 const Test = () => {
   const [page, setPage] = useState(0);
@@ -53,6 +63,12 @@ const Test = () => {
   const [sortBy, setSortBy] = useState("title");
   const [filteredTests, setFilteredTests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [theLastTestFilter, setTheLastTestFilter] = useState("All");
+  const [customTestFilter, setCustomTestFilter] = useState("All");
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [testToDelete, setTestToDelete] = useState(null);
 
   // Fetch test statistics from API
   const {
@@ -61,6 +77,11 @@ const Test = () => {
     error: testsError,
     refetch,
   } = useGetTestStatisticsQuery();
+
+  const [deleteTest, { isLoading: isDeleting }] = useDeleteTestMutation();
+
+  const dispatch = useDispatch();
+  const { isOpen, message, severity } = useSelector((state) => state.snackbar);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -93,23 +114,50 @@ const Test = () => {
     }));
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "Easy":
-        return { bg: "#d1fae5", color: "#10b981" };
-      case "Medium":
-        return { bg: "#fef3c7", color: "#f59e0b" };
-      case "Hard":
-        return { bg: "#fee2e2", color: "#ef4444" };
-      default:
-        return { bg: "#e5e7eb", color: "#6b7280" };
-    }
-  };
-
   const handleClearAll = () => {
     setSearchTerm("");
     setCategoryFilter("All");
     setSortBy("title");
+    setTheLastTestFilter("All");
+    setCustomTestFilter("All");
+  };
+
+  const handleDeleteClick = (test) => {
+    setTestToDelete(test);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!testToDelete) return;
+
+    try {
+      await deleteTest(testToDelete.id).unwrap();
+      refetch();
+      dispatch(
+        openSnackbar({
+          message: `Test "${testToDelete.title}" deleted successfully!`,
+          severity: "success",
+        })
+      );
+      setDeleteDialogOpen(false);
+      setTestToDelete(null);
+    } catch (error) {
+      console.error("Error deleting test:", error);
+      dispatch(
+        openSnackbar({
+          message:
+            error?.data?.error ||
+            error?.data?.message ||
+            "Failed to delete test. Please try again.",
+          severity: "error",
+        })
+      );
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setTestToDelete(null);
   };
 
   // Filter and sort logic
@@ -122,7 +170,22 @@ const Test = () => {
       const matchesCategory =
         categoryFilter === "All" || test.examType === categoryFilter;
 
-      return matchesSearch && matchesCategory;
+      const matchesTheLastTest =
+        theLastTestFilter === "All" ||
+        (theLastTestFilter === "Yes" && test.isTheLastTest === true) ||
+        (theLastTestFilter === "No" && test.isTheLastTest !== true);
+
+      const matchesCustomTest =
+        customTestFilter === "All" ||
+        (customTestFilter === "Custom" && test.creatorInfo !== null) ||
+        (customTestFilter === "Course" && test.courseInfo !== null);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesTheLastTest &&
+        matchesCustomTest
+      );
     });
 
     // Sort
@@ -143,7 +206,14 @@ const Test = () => {
 
     setFilteredTests(filtered);
     setPage(0);
-  }, [searchTerm, categoryFilter, sortBy, tests]);
+  }, [
+    searchTerm,
+    categoryFilter,
+    sortBy,
+    theLastTestFilter,
+    customTestFilter,
+    tests,
+  ]);
 
   // Show loading state
   if (testsLoading) {
@@ -442,6 +512,36 @@ const Test = () => {
                   </Select>
                 </FormControl>
 
+                {/* The Last Test Filter */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel size="small">The Last Test</InputLabel>
+                  <Select
+                    value={theLastTestFilter}
+                    onChange={(e) => setTheLastTestFilter(e.target.value)}
+                    label="The Last Test"
+                    size="small"
+                  >
+                    <MenuItem value="All">All Tests</MenuItem>
+                    <MenuItem value="Yes">Last Test Only</MenuItem>
+                    <MenuItem value="No">Not Last Test</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* Custom Test Filter */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel size="small">Test Type</InputLabel>
+                  <Select
+                    value={customTestFilter}
+                    onChange={(e) => setCustomTestFilter(e.target.value)}
+                    label="Test Type"
+                    size="small"
+                  >
+                    <MenuItem value="All">All Types</MenuItem>
+                    <MenuItem value="Custom">Custom Tests</MenuItem>
+                    <MenuItem value="Course">Course Tests</MenuItem>
+                  </Select>
+                </FormControl>
+
                 {/* Sort By */}
                 <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel size="small">Sort By</InputLabel>
@@ -468,13 +568,13 @@ const Test = () => {
               <QuizIcon sx={{ fontSize: 80, color: "#d1d5db", mb: 2 }} />
               <Typography variant="h6" sx={{ color: "#6b7280", mb: 1 }}>
                 {searchTerm || categoryFilter !== "All"
-                  ? "No tests found matching your criteria"
+                  ? "No tests found matching criteria"
                   : "No tests created yet"}
               </Typography>
               <Typography variant="body2" sx={{ color: "#9ca3af", mb: 3 }}>
                 {searchTerm || categoryFilter !== "All"
-                  ? "Try adjusting your search or filter criteria"
-                  : "Create your first test to get started with managing assessments"}
+                  ? "Try adjusting search or filter criteria"
+                  : "Create first test to get started with managing assessments"}
               </Typography>
               {!searchTerm && categoryFilter === "All" && (
                 <Button
@@ -492,7 +592,7 @@ const Test = () => {
                     borderRadius: 2,
                   }}
                 >
-                  {"Create Your First Test"}
+                  {"Create First Test"}
                 </Button>
               )}
             </Box>
@@ -500,10 +600,13 @@ const Test = () => {
             <TableContainer>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+                  <TableRow
+                    sx={{ backgroundColor: "#f9fafb", textAlign: "center" }}
+                  >
                     <TableCell sx={{ fontWeight: 600, width: 50 }}></TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Test Title</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Test Type</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Total Questions
                     </TableCell>
@@ -513,7 +616,9 @@ const Test = () => {
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Total Attempts
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      The Last Test
+                    </TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="center">
                       Actions
                     </TableCell>
@@ -525,11 +630,44 @@ const Test = () => {
                     .map((test) => (
                       <React.Fragment key={test.id}>
                         {/* Main Row */}
-                        <TableRow hover>
+                        <TableRow
+                          hover
+                          sx={{
+                            backgroundColor: expandedRows[test.id]
+                              ? "#f8fafc"
+                              : "inherit",
+                            transition: "background-color 0.2s ease",
+                            borderLeft: expandedRows[test.id]
+                              ? "2px solid #64748b"
+                              : "2px solid transparent",
+                            borderBottom: expandedRows[test.id]
+                              ? "2px solid #94a3b8"
+                              : undefined,
+                            "& td": {
+                              borderBottom: expandedRows[test.id]
+                                ? "none"
+                                : undefined,
+                            },
+                          }}
+                        >
                           <TableCell>
                             <IconButton
                               size="small"
                               onClick={() => handleRowExpand(test.id)}
+                              sx={{
+                                backgroundColor: expandedRows[test.id]
+                                  ? "#64748b"
+                                  : "transparent",
+                                color: expandedRows[test.id]
+                                  ? "#fff"
+                                  : "inherit",
+                                "&:hover": {
+                                  backgroundColor: expandedRows[test.id]
+                                    ? "#475569"
+                                    : "rgba(0, 0, 0, 0.04)",
+                                },
+                                transition: "all 0.2s ease",
+                              }}
                             >
                               {expandedRows[test.id] ? (
                                 <KeyboardArrowUpIcon />
@@ -538,13 +676,21 @@ const Test = () => {
                               )}
                             </IconButton>
                           </TableCell>
-                          <TableCell>
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {test.title}
-                            </Typography>
+                          <TableCell sx={{ py: 1.5 }}>
+                            <Tooltip title={test.title} placement="top-start">
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  minWidth: 250,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {test.title.length > 30
+                                  ? `${test.title.substring(0, 30)}...`
+                                  : test.title}
+                              </Typography>
+                            </Tooltip>
                           </TableCell>
                           <TableCell>
                             <Chip
@@ -553,6 +699,21 @@ const Test = () => {
                               sx={{
                                 backgroundColor: "#f3f4f6",
                                 color: "#374151",
+                                fontWeight: 500,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                test.courseInfo ? "Course Test" : "Custom Test"
+                              }
+                              size="small"
+                              sx={{
+                                backgroundColor: test.courseInfo
+                                  ? "#e0f2fe"
+                                  : "#fff3e0",
+                                color: test.courseInfo ? "#0277bd" : "#f57c00",
                                 fontWeight: 500,
                               }}
                             />
@@ -586,183 +747,243 @@ const Test = () => {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label="Active"
+                              label={test?.isTheLastTest ? "Yes" : "No"}
                               size="small"
                               sx={{
-                                backgroundColor: "#d1fae5",
-                                color: "#10b981",
+                                backgroundColor: test?.isTheLastTest
+                                  ? "#e8f5e8"
+                                  : "#ffeaa7",
+                                color: test?.isTheLastTest
+                                  ? "#2e7d32"
+                                  : "#f57c00",
                                 fontWeight: 600,
                               }}
                             />
                           </TableCell>
-                          <TableCell align="center">
-                            <IconButton
-                              size="small"
-                              sx={{
-                                color: "#1976d2",
-                                "&:hover": { backgroundColor: "#dbeafe" },
-                                mr: 0.5,
-                              }}
-                            >
-                              <VisibilityIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              sx={{
-                                color: "#f59e0b",
-                                "&:hover": { backgroundColor: "#fef3c7" },
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
+                          <TableCell
+                            align="center"
+                            sx={{ whiteSpace: "nowrap" }}
+                          >
+                            <Tooltip title="Edit test">
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  color: "#f59e0b",
+                                  "&:hover": { backgroundColor: "#fef3c7" },
+                                  mr: 0.5,
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete test">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteClick(test)}
+                                sx={{
+                                  color: "#ef4444",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
 
-                        {/* Expanded Row - Levels Detail */}
-                        <TableRow>
+                        {/* Expanded Row - Test Details */}
+                        <TableRow
+                          sx={{
+                            backgroundColor: expandedRows[test.id]
+                              ? "#f8fafc"
+                              : "inherit",
+                            borderLeft: expandedRows[test.id]
+                              ? "2px solid #64748b"
+                              : "2px solid transparent",
+                          }}
+                        >
                           <TableCell
                             style={{ paddingBottom: 0, paddingTop: 0 }}
-                            colSpan={8}
+                            colSpan={9}
+                            sx={{
+                              borderBottom: expandedRows[test.id]
+                                ? "2px solid #e2e8f0 !important"
+                                : undefined,
+                            }}
                           >
                             <Collapse
                               in={expandedRows[test.id]}
                               timeout="auto"
                               unmountOnExit
                             >
-                              <Box sx={{ margin: 2 }}>
+                              <Box
+                                sx={{
+                                  my: 2,
+                                  mx: 6,
+                                  p: 2,
+                                  backgroundColor: "#fff",
+                                  borderRadius: 2,
+                                  border: "1px solid #e2e8f0",
+                                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                                }}
+                              >
                                 <Typography
-                                  variant="h6"
                                   gutterBottom
                                   component="div"
-                                  sx={{ fontWeight: 600, mb: 2 }}
+                                  sx={{ fontWeight: 600 }}
                                 >
-                                  Level Details
+                                  Test Information
                                 </Typography>
-                                <Table size="small">
-                                  <TableHead>
-                                    <TableRow
-                                      sx={{ backgroundColor: "#f9fafb" }}
-                                    >
-                                      <TableCell sx={{ fontWeight: 600 }}>
-                                        Level
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{ fontWeight: 600 }}
-                                        align="center"
-                                      >
-                                        Questions
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{ fontWeight: 600 }}
-                                        align="center"
-                                      >
-                                        Participants
-                                      </TableCell>
-                                      <TableCell
-                                        sx={{ fontWeight: 600 }}
-                                        align="center"
-                                      >
-                                        Attempts
-                                      </TableCell>
-                                      <TableCell sx={{ fontWeight: 600 }}>
-                                        Question Percentage
-                                      </TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    {test.levels?.map((level, index) => {
-                                      const diffColor = getDifficultyColor(
-                                        level.level
-                                      );
-                                      return (
-                                        <TableRow key={index}>
-                                          <TableCell>
-                                            <Chip
-                                              label={level.level}
-                                              size="small"
+                                {!test.courseId ||
+                                test.courseId === "000000000000000000000000" ? (
+                                  <Box>
+                                    {test.creatorInfo ? (
+                                      <Table size="small">
+                                        <TableBody>
+                                          <TableRow>
+                                            <TableCell
                                               sx={{
-                                                backgroundColor: diffColor.bg,
-                                                color: diffColor.color,
                                                 fontWeight: 600,
+                                                width: "30%",
                                               }}
-                                            />
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Chip
-                                              label={level.totalQuestions}
-                                              size="small"
+                                            >
+                                              Test name:
+                                            </TableCell>
+                                            <TableCell>{test.title}</TableCell>
+                                          </TableRow>
+                                          <TableRow>
+                                            <TableCell
                                               sx={{
-                                                backgroundColor: "#dbeafe",
-                                                color: "#1976d2",
                                                 fontWeight: 600,
+                                                width: "30%",
                                               }}
-                                            />
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Typography
-                                              variant="body2"
-                                              sx={{ fontWeight: 600 }}
                                             >
-                                              {level.totalParticipants}
-                                            </Typography>
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Typography
-                                              variant="body2"
-                                              sx={{ fontWeight: 600 }}
+                                              Creator Name:
+                                            </TableCell>
+                                            <TableCell>
+                                              {test.creatorInfo.fullName}
+                                            </TableCell>
+                                          </TableRow>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
                                             >
-                                              {level.totalAttempts}
-                                            </Typography>
-                                          </TableCell>
-                                          <TableCell>
-                                            <Box sx={{ width: 120 }}>
+                                              Current Level:
+                                            </TableCell>
+                                            <TableCell>
                                               <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                  justifyContent:
-                                                    "space-between",
-                                                  mb: 0.5,
-                                                }}
+                                                sx={{ display: "flex", gap: 1 }}
                                               >
-                                                <Typography
-                                                  variant="caption"
-                                                  sx={{ fontWeight: 600 }}
-                                                >
-                                                  {level.questionPercentage ||
-                                                    0}
-                                                  %
-                                                </Typography>
+                                                {test.creatorInfo.currentLevel
+                                                  ?.TOEIC && (
+                                                  <Chip
+                                                    label={`TOEIC: ${test.creatorInfo.currentLevel.TOEIC}`}
+                                                    size="small"
+                                                    sx={{
+                                                      backgroundColor:
+                                                        "#dbeafe",
+                                                      color: "#1976d2",
+                                                      fontWeight: 500,
+                                                    }}
+                                                  />
+                                                )}
+                                                {test.creatorInfo.currentLevel
+                                                  ?.IELTS && (
+                                                  <Chip
+                                                    label={`IELTS: ${test.creatorInfo.currentLevel.IELTS}`}
+                                                    size="small"
+                                                    sx={{
+                                                      backgroundColor:
+                                                        "#fef3c7",
+                                                      color: "#f59e0b",
+                                                      fontWeight: 500,
+                                                    }}
+                                                  />
+                                                )}
+                                                {!test.creatorInfo.currentLevel
+                                                  ?.TOEIC &&
+                                                  !test.creatorInfo.currentLevel
+                                                    ?.IELTS && (
+                                                    <Typography
+                                                      variant="body2"
+                                                      sx={{ color: "#6b7280" }}
+                                                    >
+                                                      Not set
+                                                    </Typography>
+                                                  )}
                                               </Box>
-                                              <LinearProgress
-                                                variant="determinate"
-                                                value={
-                                                  level.questionPercentage || 0
-                                                }
-                                                sx={{
-                                                  height: 6,
-                                                  borderRadius: 1,
-                                                  backgroundColor: "#e5e7eb",
-                                                  "& .MuiLinearProgress-bar": {
-                                                    backgroundColor:
-                                                      (level.questionPercentage ||
-                                                        0) >= 40
-                                                        ? "#10b981"
-                                                        : (level.questionPercentage ||
-                                                            0) >= 20
-                                                        ? "#3b82f6"
-                                                        : "#f59e0b",
-                                                    borderRadius: 1,
-                                                  },
-                                                }}
-                                              />
-                                            </Box>
-                                          </TableCell>
-                                        </TableRow>
-                                      );
-                                    })}
-                                  </TableBody>
-                                </Table>
+                                            </TableCell>
+                                          </TableRow>
+                                        </TableBody>
+                                      </Table>
+                                    ) : (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ color: "#6b7280" }}
+                                      >
+                                        Creator information not available
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                ) : (
+                                  <Box>
+                                    {test.courseInfo ? (
+                                      <Table size="small">
+                                        <TableBody>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Test name:
+                                            </TableCell>
+                                            <TableCell>{test.title}</TableCell>
+                                          </TableRow>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Course Name:
+                                            </TableCell>
+                                            <TableCell>
+                                              {test.courseInfo.courseTitle}
+                                            </TableCell>
+                                          </TableRow>
+                                          <TableRow>
+                                            <TableCell
+                                              sx={{
+                                                fontWeight: 600,
+                                                width: "30%",
+                                              }}
+                                            >
+                                              Lesson Name:
+                                            </TableCell>
+                                            <TableCell>
+                                              {test.courseInfo.lessonTitle}
+                                            </TableCell>
+                                          </TableRow>
+                                        </TableBody>
+                                      </Table>
+                                    ) : (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ color: "#6b7280" }}
+                                      >
+                                        Course information not available
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                )}
                               </Box>
                             </Collapse>
                           </TableCell>
@@ -795,6 +1016,80 @@ const Test = () => {
         onClose={closeModal}
         onSuccess={handleCreateTest}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle
+          id="delete-dialog-title"
+          sx={{
+            fontWeight: 700,
+            color: "#ef4444",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <DeleteIcon />
+          Delete Test
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete the test{" "}
+            <strong>"{testToDelete?.title}"</strong>? This action cannot be
+            undone and will permanently remove all associated data including
+            questions and attempts.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleDeleteCancel}
+            variant="outlined"
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            autoFocus
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+              bgcolor: "#ef4444",
+              "&:hover": {
+                bgcolor: "#dc2626",
+              },
+              "&:disabled": {
+                bgcolor: "#fca5a5",
+              },
+            }}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <SnackBar isOpen={isOpen} message={message} severity={severity} />
     </Box>
   );
 };

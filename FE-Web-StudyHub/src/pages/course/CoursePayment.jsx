@@ -18,6 +18,7 @@ import {
   DialogTitle,
   Button,
 } from "@mui/material";
+import validator from "validator";
 import { useCreatePaymentMutation } from "../../services/paymentApi";
 
 const CoursePayment = () => {
@@ -27,6 +28,7 @@ const CoursePayment = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+  const [cardType, setCardType] = useState("");
 
   // Payment API mutation
   const [createPayment, { isLoading: isPaymentLoading }] =
@@ -105,6 +107,92 @@ const CoursePayment = () => {
       : text;
   };
 
+  // Custom validation functions using validator.js
+  const validateCreditCard = (value) => {
+    const cleanValue = value.replace(/\s+/g, "");
+    if (!validator.isCreditCard(cleanValue)) {
+      return "Please enter a valid credit card number";
+    }
+    return true;
+  };
+
+  const validateExpiryDate = (value) => {
+    if (!value || !value.match(/^(0[1-9]|1[0-2])\/([0-9]{2})$/)) {
+      return "Please enter a valid expiration date (MM/YY)";
+    }
+
+    const [month, year] = value.split("/");
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits
+    const currentMonth = currentDate.getMonth() + 1;
+
+    const cardYear = parseInt(year, 10);
+    const cardMonth = parseInt(month, 10);
+
+    // Check if card has expired
+    if (
+      cardYear < currentYear ||
+      (cardYear === currentYear && cardMonth < currentMonth)
+    ) {
+      return "Card has expired";
+    }
+
+    // Check if expiry date is too far in future (more than 10 years)
+    if (cardYear > currentYear + 10) {
+      return "Invalid expiration date";
+    }
+
+    return true;
+  };
+
+  const validateCVC = (value) => {
+    if (!value || !value.match(/^[0-9]{3,4}$/)) {
+      return "Please enter a valid CVC (3-4 digits)";
+    }
+    return true;
+  };
+
+  const validateCardName = (value) => {
+    if (!value || value.trim().length < 2) {
+      return "Name must be at least 2 characters";
+    }
+
+    // Check if name contains only letters, spaces, hyphens, and apostrophes
+    if (!validator.matches(value.trim(), /^[a-zA-Z\s\-'.]+$/)) {
+      return "Please enter a valid name (letters, spaces, hyphens, and apostrophes only)";
+    }
+
+    return true;
+  };
+
+  // Function to detect card type
+  const getCardType = (number) => {
+    const cleanNumber = number.replace(/\s+/g, "");
+
+    if (/^4/.test(cleanNumber)) return "Visa";
+    if (/^5[1-5]/.test(cleanNumber)) return "Mastercard";
+    if (/^3[47]/.test(cleanNumber)) return "American Express";
+    if (/^6/.test(cleanNumber)) return "Discover";
+
+    return "Unknown";
+  };
+
+  // Function to format expiry date
+  const formatExpiryDate = (value) => {
+    // Remove all non-digits
+    const digitsOnly = value.replace(/\D/g, "");
+
+    // Limit to 4 digits max
+    const limitedDigits = digitsOnly.substring(0, 4);
+
+    // Add slash after 2 digits
+    if (limitedDigits.length >= 3) {
+      return limitedDigits.substring(0, 2) + "/" + limitedDigits.substring(2);
+    }
+
+    return limitedDigits;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Dialog for notifications */}
@@ -158,10 +246,7 @@ const CoursePayment = () => {
                     type="text"
                     {...register("cardName", {
                       required: "Name on card is required",
-                      minLength: {
-                        value: 2,
-                        message: "Name must be at least 2 characters",
-                      },
+                      validate: validateCardName,
                     })}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.cardName ? "border-red-500" : "border-gray-300"
@@ -180,15 +265,17 @@ const CoursePayment = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <CreditCard className="w-4 h-4 inline mr-2" />
                     Card Number
+                    {cardType && (
+                      <span className="ml-2 text-xs text-blue-600 font-medium">
+                        ({cardType})
+                      </span>
+                    )}
                   </label>
                   <input
                     type="text"
                     {...register("cardNumber", {
                       required: "Card number is required",
-                      pattern: {
-                        value: /^[0-9\s]{15,19}$/,
-                        message: "Please enter a valid card number",
-                      },
+                      validate: validateCreditCard,
                     })}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.cardNumber ? "border-red-500" : "border-gray-300"
@@ -196,11 +283,20 @@ const CoursePayment = () => {
                     placeholder="1234 5678 9012 3456"
                     maxLength="19"
                     onInput={(e) => {
+                      // Remove all non-digits and limit to 16 digits
                       const value = e.target.value
                         .replace(/\s+/g, "")
-                        .replace(/[^0-9]/gi, "");
+                        .replace(/[^0-9]/gi, "")
+                        .slice(0, 16);
+                      // Format with spaces every 4 digits
                       const formatted = value.replace(/(.{4})/g, "$1 ").trim();
                       e.target.value = formatted;
+
+                      // Detect card type
+                      const detectedType = getCardType(value);
+                      setCardType(
+                        detectedType !== "Unknown" ? detectedType : ""
+                      );
                     }}
                   />
                   {errors.cardNumber && (
@@ -221,10 +317,7 @@ const CoursePayment = () => {
                       type="text"
                       {...register("expiryDate", {
                         required: "Expiration date is required",
-                        pattern: {
-                          value: /^(0[1-9]|1[0-2])\/([0-9]{2})$/,
-                          message: "Please enter a valid date (MM/YY)",
-                        },
+                        validate: validateExpiryDate,
                       })}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.expiryDate ? "border-red-500" : "border-gray-300"
@@ -232,12 +325,8 @@ const CoursePayment = () => {
                       placeholder="MM/YY"
                       maxLength="5"
                       onInput={(e) => {
-                        let value = e.target.value.replace(/\D/g, "");
-                        if (value.length >= 2) {
-                          value =
-                            value.substring(0, 2) + "/" + value.substring(2, 4);
-                        }
-                        e.target.value = value;
+                        const formatted = formatExpiryDate(e.target.value);
+                        e.target.value = formatted;
                       }}
                     />
                     {errors.expiryDate && (
@@ -256,16 +345,17 @@ const CoursePayment = () => {
                       type="text"
                       {...register("cvc", {
                         required: "CVC is required",
-                        pattern: {
-                          value: /^[0-9]{3,4}$/,
-                          message: "Please enter a valid CVC",
-                        },
+                        validate: validateCVC,
                       })}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.cvc ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="123"
                       maxLength="4"
+                      onInput={(e) => {
+                        // Only allow digits
+                        e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                      }}
                     />
                     {errors.cvc && (
                       <p className="mt-1 text-sm text-red-600">
@@ -273,18 +363,6 @@ const CoursePayment = () => {
                       </p>
                     )}
                   </div>
-                </div>
-
-                {/* Save Information Checkbox */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    {...register("saveInfo")}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 text-sm text-gray-600">
-                    Save my information for faster checkout
-                  </label>
                 </div>
 
                 {/* Submit Button */}
@@ -375,7 +453,9 @@ const CoursePayment = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="text-gray-800">${course.cost || 0}</span>
+                    <span className="text-gray-800">
+                      {(course.cost || 0).toLocaleString("vi-VN")} VND
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Coupon Discount:</span>
@@ -383,14 +463,16 @@ const CoursePayment = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">TAX:</span>
-                    <span className="text-gray-800">$0</span>
+                    <span className="text-gray-800">0 VND</span>
                   </div>
 
                   <hr className="border-gray-200" />
 
                   <div className="flex justify-between text-lg font-semibold">
                     <span className="text-gray-800">Total:</span>
-                    <span className="text-gray-800">${course.cost || 0}</span>
+                    <span className="text-gray-800">
+                      {(course.cost || 0).toLocaleString("vi-VN")} VND
+                    </span>
                   </div>
                 </div>
               </div>

@@ -11,16 +11,29 @@ import {
 export default function DailyLessonsChart({ data }) {
   // Nếu không có data thì render rỗng
   if (!data || !Array.isArray(data)) {
-    return <p className="text-center text-gray-500">Không có dữ liệu</p>;
+    return <p className="text-center text-gray-500">No data.</p>;
   }
 
   // ✨ Chuyển dữ liệu API → format cho Recharts
-  const chartData = data.map((item) => ({
-    // Lấy ngày từ chuỗi "2025-10-01" → "1"
-    day: new Date(item.date).getDate().toString(),
-    lessons: item.completedLessons,
-    studyTimeMinutes: item.studyTimeMinutes,
-  }));
+  const chartData = Object.values(
+    data.reduce((acc, item) => {
+      const day = item.day.toString(); // dùng ngày làm key
+
+      // Nếu chưa có ngày này trong accumulator thì khởi tạo
+      if (!acc[day]) {
+        acc[day] = { day, lessons: 0 };
+      }
+
+      // Nếu có trường lessons (tức là bài học), mới cộng vào
+      if (item.lessons) {
+        acc[day].lessons += 1;
+      }
+
+      return acc;
+    }, {})
+  );
+
+  console.log("🚀 DailyLessonsChart chartData:", chartData);
 
   return (
     <div className="flex justify-center">
@@ -34,7 +47,7 @@ export default function DailyLessonsChart({ data }) {
               formatter={(value, name) =>
                 name === "lessons"
                   ? [`${value} bài học`, "Bài học hoàn thành"]
-                  : [`${value} phút`, "Thời gian học"]
+                  : [`${value} bài học`, "Bài học hoàn thành"]
               }
             />
             <Bar dataKey="lessons" fill="#007bff" name="Bài học hoàn thành" />

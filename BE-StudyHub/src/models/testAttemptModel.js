@@ -12,7 +12,7 @@ const createAttempt = async (attemptData) => {
 
 const findAttemptById = async (id) => {
   try {
-    return await TestAttempt.findById(id).populate("testPoolId userId");
+    return await TestAttempt.findById(id).populate("userId");
   } catch (error) {
     console.error("Error finding attempt by id:", error);
     throw new Error("Failed to find attempt by id");
@@ -92,7 +92,6 @@ const findCustomTestAttemptsByUser = async (userId) => {
   try {
     const attempts = await TestAttempt.find({
       userId,
-      testPoolId: "000000000000000000000000",
     })
       .populate(
         "testId",
@@ -107,6 +106,19 @@ const findCustomTestAttemptsByUser = async (userId) => {
   }
 };
 
+const deleteAttemptById = async (id) => {
+  try {
+    const deletedAttempt = await TestAttempt.findByIdAndDelete(id);
+    if (!deletedAttempt) {
+      throw new Error("Attempt not found");
+    }
+    return deletedAttempt;
+  } catch (error) {
+    console.error("Error deleting attempt:", error);
+    throw new Error("Failed to delete attempt");
+  }
+};
+
 module.exports = {
   createAttempt,
   findAttemptById,
@@ -117,4 +129,5 @@ module.exports = {
   findAttemptByUserAndPool,
   findAttemptsByTestPool,
   findCustomTestAttemptsByUser,
+  deleteAttemptById,
 };

@@ -8,8 +8,8 @@ const attemptDetailSchema = new mongoose.Schema({
   },
   attemptNumber: { type: Number, required: true },
 
-  startTime: { type: Date, default: Date.now }, // ✅ thêm mới
-  endTime: { type: Date }, // ✅ thêm mới
+  startTime: { type: Date, default: Date.now },
+  endTime: { type: Date },
 
   answers: [
     {

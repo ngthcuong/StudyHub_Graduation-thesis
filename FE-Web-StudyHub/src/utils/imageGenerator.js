@@ -1,4 +1,5 @@
 import html2canvas from "html2canvas";
+import StudyHubLogo from "../assets/Logo.jpg";
 
 export const downloadCertificateAsImage = async (certificate) => {
   const container = document.createElement("div");
@@ -94,7 +95,9 @@ export const downloadCertificateAsImage = async (certificate) => {
       <!-- Footer -->
       <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 64px; margin-bottom: 8px;">
         <div style="display: flex; flex-direction: column; align-items: center; width: 160px;">
-          <div style="width: 112px; height: 112px; border-radius: 50%; background-color: #284a9f; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 500; letter-spacing: 0.05em; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">LOGO</div>
+          <div style="width: 112px; height: 112px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+            <img src="${StudyHubLogo}" alt="StudyHub Logo" style="width: 100%; height: 100%; object-fit: cover;" crossorigin="anonymous" />
+          </div>
           <span style="margin-top: 8px; font-size: 14px; letter-spacing: 0.025em; color: #64748b;">Official Seal</span>
         </div>
         <div style="display: flex; flex-direction: column; align-items: center; width: 240px;">

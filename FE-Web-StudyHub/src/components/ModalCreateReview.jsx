@@ -26,7 +26,6 @@ const ModalCreateReview = ({
 }) => {
   const [rating, setRating] = useState(5);
   const [reviewContent, setReviewContent] = useState("");
-  const [hasReviewedBefore, setHasReviewedBefore] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -44,11 +43,9 @@ const ModalCreateReview = ({
       if (existingReview) {
         setRating(existingReview.rating || 5);
         setReviewContent(existingReview.content || "");
-        setHasReviewedBefore(true);
       } else {
         setRating(5);
         setReviewContent("");
-        setHasReviewedBefore(false);
       }
     }
   }, [open, existingReview]);
@@ -79,17 +76,14 @@ const ModalCreateReview = ({
         content: reviewContent.trim(),
       };
 
-      let result;
       if (isUpdate && existingReview) {
-        result = await updateReview({
-          id: existingReview.id,
+        await updateReview({
+          id: existingReview._id || existingReview.id,
           reviewData,
         }).unwrap();
       } else {
-        result = await createReview(reviewData).unwrap();
+        await createReview(reviewData).unwrap();
       }
-
-      console.log("Review operation result:", result);
 
       setSnackbar({
         open: true,
@@ -99,16 +93,14 @@ const ModalCreateReview = ({
         severity: "success",
       });
 
-      // Reset form và đóng modal sau khi thành công
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
+      handleClose();
     } catch (error) {
       console.error("Error submitting review:", error);
       setSnackbar({
         open: true,
         message:
-          error?.data?.message || "An error occurred while creating the review",
+          error?.data?.message ||
+          "An error occurred while submitting the review",
         severity: "error",
       });
     }
@@ -117,7 +109,6 @@ const ModalCreateReview = ({
   const handleClose = () => {
     setRating(5);
     setReviewContent("");
-    setHasReviewedBefore(false);
     onClose();
   };
 
@@ -195,10 +186,13 @@ const ModalCreateReview = ({
           {/* Content */}
           <Box className="p-6 space-y-4 w-full">
             {/* Previous review notification */}
-            {hasReviewedBefore && !isUpdate && (
+            {existingReview && (
               <Alert severity="info" className="mb-4">
-                You have already reviewed this course. You can update your
-                review.
+                <Typography variant="body2" className="font-medium">
+                  {isUpdate
+                    ? "You are updating your review for this course."
+                    : "You have already reviewed this course. You can update your review."}
+                </Typography>
               </Alert>
             )}
 
@@ -320,7 +314,7 @@ const ModalCreateReview = ({
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           onClose={handleSnackbarClose}

@@ -186,7 +186,7 @@ const DashboardScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Recent Activity</Text>
         {recentActivity.length > 0 ? (
           recentActivity.map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} />
+            <ActivityItem key={activity._id} activity={activity} />
           ))
         ) : (
           <View style={styles.emptyState}>

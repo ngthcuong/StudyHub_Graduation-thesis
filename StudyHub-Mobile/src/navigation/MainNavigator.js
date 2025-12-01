@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+
 // Home Stack
 import HomeScreen from "../screens/home/HomeScreen";
 import DashboardScreen from "../screens/home/DashboardScreen";
@@ -12,6 +14,9 @@ import MyCoursesScreen from "../screens/courses/MyCoursesScreen";
 import CoursesListScreen from "../screens/courses/CoursesListScreen";
 import CourseDetailScreen from "../screens/courses/CourseDetailScreen";
 import CourseVideoScreen from "../screens/courses/CourseVideoScreen";
+import CoursePurchaseScreen from "../screens/courses/CoursePurchaseScreen";
+import CourseTestScreen from "../screens/courses/CourseTestSrceen";
+import CourseVideoSeriesListScreen from "../screens/courses/CourseVideoSeriesListScreen";
 
 // Tests Stack
 import AssessmentListScreen from "../screens/tests/AssessmentListScreen";
@@ -31,6 +36,19 @@ import CertificateDetailScreen from "../screens/Certificate/CertificateDetailMod
 // History Test Screen
 import HistoryTestResultScreen from "../screens/tests/HistoryTestResultScreen";
 import CompletedTestsScreen from "../screens/tests/CompletedTestsScreen";
+import MultilExerciseCustomScreen from "../screens/tests/MultilExerciseCustomScreen";
+
+// custom navigators
+import AssessmentCustomScreen from "../screens/tests/AssessmentCustomScreen";
+
+// payment
+import PaymentWebView from "../components/PaymentWebView";
+import PaymentSuccess from "../components/PaymentSuccess";
+import PaymentCancel from "../components/PaymentCancel";
+
+// review course
+import ReviewModal from "../components/ReviewModal";
+import CourseReviews from "../components/CourseReviews";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -78,6 +96,46 @@ const CoursesStackNavigator = () => (
       component={CourseVideoScreen}
       options={{ title: "Lesson" }}
     />
+    <CoursesStack.Screen
+      name="CoursePurchase"
+      component={CoursePurchaseScreen}
+      options={{ title: "Course Purchase" }}
+    />
+    <CoursesStack.Screen
+      name="CourseTest"
+      component={CourseTestScreen}
+      options={{ title: "Course Test" }}
+    />
+    <CoursesStack.Screen
+      name="CourseVideoSeriesList"
+      component={CourseVideoSeriesListScreen}
+      options={{ title: "Video Series" }}
+    />
+    <CoursesStack.Screen
+      name="PaymentWebView"
+      component={PaymentWebView}
+      options={{ headerShown: false }}
+    />
+    <CoursesStack.Screen
+      name="PaymentSuccess"
+      component={PaymentSuccess}
+      options={{ headerShown: false }}
+    />
+    <CoursesStack.Screen
+      name="PaymentCancel"
+      component={PaymentCancel}
+      options={{ headerShown: false }}
+    />
+    <CoursesStack.Screen
+      name="ReviewModal"
+      component={ReviewModal}
+      options={{ title: "Create Review" }}
+    />
+    <CoursesStack.Screen
+      name="CourseReviews"
+      component={CourseReviews}
+      options={{ title: "Course Reviews" }}
+    />
   </CoursesStack.Navigator>
 );
 
@@ -102,12 +160,25 @@ const TestsStackNavigator = () => (
     <TestsStack.Screen
       name="MultilExercise"
       component={MultilExerciseScreen}
-      options={{ title: "Multiple Choice" }}
+      options={{
+        title: "Multiple Choice",
+        headerShown: false, // <-- Thêm dòng này
+      }}
+    />
+    <TestsStack.Screen
+      name="MultilExerciseCustom"
+      component={MultilExerciseCustomScreen}
+      options={{ title: "Multiple Choice Custom", headerShown: false }}
     />
     <TestsStack.Screen
       name="TestResults"
       component={TestResultsScreen}
-      options={{ title: "Test Results" }}
+      options={{ title: "Test Results", headerShown: false }}
+    />
+    <TestsStack.Screen
+      name="AssessmentCustom"
+      component={AssessmentCustomScreen}
+      options={{ title: "Assessment Custom" }}
     />
   </TestsStack.Navigator>
 );
@@ -150,7 +221,10 @@ const ProfileStackNavigator = () => (
     <ProfileStack.Screen
       name="TestResults"
       component={TestResultsScreen}
-      options={{ title: "Test Results" }}
+      options={{
+        title: "Test Results",
+        tabBarStyle: { display: "none" }, // Ẩn footer (tabBar)
+      }}
     />
   </ProfileStack.Navigator>
 );
@@ -178,6 +252,52 @@ const MainNavigator = () => {
         tabBarActiveTintColor: "#3B82F6",
         tabBarInactiveTintColor: "gray",
         headerShown: false,
+
+        // --- LOGIC ẨN TAB BAR NÂNG CẤP ---
+        tabBarStyle: ((route) => {
+          // Lấy tên màn hình đang focus bên trong Stack
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "";
+
+          // Danh sách TẤT CẢ các màn hình con mà bạn muốn ẩn tab bar
+          const tabHiddenScreens = [
+            // HomeStack
+            "Dashboard",
+            "MyCourses",
+            // CoursesStack
+            "CourseDetail",
+            "CourseVideo",
+            "CoursePurchase",
+            "CourseTest",
+            "CourseVideoSeriesList",
+            // TestsStack
+            "Assessment",
+            "FillExercise",
+            "MultilExercise",
+            "MultilExerciseCustom",
+            "TestResults",
+            "AssessmentCustom",
+            // ProfileStack
+            "EditProfile",
+            "CertificatesList",
+            "CertificateDetail",
+            "HistoryTest",
+            "CompletedTests",
+            // "TestResults" đã có ở trên
+            "PaymentWebView",
+            "PaymentSuccess",
+            "PaymentCancel",
+            "ReviewModal",
+            "CourseReviews",
+          ];
+
+          // Nếu tên màn hình nằm trong danh sách, ẩn nó đi
+          if (tabHiddenScreens.includes(routeName)) {
+            return { display: "none" };
+          }
+
+          // Nếu không thì hiện nó ra
+          return { display: "flex" };
+        })(route),
       })}
     >
       <Tab.Screen name="Home" component={HomeStackNavigator} />

@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import CopyButton from "./CopyButton";
 import { downloadCertificateAsImage } from "../utils/imageGenerator";
+import CertificateVerificationBadge from "./CertificateVerificationBadge";
 
 const CertificateDetailModal = ({ open, onClose, certificate }) => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -40,11 +41,45 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       await downloadCertificateAsImage(certificate);
     } catch (error) {
       console.error("Error downloading certificate image:", error);
-      alert("Có lỗi xảy ra khi tải certificate. Vui lòng thử lại.");
+      alert(
+        "An error occurred while downloading the certificate. Please try again."
+      );
     } finally {
       setIsDownloading(false);
     }
   };
+
+  // Get header color based on verification status
+  const getHeaderStyle = () => {
+    const trustLevel = certificate?.verification?.trustLevel?.toLowerCase();
+
+    const styles = {
+      trusted: {
+        backgroundColor: "#22c55e", // Green
+        borderColor: "#059669",
+        textColor: "#ffffff",
+      },
+      warning: {
+        backgroundColor: "#f59e0b", // Amber
+        borderColor: "#d97706",
+        textColor: "#ffffff",
+      },
+      rejected: {
+        backgroundColor: "#ef4444", // Red
+        borderColor: "#dc2626",
+        textColor: "#ffffff",
+      },
+      unknown: {
+        backgroundColor: "#6b7280", // Gray
+        borderColor: "#4b5563",
+        textColor: "#ffffff",
+      },
+    };
+
+    return styles[trustLevel] || styles.unknown;
+  };
+
+  const headerStyle = getHeaderStyle();
 
   return (
     <Dialog
@@ -62,15 +97,32 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       }}
     >
       {/* Header */}
-      <DialogTitle className="bg-white border-b border-gray-100">
+      <DialogTitle
+        sx={{
+          backgroundColor: headerStyle.backgroundColor,
+          borderBottom: `2px solid ${headerStyle.borderColor}`,
+          py: 2,
+        }}
+      >
         <div className="flex items-center justify-between">
-          <Typography variant="h5" className="font-bold flex items-center">
-            Certificate Details
-          </Typography>
+          <div className="flex items-center gap-3">
+            <Typography
+              variant="h5"
+              className="!font-bold"
+              sx={{ color: "white" }}
+            >
+              Certificate Details
+            </Typography>
+          </div>
           <IconButton
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
             size="small"
+            sx={{
+              color: headerStyle.textColor,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -88,7 +140,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
               </Typography>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Typography variant="body2" className="text-gray-500 mb-1">
                   Certificate Code
@@ -111,6 +163,16 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
                 >
                   {formatDate(certificate?.validity.issueDate)}
                 </Typography>
+              </div>
+
+              <div>
+                <Typography variant="body2" className="text-gray-500 mb-1">
+                  Verification Status
+                </Typography>
+                <CertificateVerificationBadge
+                  verification={certificate?.verification}
+                  size="medium"
+                />
               </div>
             </div>
 

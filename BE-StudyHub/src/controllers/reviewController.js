@@ -177,6 +177,43 @@ const getReviewsByUser = async (req, res) => {
 };
 
 /**
+ * Kiểm tra xem user đã review khóa học này chưa
+ */
+const getUserReviewForCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.user.userId;
+
+    if (!courseId) {
+      return res.status(400).json({ error: "Course ID is required" });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const review = await reviewModel.getUserReviewForCourse(userId, courseId);
+
+    if (!review) {
+      return res.status(200).json({
+        message: "No review found for this course",
+        hasReview: false,
+        review: null,
+      });
+    }
+
+    res.status(200).json({
+      message: "User review found",
+      hasReview: true,
+      review: review,
+    });
+  } catch (error) {
+    console.error("Error getting user review for course:", error);
+    res.status(500).json({ error: "Failed to get user review for course" });
+  }
+};
+
+/**
  * Lấy thống kê rating của khóa học
  */
 const getCourseRatingStats = async (req, res) => {
@@ -238,6 +275,7 @@ module.exports = {
   updateReview,
   deleteReview,
   getReviewsByUser,
+  getUserReviewForCourse,
   getCourseRatingStats,
   getAdminReviewStats,
   getAllReviews,

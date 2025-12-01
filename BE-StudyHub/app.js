@@ -25,6 +25,8 @@ const attemptDetailRoutes = require("./src/routes/attemptDetailRoutes");
 
 const studyRoutes = require("./src/routes/studyRoutes");
 
+const studyStatsRoutes = require("./src/routes/studyStatsRoutes");
+
 const grammarLessonRoutes = require("./src/routes/grammarLessonRoutes");
 
 require("dotenv").config();
@@ -62,7 +64,7 @@ app.use("/api/v1/test-pools", testPoolRoutes);
 
 app.use("/api/v1/attempt-details", attemptDetailRoutes);
 
-app.use("/api/v1/study", studyRoutes);
+app.use("/api/v1/study-stats", studyStatsRoutes);
 
 app.use("/api/v1/grammar-lessons", grammarLessonRoutes);
 

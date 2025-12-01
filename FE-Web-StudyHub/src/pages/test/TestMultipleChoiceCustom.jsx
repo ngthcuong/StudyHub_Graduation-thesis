@@ -27,6 +27,7 @@ import {
 } from "../../services/testApi";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
 
 // Không còn dùng useParams, useLocation, useNavigate từ react-router-dom
 // Nên tôi sẽ giả lập chức năng của chúng.
@@ -363,6 +364,7 @@ const TestMultipleChoiceCustom = () => {
 
   const [data, setData] = useState(null);
   const [date, setDate] = useState(null);
+  const [day, setDay] = useState(null);
 
   const { payloadForm, attemptDetail } = location.state || {};
   const routeTestId = payloadForm?.testId;
@@ -372,6 +374,7 @@ const TestMultipleChoiceCustom = () => {
   const [createAttempt] = useCreateAttemptMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
   const [getQuestionsByAttemptId] = useGetQuestionsByAttemptIdMutation();
+  const [logStudySession] = useLogStudySessionMutation();
 
   const start = async () => {
     if (
@@ -389,6 +392,10 @@ const TestMultipleChoiceCustom = () => {
         setTest(attemptDetail?.testId);
         setAttemptId(attemptDetail?._id);
         setLoading(false);
+
+        // lấy ngày hiện tại
+        const d = new Date().getDate();
+        setDay(d);
       } catch (error) {
         console.error("Error resuming existing attempt:", error);
       }
@@ -396,7 +403,6 @@ const TestMultipleChoiceCustom = () => {
       try {
         setLoading(true);
         const attemptRes = await createAttempt({
-          testPoolId: "000000000000000000000000",
           testId: payloadForm?.testId,
           maxAttempts: 3,
         }).unwrap();
@@ -427,6 +433,10 @@ const TestMultipleChoiceCustom = () => {
             setData(res);
             setQuestions(res);
             setLoading(false);
+
+            // lấy ngày hiện tại
+            const d = new Date().getDate();
+            setDay(d);
           } catch (error) {
             console.error("Error setting test data:", error);
           }
@@ -529,6 +539,24 @@ const TestMultipleChoiceCustom = () => {
       selectedOptionId: selectedOptionId,
     }));
 
+    // const past = new Date(date);
+    // const now = new Date();
+
+    // const diffMs = now - past;
+
+    // const diffSeconds = Math.floor(diffMs / 1000);
+
+    // console.log("Logging study session with:", {
+    //   exercises: attemptDetail?.testId?._id,
+    //   durationSeconds: diffSeconds,
+    //   day,
+    // });
+    // await logStudySession({
+    //   day,
+    //   exercises: attemptDetail?.testId?._id,
+    //   durationSeconds: diffSeconds,
+    // }).unwrap();
+
     try {
       const answers = formattedAnswers;
       const startTime = date;
@@ -543,11 +571,16 @@ const TestMultipleChoiceCustom = () => {
 
       if (response) {
         navigate(`/test/${testId}/result`, {
-          state: { resultData: response },
+          state: { resultData: response, formattedAnswers: formattedAnswers },
         });
       }
     } catch (error) {
       console.log("Error during submission:", error);
+      alert(
+        "Có lỗi xảy ra khi gửi dữ liệu!",
+        error.data?.message || error.message
+      );
+      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
       setIsPaused(false);

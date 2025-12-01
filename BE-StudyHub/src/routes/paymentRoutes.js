@@ -35,4 +35,13 @@ router.get(
 // Lấy tất cả payments (admin only) - Đặt cuối để tránh conflict
 router.get("/all", verifyToken, requireAdmin, paymentController.getAllPayments);
 
+router.post(
+  "/create-payment-link",
+  verifyToken,
+  paymentController.createPaymentLink
+);
+
+// webHook using ngork https://capaciously-unclimbed-xavier.ngrok-free.dev/api/v1/payments/webhook
+router.post("/webhook", paymentController.receiveHookPayment);
+
 module.exports = router;

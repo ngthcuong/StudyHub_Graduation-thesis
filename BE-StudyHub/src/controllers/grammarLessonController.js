@@ -109,6 +109,34 @@ const getPartByIdController = async (req, res) => {
   }
 };
 
+// Thêm test vào grammar lesson
+const addTestToLesson = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const { testId } = req.body;
+
+    if (!testId) {
+      return res.status(400).json({ error: "Test ID is required" });
+    }
+
+    const updatedLesson = await grammarLessonModal.addTestToLesson(
+      lessonId,
+      testId
+    );
+    if (!updatedLesson) {
+      return res.status(404).json({ error: "Grammar lesson not found" });
+    }
+
+    res.status(200).json({
+      message: "Test added to lesson successfully",
+      data: updatedLesson,
+    });
+  } catch (error) {
+    console.error("Error adding test to lesson:", error);
+    res.status(500).json({ error: "Failed to add test to lesson" });
+  }
+};
+
 module.exports = {
   createGrammarLesson,
   getAllGrammarLessons,
@@ -117,4 +145,5 @@ module.exports = {
   deleteGrammarLessonById,
   getLessonsByCourseId,
   getPartByIdController,
+  addTestToLesson,
 };

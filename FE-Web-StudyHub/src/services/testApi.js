@@ -54,10 +54,10 @@ export const testApi = rootApi.injectEndpoints({
 
     // 6. createAttempt
     createAttempt: builder.mutation({
-      query: ({ testPoolId, testId, maxAttempts }) => ({
+      query: ({ testId, maxAttempts }) => ({
         url: "/attempts",
         method: "POST",
-        body: { testPoolId, testId, evaluationModel: "gemini", maxAttempts },
+        body: { testId, evaluationModel: "gemini", maxAttempts },
       }),
       invalidatesTags: ["Attempt"],
     }),
@@ -290,6 +290,15 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Attempt"],
     }),
+
+    // 31. deleteTest
+    deleteTest: builder.mutation({
+      query: (testId) => ({
+        url: `/tests/${testId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Test"],
+    }),
   }),
 });
 
@@ -324,6 +333,7 @@ export const {
   useGetAttemptDetailByUserMutation,
   useGetQuestionsByAttemptIdMutation,
   useUpdateAttemptMutation,
+  useDeleteTestMutation,
 } = testApi;
 
 export default testApi;

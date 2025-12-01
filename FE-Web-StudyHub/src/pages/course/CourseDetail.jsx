@@ -28,6 +28,7 @@ import {
   KeyboardArrowRight,
   FavoriteBorder,
   ArrowBack,
+  PlayArrow,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
@@ -40,6 +41,11 @@ import {
   useGetCourseByIdMutation,
   useGetCoursesQuery,
 } from "../../services/courseApi";
+import { useGetMyCoursesMutation } from "../../services/grammarLessonApi";
+import { useGetUserReviewForCourseQuery } from "../../services/reviewApi";
+import { useCreatePaymentLinkMutation } from "../../services/paymentApi";
+import ModalCreateReview from "../../components/ModalCreateReview";
+import Header from "../../components/Header";
 
 const outcomes = [
   "Deep understanding and mastery of simple sentences",
@@ -60,9 +66,15 @@ const CourseDetail = () => {
 
   const dispatch = useDispatch();
   const { isOpen, message, severity } = useSelector((state) => state.snackbar);
+  const user = useSelector((state) => state.auth.user);
   const [course, setCourse] = React.useState(null);
   const [courseError, setCourseError] = React.useState(null);
   const [courseLoading, setCourseLoading] = React.useState(true);
+  const [isOwned, setIsOwned] = React.useState(false);
+  const [checkingOwnership, setCheckingOwnership] = React.useState(true);
+  const [reviewModalOpen, setReviewModalOpen] = React.useState(false);
+  const [existingReview, setExistingReview] = React.useState(null);
+  const [creatingPayment, setCreatingPayment] = React.useState(false);
 
   // Fetch course details using API
   // const {
@@ -73,29 +85,103 @@ const CourseDetail = () => {
   //   skip: !courseId,
   // });
   const [getCourseById] = useGetCourseByIdMutation();
+  const [getMyCourses] = useGetMyCoursesMutation();
+  const [createPaymentLink] = useCreatePaymentLinkMutation();
+
+  // Fetch user's review for this course
+  const { data: userReviewData, refetch: refetchUserReview } =
+    useGetUserReviewForCourseQuery(courseId, {
+      skip: !user?._id || !courseId,
+    });
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseAndCheckOwnership = async () => {
       setCourseLoading(true);
+      setCheckingOwnership(true);
+
       try {
+        // Fetch course details
         const courseData = await getCourseById(courseId).unwrap();
         setCourse(courseData);
         setCourseError(null);
+
+        // Check if user owns this course
+        if (user?._id) {
+          try {
+            const result = await getMyCourses(user._id).unwrap();
+            const ownedCourses = result.courses || [];
+            const isOwned = ownedCourses.some(
+              (course) => course._id === courseId
+            );
+            setIsOwned(isOwned);
+          } catch (error) {
+            console.error("Failed to fetch user courses:", error);
+            setIsOwned(false);
+          }
+        }
       } catch (error) {
         setCourseError(error);
       } finally {
         setCourseLoading(false);
+        setCheckingOwnership(false);
       }
     };
 
-    fetchCourse();
-  }, [courseId, getCourseById]);
+    fetchCourseAndCheckOwnership();
+  }, [courseId, getCourseById, getMyCourses, user?._id]);
 
   // Fetch recommended courses
   const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery();
 
   const handleAddToFavorites = () => {
     dispatch(openSnackbar({ message: "Add to favorites" }));
+  };
+
+  const handleStartLearning = () => {
+    // Navigate to the learning page - adjust this path based on your routing structure
+    navigate(`/course/${courseId}/lesson/${course.id || course._id}`);
+  };
+
+  const handleOpenReviewModal = () => {
+    if (userReviewData?.hasReview) {
+      setExistingReview(userReviewData.review);
+    } else {
+      setExistingReview(null);
+    }
+    setReviewModalOpen(true);
+  };
+
+  const handleCloseReviewModal = () => {
+    setReviewModalOpen(false);
+    setExistingReview(null);
+    // Refetch user review to update the UI
+    refetchUserReview();
+  };
+
+  const handleBuyNow = async () => {
+    if (creatingPayment) return; // tránh nhấn nhiều lần
+    try {
+      const res = await createPaymentLink({
+        courseId: course?._id,
+        amount: 2000,
+        description: `${course?.title.slice(0, 25)}...`,
+      });
+
+      console.log("Payment link response:", res);
+
+      // Lấy link từ res.data.payOSLink
+      const paymentUrl = res.data?.payOSLink;
+      if (paymentUrl) {
+        // Chuyển hướng người dùng sang trang thanh toán
+        window.location.href = paymentUrl;
+      } else {
+        console.error("Payment link not found in response");
+      }
+    } catch (error) {
+      console.error("Error creating payment link:", error);
+    } finally {
+      setCreatingPayment(false);
+    }
   };
 
   // Loading state
@@ -142,26 +228,10 @@ const CourseDetail = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Back Button */}
-      <div className="px-6 pt-6">
-        <Container maxWidth="lg">
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate(-1)}
-            className="mb-4 text-gray-600 hover:text-gray-800"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 24,
-            }}
-          >
-            Back
-          </Button>
-        </Container>
-      </div>
+      <Header />
 
       {/* Main Course Detail Section */}
-      <main className="px-6 pb-8">
+      <main className="px-6 pb-8 mt-6">
         <Container maxWidth="lg">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Course Image */}
@@ -194,14 +264,27 @@ const CourseDetail = () => {
                 </IconButton>
               </div>
 
-              <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-md">
-                <Typography variant="body2" className="font-medium">
-                  {course.type || "Course"}
-                </Typography>
+              <div className="flex gap-2">
+                <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-md">
+                  <Typography variant="body2" className="font-medium">
+                    {course.type || "Course"}
+                  </Typography>
+                </div>
+                {isOwned && (
+                  <div className="inline-block bg-blue-500 text-white px-3 py-1 rounded-md">
+                    <Typography variant="body2" className="font-medium">
+                      Owned
+                    </Typography>
+                  </div>
+                )}
               </div>
 
               <Typography variant="h3" className="!font-bold text-black">
-                {course.cost ? `$${course.cost}` : "Free"}
+                {isOwned
+                  ? "Already Purchased"
+                  : course.cost
+                  ? `${course.cost.toLocaleString("vi-VN")} VND`
+                  : "Free"}
               </Typography>
 
               <Typography
@@ -243,19 +326,49 @@ const CourseDetail = () => {
                 )}
               </div>
 
-              <Button
-                variant="contained"
-                className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3"
-                sx={{
-                  textTransform: "none",
-                }}
-                size="large"
-                onClick={() =>
-                  navigate("/course/payment", { state: { course } })
-                }
-              >
-                Buy now
-              </Button>
+              {checkingOwnership ? (
+                <Button
+                  variant="contained"
+                  className="bg-gray-400 text-white w-full py-3"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                  size="large"
+                  disabled
+                >
+                  <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                  Checking...
+                </Button>
+              ) : isOwned ? (
+                <Button
+                  variant="contained"
+                  className="!bg-green-600 hover:!bg-green-700 text-white w-full py-3"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                  size="large"
+                  onClick={handleStartLearning}
+                  startIcon={<PlayArrow />}
+                >
+                  Start Learning
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3"
+                  sx={{
+                    textTransform: "none",
+                  }}
+                  size="large"
+                  onClick={() =>
+                    // navigate("/course/payment", { state: { course } })
+                    handleBuyNow()
+                  }
+                  disabled={creatingPayment}
+                >
+                  Buy now
+                </Button>
+              )}
             </div>
           </div>
         </Container>
@@ -314,9 +427,37 @@ const CourseDetail = () => {
       {/* Reviews and Rating Section */}
       <section className="py-12 bg-gray-50">
         <Container maxWidth="lg">
-          <Typography variant="h4" className="!font-bold mb-6">
-            Reviews & Ratings
-          </Typography>
+          <div className="flex items-center justify-between mb-6">
+            <Typography variant="h4" className="!font-bold">
+              Reviews & Ratings
+            </Typography>
+            {/* Write Review Button - Only show if user is logged in */}
+            {user && (
+              <>
+                {isOwned ? (
+                  <Button
+                    variant="contained"
+                    onClick={handleOpenReviewModal}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {userReviewData?.hasReview
+                      ? "Update Review"
+                      : "Write Review"}
+                  </Button>
+                ) : (
+                  <div className="bg-orange-100 text-orange-800 px-3 py-1.5 rounded-md">
+                    <Typography variant="body2" className="font-medium">
+                      Purchase this course to write a review
+                    </Typography>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Rating Stats - Left Column */}
@@ -326,9 +467,19 @@ const CourseDetail = () => {
 
             {/* Reviews List - Right Column */}
             <div className="lg:col-span-2 -mt-4">
-              <Typography variant="h6" className="!font-semibold mb-4">
-                Latest Reviews
-              </Typography>
+              <div className="flex items-center justify-between mb-4">
+                <Typography variant="h6" className="!font-semibold">
+                  Latest Reviews
+                </Typography>
+                {/* Show user's review status if logged in and owns course */}
+                {user && isOwned && userReviewData?.hasReview && (
+                  <div className="bg-green-100 text-green-800 px-3 py-1 rounded-md">
+                    <Typography variant="body2" className="font-medium">
+                      You have reviewed this course
+                    </Typography>
+                  </div>
+                )}
+              </div>
               <CourseReviews courseId={courseId} maxDisplay={3} />
             </div>
           </div>
@@ -342,7 +493,7 @@ const CourseDetail = () => {
             <Typography variant="h4" className="!font-bold text-black">
               Recommended for you
             </Typography>
-            <Button
+            {/* <Button
               variant="text"
               size="large"
               className="text-blue-600 hover:text-blue-800 !font-medium"
@@ -354,10 +505,10 @@ const CourseDetail = () => {
               }}
             >
               See more
-            </Button>
+            </Button> */}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-10">
             {coursesLoading ? (
               <div className="col-span-full flex justify-center py-8">
                 <CircularProgress size={32} />
@@ -378,6 +529,18 @@ const CourseDetail = () => {
       </section>
 
       <SnackBar isOpen={isOpen} message={message} severity={severity} />
+
+      {/* Review Modal */}
+      <ModalCreateReview
+        open={reviewModalOpen}
+        onClose={handleCloseReviewModal}
+        course={{
+          id: courseId,
+          name: course?.title || "",
+        }}
+        existingReview={existingReview}
+        isUpdate={!!existingReview}
+      />
     </div>
   );
 };

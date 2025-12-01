@@ -32,7 +32,7 @@ router.put(
 router.delete(
   "/:testId",
   verifyToken,
-  requireAdmin,
+  // requireAdmin,
   testController.deleteTestById
 );
 

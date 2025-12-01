@@ -26,6 +26,7 @@ import { useLoginMutation } from "../../services/authApi";
 import { openSnackbar } from "../../redux/slices/snackbar";
 import { useDispatch, useSelector } from "react-redux";
 import SnackBar from "../../components/Snackbar";
+import LogoStudyHub from "../../assets/Logo.jpg";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -104,6 +105,15 @@ const LoginPage = () => {
         }}
       >
         {/* Header */}
+        <Box className="flex justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="h-1/3 w-1/3 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </Box>
+
         <Box className="text-center space-y-2">
           <Typography
             variant="h4"
@@ -180,7 +190,7 @@ const LoginPage = () => {
               fontWeight: 600,
             }}
           >
-            {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </Box>
 

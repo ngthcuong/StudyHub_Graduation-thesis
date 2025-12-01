@@ -20,10 +20,9 @@ const Footer = () => {
             padding: "0 10px",
           }}
         >
-          <Grid item size={{ xs: 12, md: 6 }}>
-            {/* TODO: Thay bằng logic được thiết kế */}
+          <Grid item size={{ xs: 12, md: 5.5 }}>
             <Typography variant="h5" className="font-bold !mb-2">
-              Logo
+              StudyHub
             </Typography>
             <Typography variant="body2" className="!mb-4 text-gray-600">
               Join our newsletter to stay up to date on features and releases.
@@ -66,7 +65,7 @@ const Footer = () => {
               </li>
             </ul>
           </Grid>
-          <Grid item size={{ xs: 12, md: 2 }}>
+          <Grid item size={{ xs: 12, md: 2.5 }}>
             <Typography variant="subtitle1" className="!font-bold mb-2">
               About us
             </Typography>
@@ -145,7 +144,7 @@ const Footer = () => {
           </Grid>
         </Grid>
         <Box className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 text-gray-500 text-sm">
-          <span>© 2024 StudyHub. All rights reserved.</span>
+          <span>© 2025 StudyHub. All rights reserved.</span>
           <Box className="flex gap-4">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>

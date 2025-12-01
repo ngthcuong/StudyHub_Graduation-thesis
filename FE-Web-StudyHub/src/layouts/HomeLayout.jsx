@@ -1,16 +1,16 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import SettingsIcon from "@mui/icons-material/Settings";
-import PortraitIcon from "@mui/icons-material/Portrait";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 import { Person } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import LogoutIcon from "@mui/icons-material/Logout";
+import LogoStudyHub from "../assets/Logo.jpg";
 
 export default function HomeLayout() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -32,14 +32,14 @@ export default function HomeLayout() {
       case "exercises":
         setActiveTab("exercises");
         break;
+      case "results":
+        setActiveTab("results");
+        break;
       case "certificates":
         setActiveTab("certificates");
         break;
       case "profile":
         setActiveTab("profile");
-        break;
-      case "settings":
-        setActiveTab("settings");
         break;
       default:
         setActiveTab("dashboard");
@@ -51,13 +51,14 @@ export default function HomeLayout() {
     <div className="flex ">
       {/* Sidebar */}
       <div className="w-64 bg-white h-screen fixed top-0 left-0 shadow-md py-5 z-50 flex flex-col">
-        <h2 className="flex items-center text-xl font-semibold mb-6 px-5">
-          <PortraitIcon className="w-8 h-8 mr-2 text-blue-500" />
-          <div className="flex flex-col">
-            <span className="text-lg font-semibold">StudyHub</span>
-            <span className="text-xs text-gray-500">Student Portal</span>
-          </div>
-        </h2>
+        <div className="flex items-center mb-1 justify-center">
+          <img
+            src={LogoStudyHub}
+            alt="StudyHub Logo"
+            className="w-1/2 bg-cover cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </div>
 
         <nav className="flex flex-col flex-1">
           <button
@@ -107,6 +108,21 @@ export default function HomeLayout() {
 
           <button
             onClick={() => {
+              setActiveTab("results");
+              navigate("/home/results");
+            }}
+            className={`flex items-center px-5 py-2 rounded-r-md mb-2 ${
+              activeTab === "results"
+                ? "bg-blue-500 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <AssessmentIcon className="w-4 h-4 mr-2" />
+            Test Results
+          </button>
+
+          <button
+            onClick={() => {
               setActiveTab("certificates");
               navigate("/home/certificates");
             }}
@@ -133,21 +149,6 @@ export default function HomeLayout() {
           >
             <Person className="w-4 h-4 mr-2" />
             Profile
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("settings");
-              navigate("/home/settings");
-            }}
-            className={`flex items-center px-5 py-2 rounded-r-md ${
-              activeTab === "settings"
-                ? "bg-blue-500 text-white"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            <SettingsIcon className="w-4 h-4 mr-2" />
-            Settings
           </button>
         </nav>
         {/* Logout Button */}

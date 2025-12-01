@@ -17,8 +17,28 @@ const userApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
+    // Admin APIs for user management
+    // Get all users with statistics
+    getUsersWithStats: builder.query({
+      query: () => "/users/admin/stats",
+      providesTags: ["AdminUsers"],
+    }),
+
+    // Get user detail with courses and custom tests
+    getUserDetailWithCourses: builder.query({
+      query: (userId) => `/users/admin/${userId}/detail`,
+      providesTags: (result, error, userId) => [
+        { type: "AdminUserDetail", id: userId },
+      ],
+    }),
   }),
 });
 
-export const { useGetUserInfoQuery, useUpdateUserInfoMutation } = userApi;
+export const {
+  useGetUserInfoQuery,
+  useUpdateUserInfoMutation,
+  useGetUsersWithStatsQuery,
+  useGetUserDetailWithCoursesQuery,
+} = userApi;
 export default userApi;

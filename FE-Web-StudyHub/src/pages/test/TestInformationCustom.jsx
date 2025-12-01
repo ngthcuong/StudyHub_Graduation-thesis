@@ -22,6 +22,7 @@ import {
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useGetAttemptDetailByUserAndTestMutation } from "../../services/testApi";
+import Header from "../../components/Header";
 
 const TestInformationCustom = () => {
   const navigate = useNavigate();
@@ -47,8 +48,6 @@ const TestInformationCustom = () => {
   };
 
   const [history, setHistory] = useState([]);
-
-  console.log("Test Information Custom - testInfor:", history);
 
   const testPool = true;
 
@@ -107,26 +106,12 @@ const TestInformationCustom = () => {
   };
 
   return (
-    <Box className="flex justify-center items-center py-10 bg-gray-50 flex-col ">
-      <Box className="w-full max-w-3xl ">
-        <Button
-          startIcon={<ArrowBack />}
-          variant="text"
-          onClick={() => navigate(-1)}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: 24,
-            color: "#2563eb",
-          }}
-        >
-          Back
-        </Button>
-      </Box>
+    <Box className="flex justify-center items-center  bg-gray-50 flex-col ">
+      <Header />
 
       <Card
         className="w-full max-w-3xl"
-        sx={{ borderRadius: 4, p: { xs: 1, md: 2 } }}
+        sx={{ borderRadius: 4, p: { xs: 1, md: 2 }, mt: 2 }}
       >
         <CardContent>
           {/* Tên và nội dung */}
