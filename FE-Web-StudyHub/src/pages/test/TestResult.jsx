@@ -908,7 +908,7 @@ const TestResult = () => {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)", // 4 thẻ ngang
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: 3,
             }}
           >

@@ -41,15 +41,15 @@ const LoginPage = () => {
   const formSchema = yup.object({
     email: yup
       .string()
-      .required("Email là bắt buộc")
-      .email("Email không hợp lệ"),
+      .required("Email is required")
+      .email("Invalid email address"),
     password: yup
       .string()
-      .required("Mật khẩu là bắt buộc")
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
       .matches(
         /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
-        "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt"
+        "Password must contain uppercase, lowercase, number and special character"
       ),
   });
 

@@ -39,9 +39,17 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const webURl = process.env.WEB_URL;
+const mobileUrl = process.env.MOBILE_URL;
+
 // Config CORS
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:8081",
+    webURl,
+    mobileUrl,
+  ].filter(Boolean),
   credentials: true,
 };
 app.use(cors(corsOptions));
