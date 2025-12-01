@@ -78,15 +78,8 @@ const TestResultDisplay = () => {
     },
   } = analysisResult;
 
-  // Lấy test title từ nhiều nguồn có thể
   const testTitle =
     attempt?.attemptId?.testId?.title || attempt?.testTitle || "Test Result";
-
-  // Lấy student name từ nhiều nguồn có thể
-  const studentName =
-    attempt?.attemptId?.userId?.fullName ||
-    attempt?.userId?.fullName ||
-    "Student";
 
   // Tính toán stats
   const correctCount = per_question.filter(
@@ -98,12 +91,20 @@ const TestResultDisplay = () => {
       ? Math.round((correctCount / total_questions) * 100)
       : 0;
 
+  const startTime = attempt?.startTime ? new Date(attempt.startTime) : null;
+  const endTime = attempt?.endTime ? new Date(attempt.endTime) : null;
+  const timeTaken =
+    startTime && endTime ? Math.floor((endTime - startTime) / 1000) : 0;
+
+  // "startTime": "2025-11-26T10:16:21.825Z",
+  // "endTime": "2025-11-26T10:37:16.881Z",
+
   const resultStats = {
     score: scorePercent,
     correct: correctCount,
     incorrect: incorrectCount,
     total: total_questions,
-    time: 0, // You can add time tracking if available
+    time: timeTaken || 0,
   };
 
   // Tạo correctAnswers và incorrectAnswers
@@ -138,9 +139,6 @@ const TestResultDisplay = () => {
       <Box className="max-w-5xl mx-auto">
         <Typography variant="h4" fontWeight={700} color="#22223b" gutterBottom>
           {testTitle}
-        </Typography>
-        <Typography variant="subtitle1" color="#64748b" sx={{ mb: 4 }}>
-          Student: {studentName}
         </Typography>
 
         {/* Thông tin tổng quan */}
