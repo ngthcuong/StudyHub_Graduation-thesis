@@ -1,4 +1,8 @@
 const axios = require("axios");
+const {
+  createManyQuestionsService,
+} = require("../controllers/questionController");
+
 const aiServiceUrl = process.env.AI_SERVICE_URL;
 
 // Hàm ánh xạ loại câu hỏi từ AI sang loại câu hỏi trong DB
@@ -119,22 +123,31 @@ const generateTestCustomController = async (req, res) => {
     const createdBy = req.user ? req.user.userId : null;
 
     // Gọi API bulk để lưu vào database
-    const bulkResponse = await axios.post(
-      `${process.env.BE_URL}/api/v1/questions/bulk`,
-      // Truyền thêm các meta-data cần thiết cho bảng Questions
-      {
-        ...dbPayload,
-        createdBy,
-        testAttemptId, // Nếu cần lưu liên kết với lần làm bài
-        exam_type: "TOEIC", // Hoặc level
-        score_range: `${toeic_score - 100}-${toeic_score + 100}`, // Ví dụ tạo score_range để lưu
-      }
-    );
-    console.log("Bulk insert response:", bulkResponse.data);
+    // const bulkResponse = await axios.post(
+    //   "http://localhost:3000/api/v1/questions/bulk",
+    //   // Truyền thêm các meta-data cần thiết cho bảng Questions
+    //   {
+    //     ...dbPayload,
+    //     createdBy,
+    //     testAttemptId, // Nếu cần lưu liên kết với lần làm bài
+    //     exam_type: "TOEIC", // Hoặc level
+    //     score_range: `${toeic_score - 100}-${toeic_score + 100}`, // Ví dụ tạo score_range để lưu
+    //   }
+    // );
+
+    const createdQuestions = await createManyQuestionsService({
+      ...dbPayload,
+      createdBy,
+      testAttemptId, // Nếu cần lưu liên kết với lần làm bài
+      exam_type: "TOEIC", // Hoặc level
+      score_range: `${toeic_score - 100}-${toeic_score + 100}`, // Ví dụ tạo score_range để lưu
+    });
+
+    console.log("Bulk insert response:", createdQuestions);
 
     res.status(200).json({
       message: "Test generated and questions saved successfully",
-      data: bulkResponse.data,
+      data: createdQuestions,
     });
   } catch (error) {
     console.error("Error generating test or saving questions:", error.message);

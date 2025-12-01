@@ -60,7 +60,6 @@ const questionSchema = new mongoose.Schema(
       TOEIC: { type: String },
       IELTS: { type: String },
     },
-    description: { type: String },
   },
   { timestamps: true }
 );
