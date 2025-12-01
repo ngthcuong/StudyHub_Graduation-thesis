@@ -182,7 +182,7 @@ const createPaymentLink = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const YOUR_DOMAIN = process.env.FRONTEND_URL || "http://localhost:5173";
+    const YOUR_DOMAIN = process.env.WEB_URL || "http://localhost:5173";
 
     const orderCode = Number(String(Date.now()).slice(-6));
 

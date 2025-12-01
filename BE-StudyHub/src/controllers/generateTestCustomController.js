@@ -120,7 +120,7 @@ const generateTestCustomController = async (req, res) => {
 
     // Gọi API bulk để lưu vào database
     const bulkResponse = await axios.post(
-      "http://localhost:3000/api/v1/questions/bulk",
+      `${process.env.BE_URL}/api/v1/questions/bulk`,
       // Truyền thêm các meta-data cần thiết cho bảng Questions
       {
         ...dbPayload,

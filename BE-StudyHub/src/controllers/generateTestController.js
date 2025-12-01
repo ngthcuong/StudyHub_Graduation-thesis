@@ -57,7 +57,7 @@ const generateTestController = async (req, res) => {
 
     // Gọi API bulk để lưu vào database
     const bulkResponse = await axios.post(
-      "http://localhost:3000/api/v1/questions/bulk",
+      `${process.env.BE_URL}/api/v1/questions/bulk`,
       { ...dbPayload, createdBy, exam_type, score_range }
     );
     console.log("Bulk insert response:", bulkResponse.data);
