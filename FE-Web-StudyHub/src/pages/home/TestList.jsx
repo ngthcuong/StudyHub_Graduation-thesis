@@ -275,7 +275,7 @@ const TestList = () => {
               color="#64748b"
               sx={{ minWidth: 100, textAlign: "center" }}
             >
-              {filtered.length} of {tests?.total || 0} items
+              {filtered.length} items
             </Typography>
           </Stack>
 

@@ -615,8 +615,8 @@ const TestMultipleChoiceCustom = () => {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <Alert severity="error" variant="filled">
-          Không thể tải bài kiểm tra. Thiếu dữ liệu cấu hình Test. Vui lòng tạo
-          lại bài test.
+          Unable to load the test. Missing test configuration data. Please
+          create the test again.
         </Alert>
       </Box>
     );
