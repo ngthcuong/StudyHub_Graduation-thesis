@@ -142,7 +142,7 @@ const submitAnswers = async (req, res) => {
     };
 
     const response = await axios.post(
-      "http://localhost:8000/grade",
+      `${process.env.AI_SERVICE_URL}/grade`,
       gradingPayload
     );
 
