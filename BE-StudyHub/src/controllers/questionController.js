@@ -90,6 +90,33 @@ const createManyQuestions = async (req, res) => {
   }
 };
 
+const createManyQuestionsService = async (payload) => {
+  let { questions, createdBy, testAttemptId, exam_type, score_range } = payload;
+
+  if (!questions || !Array.isArray(questions) || questions.length === 0) {
+    throw new Error("Questions array is required");
+  }
+
+  const level = {};
+  if (exam_type && score_range) {
+    if (exam_type.toUpperCase() === "TOEIC") level.TOEIC = score_range;
+    else if (exam_type.toUpperCase() === "IELTS") level.IELTS = score_range;
+  }
+
+  questions = questions.map((q) => {
+    if (!q.testId || !q.questionText || !q.questionType) {
+      throw new Error("Missing required fields in some questions");
+    }
+    if (q.questionType && (!q.options || q.options.length === 0)) {
+      throw new Error("MCQ must include options");
+    }
+    return { ...q, createdBy, attemptId: testAttemptId || null, level };
+  });
+
+  const newQuestions = await questionModel.createManyQuestions(questions);
+  return newQuestions;
+};
+
 const getQuestionsByTest = async (req, res) => {
   try {
     const { testId } = req.params;
@@ -266,4 +293,5 @@ module.exports = {
   getQuestionById,
   getQuestionsByTestLevelAndCreator,
   getQuestionsByAttemptId,
+  createManyQuestionsService,
 };
