@@ -232,8 +232,6 @@ const CourseVideoSeriesListScreen = ({ navigation }) => {
           <TouchableOpacity
             style={[styles.baseButton, styles.exerciseButton]} // Kết hợp style
             onPress={() => {
-              // TODO: Thay bằng logic điều hướng của bạn
-              // Ví dụ: navigation.navigate('ExerciseScreen', { lessonId: lesson._id });
               navigation.navigate("CourseTest", {
                 lesson: lesson,
               });

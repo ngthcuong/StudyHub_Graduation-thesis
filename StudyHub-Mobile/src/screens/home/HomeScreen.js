@@ -174,8 +174,8 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         {recentCourses?.length > 0 ? (
-          recentCourses?.map((course) => (
-            <CourseCard key={course?._id} course={course} />
+          recentCourses?.map((course, index) => (
+            <CourseCard key={index} course={course} />
           ))
         ) : (
           <View style={styles.emptyState}>

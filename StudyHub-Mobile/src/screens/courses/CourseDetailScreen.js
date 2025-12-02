@@ -82,8 +82,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
   const fetchReviewsByUser = async (userId) => {
     try {
       const res = await reviewApi.getReviewsByUser(userId);
-      console.log("Reviews by user:", res.reviews);
-      const filteredReviews = res.reviews.filter(
+      const filteredReviews = res?.reviews?.filter(
         (review) => review.courseId === course?._id
       );
       setReviewsByUser(filteredReviews);
@@ -187,7 +186,7 @@ const CourseDetailScreen = ({ navigation, route }) => {
         ]}
         disabled={isFinalTest && !isFullFinalTest} // disable nếu là bài cuối và chưa đủ điều kiện
         onPress={() =>
-          navigation.navigate("CourseVideoSeriesList", {
+          navigation.navigate("CourseListLessons", {
             courseId,
             lesson,
             isFinalTest,

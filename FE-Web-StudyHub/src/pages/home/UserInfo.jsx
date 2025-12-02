@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Button,
@@ -352,6 +352,28 @@ const UserInfo = () => {
     setIsEditing(false);
   };
 
+  // change avatar
+  const fileInputRef = useRef(null);
+  const [avatar, setAvatar] = useState(null);
+
+  // Bấm IconButton → mở hộp chọn ảnh
+  const handleChangeAvatar = () => {
+    if (isEditing) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Khi chọn ảnh
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const preview = URL.createObjectURL(file);
+    setAvatar(preview);
+
+    console.log("File đã chọn:", file);
+  };
+
   return (
     <Box className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-5xl mx-auto">
@@ -361,6 +383,7 @@ const UserInfo = () => {
             <div className="absolute -bottom-16 left-8">
               <div className="relative">
                 <Avatar
+                  src={avatar || userData?.avatarUrl}
                   sx={{
                     width: 96,
                     height: 96,
@@ -379,9 +402,18 @@ const UserInfo = () => {
                     width: 24,
                     height: 24,
                   }}
+                  onClick={handleChangeAvatar}
                 >
                   <Edit sx={{ fontSize: 14, color: "white" }} />
                 </IconButton>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
               </div>
             </div>
           </div>

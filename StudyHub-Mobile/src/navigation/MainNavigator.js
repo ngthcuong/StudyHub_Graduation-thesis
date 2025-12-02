@@ -17,6 +17,8 @@ import CourseVideoScreen from "../screens/courses/CourseVideoScreen";
 import CoursePurchaseScreen from "../screens/courses/CoursePurchaseScreen";
 import CourseTestScreen from "../screens/courses/CourseTestSrceen";
 import CourseVideoSeriesListScreen from "../screens/courses/CourseVideoSeriesListScreen";
+import CourseListLessons from "../screens/courses/CourseListLessons";
+import CourseTextScreen from "../screens/courses/CourseTextScreen";
 
 // Tests Stack
 import AssessmentListScreen from "../screens/tests/AssessmentListScreen";
@@ -135,6 +137,16 @@ const CoursesStackNavigator = () => (
       name="CourseReviews"
       component={CourseReviews}
       options={{ title: "Course Reviews" }}
+    />
+    <CoursesStack.Screen
+      name="CourseListLessons"
+      component={CourseListLessons}
+      options={{ title: "Lessons" }}
+    />
+    <CoursesStack.Screen
+      name="CourseTextScreen"
+      component={CourseTextScreen}
+      options={{ title: "Lesson Text" }}
     />
   </CoursesStack.Navigator>
 );
