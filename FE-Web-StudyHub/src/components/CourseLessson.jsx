@@ -437,7 +437,7 @@ const CourseLessson = () => {
                         {chapter?.title}
                       </Typography>
                     </div>
-                    <div className="flex items-center !text-gray-500 gap-3 mt-0.5">
+                    {/* <div className="flex items-center !text-gray-500 gap-3 mt-0.5">
                       <div className="flex items-center">
                         <ImportContacts className="!h-4" />
                         <Typography className="!text-sm">
@@ -451,7 +451,7 @@ const CourseLessson = () => {
                           {chapter?.totalDuration} mins
                         </Typography>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </AccordionSummary>
                 <AccordionDetails sx={{ padding: 0 }}>
