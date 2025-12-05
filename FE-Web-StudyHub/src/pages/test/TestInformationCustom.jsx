@@ -108,11 +108,29 @@ const TestInformationCustom = () => {
     const diffSec = Math.floor(diffMs / 1000);
 
     if (diffSec < 60) {
-      return `${diffSec} seconds`;
+      return `${diffSec}s`;
+    }
+
+    const totalMinutes = Math.floor(diffSec / 60);
+    const remainingSec = diffSec % 60;
+
+    if (totalMinutes < 60) {
+      return remainingSec > 0
+        ? `${totalMinutes}m ${remainingSec}s`
+        : `${totalMinutes}m`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (minutes === 0 && remainingSec === 0) {
+      return `${hours}h`;
+    } else if (remainingSec === 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes === 0) {
+      return `${hours}h ${remainingSec}s`;
     } else {
-      const diffMin = Math.floor(diffSec / 60);
-      const remainingSec = diffSec % 60;
-      return `${diffMin} minutes ${remainingSec} seconds`;
+      return `${hours}h ${minutes}m ${remainingSec}s`;
     }
   };
 
