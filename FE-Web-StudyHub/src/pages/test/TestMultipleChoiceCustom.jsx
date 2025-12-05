@@ -455,18 +455,27 @@ const TestMultipleChoiceCustom = () => {
 
   // KHỞI TẠO DỮ LIỆU TEST NGAY LẬP TỨC
   const numQuestionsInTest = data?.data?.data?.length;
-  const timeLimitInMinutes = MOCK_PAYLOAD_FORM.timeLimit;
-  const testTitle = MOCK_PAYLOAD_FORM.title;
+  // const timeLimitInMinutes = MOCK_PAYLOAD_FORM.timeLimit;
+  // const testTitle = MOCK_PAYLOAD_FORM?.title;
 
   const [questions, setQuestions] = useState();
   const [attemptId, setAttemptId] = useState("");
   const [test, setTest] = useState();
 
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    if (test?.durationMin) {
+      const duration = test.durationMin;
+      setTimeLeft(duration * 60);
+    }
+  }, [test]);
+
   const [current, setCurrent] = useState(0);
   const [answersP, setAnswersP] = useState(
     Array(numQuestionsInTest).fill(null)
   );
-  const [timeLeft, setTimeLeft] = useState(timeLimitInMinutes * 60);
+
   const [isPaused, setIsPaused] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -777,7 +786,7 @@ const TestMultipleChoiceCustom = () => {
         {/* Header */}
         <Box className="bg-white rounded-xl shadow p-4 mb-4 flex justify-between items-center">
           <Typography variant="h6" fontWeight={700} color="#22223b">
-            {testTitle}
+            {test?.title}
           </Typography>
           <Chip
             icon={<AccessTimeOutlinedIcon />}
