@@ -98,8 +98,8 @@ const TestList = () => {
       const matchType = type === "All Types" || item.testId.type === type;
       const matchStatus =
         status === "All Status" ||
-        (status === "Completed" && item.testId.completed) ||
-        (status === "Not Completed" && !item.testId.completed);
+        (status === "Completed" && item.isPassed) ||
+        (status === "Not Completed" && !item.isPassed);
       const matchDifficulty =
         difficulty === "All Levels" || item.testId.difficulty === difficulty;
       return matchTitle && matchType && matchStatus && matchDifficulty;
@@ -387,39 +387,80 @@ const TestList = () => {
                 className="w-full"
               >
                 {/* Hiện trạng thái completion */}
-                {item?.attemptNumber === item?.maxAttempts ? (
+                {item?.isPassed ? (
                   <CheckCircleIcon color="success" />
                 ) : (
                   <RadioButtonUncheckedIcon color="disabled" />
                 )}
-                <Box className="flex w-full items-center">
-                  <Box className="flex justify-between w-full flex-col">
+                <Box className="flex w-full items-center justify-between">
+                  <Box className="flex flex-col flex-1">
                     {/* Tên bài test */}
                     <Typography
                       variant="subtitle1"
                       fontWeight={600}
                       color="#22223b"
+                      sx={{ mb: 0.5 }}
                     >
                       {item.testId.title}
                     </Typography>
-                    {/* Độ khó */}
-                    {/* <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                      <Typography
-                        variant="subtitle2"
-                        fontWeight={400}
-                        color="#22223b"
-                      >
-                        Level:
-                      </Typography>
-                      <Chip
-                        label={item.difficulty}
-                        color="primary"
-                        size="small"
+
+                    {/* Số lần làm bài và điểm */}
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Box
                         sx={{
-                          textTransform: "capitalize",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
                         }}
-                      />
-                    </Stack> */}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="#64748b"
+                          fontWeight={500}
+                        >
+                          Attempts:
+                        </Typography>
+                        <Chip
+                          label={`${item.attemptNumber}/${item.maxAttempts}`}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: "0.75rem",
+                            bgcolor: "#e0f2fe",
+                            color: "#0284c7",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </Box>
+                      {item.score !== undefined && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            color="#64748b"
+                            fontWeight={500}
+                          >
+                            Score:
+                          </Typography>
+                          <Chip
+                            label={`${item.score}/10`}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: "0.75rem",
+                              bgcolor: item.score >= 7 ? "#dcfce7" : "#fee2e2",
+                              color: item.score >= 7 ? "#16a34a" : "#dc2626",
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
+                      )}
+                    </Stack>
                   </Box>
                   {/* Loại bài */}
                   <Chip
@@ -428,7 +469,11 @@ const TestList = () => {
                       item.testId.examType === "TOEIC" ? "warning" : "info"
                     }
                     size="small"
-                    sx={{ textTransform: "capitalize" }}
+                    sx={{
+                      textTransform: "capitalize",
+                      fontWeight: 600,
+                      ml: 2,
+                    }}
                   />
                 </Box>
               </Stack>

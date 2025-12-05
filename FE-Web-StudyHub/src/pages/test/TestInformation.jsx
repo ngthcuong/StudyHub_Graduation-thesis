@@ -240,12 +240,16 @@ const TestInformation = () => {
     const start = new Date(startTime);
     const end = new Date(endTime);
 
-    const diffMs = end - start; // chênh lệch tính bằng milliseconds
+    const diffMs = end - start;
+    const diffSec = Math.floor(diffMs / 1000);
 
-    const diffSec = Math.floor(diffMs / 1000); // giây
-    const diffMin = Math.floor(diffSec / 60); // phút
-
-    return `${diffMin} minutes ${diffSec % 60} seconds`;
+    if (diffSec < 60) {
+      return `${diffSec} seconds`;
+    } else {
+      const diffMin = Math.floor(diffSec / 60);
+      const remainingSec = diffSec % 60;
+      return `${diffMin} minutes ${remainingSec} seconds`;
+    }
   };
 
   return (

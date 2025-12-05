@@ -101,8 +101,19 @@ const TestInformationCustom = () => {
   };
 
   const formatDuration = (startTime, endTime) => {
-    const diff = (new Date(endTime) - new Date(startTime)) / 1000 / 60;
-    return `${Math.round(diff)} minutes`;
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    const diffMs = end - start;
+    const diffSec = Math.floor(diffMs / 1000);
+
+    if (diffSec < 60) {
+      return `${diffSec} seconds`;
+    } else {
+      const diffMin = Math.floor(diffSec / 60);
+      const remainingSec = diffSec % 60;
+      return `${diffMin} minutes ${remainingSec} seconds`;
+    }
   };
 
   return (

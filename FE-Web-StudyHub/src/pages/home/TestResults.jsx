@@ -18,6 +18,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { useGetListAttemptMutation } from "../../services/testApi";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 const examTypeOptions = ["All Types", "TOEIC", "IELTS"];
 const statusOptions = ["All Status", "Passed", "Failed"];
@@ -31,6 +34,8 @@ const TestResults = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [completedTests, setCompletedTests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -100,9 +105,22 @@ const TestResults = () => {
         (status === "Passed" && item.score >= item.passingScore) ||
         (status === "Failed" && item.score < item.passingScore);
 
-      return matchTitle && matchExamType && matchStatus;
+      // Filter by date range
+      let matchDate = true;
+      if (startDate || endDate) {
+        const itemDate = new Date(item.completedAt);
+        if (startDate && endDate) {
+          matchDate = itemDate >= startDate && itemDate <= endDate;
+        } else if (startDate) {
+          matchDate = itemDate >= startDate;
+        } else if (endDate) {
+          matchDate = itemDate <= endDate;
+        }
+      }
+
+      return matchTitle && matchExamType && matchStatus && matchDate;
     });
-  }, [search, examType, status, completedTests]);
+  }, [search, examType, status, startDate, endDate, completedTests]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -115,7 +133,7 @@ const TestResults = () => {
   // Reset page when filter changes
   useEffect(() => {
     setPage(1);
-  }, [search, examType, status]);
+  }, [search, examType, status, startDate, endDate]);
 
   const handlePageChange = (_event, value) => {
     setPage(value);
@@ -126,6 +144,8 @@ const TestResults = () => {
     setSearch("");
     setExamType("All Types");
     setStatus("All Status");
+    setStartDate(null);
+    setEndDate(null);
   };
 
   if (isLoading) {
@@ -211,45 +231,118 @@ const TestResults = () => {
             <Stack
               direction={{ xs: "column", md: "row" }}
               spacing={2}
-              alignItems="flex-end"
+              alignItems="flex-start"
               className="mt-4"
             >
-              {/* Exam Type */}
-              <Box className="flex flex-col w-full md:w-auto">
-                <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
-                  Exam Type
-                </Typography>
-                <Select
-                  value={examType}
-                  onChange={(e) => setExamType(e.target.value)}
-                  size="small"
-                  sx={{ minWidth: 140 }}
-                >
-                  {examTypeOptions.map((opt) => (
-                    <MenuItem key={opt} value={opt}>
-                      {opt}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Box>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                {/* Exam Type */}
+                <Box className="flex flex-col w-full md:w-auto">
+                  <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
+                    Exam Type
+                  </Typography>
+                  <Select
+                    value={examType}
+                    onChange={(e) => setExamType(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 140 }}
+                  >
+                    {examTypeOptions.map((opt) => (
+                      <MenuItem key={opt} value={opt}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
 
-              {/* Status */}
-              <Box className="flex flex-col w-full md:w-auto">
+                {/* Status */}
+                <Box className="flex flex-col w-full md:w-auto">
+                  <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
+                    Status
+                  </Typography>
+                  <Select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 140 }}
+                  >
+                    {statusOptions.map((opt) => (
+                      <MenuItem key={opt} value={opt}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+              </Stack>
+
+              {/* Date Range Filter */}
+              <Box className="flex flex-col w-full">
                 <Typography variant="body2" color="#64748b" sx={{ mb: 0.5 }}>
-                  Status
+                  Completed Date Range
                 </Typography>
-                <Select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  size="small"
-                  sx={{ minWidth: 140 }}
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
                 >
-                  {statusOptions.map((opt) => (
-                    <MenuItem key={opt} value={opt}>
-                      {opt}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="From Date"
+                      value={startDate}
+                      onChange={(newDate) => {
+                        if (newDate) {
+                          const date = new Date(newDate);
+                          date.setHours(0, 0, 0, 0);
+                          setStartDate(date);
+                          if (endDate && endDate < date) {
+                            setEndDate(null);
+                          }
+                        } else {
+                          setStartDate(null);
+                        }
+                      }}
+                      format="dd/MM/yyyy"
+                      maxDate={endDate || new Date()}
+                      slotProps={{ textField: { size: "small" } }}
+                    />
+                    <DatePicker
+                      label="To Date"
+                      value={endDate}
+                      onChange={(newDate) => {
+                        if (newDate) {
+                          const date = new Date(newDate);
+                          date.setHours(23, 59, 59, 999);
+                          setEndDate(date);
+                        } else {
+                          setEndDate(null);
+                        }
+                      }}
+                      format="dd/MM/yyyy"
+                      minDate={startDate || undefined}
+                      maxDate={new Date()}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          error: startDate && endDate && endDate < startDate,
+                          helperText:
+                            startDate && endDate && endDate < startDate
+                              ? "To Date must be after From Date"
+                              : "",
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setStartDate(null);
+                      setEndDate(null);
+                    }}
+                    sx={{ textTransform: "none", minWidth: 100 }}
+                  >
+                    Clear dates
+                  </Button>
+                </Stack>
               </Box>
             </Stack>
           )}
@@ -386,16 +479,13 @@ const TestResults = () => {
 
                       <Typography variant="body2" color="#6B7280">
                         Completed:{" "}
-                        {new Date(item.completedAt).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )}
+                        {new Date(item.completedAt).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </Typography>
                     </Box>
 
@@ -404,10 +494,11 @@ const TestResults = () => {
                       <Chip
                         label={isPassed ? "PASSED" : "FAILED"}
                         color={isPassed ? "success" : "error"}
+                        size="small"
                         sx={{
                           fontWeight: 700,
                           fontSize: "12px",
-                          height: 32,
+                          // height: 20,
                           minWidth: 70,
                         }}
                       />

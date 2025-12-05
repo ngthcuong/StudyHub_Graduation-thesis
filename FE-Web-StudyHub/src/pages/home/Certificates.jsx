@@ -308,10 +308,15 @@ export default function Certificate() {
                           const date = new Date(newDate);
                           date.setHours(0, 0, 0, 0);
                           setStartDate(date);
+                          if (endDate && endDate < date) {
+                            setEndDate(null);
+                          }
                         } else {
                           setStartDate(null);
                         }
                       }}
+                      format="dd/MM/yyyy"
+                      maxDate={endDate || new Date()}
                       className="bg-white"
                       slotProps={{ textField: { size: "small" } }}
                     />
@@ -327,8 +332,20 @@ export default function Certificate() {
                           setEndDate(null);
                         }
                       }}
+                      format="dd/MM/yyyy"
+                      minDate={startDate || undefined}
+                      maxDate={new Date()}
                       className="bg-white"
-                      slotProps={{ textField: { size: "small" } }}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          error: startDate && endDate && endDate < startDate,
+                          helperText:
+                            startDate && endDate && endDate < startDate
+                              ? "To Date must be after From Date"
+                              : "",
+                        },
+                      }}
                     />
                   </LocalizationProvider>
                   <Button

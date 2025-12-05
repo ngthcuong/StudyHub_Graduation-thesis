@@ -406,10 +406,15 @@ const Review = () => {
                         const date = new Date(newDate);
                         date.setHours(0, 0, 0, 0);
                         setStartDate(date);
+                        if (endDate && endDate < date) {
+                          setEndDate(null);
+                        }
                       } else {
                         setStartDate(null);
                       }
                     }}
+                    format="dd/MM/yyyy"
+                    maxDate={endDate || new Date()}
                     slotProps={{ textField: { size: "small" } }}
                   />
                   <DatePicker
@@ -424,7 +429,19 @@ const Review = () => {
                         setEndDate(null);
                       }
                     }}
-                    slotProps={{ textField: { size: "small" } }}
+                    format="dd/MM/yyyy"
+                    minDate={startDate || undefined}
+                    maxDate={new Date()}
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                        error: startDate && endDate && endDate < startDate,
+                        helperText:
+                          startDate && endDate && endDate < startDate
+                            ? "To Date must be after From Date"
+                            : "",
+                      },
+                    }}
                   />
                 </LocalizationProvider>
                 <Button
