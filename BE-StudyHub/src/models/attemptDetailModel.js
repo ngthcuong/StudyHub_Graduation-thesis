@@ -139,6 +139,8 @@ const getAllAttemptDetailsByUserId = async (userId) => {
         durationMin: relatedAttempt?.testId?.durationMin,
         startTime: detail?.startTime,
         endTime: detail?.endTime,
+        totalScore: detail?.totalScore,
+        answers: detail?.answers,
         analysisResult: detail.analysisResult || {},
       };
     });

@@ -36,308 +36,6 @@ import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
 // MOCK API FUNCTION & DATA
 // -------------------------------------------------------------------
 
-// 1. Dữ liệu từ FE (Đã giả lập và cố định)
-const MOCK_PAYLOAD_FORM = {
-  timeLimit: 20, // Phút
-  numQuestions: 10,
-  level: "A1",
-  title: "Bài Test Tùy Chỉnh Ngữ Pháp A1",
-};
-
-// 2. Dữ liệu Câu hỏi (Mảng câu hỏi thực tế)
-const ACTUAL_API_QUESTIONS_DATA = [
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "If you ____ the report by Friday, we will have enough time to review it before the presentation.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "finish",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d0d8",
-      },
-      { optionText: "finished", isCorrect: false, _id: "68f7588ad370ef4d0d9" },
-      {
-        optionText: "will finish",
-        isCorrect: false,
-        _id: "68f7588ad370ef4d0da",
-      },
-      {
-        optionText: "had finished",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0db",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Conditionals: Type 1"],
-    _id: "68f7588ad37093220ef4d0d7",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText: "The team meeting is scheduled ____ 10:00 AM ____ Monday.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "on, at",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0dd",
-      },
-      {
-        optionText: "at, on",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d0de",
-      },
-      {
-        optionText: "in, on",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0df",
-      },
-      {
-        optionText: "at, in",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0e0",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Prepositions: Time"],
-    _id: "68f7588ad37093220ef4d0dc",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "If we ____ a larger budget, we could invest in new equipment.",
-    questionType: "multiple_choice",
-    options: [
-      { optionText: "had", isCorrect: true, _id: "68f7588ad37093220ef4d0e2" },
-      { optionText: "have", isCorrect: false, _id: "68f7588ad37093220ef4d0e3" },
-      {
-        optionText: "would have",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0e4",
-      },
-      {
-        optionText: "will have",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0e5",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Conditionals: Type 2"],
-    _id: "68f7588ad37093220ef4d0e1",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "Our new office is located ____ the third floor ____ the main building.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "in, at",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0e7",
-      },
-      {
-        optionText: "on, in",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d0e8",
-      },
-      {
-        optionText: "at, on",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0e9",
-      },
-      {
-        optionText: "in, on",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0ea",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Prepositions: Place"],
-    _id: "68f7588ad37093220ef4d0e6",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "If you ____ your login password three times incorrectly, your account ____ locked.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "enter, is",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0ec",
-      },
-      {
-        optionText: "enter, will be",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d0ed",
-      },
-      {
-        optionText: "entered, was",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0ee",
-      },
-      {
-        optionText: "entering, is",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0ef",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Conditionals: Type 1"],
-    _id: "68f7588ad37093220ef4d0eb",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "We received several complaints ____ the new software update.",
-    questionType: "multiple_choice",
-    options: [
-      { optionText: "for", isCorrect: false, _id: "68f7588ad37093220ef4d0f1" },
-      { optionText: "about", isCorrect: true, _id: "68f7588ad37093220ef4d0f2" },
-      { optionText: "on", isCorrect: false, _id: "68f7588ad37093220ef4d0f3" },
-      { optionText: "with", isCorrect: false, _id: "68f7588ad37093220ef4d0f4" },
-    ],
-    points: 1,
-    skill: "Vocabulary",
-    topic: ["Dependent Prepositions"],
-    _id: "68f7588ad37093220ef4d0f0",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "We ____ the project on schedule if the new components ____ delivered by Tuesday.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "will finish, are",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d0f6",
-      },
-      {
-        optionText: "finish, are",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0f7",
-      },
-      {
-        optionText: "will finish, were",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0f8",
-      },
-      {
-        optionText: "finish, will be",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0f9",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Conditionals: Type 1"],
-    _id: "68f7588ad37093220ef4d0f5",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText: "The package will be shipped ____ New York ____ London.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "from, to",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d0fb",
-      },
-      {
-        optionText: "to, from",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0fc",
-      },
-      {
-        optionText: "with, for",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0fd",
-      },
-      {
-        optionText: "by, at",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d0fe",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Prepositions: Movement/Direction"],
-    _id: "68f7588ad37093220ef4d0fa",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "If I ____ more experience in marketing, I ____ for that senior position.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "had, would apply",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d100",
-      },
-      {
-        optionText: "have, will apply",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d101",
-      },
-      {
-        optionText: "had, will apply",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d102",
-      },
-      {
-        optionText: "would have, applied",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d103",
-      },
-    ],
-    points: 1,
-    skill: "Grammar",
-    topic: ["Conditionals: Type 2"],
-    _id: "68f7588ad37093220ef4d0ff",
-  },
-  {
-    testId: "68f755108fc030e6964bca43",
-    questionText:
-      "The team leader is responsible ____ overseeing the project and delegating tasks ____ team members.",
-    questionType: "multiple_choice",
-    options: [
-      {
-        optionText: "for, to",
-        isCorrect: true,
-        _id: "68f7588ad37093220ef4d105",
-      },
-      {
-        optionText: "with, for",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d106",
-      },
-      {
-        optionText: "of, on",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d107",
-      },
-      {
-        optionText: "about, with",
-        isCorrect: false,
-        _id: "68f7588ad37093220ef4d108",
-      },
-    ],
-    points: 1,
-    skill: "Vocabulary",
-    topic: ["Prepositions: Dependent & Usage"],
-    _id: "68f7588ad37093220ef4d104",
-  },
-];
-
 const learningTips = [
   "Did you know? 'Bookkeeper' has three consecutive double letters.",
   "Quick Tip: Use flashcards to remember new vocabulary.",
@@ -365,6 +63,11 @@ const TestMultipleChoiceCustom = () => {
   const [data, setData] = useState(null);
   const [date, setDate] = useState(null);
   const [day, setDay] = useState(null);
+
+  const [questions, setQuestions] = useState();
+  const [attemptId, setAttemptId] = useState("");
+  const [test, setTest] = useState();
+  const [timeLeft, setTimeLeft] = useState(null);
 
   const { payloadForm, attemptDetail } = location.state || {};
   const routeTestId = payloadForm?.testId;
@@ -430,8 +133,8 @@ const TestMultipleChoiceCustom = () => {
               timeLimit: payloadForm?.timeLimit,
             }).unwrap();
             console.log("Generated Custom Test Data:", res);
-            setData(res);
-            setQuestions(res);
+            setData({ data: res });
+            setQuestions({ data: res });
             setLoading(false);
 
             // lấy ngày hiện tại
@@ -450,7 +153,17 @@ const TestMultipleChoiceCustom = () => {
   };
 
   useEffect(() => {
-    start();
+    const hasInitialized = localStorage.getItem("test_initialized");
+
+    if (!hasInitialized) {
+      // Chạy lần đầu tiên
+      start();
+
+      // đánh dấu đã chạy
+      localStorage.setItem("test_initialized", "true");
+    } else {
+      console.log("Đã chạy trước đó → Không chạy lại start()");
+    }
   }, []);
 
   // KHỞI TẠO DỮ LIỆU TEST NGAY LẬP TỨC
@@ -458,15 +171,10 @@ const TestMultipleChoiceCustom = () => {
   // const timeLimitInMinutes = MOCK_PAYLOAD_FORM.timeLimit;
   // const testTitle = MOCK_PAYLOAD_FORM?.title;
 
-  const [questions, setQuestions] = useState();
-  const [attemptId, setAttemptId] = useState("");
-  const [test, setTest] = useState();
-
-  const [timeLeft, setTimeLeft] = useState(null);
-
   useEffect(() => {
     if (test?.durationMin) {
-      const duration = test.durationMin;
+      const duration = test?.durationMin;
+
       setTimeLeft(duration * 60);
     }
   }, [test]);
@@ -516,7 +224,7 @@ const TestMultipleChoiceCustom = () => {
   const handleChange = (e) => {
     const newAnswers = [...answersP];
     const selectedOptionText = e.target.value;
-    const selectedOption = questions.data.data[current].options.find(
+    const selectedOption = questions?.data?.data[current].options.find(
       (opt) => opt.optionText === selectedOptionText
     );
     newAnswers[current] = selectedOption?._id || null;
@@ -544,7 +252,7 @@ const TestMultipleChoiceCustom = () => {
     setIsPaused(true);
 
     const formattedAnswers = answersP.map((selectedOptionId, index) => ({
-      questionId: questions?.data?.data[index]._id,
+      questionId: questions?.data.data[index]._id,
       selectedOptionId: selectedOptionId,
     }));
 
@@ -579,6 +287,7 @@ const TestMultipleChoiceCustom = () => {
       }).unwrap();
 
       if (response) {
+        localStorage.removeItem("test_initialized");
         navigate(`/test/${testId}/result`, {
           state: { resultData: response, formattedAnswers: formattedAnswers },
         });
@@ -775,7 +484,7 @@ const TestMultipleChoiceCustom = () => {
     );
   }
 
-  const currentQuestion = questions.data.data[current];
+  const currentQuestion = questions?.data.data[current];
 
   // -------------------------------------------------------------------
   // GIAO DIỆN CHÍNH
@@ -832,7 +541,7 @@ const TestMultipleChoiceCustom = () => {
                         scrollbarWidth: "thin",
                       }}
                     >
-                      {current + 1}. {currentQuestion.questionText}
+                      {current + 1}. {currentQuestion?.questionText}
                     </Typography>
 
                     {/* Danh sách đáp án */}
@@ -846,7 +555,7 @@ const TestMultipleChoiceCustom = () => {
                       }
                       onChange={handleChange}
                     >
-                      {currentQuestion.options.map((opt, idx) => (
+                      {currentQuestion?.options?.map((opt, idx) => (
                         <Box
                           key={opt._id || idx}
                           className="mb-3 border rounded-lg px-4 py-2 flex items-center hover:border-blue-400 transition"
@@ -964,7 +673,7 @@ const TestMultipleChoiceCustom = () => {
                     sx={{ flexShrink: 0 }}
                   >
                     {/* Render các nút câu hỏi dựa trên số lượng câu hỏi thực tế */}
-                    {questions.data.data.map((q, idx) => {
+                    {questions.data?.data.map((q, idx) => {
                       let color = "#e5e7eb";
                       if (answersP[idx] !== null) color = "#22c55e";
                       if (idx === current) color = "#2563eb";
