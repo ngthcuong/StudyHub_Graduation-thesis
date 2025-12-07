@@ -59,6 +59,7 @@ const generateTestCustomController = async (req, res) => {
       weakSkills, // Mảng các kỹ năng yếu (Grammar, Vocabulary)
       testAttemptId, // ID lần làm bài (nếu cần)
       question_ratio, // Tỷ lệ loại câu hỏi (nếu có)
+      exam_type,
       // Các trường khác: goals, description, title...
     } = req.body;
 
@@ -86,7 +87,7 @@ const generateTestCustomController = async (req, res) => {
       current_level: level,
       toeic_score: toeic_score,
       weak_skills: weakSkills,
-      exam_type: "TOEIC", // Có thể thay bằng level nếu cần linh hoạt hơn
+      exam_type: exam_type || "TOEIC", // Có thể thay bằng level nếu cần linh hoạt hơn
       topics: topics, // Truyền trực tiếp mảng topics
       difficulty: difficulty.toLowerCase(), // 'easier', 'moderate', 'harder'
       // Giả định question_ratio là MCQ vì frontend chỉ có MCQ
@@ -139,7 +140,7 @@ const generateTestCustomController = async (req, res) => {
       ...dbPayload,
       createdBy,
       testAttemptId, // Nếu cần lưu liên kết với lần làm bài
-      exam_type: "TOEIC", // Hoặc level
+      exam_type: exam_type || "TOEIC", // Hoặc level
       score_range: `${toeic_score - 100}-${toeic_score + 100}`, // Ví dụ tạo score_range để lưu
     });
 

@@ -33,7 +33,7 @@ const questionSchema = new mongoose.Schema(
     audioUrl: { type: String, trim: true }, // listening
     imageUrl: { type: String, trim: true }, // hình minh họa
     points: { type: Number, default: 1 },
-    descriptions: { type: String, trim: true }, // giải thích đáp án
+    description: { type: String, trim: true }, // giải thích đáp án
 
     skill: {
       type: String,
