@@ -153,16 +153,6 @@ const submitAttempt = async (req, res) => {
 
       // lấy thời gian học hằng tuần
       let timeWeekly = {};
-      // try {
-      //   const timedata = await getStudyStats(userId);
-      //   console.log("Study stats data sent to grading service:", timedata);
-      //   const result = getWeekWithMaxHours(dailyStats);
-      //   // { maxWeek: "42", maxHours: 0.167 }
-      //   console.log(result);
-      //   timeWeekly = result;
-      // } catch (error) {
-      //   console.error("Error submitting answers to grading service:", error);
-      // }
 
       // --- Lấy thông tin học sinh ---
       const userInfo = await attemptModel.findAttemptById(attemptId);
@@ -177,33 +167,36 @@ const submitAttempt = async (req, res) => {
         study_methods: userInfo?.userId?.studyMethods || [],
       };
 
-      // --- Lịch sử làm bài ---
-      // const history = await attemptModel.findAttemptsByUser(
-      //   userInfo?.userId._id
-      // );
-      // const testHistory = history.map((a) => ({
-      //   test_date: a.startTime
-      //     ? new Date(a.startTime).toISOString().split("T")[0] // yyyy-mm-dd
-      //     : "1970-01-01", // nếu null, gán ngày mặc định hợp lệ
-      //   level_at_test: a.level || "Unknown",
-      //   score: a.score != null ? a.score : 0, // nếu score undefined/null -> 0
-      //   notes: a.feedback || "",
-      // }));
-
       const history = await attemptDetailModel.getAllAttemptDetailsByUserId(
         userInfo?.userId._id
       );
 
       console.log("Full test history:", history);
 
-      const simplifiedResults = history.slice(0, 3).map((item) => ({
+      const simplifiedResults = history.slice(0, 2).map((item) => ({
         test_date:
           item.startTime instanceof Date
             ? item.startTime.toISOString().split("T")[0] // chuyển Date → ISO string → lấy ngày
             : item.startTime?.split("T")[0] || null, // nếu là string
-        level_at_test: item.analysisResult.current_level,
-        per_question: item.analysisResult.per_question,
-        weak_topics: item.analysisResult.weak_topics || [],
+        total_score: item?.totalScore || 0,
+        total_questions:
+          item?.analysisResult?.total_questions || item?.answers?.length || 0,
+        score_percentage:
+          (item?.analysisResult?.total_questions ||
+            item?.answers?.length ||
+            0) > 0
+            ? parseFloat(
+                (
+                  ((item?.totalScore || 0) /
+                    (item?.analysisResult?.total_questions ||
+                      item?.answers?.length ||
+                      1)) *
+                  100
+                ).toFixed(2)
+              )
+            : 0,
+        level_at_test: item?.analysisResult?.post_test_level,
+        weak_topics: item?.analysisResult?.weak_topics || [],
       }));
 
       console.log("Simplified test history:", simplifiedResults);
@@ -218,7 +211,7 @@ const submitAttempt = async (req, res) => {
       // --- Ghép thành object cuối cùng ---
       const gradingPayload = {
         test_info: {
-          title: testDetail.title,
+          title: testDetail?.title,
           total_questions: questionsByTest.length,
         },
         answer_key: formattedAnswerKey,
@@ -239,13 +232,6 @@ const submitAttempt = async (req, res) => {
       resForTestResult = response?.data || {};
 
       console.log("Grading response:", resForTestResult);
-
-      // console.log("Grading response:", response.data);
-
-      // res.status(201).json({
-      //   message: "Answers submitted successfully",
-      //   data: response?.data,
-      // });
     } catch (error) {
       console.error("Error submitting answers:", error);
       return res.status(500).json({ error: "Failed to submit answers" });
@@ -300,10 +286,21 @@ const submitAttempt = async (req, res) => {
         questionId: q._id,
         questionText: q.questionText,
         selectedOptionId: selectedOption?._id,
+        description: q.description || "",
         selectedOptionText: selectedOption?.optionText || a.answerText || "",
         isCorrect,
         score,
       });
+    }
+
+    const anwerReport = await formatAttemptResultForReport(processedAnswers);
+
+    if (resForTestResult?.per_question) {
+      resForTestResult.per_question.splice(
+        0,
+        resForTestResult.per_question.length,
+        ...anwerReport
+      );
     }
 
     // Lấy attempt hiện tại để tăng số lần làm bài
@@ -363,10 +360,64 @@ const submitAttempt = async (req, res) => {
       summary: { totalScore, answered: processedAnswers.length },
     });
   } catch (error) {
-    console.error("Error submitting attempt:", error);
+    if (error.response) {
+      // [QUAN TRỌNG] In ra chi tiết lỗi từ FastAPI trả về
+      console.log(
+        "🔥 LỖI CHI TIẾT 422:",
+        JSON.stringify(error.response.data.detail, null, 2)
+      );
+    }
     res.status(500).json({ error: "Failed to submit attempt" });
   }
 };
+
+async function formatAttemptResultForReport(processedAnswers) {
+  // 1. Tạo mảng các Promise (chưa chạy xong)
+  const promises = processedAnswers.map(async (item, index) => {
+    // Gọi DB lấy câu hỏi
+    const question = await questionModel.findQuestionById(item?.questionId);
+
+    // --- LOGIC TÌM EXPECTED ANSWER (ĐÁP ÁN ĐÚNG CỦA HỆ THỐNG) ---
+    // Bạn đang tìm option mà user đã chọn (selectedOptionId),
+    // nhưng "expected_answer" thường là đáp án ĐÚNG (isCorrect: true).
+    // Tôi sửa lại logic này để tìm đáp án đúng nhé:
+
+    const correctOption = question?.options?.find(
+      (opt) => opt.isCorrect === true
+    );
+
+    // Nếu muốn tìm text của option user đã chọn để hiển thị lại cho đầy đủ:
+    const userSelectedOption = question?.options?.find(
+      (opt) => opt._id.toString() === item?.selectedOptionId?.toString()
+    );
+
+    return {
+      id: index + 1,
+      question: item.questionText,
+      correct: item.isCorrect,
+
+      // Đáp án đúng theo hệ thống
+      expected_answer: correctOption?.optionText || "N/A",
+
+      // Đáp án user đã chọn (Lấy từ item hoặc tra lại từ DB option)
+      user_answer:
+        userSelectedOption?.optionText ||
+        item.selectedOptionText ||
+        "No Answer",
+
+      skill: question?.skill || "Grammar", // Lấy từ DB luôn cho chuẩn
+      topic: Array.isArray(question?.topic)
+        ? question.topic.join(", ")
+        : question?.topic || "Tenses",
+      explain: item.description || question?.description || "N/A",
+    };
+  });
+
+  // 2. Dùng Promise.all để đợi TẤT CẢ các promise trong mảng hoàn thành
+  const results = await Promise.all(promises);
+
+  return results;
+}
 
 const getAttemptById = async (req, res) => {
   try {

@@ -113,6 +113,8 @@ const createManyQuestionsService = async (payload) => {
     return { ...q, createdBy, attemptId: testAttemptId || null, level };
   });
 
+  console.log("questions to insert:", questions);
+
   const newQuestions = await questionModel.createManyQuestions(questions);
   return newQuestions;
 };
