@@ -84,6 +84,8 @@ const RichTextEditorModal = ({
   lessonName = "Lesson",
   title = "Edit Lesson Content",
 }) => {
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -105,6 +107,12 @@ const RichTextEditorModal = ({
       attributes: {
         class: "tiptap-editor-content",
       },
+    },
+    onUpdate: () => {
+      forceUpdate();
+    },
+    onSelectionUpdate: () => {
+      forceUpdate();
     },
   });
 
@@ -270,12 +278,7 @@ const RichTextEditorModal = ({
                 onClick={() =>
                   editor.chain().focus().setTextAlign("left").run()
                 }
-                isActive={
-                  getIsActive("paragraph", { textAlign: "left" }) ||
-                  (!getIsActive("paragraph", { textAlign: "center" }) &&
-                    !getIsActive("paragraph", { textAlign: "right" }) &&
-                    !getIsActive("paragraph", { textAlign: "justify" }))
-                }
+                isActive={editor.isActive({ textAlign: "left" })}
                 tooltip="Align Left"
               >
                 <AlignLeftIcon fontSize="small" />
@@ -284,7 +287,7 @@ const RichTextEditorModal = ({
                 onClick={() =>
                   editor.chain().focus().setTextAlign("center").run()
                 }
-                isActive={getIsActive("paragraph", { textAlign: "center" })}
+                isActive={editor.isActive({ textAlign: "center" })}
                 tooltip="Align Center"
               >
                 <AlignCenterIcon fontSize="small" />
@@ -293,7 +296,7 @@ const RichTextEditorModal = ({
                 onClick={() =>
                   editor.chain().focus().setTextAlign("right").run()
                 }
-                isActive={getIsActive("paragraph", { textAlign: "right" })}
+                isActive={editor.isActive({ textAlign: "right" })}
                 tooltip="Align Right"
               >
                 <AlignRightIcon fontSize="small" />
@@ -302,7 +305,7 @@ const RichTextEditorModal = ({
                 onClick={() =>
                   editor.chain().focus().setTextAlign("justify").run()
                 }
-                isActive={getIsActive("paragraph", { textAlign: "justify" })}
+                isActive={editor.isActive({ textAlign: "justify" })}
                 tooltip="Justify"
               >
                 <AlignJustifyIcon fontSize="small" />
