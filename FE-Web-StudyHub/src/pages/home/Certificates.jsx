@@ -355,7 +355,7 @@ export default function Certificate() {
                       setStartDate(null);
                       setEndDate(null);
                     }}
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50 !normal-case"
+                    className="text-blue-600 border-blue-600 hover:bg-blue-50 normal-case!"
                   >
                     Clear range
                   </Button>
@@ -412,7 +412,7 @@ export default function Certificate() {
                       <TableCell className="font-bold text-blue-800">
                         Verification
                       </TableCell>
-                      <TableCell className="font-bold text-blue-800 !text-center">
+                      <TableCell className="font-bold text-blue-800 text-center!">
                         Actions
                       </TableCell>
                     </TableRow>

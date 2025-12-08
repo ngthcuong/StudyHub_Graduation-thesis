@@ -349,8 +349,8 @@ const TestList = () => {
         <List className="rounded-xl">
           {paginatedTests.map((item) => (
             <ListItem
-              key={item?.testId?._id}
-              className="flex items-center justify-between !py-4  border rounded-xl mb-5 !shadow-md !bg-white cursor-pointer"
+              key={item.testId._id}
+              className="flex items-center justify-between py-4!  border rounded-xl mb-5 shadow-md! bg-white! cursor-pointer"
               onClick={() => {
                 navigate(`/test/${item.testId._id}/custom-info`, {
                   state: {

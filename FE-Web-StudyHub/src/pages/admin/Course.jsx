@@ -302,15 +302,18 @@ const Course = () => {
 
       // Transform grammar lessons into sections format for the modal
       const sections = grammarLessons.map((lesson) => ({
+        _id: lesson._id, // Preserve lesson ID for tracking
         sectionName: lesson.title,
         lessons:
           lesson.parts?.map((part) => ({
+            _id: part._id, // Preserve part ID for tracking
             lessonName: part.title,
             contentType: part.contentType || "text",
             videoUrl: part.videoUrl || "",
             attachmentUrl: part.attachmentUrl || "",
             description: part.description || "",
             lectureNotes: part.lectureNotes || "",
+            content: part.content || "", // Preserve content for rich text editor
           })) || [],
       }));
 

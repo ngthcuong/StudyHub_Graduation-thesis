@@ -140,10 +140,13 @@ const getCertificateByHash = async (req, res, next) => {
     // 5. Chuẩn bị response payload
     const certificatePayload = {
       ...mongoCert,
-      verification: verificationResult.verification,
-      trustLevel: verificationResult.trustLevel,
-      warnings: verificationResult.warnings,
-      errors: verificationResult.errors,
+      verification: {
+        signature: verificationResult.verification.signature,
+        trustLevel: verificationResult.trustLevel,
+        status: getTrustLevelStatus(verificationResult.trustLevel),
+        warnings: verificationResult.warnings,
+        errors: verificationResult.errors,
+      },
       // metadata từ IPFS (source of truth)
       ipfsMetadata: pinataMetadata,
       // blockchain snapshot (reference)
@@ -243,17 +246,20 @@ const getCertificateByCode = async (req, res, next) => {
     // 5. Chuẩn bị response
     const certificatePayload = {
       ...mongoCert,
-      verification: verificationResult.verification,
-      trustLevel: verificationResult.trustLevel,
-      warnings: verificationResult.warnings,
-      errors: verificationResult.errors,
+      verification: {
+        signature: verificationResult.verification.signature,
+        trustLevel: verificationResult.trustLevel,
+        status: getTrustLevelStatus(verificationResult.trustLevel),
+        warnings: verificationResult.warnings,
+        errors: verificationResult.errors,
+      },
       ipfsMetadata: pinataMetadata,
       blockchainSnapshot: blockchainCert,
     };
 
     // 6. Trả về kết quả
     if (verificationResult.trustLevel === "rejected") {
-      return res.status(403).json({
+      return res.status(200).json({
         certificate: null,
         message: "Certificate verification failed",
         ...verificationResult,

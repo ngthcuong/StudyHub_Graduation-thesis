@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import CertificateDetailModal from "../../components/CertificateDetailModal";
-import { useGetCertificateByWalletAddressQuery } from "../../services/certificateApi";
-import { useSelector } from "react-redux";
+import { useGetAllCertificatesQuery } from "../../services/certificateApi";
 import {
   Box,
   Card,
@@ -48,15 +47,12 @@ const Certificate = () => {
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [openDetailModal, setOpenDetailModal] = useState(false);
 
-  const user = useSelector((state) => state.auth.user);
-  const walletAddress = user?.walletAddress;
-
   const {
     data: apiCertificates,
     isLoading,
     error,
     refetch,
-  } = useGetCertificateByWalletAddressQuery(walletAddress);
+  } = useGetAllCertificatesQuery();
 
   const certificates = useMemo(() => {
     const certs = apiCertificates?.certificates || [];

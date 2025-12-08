@@ -30,6 +30,12 @@ export const certificateApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Certificate"],
     }),
+
+    // Lấy tất cả chứng chỉ (Admin only)
+    getAllCertificates: builder.query({
+      query: () => "/certs/",
+      providesTags: ["Certificate"],
+    }),
   }),
 });
 
@@ -39,6 +45,7 @@ export const {
   useLazyVerifyCertificateByCodeQuery,
   useGetCertificateByWalletAddressQuery,
   useIssueCertificateMutation,
+  useGetAllCertificatesQuery,
 } = certificateApi;
 
 export default certificateApi;

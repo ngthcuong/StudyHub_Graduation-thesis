@@ -101,9 +101,18 @@ const updateCourseById = async (req, res) => {
 
     // Nếu có sections trong request (có thể rỗng hoặc có data)
     if (sections !== undefined) {
-      // Xóa TẤT CẢ các grammar lessons cũ của course này
+      // Lấy grammar lessons cũ và lưu lại exercises để preserve
       const oldLessons = await grammarLessonModel.getLessonsByCourseId(id);
 
+      // Tạo map để lưu exercises của từng lesson theo _id (để match với lessons mới)
+      const exercisesMap = new Map();
+      oldLessons.forEach((lesson) => {
+        if (lesson.exercises && lesson.exercises.length > 0) {
+          exercisesMap.set(lesson._id.toString(), lesson.exercises);
+        }
+      });
+
+      // Xóa TẤT CẢ các grammar lessons cũ của course này
       let deletedCount = 0;
       for (const lesson of oldLessons) {
         const result = await grammarLessonModel.deleteLesson(lesson._id);
@@ -113,7 +122,6 @@ const updateCourseById = async (req, res) => {
       // Tạo grammar lessons mới (nếu có sections)
       const grammarLessons = [];
       if (sections.length > 0) {
-        console.log(`Creating ${sections.length} new grammar lessons...`);
         for (const section of sections) {
           if (section.lessons && section.lessons.length > 0) {
             const lessonData = {
@@ -122,12 +130,20 @@ const updateCourseById = async (req, res) => {
               parts: section.lessons.map((lesson) => ({
                 title: lesson.lessonName,
                 description: lesson.description || "",
-                content: lesson.content || lesson.lectureNotes || "", // Prioritize rich text content
+                content: lesson.content || lesson.lectureNotes || "",
                 videoUrl: lesson.videoUrl || "",
                 attachmentUrl: lesson.attachmentUrl || "",
-                contentType: lesson.contentType || "video",
+                contentType: lesson.contentType || "text",
               })),
             };
+
+            // Restore exercises nếu section có _id (lesson đang được update)
+            if (section._id) {
+              const sectionIdStr = section._id.toString();
+              if (exercisesMap.has(sectionIdStr)) {
+                lessonData.exercises = exercisesMap.get(sectionIdStr);
+              }
+            }
 
             const createdLesson = await grammarLessonModel.createLesson(
               lessonData
@@ -135,11 +151,6 @@ const updateCourseById = async (req, res) => {
             grammarLessons.push(createdLesson._id);
           }
         }
-        console.log(
-          `Created ${grammarLessons.length} grammar lessons successfully`
-        );
-      } else {
-        console.log("No sections to create (sections array is empty)");
       }
 
       updatedCourse = await courseModel.updateCourseById(id, {

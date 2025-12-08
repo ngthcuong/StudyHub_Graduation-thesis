@@ -7,6 +7,7 @@ import Header from "../../components/Header";
 const VerifyCertificatePage = () => {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [currentResult, setCurrentResult] = useState(null);
 
@@ -18,6 +19,7 @@ const VerifyCertificatePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setWarning("");
 
     if (!code.trim()) {
       setError("Please input certificate code.");
@@ -26,18 +28,55 @@ const VerifyCertificatePage = () => {
 
     try {
       const response = await verifyCertificate(code.trim()).unwrap();
+
+      if (!response.certificate || response.trustLevel === "rejected") {
+        if (response.errors && response.errors.length > 0) {
+          setError(JSON.stringify(response.errors));
+        } else {
+          setError(response.message || "Certificate verification failed");
+        }
+        return;
+      }
+
+      if (response.trustLevel === "warning" && response.warnings?.length > 0) {
+        setWarning(JSON.stringify(response.warnings));
+      }
+
       setCurrentResult(response.certificate);
       setOpenDetailModal(true);
     } catch (err) {
-      // Error được handle tự động bởi RTK Query
-      console.error("Verification failed:", err);
+      if (err.status === 404) {
+        setError("Certificate not found. Please check the certificate code.");
+      } else if (err.status === 403) {
+        if (err.data?.errors && err.data.errors.length > 0) {
+          setError(JSON.stringify(err.data.errors));
+        } else {
+          setError(err.data?.message || "Certificate verification failed");
+        }
+      } else if (err.data?.message) {
+        setError(err.data.message);
+      } else {
+        setError("An error occurred during verification. Please try again.");
+      }
     }
   };
 
   useEffect(() => {
     if (result && isSuccess) {
-      setCurrentResult(result);
-      setOpenDetailModal(true);
+      if (result.certificate && result.trustLevel !== "rejected") {
+        if (result.trustLevel === "warning" && result.warnings?.length > 0) {
+          setWarning(JSON.stringify(result.warnings));
+        }
+
+        setCurrentResult(result.certificate);
+        setOpenDetailModal(true);
+      } else if (result.trustLevel === "rejected") {
+        if (result.errors && result.errors.length > 0) {
+          setError(JSON.stringify(result.errors));
+        } else {
+          setError(result.message || "Certificate verification failed");
+        }
+      }
     }
   }, [result, isSuccess]);
 
@@ -78,9 +117,97 @@ const VerifyCertificatePage = () => {
             />
           </div>
 
+          {warning && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-amber-600 mt-0.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-amber-800 mb-1">
+                    Certificate Verified with Warnings
+                  </h3>
+                  {(() => {
+                    try {
+                      const warnings = JSON.parse(warning);
+                      if (Array.isArray(warnings) && warnings.length > 0) {
+                        return (
+                          <ul className="list-disc list-inside space-y-1">
+                            {warnings.map((w, idx) => (
+                              <li key={idx} className="text-sm text-amber-700">
+                                {w}
+                              </li>
+                            ))}
+                          </ul>
+                        );
+                      }
+                    } catch {
+                      return (
+                        <p className="text-sm text-amber-700">{warning}</p>
+                      );
+                    }
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+
           {(error || isError) && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-              {error || apiError?.data?.message || "Verification failed"}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-red-600 mt-0.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-red-800 mb-1">
+                    Verification Failed
+                  </h3>
+                  {(() => {
+                    try {
+                      const errors = JSON.parse(error);
+                      if (Array.isArray(errors) && errors.length > 0) {
+                        return (
+                          <ul className="list-disc list-inside space-y-1">
+                            {errors.map((err, idx) => (
+                              <li key={idx} className="text-sm text-red-700">
+                                {err}
+                              </li>
+                            ))}
+                          </ul>
+                        );
+                      }
+                    } catch {
+                      return (
+                        <p className="text-sm text-red-700">
+                          {error ||
+                            apiError?.data?.message ||
+                            "Unable to verify certificate"}
+                        </p>
+                      );
+                    }
+                  })()}
+                </div>
+              </div>
             </div>
           )}
 
