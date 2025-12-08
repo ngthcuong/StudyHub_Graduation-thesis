@@ -22,12 +22,17 @@ class ProgressSpeed(BaseModel):
     predicted_reach_next_level_weeks: int
     recommendation: str
 
+class MaterialItem(BaseModel):
+    title: str  # Tên video (VD: "Future Continuous Tense - English with Lucy")
+    url: str    # Link video (VD: "https://youtube.com/...")
+
 class WeeklyGoal(BaseModel):
     week: int
     topic: str
     description: str
     study_methods: List[str]
-    materials: List[str]
+    # Sửa dòng này: Thay vì List[str], dùng List[MaterialItem]
+    materials: List[MaterialItem] 
     hours: int
 
 class PersonalizedPlan(BaseModel):

@@ -820,10 +820,13 @@ const TestResult = () => {
                                   {week.materials.map((material, matIdx) => (
                                     <Chip
                                       key={matIdx}
-                                      label={material}
+                                      label={material?.title}
                                       variant="outlined"
                                       size="small"
                                       icon={<VideoLibraryIcon />}
+                                      onClick={() =>
+                                        window.open(material?.url, "_blank")
+                                      }
                                     />
                                   ))}
                                 </Stack>
