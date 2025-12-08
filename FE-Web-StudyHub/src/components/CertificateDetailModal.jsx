@@ -21,9 +21,13 @@ import {
 import CopyButton from "./CopyButton";
 import { downloadCertificateAsImage } from "../utils/imageGenerator";
 import CertificateVerificationBadge from "./CertificateVerificationBadge";
+import { useSelector } from "react-redux";
 
 const CertificateDetailModal = ({ open, onClose, certificate }) => {
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const user = useSelector((state) => state.auth.user);
+  const isAdmin = user?.role === "admin";
 
   if (!certificate) return null;
 
@@ -108,7 +112,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
           <div className="flex items-center gap-3">
             <Typography
               variant="h5"
-              className="!font-bold"
+              className="font-bold!"
               sx={{ color: "white" }}
             >
               Certificate Details
@@ -129,7 +133,7 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
         </div>
       </DialogTitle>
 
-      <DialogContent className="bg-gray-50 !p-3">
+      <DialogContent className="bg-gray-50 p-3!">
         <div className="space-y-5">
           {/* Certificate Information Section */}
           <div className="bg-white rounded-lg px-5 py-4 shadow-sm">
@@ -216,25 +220,27 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
               </Box>
             </div>
 
-            <div className="mt-4">
-              <Typography variant="body2" className="text-gray-500 mb-2">
-                Metadata
-              </Typography>
-              <Box className="bg-gray-50 px-3 py-2 rounded-lg border relative">
-                <div className="flex items-center justify-between">
-                  <Typography
-                    variant="body2"
-                    className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
-                  >
-                    {certificate?.ipfs.metadataURI}
-                  </Typography>
-                  <CopyButton
-                    text={certificate?.ipfs.metadataURI}
-                    tooltip="Copy metadata URI"
-                  />
-                </div>
-              </Box>
-            </div>
+            {isAdmin && (
+              <div className="mt-4">
+                <Typography variant="body2" className="text-gray-500 mb-2">
+                  Metadata
+                </Typography>
+                <Box className="bg-gray-50 px-3 py-2 rounded-lg border relative">
+                  <div className="flex items-center justify-between">
+                    <Typography
+                      variant="body2"
+                      className="font-mono text-gray-700 break-all text-sm flex-1 pr-2"
+                    >
+                      {certificate?.ipfs.metadataURI}
+                    </Typography>
+                    <CopyButton
+                      text={certificate?.ipfs.metadataURI}
+                      tooltip="Copy metadata URI"
+                    />
+                  </div>
+                </Box>
+              </div>
+            )}
 
             <div className="mt-4">
               <Typography variant="body2" className="text-gray-500 mb-2">
