@@ -197,6 +197,7 @@ export default function ModalCreateCustomTest({
   });
 
   const onSubmit = async (data) => {
+    localStorage.removeItem("test_initialized");
     // Payload từ Form (dữ liệu thô từ người dùng)
     const payload_form = {
       ...data,

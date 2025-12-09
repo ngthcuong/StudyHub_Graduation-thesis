@@ -149,7 +149,7 @@ const TestResult = () => {
     }
   };
 
-  console.log("Result Data:", resultData.certificate);
+  console.log("Result Data:", resultData);
   console.log("FormattedAnswers:", formattedAnswers);
 
   const startTime = new Date(resultData.attemptDetail.startTime);
@@ -177,7 +177,7 @@ const TestResult = () => {
   } = analysisResult;
 
   // Kết hợp dữ liệu từ `analysisPerQuestion` và `answers` để có đủ thông tin
-  const per_question = analysisPerQuestion.map((analysisItem, index) => {
+  let per_question = analysisPerQuestion.map((analysisItem, index) => {
     const answerItem = answers[index] || {};
     return {
       ...analysisItem,
@@ -185,6 +185,27 @@ const TestResult = () => {
       user_answer: answerItem.selectedOptionText || analysisItem.user_answer, // Lấy câu trả lời của người dùng
     };
   });
+
+  // xử lý trường hợp dữ liệu không có biến correct là gap fill
+  const hasCorrectKey = per_question.length > 0 && "correct" in per_question[0];
+  if (hasCorrectKey) {
+    console.log("Dữ liệu đã có sẵn biến correct.");
+  } else {
+    per_question = per_question.map((q) => {
+      // Chuẩn hóa dữ liệu để so sánh (bỏ khoảng trắng thừa, chuyển về chữ thường)
+      // Lưu ý: Tùy logic bài thi mà bạn có thể cần hoặc không cần toLowerCase()
+      const normalizedUser = (q.user_answer || "").trim().toLowerCase();
+      const normalizedExpected = (q.expected_answer || "").trim().toLowerCase();
+
+      // Logic kiểm tra đúng sai
+      const isCorrect = normalizedUser === normalizedExpected;
+
+      return {
+        ...q, // Giữ lại toàn bộ thông tin cũ (id, explain, skill...)
+        correct: isCorrect, // Thêm thuộc tính mới để code bên dưới dùng được
+      };
+    });
+  }
 
   // Tính toán stats với safe checks
   const correctCount = per_question.filter(

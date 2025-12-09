@@ -81,8 +81,29 @@ const TestResultDisplay = () => {
   const testTitle =
     attempt?.attemptId?.testId?.title || attempt?.testTitle || "Test Result";
 
+  const hasCorrectKey = per_question.length > 0 && "correct" in per_question[0];
+  let finalPerQuestion = per_question;
+  if (hasCorrectKey) {
+    console.log("Dữ liệu đã có sẵn biến correct.");
+  } else {
+    finalPerQuestion = per_question.map((q) => {
+      // Chuẩn hóa dữ liệu để so sánh (bỏ khoảng trắng thừa, chuyển về chữ thường)
+      // Lưu ý: Tùy logic bài thi mà bạn có thể cần hoặc không cần toLowerCase()
+      const normalizedUser = (q.user_answer || "").trim().toLowerCase();
+      const normalizedExpected = (q.expected_answer || "").trim().toLowerCase();
+
+      // Logic kiểm tra đúng sai
+      const isCorrect = normalizedUser === normalizedExpected;
+
+      return {
+        ...q, // Giữ lại toàn bộ thông tin cũ (id, explain, skill...)
+        correct: isCorrect, // Thêm thuộc tính mới để code bên dưới dùng được
+      };
+    });
+  }
+
   // Tính toán stats
-  const correctCount = per_question.filter(
+  const correctCount = finalPerQuestion.filter(
     (q) => q && q.correct === true
   ).length;
   const incorrectCount = total_questions - correctCount;
@@ -108,7 +129,7 @@ const TestResultDisplay = () => {
   };
 
   // Tạo correctAnswers và incorrectAnswers
-  const correctAnswers = per_question
+  const correctAnswers = finalPerQuestion
     .filter((q) => q && q.correct === true)
     .map((q) => ({
       question: q.question,
@@ -118,7 +139,7 @@ const TestResultDisplay = () => {
       explain: q.explain || "No explanation",
     }));
 
-  const incorrectAnswers = per_question
+  const incorrectAnswers = finalPerQuestion
     .filter((q) => q && q.correct === false)
     .map((q) => ({
       question: q.question,
@@ -563,10 +584,13 @@ const TestResultDisplay = () => {
                                   {week.materials.map((material, matIdx) => (
                                     <Chip
                                       key={matIdx}
-                                      label={material}
+                                      label={material?.title}
                                       variant="outlined"
                                       size="small"
                                       icon={<VideoLibraryIcon />}
+                                      onClick={() =>
+                                        window.open(material?.url, "_blank")
+                                      }
                                     />
                                   ))}
                                 </Stack>

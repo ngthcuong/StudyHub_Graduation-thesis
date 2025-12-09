@@ -68,9 +68,7 @@ const TestInformationCustom = () => {
 
   // 🧠 HÀM HỖ TRỢ
   const handleStartTest = () => {
-    console.log("Start custom test clicked", attemptDetail);
-
-    console.log("Test Info:", testInfor.questionTypes[0]);
+    localStorage.removeItem("test_initialized");
 
     if (testInfor.questionTypes[0] == "multiple_choice") {
       navigate(`/test/${testId}/custom`, {

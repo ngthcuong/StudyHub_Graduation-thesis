@@ -122,6 +122,7 @@ const TestInformation = () => {
   ]);
 
   const handleStartTest = () => {
+    localStorage.removeItem("test_initialized");
     // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
     if (testInfor) {
       if (!user?.currentLevel || !testInfor?.examType) {

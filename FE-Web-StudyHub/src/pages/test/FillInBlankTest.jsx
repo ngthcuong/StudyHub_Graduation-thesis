@@ -24,37 +24,7 @@ import {
   useSubmitTestMutation,
 } from "../../services/testApi";
 import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
-
-// -------------------------------------------------------------------
-// MOCK DATA FIB
-// -------------------------------------------------------------------
-const MOCK_PAYLOAD_FORM = {
-  timeLimit: 20, // phút
-  numQuestions: 5,
-  level: "A1",
-  title: "Bài Test Tùy Chỉnh Ngữ Pháp A1",
-};
-
-const MOCK_QUESTIONS = [
-  {
-    questionText:
-      "If you ____ the report by Friday, we will have enough time to review it.",
-  },
-  {
-    questionText: "The team meeting is scheduled ____ 10:00 AM ____ Monday.",
-  },
-  {
-    questionText:
-      "If we ____ a larger budget, we could invest in new equipment.",
-  },
-  {
-    questionText:
-      "Our new office is located ____ the third floor ____ the main building.",
-  },
-  {
-    questionText: "If I ____ more experience, I ____ for the senior position.",
-  },
-];
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 
 const learningTips = [
   "Tip: Read carefully before filling blanks.",
@@ -93,7 +63,7 @@ const FillInBlankTest = () => {
   const [current, setCurrent] = useState(0);
   const [answersP, setAnswersP] = useState([]);
 
-  const [timeLeft, setTimeLeft] = useState(MOCK_PAYLOAD_FORM.timeLimit * 60);
+  const [timeLeft, setTimeLeft] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -105,102 +75,134 @@ const FillInBlankTest = () => {
   const routeTestId = payloadForm?.testId;
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (
-        attemptDetail &&
-        attemptDetail?.attemptNumber < attemptDetail?.maxAttempts
-      ) {
+    const hasInitialized = localStorage.getItem("test_initialized");
+
+    if (!hasInitialized) {
+      // Chạy lần đầu tiên
+      fetchData();
+
+      // đánh dấu đã chạy
+      localStorage.setItem("test_initialized", "true");
+    } else {
+      console.log("Đã chạy trước đó → Không chạy lại start()");
+    }
+  }, [payloadForm]);
+
+  const fetchData = async () => {
+    if (
+      attemptDetail &&
+      attemptDetail?.attemptNumber < attemptDetail?.maxAttempts
+    ) {
+      try {
+        const now = new Date();
+        const isoString = now.toISOString();
+        setDate(isoString);
+
+        const res = await getQuestionsByAttemptId(attemptDetail?._id).unwrap();
+        console.log("Fetched questions for existing attempt:", res);
+        setQuestions(res?.data);
+        setAnswersP(
+          res?.data?.map((q) =>
+            q.questionText
+              .split(/_+/g)
+              .slice(0, -1)
+              .map(() => "")
+          )
+        );
+        setTest(attemptDetail?.testId);
+        setAttemptId(attemptDetail?._id);
+        setLoading(false);
+
+        // lấy ngày hiện tại
+        const d = new Date().getDate();
+        setDay(d);
+      } catch (error) {
+        console.error("Error resuming existing attempt:", error);
+      }
+    } else {
+      try {
+        setLoading(true);
+
+        const attemptRes = await createAttempt({
+          testId: payloadForm?.testId,
+          maxAttempts: 3,
+        }).unwrap();
+        setAttemptId(attemptRes?.data?._id);
         try {
-          const now = new Date();
-          const isoString = now.toISOString();
-          setDate(isoString);
-
-          const res = await getQuestionsByAttemptId(
-            attemptDetail?._id
-          ).unwrap();
-          console.log("Fetched questions for existing attempt:", res);
-          setQuestions(res?.data);
-          setAnswersP(
-            res?.data?.map((q) =>
-              q.questionText
-                .split(/_+/g)
-                .slice(0, -1)
-                .map(() => "")
-            )
-          );
-          setTest(attemptDetail?.testId);
-          setAttemptId(attemptDetail?._id);
-          setLoading(false);
-
-          // lấy ngày hiện tại
-          const d = new Date().getDate();
-          setDay(d);
-        } catch (error) {
-          console.error("Error resuming existing attempt:", error);
-        }
-      } else {
-        try {
-          setLoading(true);
-
-          const attemptRes = await createAttempt({
-            testId: payloadForm?.testId,
-            maxAttempts: 3,
-          }).unwrap();
-          setAttemptId(attemptRes?.data?._id);
+          const testRes = await getTestById(routeTestId).unwrap();
+          setTest(testRes);
           try {
-            const testRes = await getTestById(routeTestId).unwrap();
-            setTest(testRes);
-            try {
-              const now = new Date();
-              const isoString = now.toISOString();
-              setDate(isoString);
+            const now = new Date();
+            const isoString = now.toISOString();
+            setDate(isoString);
 
-              let typeQuestion = "MCQ";
-              if (payloadForm?.questionType === "FIB") {
-                typeQuestion = "Gap-fill";
-              }
-
-              const res = await generateCustomTest({
-                testId: payloadForm?.testId,
-                testAttemptId: attemptRes?.data?._id,
-                level: payloadForm?.level,
-                toeicScore: payloadForm?.toeicScore,
-                weakSkills: payloadForm?.weakSkills,
-                exam_type: "TOEIC",
-                topics: payloadForm?.topics,
-                difficulty: payloadForm?.difficulty,
-                question_ratio: typeQuestion,
-                numQuestions: payloadForm?.numQuestions,
-                timeLimit: payloadForm?.timeLimit,
-              }).unwrap();
-              console.log("Generated custom test:", res);
-              setQuestions(res?.data?.data);
-              setAnswersP(
-                res?.data?.data?.map((q) =>
-                  q.questionText
-                    .split(/_+/g)
-                    .slice(0, -1)
-                    .map(() => "")
-                )
-              );
-              setLoading(false);
-              // lấy ngày hiện tại
-              const d = new Date().getDate();
-              setDay(d);
-            } catch (error) {
-              console.error("Error setting test data:", error);
+            let typeQuestion = "MCQ";
+            if (payloadForm?.questionType === "FIB") {
+              typeQuestion = "Gap-fill";
             }
+
+            const res = await generateCustomTest({
+              testId: payloadForm?.testId,
+              testAttemptId: attemptRes?.data?._id,
+              level: payloadForm?.level,
+              toeicScore: payloadForm?.toeicScore,
+              weakSkills: payloadForm?.weakSkills,
+              exam_type: "TOEIC",
+              topics: payloadForm?.topics,
+              difficulty: payloadForm?.difficulty,
+              question_ratio: typeQuestion,
+              numQuestions: payloadForm?.numQuestions,
+              timeLimit: payloadForm?.timeLimit,
+            }).unwrap();
+            console.log("Generated custom test:", res);
+            setQuestions(res?.data);
+            setAnswersP(
+              res?.data?.map((q) =>
+                q.questionText
+                  .split(/_+/g)
+                  .slice(0, -1)
+                  .map(() => "")
+              )
+            );
+            setLoading(false);
+            // lấy ngày hiện tại
+            const d = new Date().getDate();
+            setDay(d);
           } catch (error) {
-            console.error("Error fetching questions by attempt ID:", error);
+            console.error("Error setting test data:", error);
           }
         } catch (error) {
-          console.error("Error generating test:", error);
+          console.error("Error fetching questions by attempt ID:", error);
         }
+      } catch (error) {
+        console.error("Error generating test:", error);
       }
-    };
+    }
+  };
+  console.log("Test data updated:", test?.data?.durationMin);
+  useEffect(() => {
+    if (test?.data?.durationMin) {
+      const duration = test?.data?.durationMin;
 
-    fetchData();
-  }, [payloadForm]);
+      setTimeLeft(duration * 60);
+    }
+  }, [test]);
+
+  useEffect(() => {
+    if (timeLeft === null) return;
+    if (timeLeft === 0) {
+      handleSubmit();
+      return;
+    }
+
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
 
   const actualQuestionCount = questions?.length;
   const completedCount = answersP?.filter((blanks) =>
@@ -248,11 +250,14 @@ const FillInBlankTest = () => {
   const handleBack = () => setCurrent((c) => Math.max(c - 1, 0));
   const handleJump = (idx) => setCurrent(idx);
 
-  const formatTime = (s) => {
+  function formatTime(s) {
+    if (s === null || isNaN(s) || s < 0) return "00 : 00";
     const m = Math.floor(s / 60);
     const sec = s % 60;
-    return `${String(m).padStart(2, "0")} : ${String(sec).padStart(2, "0")}`;
-  };
+    const formattedM = String(m).padStart(2, "0");
+    const formattedSec = String(sec).padStart(2, "0");
+    return `${formattedM} : ${formattedSec}`;
+  }
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -303,6 +308,7 @@ const FillInBlankTest = () => {
         //   durationSeconds: diffSeconds,
         // }).unwrap();
 
+        localStorage.removeItem("test_initialized");
         navigate(`/test/${testId}/result`, {
           state: { resultData: response, formattedAnswers: formattedAnswers },
         });
@@ -383,10 +389,35 @@ const FillInBlankTest = () => {
                     },
                   }}
                 />
-                <Typography variant="body2" color="#6b7280">
-                  Please wait while we analyze your answers and prepare your
-                  personalized results.
-                </Typography>
+
+                {/* --- PHẦN ĐƯỢC CHỈNH SỬA TẠI ĐÂY --- */}
+                <Box>
+                  <Typography variant="body2" color="#6b7280" gutterBottom>
+                    Please wait while we analyze your answers and prepare your
+                    personalized results.
+                  </Typography>
+
+                  {/* Dòng thông báo thời gian mới thêm vào */}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#059669",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                      mt: 1,
+                      bgcolor: "#ecfdf5", // Nền xanh nhạt
+                      py: 1,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <HourglassBottomIcon sx={{ fontSize: 20 }} /> Estimated
+                    process time: 20-30 seconds
+                  </Typography>
+                </Box>
+                {/* --- KẾT THÚC PHẦN CHỈNH SỬA --- */}
               </Stack>
             </Card>
           </Box>
@@ -420,6 +451,38 @@ const FillInBlankTest = () => {
           <Typography variant="h5" sx={{ fontWeight: 600, color: "#34495e" }}>
             Preparing Your Test
           </Typography>
+
+          {/* --- PHẦN THÊM VÀO: THÔNG BÁO THỜI GIAN --- */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1.5,
+              bgcolor: "rgba(255, 255, 255, 0.5)", // Nền trắng mờ
+              backdropFilter: "blur(4px)", // Hiệu ứng mờ đục
+              border: "1px solid",
+              borderColor: "indigo.100",
+              borderRadius: 3,
+              px: 3,
+              py: 1,
+            }}
+          >
+            <HourglassBottomIcon
+              sx={{
+                color: "#4f46e5", // Màu Indigo cho hợp theme
+                fontSize: 20,
+                animation: "spin 3s linear infinite", // Xoay nhẹ nếu muốn
+              }}
+            />
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, color: "#4338ca" }}
+            >
+              Estimated wait time: 20-30 seconds
+            </Typography>
+          </Box>
+          {/* ------------------------------------------- */}
 
           <Fade in={true} timeout={1000} key={tipIndex}>
             <Typography
@@ -467,7 +530,7 @@ const FillInBlankTest = () => {
         {/* Header */}
         <Box className="bg-white rounded-xl shadow p-4 mb-4 flex justify-between items-center">
           <Typography variant="h6" fontWeight={700}>
-            {MOCK_PAYLOAD_FORM.title}
+            {test?.title || test?.data?.title}
           </Typography>
           <Chip
             icon={<AccessTimeOutlinedIcon />}
@@ -476,85 +539,286 @@ const FillInBlankTest = () => {
           />
         </Box>
 
-        {/* Question */}
-        <Card className="rounded-xl shadow p-4 mb-4">
-          <Typography variant="subtitle1" fontWeight={600}>
-            {current + 1}.{" "}
-            {currentQuestion?.questionText
-              ?.split(/_+/g)
-              ?.map((part, i, arr) => (
-                <React.Fragment key={i}>
-                  {part}
-                  {i < arr.length - 1 && (
-                    <TextField
-                      size="small"
-                      value={answersP[current]?.[i] || ""}
-                      onChange={(e) => handleChange(e.target.value, i)}
-                      sx={{ width: 140, mx: 1 }}
-                    />
+        {/* Nội dung chính */}
+        <Box sx={{ width: "100%" }}>
+          <Grid container spacing={3}>
+            <Grid item size={{ xs: 12, md: 8.5 }}>
+              {/* Question */}
+              <Card className="rounded-xl shadow p-4 mb-4">
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {current + 1}.{" "}
+                  {currentQuestion?.questionText
+                    ?.split(/_+/g)
+                    ?.map((part, i, arr) => (
+                      <React.Fragment key={i}>
+                        {part}
+                        {i < arr.length - 1 && (
+                          <TextField
+                            size="small"
+                            value={answersP[current]?.[i] || ""}
+                            onChange={(e) => handleChange(e.target.value, i)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault(); // Ngăn việc xuống dòng hoặc submit form ngoài ý muốn
+
+                                // Kiểm tra: Nếu chưa phải câu cuối cùng thì nhảy sang câu tiếp theo
+                                if (current < (questions?.length || 0) - 1) {
+                                  handleJump(current + 1);
+                                }
+                              }
+                            }}
+                            sx={{ width: 140, mx: 1 }}
+                          />
+                        )}
+                      </React.Fragment>
+                    ))}
+                </Typography>
+              </Card>
+
+              {/* Navigation */}
+              <Box
+                className="flex justify-between mt-6 gap-2"
+                sx={{ flexShrink: 0, mt: 4 }}
+              >
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    disabled={current === 0}
+                    onClick={handleBack}
+                    sx={{ textTransform: "none", width: 100 }}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNext}
+                    disabled={current === actualQuestionCount - 1}
+                    sx={{ textTransform: "none", width: 100 }}
+                  >
+                    Next
+                  </Button>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  color="success"
+                  sx={{ textTransform: "none", width: 160 }}
+                  onClick={handleSubmit}
+                  disabled={
+                    isSubmitting ||
+                    answersP.some((a) => {
+                      // 1. Kiểm tra null hoặc undefined
+                      if (a === null || a === undefined) return true;
+
+                      // 2. Kiểm tra trường hợp mảng chứa chuỗi rỗng ([""]) - Lỗi bạn đang gặp
+                      if (Array.isArray(a) && (a.length === 0 || a[0] === ""))
+                        return true;
+
+                      // 3. Kiểm tra trường hợp chuỗi rỗng ("")
+                      if (typeof a === "string" && a.trim() === "") return true;
+
+                      // Đã có câu trả lời hợp lệ
+                      return false;
+                    })
+                  }
+                >
+                  {isSubmitting ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Submit Exercise"
                   )}
-                </React.Fragment>
-              ))}
-          </Typography>
-        </Card>
+                </Button>
+              </Box>
+            </Grid>
 
-        {/* Navigation */}
-        <Box
-          className="flex justify-between mt-6 gap-2"
-          sx={{ flexShrink: 0, mt: 4 }}
-        >
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              disabled={current === 0}
-              onClick={handleBack}
-              sx={{ textTransform: "none", width: 100 }}
-            >
-              Back
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleNext}
-              disabled={current === actualQuestionCount - 1}
-              sx={{ textTransform: "none", width: 100 }}
-            >
-              Next
-            </Button>
-          </Box>
+            {/* Cột phải - Sidebar */}
+            <Grid item size={{ xs: 12, md: 3.5 }}>
+              <Card
+                className="rounded-xl shadow-sm"
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <CardContent
+                  sx={{ flex: 1, display: "flex", flexDirection: "column" }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    color="#22223b"
+                    sx={{ mb: 1 }}
+                  >
+                    Questions
+                    <span className="ml-2 text-gray-500 text-sm font-normal">
+                      {completedCount} / {actualQuestionCount} completed
+                    </span>
+                  </Typography>
 
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ textTransform: "none", width: 160 }}
-            onClick={handleSubmit}
-            disabled={isSubmitting || answersP.some((a) => a === null)}
-          >
-            {isSubmitting ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Submit Exercise"
-            )}
-          </Button>
+                  <Box
+                    className="grid grid-cols-5 gap-2 mb-3"
+                    sx={{ flexShrink: 0 }}
+                  >
+                    {/* Render các nút câu hỏi dựa trên số lượng câu hỏi thực tế */}
+                    {questions?.map((q, idx) => {
+                      let color = "#e5e7eb"; // Mặc định Xám
+
+                      const val = answersP[idx];
+
+                      // 1. Kiểm tra cơ bản: Không null, không undefined
+                      let hasAnswer = val !== null && val !== undefined;
+
+                      // 2. Kiểm tra sâu hơn (Fix lỗi của bạn):
+                      // Nếu là mảng (ví dụ [""]) và phần tử đầu tiên rỗng -> Coi như chưa làm
+                      if (hasAnswer && Array.isArray(val) && val[0] === "") {
+                        hasAnswer = false;
+                      }
+                      // Nếu là chuỗi (ví dụ "") -> Coi như chưa làm
+                      if (
+                        hasAnswer &&
+                        typeof val === "string" &&
+                        val.trim() === ""
+                      ) {
+                        hasAnswer = false;
+                      }
+
+                      // 3. Áp dụng màu
+                      if (hasAnswer) {
+                        color = "#22c55e"; // Xanh lá (Đã làm)
+                      }
+                      if (idx === current) {
+                        color = "#2563eb"; // Xanh dương (Đang chọn)
+                      }
+
+                      return (
+                        <Button
+                          key={idx}
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleJump(idx)}
+                          sx={{
+                            minWidth: 0,
+                            width: 38,
+                            height: 38,
+                            borderRadius: "50%",
+                            lineHeight: "normal",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 700,
+                            background: color,
+                            color: color === "#e5e7eb" ? "#22223b" : "#fff",
+                            boxShadow: "none",
+                            border: "1px solid transparent",
+                            borderColor:
+                              color === "#e5e7eb" ? "#cbd5e1" : "transparent",
+                            transition:
+                              "background 0.2s ease, opacity 0.2s ease, border-color 0.2s ease",
+                            "&:hover": {
+                              background: color,
+                              opacity: 0.9,
+                            },
+                          }}
+                        >
+                          {idx + 1}
+                        </Button>
+                      );
+                    })}
+                  </Box>
+
+                  {/* Thanh tiến độ và Legend giữ nguyên */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="#64748b"
+                      fontWeight={700}
+                      sx={{ mb: 1 }}
+                    >
+                      Progress
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {percent}%
+                    </Typography>
+                  </Box>
+
+                  <Box className="flex items-center gap-2 mb-2">
+                    <LinearProgress
+                      variant="determinate"
+                      value={percent}
+                      sx={{
+                        height: 8,
+                        borderRadius: 5,
+                        flex: 1,
+                        background: "#e0e7ef",
+                        "& .MuiLinearProgress-bar": {
+                          background: "#22c55e",
+                        },
+                      }}
+                    />
+                  </Box>
+
+                  {/* Legend */}
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    className="mt-2"
+                    flexWrap="wrap"
+                  >
+                    <Box className="flex items-center gap-1">
+                      <Box
+                        sx={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          background: "#22c55e",
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ color: "#22c55e" }}>
+                        Completed
+                      </Typography>
+                    </Box>
+                    <Box className="flex items-center gap-1">
+                      <Box
+                        sx={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          background: "#2563eb",
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ color: "#2563eb" }}>
+                        Current
+                      </Typography>
+                    </Box>
+                    <Box className="flex items-center gap-1">
+                      <Box
+                        sx={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          background: "#e5e7eb",
+                          border: "1px solid #cbd5e1",
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ color: "#64748b" }}>
+                        Not answered
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </Box>
-
-        {/* Sidebar */}
-        <Box className="mb-4">
-          <Typography>
-            Completed: {completedCount} / {actualQuestionCount}
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={percent}
-            sx={{ height: 10, borderRadius: 5, mt: 1 }}
-          />
-        </Box>
-
-        {/* Tip */}
-        <Typography sx={{ color: "#7f8c8d", mt: 2 }}>
-          {learningTips[tipIndex]}
-        </Typography>
       </Box>
     </Box>
   );

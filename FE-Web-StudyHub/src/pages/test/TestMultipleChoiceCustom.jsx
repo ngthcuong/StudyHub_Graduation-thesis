@@ -28,6 +28,7 @@ import {
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 
 // Không còn dùng useParams, useLocation, useNavigate từ react-router-dom
 // Nên tôi sẽ giả lập chức năng của chúng.
@@ -132,7 +133,6 @@ const TestMultipleChoiceCustom = () => {
               numQuestions: payloadForm?.numQuestions,
               timeLimit: payloadForm?.timeLimit,
             }).unwrap();
-            console.log("Generated Custom Test Data:", res);
             setData({ data: res });
             setQuestions({ data: res });
             setLoading(false);
@@ -365,6 +365,38 @@ const TestMultipleChoiceCustom = () => {
             Preparing Your Test
           </Typography>
 
+          {/* --- PHẦN THÊM VÀO: THÔNG BÁO THỜI GIAN --- */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1.5,
+              bgcolor: "rgba(255, 255, 255, 0.5)", // Nền trắng mờ
+              backdropFilter: "blur(4px)", // Hiệu ứng mờ đục
+              border: "1px solid",
+              borderColor: "indigo.100",
+              borderRadius: 3,
+              px: 3,
+              py: 1,
+            }}
+          >
+            <HourglassBottomIcon
+              sx={{
+                color: "#4f46e5", // Màu Indigo cho hợp theme
+                fontSize: 20,
+                animation: "spin 3s linear infinite", // Xoay nhẹ nếu muốn
+              }}
+            />
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, color: "#4338ca" }}
+            >
+              Estimated wait time: 20-30 seconds
+            </Typography>
+          </Box>
+          {/* ------------------------------------------- */}
+
           <Fade in={true} timeout={1000} key={tipIndex}>
             <Typography
               sx={{
@@ -472,10 +504,35 @@ const TestMultipleChoiceCustom = () => {
                     },
                   }}
                 />
-                <Typography variant="body2" color="#6b7280">
-                  Please wait while we analyze your answers and prepare your
-                  personalized results.
-                </Typography>
+
+                {/* --- PHẦN ĐƯỢC CHỈNH SỬA TẠI ĐÂY --- */}
+                <Box>
+                  <Typography variant="body2" color="#6b7280" gutterBottom>
+                    Please wait while we analyze your answers and prepare your
+                    personalized results.
+                  </Typography>
+
+                  {/* Dòng thông báo thời gian mới thêm vào */}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "#059669",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                      mt: 1,
+                      bgcolor: "#ecfdf5", // Nền xanh nhạt
+                      py: 1,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <HourglassBottomIcon sx={{ fontSize: 20 }} />
+                    Estimated process time: 20-30 seconds
+                  </Typography>
+                </Box>
+                {/* --- KẾT THÚC PHẦN CHỈNH SỬA --- */}
               </Stack>
             </Card>
           </Box>
@@ -675,7 +732,8 @@ const TestMultipleChoiceCustom = () => {
                     {/* Render các nút câu hỏi dựa trên số lượng câu hỏi thực tế */}
                     {questions.data?.data.map((q, idx) => {
                       let color = "#e5e7eb";
-                      if (answersP[idx] !== null) color = "#22c55e";
+                      if (answersP[idx] !== null && answersP[idx] !== undefined)
+                        color = "#22c55e";
                       if (idx === current) color = "#2563eb";
 
                       return (

@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 from google import genai
 from .prompts import generate_test_prompt
 
-load_dotenv()
+load_dotenv(override=True)
 
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise ValueError("You must set GEMINI_API_KEY in your .env file or environment variables.")
 
-model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
+model_name = os.getenv("MODEL_NAME", "gemini-2.5-flash")
 client = genai.Client(api_key=api_key)
 
 

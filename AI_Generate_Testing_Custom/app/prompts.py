@@ -15,7 +15,7 @@ def generate_test_prompt(
     return f"""
 You are an experienced English exam designer for {exam_type} tests.
 
-Generate {num_questions} {question_ratio} questions.
+Generate {num_questions} questions based on the type: "{question_ratio}".
 Each question must reflect the student's learning profile:
 
 - Current level: {current_level}
@@ -23,26 +23,32 @@ Each question must reflect the student's learning profile:
 - Weak skills: {weak_skills_str}
 - Topics to practice: {topics_str}
 - Difficulty preference: {difficulty or "same as level"}
-- Question type: {question_ratio}
-- Total test time: {time_limit or "N/A"} minutes
 
 ========================
 **QUESTION REQUIREMENTS**
 ========================
-1. Focus on accuracy and natural English at the learner’s level.
-2. All questions must be relevant to the selected topics (grammar points or vocabulary sets).
-3. The difficulty must adapt to the student's choice ("easier", "same", or "harder").
-4. Use authentic contexts similar to TOEIC/IELTS (e.g., business emails, conversations, reports).
-5. **Explanations must be detailed**, including:
-   - Grammar rule or vocabulary meaning involved
-   - Why the correct answer fits
-   - Why other options are incorrect
-6. Each question should assess the weak skills when possible (Grammar, Vocabulary).
+1. **GENERAL RULE**: ALL questions (both MCQ and Gap-fill) MUST provide **4 distinct options** in the "options" list. The user will always select from a list.
+
+2. **SPECIFIC FORMAT BY TYPE**:
+   - **IF type is "MCQ"**: 
+     - Standard multiple-choice question. Contextual sentences.
+   
+   - **IF type is "Gap-fill"**:
+     - The "question" text MUST contain a blank `_______` followed immediately by a **HINT** in parentheses.
+     - **For Grammar**: The hint is the **ROOT FORM** of the word.
+       * Example Question: "She has _______ (COMPLETE) the report."
+       * Example Options: ["completed", "complete", "completing", "completes"]
+     - **For Vocabulary**: The hint is a **SHORT DEFINITION**.
+       * Example Question: "Please _______ (look at closely) the document."
+       * Example Options: ["review", "sign", "write", "send"]
+     - **CRITICAL**: Do NOT put the answer in the hint, only the root word or definition.
+
+3. **Explanations**: Must be detailed, explaining why the correct answer fits the specific hint/grammar rule.
 
 ========================
 **RESPONSE FORMAT**
 ========================
-Return ONLY valid JSON (no markdown, no comments).
+Return ONLY valid JSON (no markdown).
 
 {{
   "status": "success",
@@ -50,11 +56,11 @@ Return ONLY valid JSON (no markdown, no comments).
     {{
       "type": "{question_ratio}",
       "skill": "Grammar or Vocabulary",
-      "topic": ["specific subtopic like 'Conditionals' or 'Business Vocabulary'"],
-      "question": "The question text here...",
-      "options": ["option1", "option2", "option3", "option4"],  # if MCQ
-      "answer": "the correct answer text",
-      "explanation": "Detailed step-by-step explanation of grammar/vocabulary usage and why others are wrong."
+      "topic": ["Topic Name"],
+      "question": "Question text...", 
+      "options": ["Option A", "Option B", "Option C", "Option D"], 
+      "answer": "Correct Option Text",
+      "explanation": "Detailed explanation..."
     }}
   ]
 }}
