@@ -217,14 +217,6 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
       .padStart(2, "0")}`;
   };
 
-  // if (!questions.data) {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <Text style={styles.loadingText}>Loading mock questions...</Text>
-  //     </View>
-  //   );
-  // }
-
   const currentQuestion = questions?.data?.data[currentQuestionIndex];
   const selectedAnswer = answersP[currentQuestion?._id];
 

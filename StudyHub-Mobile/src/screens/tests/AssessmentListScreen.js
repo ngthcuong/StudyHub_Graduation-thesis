@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { testApi } from "../../services/testApi";
@@ -63,6 +64,23 @@ const AssessmentListScreen = ({ navigation }) => {
     }
   };
 
+  const handleDeleteItem = async (id) => {
+    Alert.alert("Delete Test", "Are you sure you want to delete this test?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          const deleted = await testApi.deleteTestById(id);
+
+          if (deleted) {
+            await loadTests();
+          }
+        },
+      },
+    ]);
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await loadTests();
@@ -100,6 +118,7 @@ const AssessmentListScreen = ({ navigation }) => {
       <View style={styles.testIcon}>
         <Ionicons name="clipboard" size={32} color="#10B981" />
       </View>
+
       <View style={styles.testContent}>
         <Text style={styles.testTitle} numberOfLines={2}>
           {test.testId.title}
@@ -120,12 +139,32 @@ const AssessmentListScreen = ({ navigation }) => {
           </View>
         </View>
       </View>
-      <View style={styles.testStatus}>
-        {test.attemptNumber === test.maxAttempts ? (
-          <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-        ) : (
-          <Ionicons name="play-circle" size={24} color="#3B82F6" />
-        )}
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 20,
+          justifyContent: "center",
+        }}
+      >
+        {/* 1. Icon Trạng Thái Ở Trên */}
+        <View style={styles.testStatus}>
+          {test.attemptNumber === test.maxAttempts ? (
+            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+          ) : (
+            <Ionicons name="play-circle" size={24} color="#3B82F6" />
+          )}
+        </View>
+
+        {/* 2. Nút Xóa Ở Dưới */}
+        <TouchableOpacity
+          // Thêm marginTop để tạo khoảng cách với icon ở trên
+          style={[styles.deleteButton, { marginTop: 12 }]}
+          onPress={() => handleDeleteItem(test.testId._id)}
+        >
+          <Ionicons name="trash-outline" size={24} color="#EF4444" />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -170,14 +209,11 @@ const AssessmentListScreen = ({ navigation }) => {
         <Ionicons name="add-circle-outline" size={20} color="white" />
         <Text style={styles.createButtonText}>Create New Test</Text>
       </TouchableOpacity>
-
       <CreateTestModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSubmit={(data) => {
-          console.log("Test created:", data);
-          // 👉 Bạn có thể gọi API tạo test ở đây, ví dụ:
-          // await testApi.createTest(data);
+          console.log("Test created:", data); // 👉 Bạn có thể gọi API tạo test ở đây, ví dụ: // await testApi.createTest(data);
         }}
       />
     </View>
@@ -228,6 +264,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     elevation: 3,
+    position: "relative",
   },
   testIcon: {
     width: 60,
@@ -285,6 +322,15 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 20,
+  },
+  deleteButton: {
+    position: "absolute", // "Dán" nút vào vị trí cố định
+    top: 8, // Cách mép trên 8px
+    right: 8, // Cách mép phải 8px
+    zIndex: 10, // Đảm bảo nút xóa nằm trên cùng, bấm được
+    padding: 4, // Tăng diện tích bấm cho dễ
+    backgroundColor: "rgba(255, 255, 255, 0.9)", // (Tuỳ chọn) Nền trắng mờ để icon rõ hơn
+    borderRadius: 12,
   },
 });
 

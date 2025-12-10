@@ -156,6 +156,12 @@ export default function ModalCreateCustomTest({ visible, onClose, onSubmit }) {
     if (!level || !numQuestions || !timeLimit) {
       return Alert.alert("Missing Info", "Please fill in all required fields.");
     }
+    if (isNaN(toeicScore) || toeicScore < 10 || toeicScore > 990) {
+      return Alert.alert(
+        "Invalid TOEIC Score",
+        "Score must be between 10 - 990."
+      );
+    }
     if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 30) {
       return Alert.alert("Invalid Number", "Questions must be between 1-30.");
     }

@@ -29,4 +29,6 @@ const attemptDetailSchema = new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("AttemptDetail", attemptDetailSchema);
+module.exports =
+  mongoose.models.AttemptDetail ||
+  mongoose.model("AttemptDetail", attemptDetailSchema);

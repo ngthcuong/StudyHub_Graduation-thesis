@@ -245,6 +245,8 @@ const TestResultsScreen = ({ navigation }) => {
 
   // --- JSX Rendering ---
 
+  console.log(personalized_plan.weekly_goals);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -619,12 +621,12 @@ const TestResultsScreen = ({ navigation }) => {
                                 {week.materials.map((material, matIdx) => (
                                   <Chip
                                     key={matIdx}
-                                    icon="video-library"
+                                    icon="folder-video"
                                     style={{ margin: 4 }}
                                     mode="outlined"
                                     compact
                                   >
-                                    {material}
+                                    {material?.title}
                                   </Chip>
                                 ))}
                               </View>

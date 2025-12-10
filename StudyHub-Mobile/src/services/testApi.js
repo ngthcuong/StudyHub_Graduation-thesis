@@ -195,4 +195,10 @@ export const testApi = {
     const response = await api.patch(`/attempts/${attemptId}`, updateData);
     return response.data;
   },
+
+  // delete test by id
+  deleteTestById: async (testId) => {
+    const response = await api.delete(`/tests/${testId}`);
+    return response.data;
+  },
 };

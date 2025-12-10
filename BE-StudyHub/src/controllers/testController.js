@@ -3,6 +3,7 @@ const Question = require("../schemas/Question");
 const TestAttempt = require("../schemas/TestAttempt");
 const User = require("../schemas/User");
 const Course = require("../schemas/Course");
+const AttemptDetail = require("../schemas/AttemptDetail");
 const GrammarLesson = require("../schemas/GrammarLesson");
 
 const createTest = async (req, res) => {
@@ -123,6 +124,18 @@ const deleteTestById = async (req, res) => {
   try {
     const { testId } = req.params;
     if (!testId) return res.status(404).json({ error: "Test ID not found" });
+
+    const attempts = await TestAttempt.find({ testId: testId });
+
+    const attemptIds = attempts.map((attempt) => attempt._id);
+
+    if (attemptIds.length > 0) {
+      await AttemptDetail.deleteMany({ attemptId: { $in: attemptIds } });
+    }
+
+    await TestAttempt.deleteMany({ testId: testId });
+
+    await Question.deleteMany({ testId: testId });
 
     const deleted = await testModel.deleteTestById(testId);
     if (!deleted) return res.status(404).json({ error: "Test not found" });

@@ -5,13 +5,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   Animated,
-  Easing,
-  Dimensions,
 } from "react-native";
 
 const SubmittingTestLoader = () => {
-  const [progress, setProgress] = useState(new Animated.Value(0));
-  const screenWidth = Dimensions.get("window").width - 40; // padding 20 x2
+  // 1. State quản lý index của câu nhắc (Tip)
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+  // 2. Animated Value cho thanh tiến trình (dùng useRef để giữ giá trị không bị reset khi render lại)
+  const progress = useRef(new Animated.Value(0)).current;
 
   const submissionTips = [
     "Analyzing your answers...",
@@ -23,27 +24,27 @@ const SubmittingTestLoader = () => {
   ];
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(progress, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-        Animated.timing(progress, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-      ])
-    ).start();
+    // --- LOGIC 1: Đổi Tip mỗi 4 giây ---
+    const tipInterval = setInterval(() => {
+      setCurrentTipIndex((prev) => (prev + 1) % submissionTips.length);
+    }, 4000);
+
+    // --- LOGIC 2: Chạy thanh Progress trong 28 giây ---
+    // Chạy đến 95% rồi dừng lại chờ API thực (tránh chạy lố 100% khi chưa xong)
+    Animated.timing(progress, {
+      toValue: 0.95,
+      duration: 28000, // 28 giây
+      useNativeDriver: false, // width không hỗ trợ native driver
+    }).start();
+
+    // Cleanup khi component unmount
+    return () => clearInterval(tipInterval);
   }, []);
 
+  // Biến đổi giá trị 0-1 thành chiều rộng %
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, screenWidth],
+    outputRange: ["0%", "100%"],
   });
 
   return (
@@ -56,18 +57,30 @@ const SubmittingTestLoader = () => {
         style={{ marginVertical: 20 }}
       />
 
-      {submissionTips[0] && <Text style={styles.tip}>{submissionTips[0]}</Text>}
+      {/* --- HIỂN THỊ TIP THAY ĐỔI --- */}
+      {submissionTips.length > 0 && (
+        <View style={styles.tipContainer}>
+          <Text style={styles.tip}>
+            Did you know? {submissionTips[currentTipIndex]}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Your test is being processed...</Text>
+        <Text style={styles.cardTitle}>Processing results...</Text>
+
+        {/* Thanh Progress Bar */}
         <View style={styles.progressBackground}>
           <Animated.View
-            style={[styles.progressBar, { width: progressWidth }]}
+            style={[
+              styles.progressBar,
+              { width: progressWidth }, // Gắn biến width vào đây
+            ]}
           />
         </View>
+
         <Text style={styles.cardSubtitle}>
-          Please wait while we analyze your answers and prepare your
-          personalized results.
+          Estimated time: 20-30 seconds. Please do not close the app.
         </Text>
       </View>
     </View>
@@ -83,18 +96,24 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
     color: "#059669",
     textAlign: "center",
+    marginBottom: 10,
+  },
+  tipContainer: {
+    height: 60,
+    paddingHorizontal: 10,
+    justifyContent: "center",
+    marginBottom: 10,
   },
   tip: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "500",
     color: "#047857",
     textAlign: "center",
-    minHeight: 48,
-    marginVertical: 12,
+    fontStyle: "italic",
   },
   card: {
     width: "100%",
@@ -111,23 +130,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#374151",
-    marginBottom: 12,
+    marginBottom: 5,
   },
   progressBackground: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#d1fae5",
+    height: 10,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 5,
+    width: "100%",
+    marginVertical: 15,
     overflow: "hidden",
-    marginBottom: 12,
   },
   progressBar: {
     height: "100%",
     backgroundColor: "#059669",
-    borderRadius: 4,
+    borderRadius: 5,
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#6b7280",
+    textAlign: "center",
   },
 });
 
