@@ -172,8 +172,8 @@ const TestMultipleChoiceCustom = () => {
   // const testTitle = MOCK_PAYLOAD_FORM?.title;
 
   useEffect(() => {
-    if (test?.durationMin) {
-      const duration = test?.durationMin;
+    if (test?.data?.durationMin || test?.durationMin) {
+      const duration = test?.data?.durationMin || test?.durationMin;
 
       setTimeLeft(duration * 60);
     }
@@ -552,7 +552,7 @@ const TestMultipleChoiceCustom = () => {
         {/* Header */}
         <Box className="bg-white rounded-xl shadow p-4 mb-4 flex justify-between items-center">
           <Typography variant="h6" fontWeight={700} color="#22223b">
-            {test?.title}
+            {test?.title || test?.data?.title}
           </Typography>
           <Chip
             icon={<AccessTimeOutlinedIcon />}
