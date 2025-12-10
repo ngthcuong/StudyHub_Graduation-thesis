@@ -3,7 +3,7 @@ const Question = require("../schemas/Question");
 const TestAttempt = require("../schemas/TestAttempt");
 const User = require("../schemas/User");
 const Course = require("../schemas/Course");
-const AttemptDetail = require("../schemas/AttemptDetail");
+const AttemptDetail = require("../schemas/attemptDetail");
 const GrammarLesson = require("../schemas/GrammarLesson");
 
 const createTest = async (req, res) => {
