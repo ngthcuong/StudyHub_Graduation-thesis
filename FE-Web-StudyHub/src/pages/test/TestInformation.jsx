@@ -123,6 +123,16 @@ const TestInformation = () => {
 
   const handleStartTest = () => {
     localStorage.removeItem("test_initialized");
+    if (testInfoState.isTheLastTest && user.walletAddress === null) {
+      dispatch(
+        openSnackbar({
+          message: `Please add wallet address in your profile before taking this test.`,
+          severity: "error",
+        })
+      );
+      return;
+    }
+
     // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
     if (testInfor) {
       if (!user?.currentLevel || !testInfor?.examType) {
@@ -149,15 +159,7 @@ const TestInformation = () => {
         );
         return;
       }
-      if (testInfor.isTheLastTest && !user.walletAddress) {
-        dispatch(
-          openSnackbar({
-            message: `Please add wallet address in your profile before taking this test.`,
-            severity: "error",
-          })
-        );
-        return;
-      }
+
       // Nếu có currentLevel phù hợp, bắt đầu làm bài
       navigate(`/test/${testPool._id || testId}/attempt`, {
         state: { testId: testPool._id || testId },

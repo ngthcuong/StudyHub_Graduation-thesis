@@ -24,6 +24,7 @@ import {
   useCreateAttemptMutation,
   useSubmitTestMutation,
   useGetQuestionsByTestIdMutation,
+  useGetTestByTestIdMutation,
   // useUpdateTestPoolMutation,
 } from "../../services/testApi";
 
@@ -55,12 +56,24 @@ const TestMultipleChoice = () => {
   }, [testId]);
 
   useEffect(() => {
-    // Chỉ chạy khi test đã được load lần đầu và có durationMin
-    const durationMin = test?.data?.durationMin;
-    if (durationMin && durationMin > 0 && timeLeft === null) {
-      setTimeLeft(durationMin * 60); // Đặt giá trị chính xác bằng giây (ví dụ: 30 * 60 = 1800)
-    }
-  }, [test, timeLeft]);
+    const fetchTestAndSetDuration = async () => {
+      if (testId && timeLeft === null) {
+        try {
+          const res = await getTestByTestId(testId).unwrap();
+          setTest(res);
+          const durationMin = res?.data?.durationMin;
+          if (durationMin && durationMin > 0) {
+            setTimeLeft(durationMin * 60);
+          }
+        } catch (error) {
+          console.error("Error fetching test:", error);
+        }
+      }
+    };
+
+    fetchTestAndSetDuration();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testId]);
 
   // Gọi API
 
@@ -68,6 +81,7 @@ const TestMultipleChoice = () => {
   const [createAttemptTrigger] = useCreateAttemptMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
   const [getQuestionsByTestIdTrigger] = useGetQuestionsByTestIdMutation();
+  const [getTestByTestId] = useGetTestByTestIdMutation();
   // const [updateTestPoolTrigger] = useUpdateTestPoolMutation();
 
   const startTest = async () => {

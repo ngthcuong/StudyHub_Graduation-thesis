@@ -32,9 +32,7 @@ import {
   Delete as DeleteIcon,
   ExpandMore as ExpandMoreIcon,
   MenuBook as MenuBookIcon,
-  VideoLibrary as VideoLibraryIcon,
   Description as DescriptionIcon,
-  Article as ArticleIcon,
 } from "@mui/icons-material";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -45,7 +43,6 @@ import {
 } from "../services/courseApi";
 import { toast } from "react-toastify";
 import RichTextEditorModal from "./RichTextEditorModal";
-import FileUploadComponent from "./FileUploadComponent";
 
 // Validation schema for course information
 const courseInfoSchema = yup.object({
@@ -215,9 +212,11 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
       let sectionsData = [];
       if (course.grammarLessons && course.grammarLessons.length > 0) {
         sectionsData = course.grammarLessons.map((grammarLesson) => ({
+          _id: grammarLesson._id, // Preserve grammar lesson ID
           sectionName: grammarLesson.title,
           lessons: grammarLesson.parts
             ? grammarLesson.parts.map((part) => ({
+                _id: part._id, // Preserve part ID
                 lessonName: part.title,
                 contentType: part.contentType || "text",
                 content: part.content || "",
@@ -324,11 +323,8 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
     currentSections[sectionIndex].lessons.push({
       lessonName: "",
       contentType: "text",
-      videoUrl: "",
-      attachmentUrl: "",
       description: "",
       content: "",
-      lectureNotes: "",
     });
     setValue("sections", currentSections);
     // Keep the current section expanded
@@ -396,39 +392,6 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
       );
     } else {
       console.error("Failed to save content: invalid section or lesson index");
-    }
-  };
-
-  // Handle file upload for lessons
-  const handleFileUpload = (sectionIndex, lessonIndex, url) => {
-    const currentSections = [...watchedSections];
-    if (
-      currentSections[sectionIndex] &&
-      currentSections[sectionIndex].lessons[lessonIndex]
-    ) {
-      const lesson = currentSections[sectionIndex].lessons[lessonIndex];
-      if (lesson.contentType === "video") {
-        lesson.videoUrl = url;
-      } else if (lesson.contentType === "document") {
-        lesson.attachmentUrl = url;
-      }
-      setValue("sections", currentSections);
-    }
-  };
-
-  const handleUrlChange = (sectionIndex, lessonIndex, url) => {
-    const currentSections = [...watchedSections];
-    if (
-      currentSections[sectionIndex] &&
-      currentSections[sectionIndex].lessons[lessonIndex]
-    ) {
-      const lesson = currentSections[sectionIndex].lessons[lessonIndex];
-      if (lesson.contentType === "video") {
-        lesson.videoUrl = url;
-      } else if (lesson.contentType === "document") {
-        lesson.attachmentUrl = url;
-      }
-      setValue("sections", currentSections);
     }
   };
 
@@ -1090,7 +1053,7 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                       mb: 3,
                     }}
                   >
-                    <ArticleIcon sx={{ fontSize: 40, color: "#667eea" }} />
+                    <MenuBookIcon sx={{ fontSize: 40, color: "#667eea" }} />
                   </Box>
                   <Typography
                     variant="h6"
@@ -1224,6 +1187,19 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                             gap: 2,
                           }}
                         >
+                          {/* Hidden field to preserve section _id */}
+                          <Controller
+                            name={`sections.${sectionIndex}._id`}
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                type="hidden"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            )}
+                          />
+
                           {/* Section Name */}
                           <Controller
                             name={`sections.${sectionIndex}.sectionName`}
@@ -1432,6 +1408,19 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                             gap: 2,
                                           }}
                                         >
+                                          {/* Hidden field to preserve lesson _id */}
+                                          <Controller
+                                            name={`sections.${sectionIndex}.lessons.${lessonIndex}._id`}
+                                            control={control}
+                                            render={({ field }) => (
+                                              <input
+                                                type="hidden"
+                                                {...field}
+                                                value={field.value || ""}
+                                              />
+                                            )}
+                                          />
+
                                           <Controller
                                             name={`sections.${sectionIndex}.lessons.${lessonIndex}.lessonName`}
                                             control={control}
@@ -1458,256 +1447,104 @@ const ModalCreateCourse = ({ open, onClose, onSuccess, course = null }) => {
                                             )}
                                           />
 
-                                          <Controller
-                                            name={`sections.${sectionIndex}.lessons.${lessonIndex}.contentType`}
-                                            control={control}
-                                            render={({ field }) => (
-                                              <FormControl
-                                                fullWidth
-                                                size="small"
-                                              >
-                                                <InputLabel>
-                                                  Content Type
-                                                </InputLabel>
-                                                <Select
-                                                  {...field}
-                                                  label="Content Type"
-                                                  sx={{
-                                                    borderRadius: 2,
-                                                    bgcolor: "white",
-                                                    "&:hover .MuiOutlinedInput-notchedOutline":
-                                                      {
-                                                        borderColor: "#667eea",
-                                                      },
-                                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                                      {
-                                                        borderColor: "#667eea",
-                                                      },
-                                                  }}
-                                                >
-                                                  <MenuItem value="video">
-                                                    <Box
-                                                      sx={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 1.5,
-                                                      }}
-                                                    >
-                                                      <VideoLibraryIcon
-                                                        fontSize="small"
-                                                        sx={{
-                                                          color: "#667eea",
-                                                        }}
-                                                      />
-                                                      <span>Video</span>
-                                                    </Box>
-                                                  </MenuItem>
-                                                  <MenuItem value="document">
-                                                    <Box
-                                                      sx={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 1.5,
-                                                      }}
-                                                    >
-                                                      <DescriptionIcon
-                                                        fontSize="small"
-                                                        sx={{
-                                                          color: "#10b981",
-                                                        }}
-                                                      />
-                                                      <span>Document</span>
-                                                    </Box>
-                                                  </MenuItem>
-                                                  <MenuItem value="text">
-                                                    <Box
-                                                      sx={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 1.5,
-                                                      }}
-                                                    >
-                                                      <ArticleIcon
-                                                        fontSize="small"
-                                                        sx={{
-                                                          color: "#f59e0b",
-                                                        }}
-                                                      />
-                                                      <span>Text Content</span>
-                                                    </Box>
-                                                  </MenuItem>
-                                                </Select>
-                                              </FormControl>
-                                            )}
-                                          />
-
-                                          {/* Content based on type */}
-                                          {watchedSections[sectionIndex]
-                                            ?.lessons[lessonIndex]
-                                            ?.contentType === "text" && (
-                                            <Box>
-                                              <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  justifyContent:
-                                                    "space-between",
-                                                  alignItems: "center",
-                                                  mb: 2,
-                                                }}
-                                              >
-                                                <Typography
-                                                  variant="body2"
-                                                  sx={{
-                                                    fontWeight: 600,
-                                                    color: "text.primary",
-                                                  }}
-                                                >
-                                                  Text Content
-                                                </Typography>
-                                                <Button
-                                                  size="small"
-                                                  variant="outlined"
-                                                  onClick={() =>
-                                                    handleOpenRichTextEditor(
-                                                      sectionIndex,
-                                                      lessonIndex
-                                                    )
-                                                  }
-                                                  sx={{
-                                                    borderRadius: 2,
-                                                    borderColor: "#667eea",
-                                                    color: "#667eea",
-                                                    textTransform: "none",
-                                                    fontSize: "0.75rem",
-                                                    "&:hover": {
-                                                      borderColor: "#5568d3",
-                                                      bgcolor: "#f0f2ff",
-                                                    },
-                                                  }}
-                                                >
-                                                  Edit Content
-                                                </Button>
-                                              </Box>
-                                              <Paper
-                                                elevation={0}
-                                                sx={{
-                                                  p: 2,
-                                                  bgcolor: watchedSections[
-                                                    sectionIndex
-                                                  ]?.lessons[lessonIndex]
-                                                    ?.content
-                                                    ? "#f8f9ff"
-                                                    : "#f8f9fa",
-                                                  border: "1px solid",
-                                                  borderColor: watchedSections[
-                                                    sectionIndex
-                                                  ]?.lessons[lessonIndex]
-                                                    ?.content
-                                                    ? "#e3f2fd"
-                                                    : "divider",
-                                                  borderStyle: watchedSections[
-                                                    sectionIndex
-                                                  ]?.lessons[lessonIndex]
-                                                    ?.content
-                                                    ? "solid"
-                                                    : "dashed",
-                                                  borderRadius: 2,
-                                                  textAlign: watchedSections[
-                                                    sectionIndex
-                                                  ]?.lessons[lessonIndex]
-                                                    ?.content
-                                                    ? "left"
-                                                    : "center",
-                                                }}
-                                              >
-                                                <Typography
-                                                  variant="body2"
-                                                  color={
-                                                    watchedSections[
-                                                      sectionIndex
-                                                    ]?.lessons[lessonIndex]
-                                                      ?.content
-                                                      ? "text.primary"
-                                                      : "text.secondary"
-                                                  }
-                                                  sx={{
-                                                    fontStyle: watchedSections[
-                                                      sectionIndex
-                                                    ]?.lessons[lessonIndex]
-                                                      ?.content
-                                                      ? "normal"
-                                                      : "italic",
-                                                    lineHeight: 1.5,
-                                                  }}
-                                                >
-                                                  {getContentPreview(
-                                                    watchedSections[
-                                                      sectionIndex
-                                                    ]?.lessons[lessonIndex]
-                                                      ?.content
-                                                  )}
-                                                </Typography>
-                                              </Paper>
-                                            </Box>
-                                          )}
-
-                                          {(watchedSections[sectionIndex]
-                                            ?.lessons[lessonIndex]
-                                            ?.contentType === "video" ||
-                                            watchedSections[sectionIndex]
-                                              ?.lessons[lessonIndex]
-                                              ?.contentType === "document") && (
-                                            <Box>
+                                          {/* Text Content Editor */}
+                                          <Box>
+                                            <Box
+                                              sx={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                mb: 2,
+                                              }}
+                                            >
                                               <Typography
                                                 variant="body2"
                                                 sx={{
                                                   fontWeight: 600,
                                                   color: "text.primary",
-                                                  mb: 2,
                                                 }}
                                               >
-                                                {watchedSections[sectionIndex]
-                                                  ?.lessons[lessonIndex]
-                                                  ?.contentType === "video"
-                                                  ? "Video File"
-                                                  : "Document File"}
+                                                Text Content
                                               </Typography>
-                                              <FileUploadComponent
-                                                contentType={
-                                                  watchedSections[sectionIndex]
-                                                    ?.lessons[lessonIndex]
-                                                    ?.contentType
-                                                }
-                                                currentUrl={
-                                                  watchedSections[sectionIndex]
-                                                    ?.lessons[lessonIndex]
-                                                    ?.contentType === "video"
-                                                    ? watchedSections[
-                                                        sectionIndex
-                                                      ]?.lessons[lessonIndex]
-                                                        ?.videoUrl || ""
-                                                    : watchedSections[
-                                                        sectionIndex
-                                                      ]?.lessons[lessonIndex]
-                                                        ?.attachmentUrl || ""
-                                                }
-                                                onFileUpload={(url) =>
-                                                  handleFileUpload(
+                                              <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() =>
+                                                  handleOpenRichTextEditor(
                                                     sectionIndex,
-                                                    lessonIndex,
-                                                    url
+                                                    lessonIndex
                                                   )
                                                 }
-                                                onUrlChange={(url) =>
-                                                  handleUrlChange(
-                                                    sectionIndex,
-                                                    lessonIndex,
-                                                    url
-                                                  )
-                                                }
-                                              />
+                                                sx={{
+                                                  borderRadius: 2,
+                                                  borderColor: "#667eea",
+                                                  color: "#667eea",
+                                                  textTransform: "none",
+                                                  fontSize: "0.75rem",
+                                                  "&:hover": {
+                                                    borderColor: "#5568d3",
+                                                    bgcolor: "#f0f2ff",
+                                                  },
+                                                }}
+                                              >
+                                                Edit Content
+                                              </Button>
                                             </Box>
-                                          )}
+                                            <Paper
+                                              elevation={0}
+                                              sx={{
+                                                p: 2,
+                                                bgcolor: watchedSections[
+                                                  sectionIndex
+                                                ]?.lessons[lessonIndex]?.content
+                                                  ? "#f8f9ff"
+                                                  : "#f8f9fa",
+                                                border: "1px solid",
+                                                borderColor: watchedSections[
+                                                  sectionIndex
+                                                ]?.lessons[lessonIndex]?.content
+                                                  ? "#e3f2fd"
+                                                  : "divider",
+                                                borderStyle: watchedSections[
+                                                  sectionIndex
+                                                ]?.lessons[lessonIndex]?.content
+                                                  ? "solid"
+                                                  : "dashed",
+                                                borderRadius: 2,
+                                                textAlign: watchedSections[
+                                                  sectionIndex
+                                                ]?.lessons[lessonIndex]?.content
+                                                  ? "left"
+                                                  : "center",
+                                              }}
+                                            >
+                                              <Typography
+                                                variant="body2"
+                                                color={
+                                                  watchedSections[sectionIndex]
+                                                    ?.lessons[lessonIndex]
+                                                    ?.content
+                                                    ? "text.primary"
+                                                    : "text.secondary"
+                                                }
+                                                sx={{
+                                                  fontStyle: watchedSections[
+                                                    sectionIndex
+                                                  ]?.lessons[lessonIndex]
+                                                    ?.content
+                                                    ? "normal"
+                                                    : "italic",
+                                                  lineHeight: 1.5,
+                                                }}
+                                              >
+                                                {getContentPreview(
+                                                  watchedSections[sectionIndex]
+                                                    ?.lessons[lessonIndex]
+                                                    ?.content
+                                                )}
+                                              </Typography>
+                                            </Paper>
+                                          </Box>
 
                                           <Controller
                                             name={`sections.${sectionIndex}.lessons.${lessonIndex}.description`}

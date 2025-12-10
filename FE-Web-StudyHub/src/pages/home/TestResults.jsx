@@ -79,7 +79,11 @@ const TestResults = () => {
         };
       });
 
-      setCompletedTests(mapped);
+      const sorted = mapped.sort((a, b) => {
+        return new Date(b.completedAt) - new Date(a.completedAt);
+      });
+
+      setCompletedTests(sorted);
     } catch (error) {
       console.error("Error loading completed tests:", error);
       setCompletedTests([]);
@@ -479,13 +483,14 @@ const TestResults = () => {
 
                       <Typography variant="body2" color="#6B7280">
                         Completed:{" "}
-                        {new Date(item.completedAt).toLocaleString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(item.completedAt).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )}
                       </Typography>
                     </Box>
 

@@ -18,7 +18,7 @@ const CertificateTemplate = ({ open, onClose, certificate }) => {
     <Modal open={open} onClose={onClose}>
       <div className="relative mx-auto w-full max-w-5xl bg-[#f2f2f2] rounded-md shadow-[0_0_0_1px_#d4d4d4,0_4px_16px_-2px_rgba(0,0,0,0.08)] print:shadow-none print:bg-white p-8 md:p-10 font-[system-ui]">
         {/* Top Accent Bar */}
-        <div className="absolute top-1 left-1 right-1 h-[4px] bg-[#376bd5] rounded" />
+        <div className="absolute top-1 left-1 right-1 h-1 bg-[#376bd5] rounded" />
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-10">

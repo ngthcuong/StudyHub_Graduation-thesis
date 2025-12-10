@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Drawer,
@@ -35,7 +35,7 @@ export default function AdminLayout() {
   const dispatch = useDispatch();
 
   // Check user role
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user || user.role !== "admin") {
       navigate("/", { replace: true });
     }
