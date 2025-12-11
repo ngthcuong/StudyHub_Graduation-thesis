@@ -17,11 +17,12 @@ import {
   Typography,
   Box,
   IconButton,
-  Autocomplete,
   Paper,
   Alert,
   CircularProgress,
   Backdrop,
+  OutlinedInput,
+  Chip,
 } from "@mui/material";
 import { Close as CloseIcon, Star as StarIcon } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
@@ -37,26 +38,171 @@ import {
   useAddTestToLessonMutation,
 } from "../services/grammarLessonApi";
 
-// Validation schema
+const grammarTopics = [
+  { value: "Tenses - Present Simple", label: "Tenses - Present Simple" },
+  {
+    value: "Tenses - Present Continuous",
+    label: "Tenses - Present Continuous",
+  },
+  { value: "Tenses - Present Perfect", label: "Tenses - Present Perfect" },
+  {
+    value: "Tenses - Present Perfect Continuous",
+    label: "Tenses - Present Perfect Continuous",
+  },
+  { value: "Tenses - Past Simple", label: "Tenses - Past Simple" },
+  { value: "Tenses - Past Continuous", label: "Tenses - Past Continuous" },
+  { value: "Tenses - Past Perfect", label: "Tenses - Past Perfect" },
+  {
+    value: "Tenses - Past Perfect Continuous",
+    label: "Tenses - Past Perfect Continuous",
+  },
+  {
+    value: "Tenses - Future Simple (will / be going to)",
+    label: "Tenses - Future Simple (will / be going to)",
+  },
+  { value: "Tenses - Future Continuous", label: "Tenses - Future Continuous" },
+  { value: "Tenses - Future Perfect", label: "Tenses - Future Perfect" },
+  { value: "Word Types - Nouns", label: "Word Types - Nouns" },
+  { value: "Word Types - Verbs", label: "Word Types - Verbs" },
+  { value: "Word Types - Adjectives", label: "Word Types - Adjectives" },
+  { value: "Word Types - Adverbs", label: "Word Types - Adverbs" },
+  { value: "Word Types - Pronouns", label: "Word Types - Pronouns" },
+  { value: "Word Types - Prepositions", label: "Word Types - Prepositions" },
+  { value: "Word Types - Conjunctions", label: "Word Types - Conjunctions" },
+  { value: "Passive Voice", label: "Passive Voice" },
+  { value: "Clauses - Relative Clauses", label: "Clauses - Relative Clauses" },
+  { value: "Clauses - Noun Clauses", label: "Clauses - Noun Clauses" },
+  {
+    value: "Clauses - Adverbial Clauses",
+    label: "Clauses - Adverbial Clauses",
+  },
+  {
+    value: "Conditional Sentences - Type 1",
+    label: "Conditional Sentences - Type 1",
+  },
+  {
+    value: "Conditional Sentences - Type 2",
+    label: "Conditional Sentences - Type 2",
+  },
+  {
+    value: "Conditional Sentences - Type 3",
+    label: "Conditional Sentences - Type 3",
+  },
+  {
+    value: "Conditional Sentences - Mixed Type",
+    label: "Conditional Sentences - Mixed Type",
+  },
+  { value: "Comparisons - As...as", label: "Comparisons - As...as" },
+  { value: "Comparisons - Comparative", label: "Comparisons - Comparative" },
+  { value: "Comparisons - Superlative", label: "Comparisons - Superlative" },
+  {
+    value: "Comparisons - Double Comparison (The more... the more...)",
+    label: "Comparisons - Double Comparison (The more... the more...)",
+  },
+  {
+    value: "Gerunds & Infinitives - V-ing after verbs",
+    label: "Gerunds & Infinitives - V-ing after verbs",
+  },
+  {
+    value: "Gerunds & Infinitives - To-V after verbs",
+    label: "Gerunds & Infinitives - To-V after verbs",
+  },
+  {
+    value: "Gerunds & Infinitives - Both with meaning difference",
+    label: "Gerunds & Infinitives - Both with meaning difference",
+  },
+  { value: "Subject-Verb Agreement", label: "Subject-Verb Agreement" },
+  { value: "Reported Speech", label: "Reported Speech" },
+  { value: "Inversion", label: "Inversion" },
+  { value: "Connectors & Transitions", label: "Connectors & Transitions" },
+  {
+    value: "Participles (V-ing / V3 used as adjectives)",
+    label: "Participles (V-ing / V3 used as adjectives)",
+  },
+  { value: "Subjunctive Mood", label: "Subjunctive Mood" },
+];
+
+const vocabularyTopics = [
+  { value: "Common Everyday Vocabulary", label: "Common Everyday Vocabulary" },
+  { value: "Collocations", label: "Collocations" },
+  { value: "Idioms & Phrases", label: "Idioms & Phrases" },
+  { value: "Phrasal Verbs", label: "Phrasal Verbs" },
+  { value: "Synonyms & Antonyms", label: "Synonyms & Antonyms" },
+  {
+    value: "Word Formation (Prefixes & Suffixes)",
+    label: "Word Formation (Prefixes & Suffixes)",
+  },
+  {
+    value: "Confusing Words (e.g. make/do, say/tell, bring/take)",
+    label: "Confusing Words (e.g. make/do, say/tell, bring/take)",
+  },
+  { value: "Academic Vocabulary", label: "Academic Vocabulary" },
+  { value: "TOEIC Vocabulary", label: "TOEIC Vocabulary" },
+  { value: "IELTS Vocabulary", label: "IELTS Vocabulary" },
+  {
+    value: "Transition Words & Connectors",
+    label: "Transition Words & Connectors",
+  },
+  {
+    value: "Adjective + Noun / Verb + Noun Combinations",
+    label: "Adjective + Noun / Verb + Noun Combinations",
+  },
+  { value: "Business English", label: "Business English" },
+  {
+    value: "Office & Company Vocabulary",
+    label: "Office & Company Vocabulary",
+  },
+  { value: "Travel & Tourism", label: "Travel & Tourism" },
+  { value: "Technology & IT Vocabulary", label: "Technology & IT Vocabulary" },
+  { value: "Health & Medicine", label: "Health & Medicine" },
+  { value: "Education & Learning", label: "Education & Learning" },
+  { value: "Environment & Nature", label: "Environment & Nature" },
+  { value: "Marketing & Sales", label: "Marketing & Sales" },
+  { value: "Finance & Banking", label: "Finance & Banking" },
+  { value: "Customer Service", label: "Customer Service" },
+  { value: "Meetings & Presentations", label: "Meetings & Presentations" },
+  { value: "Conversational English", label: "Conversational English" },
+  { value: "Social English Expressions", label: "Social English Expressions" },
+  {
+    value: "Email & Professional Writing Vocabulary",
+    label: "Email & Professional Writing Vocabulary",
+  },
+  {
+    value: "Telephone & Online Communication",
+    label: "Telephone & Online Communication",
+  },
+];
+
 const schema = yup.object({
   title: yup.string().required("Test title is required"),
   description: yup.string().required("Description is required"),
   courseId: yup.string().required("Course is required"),
   grammarLessonId: yup.string().nullable(),
   topic: yup.array().min(1, "At least one topic is required"),
-  skill: yup.string().required("Primary skill is required"),
+  skill: yup.array().min(1, "At least one skill is required"),
   questionTypes: yup.array().min(1, "Question type is required"),
   examType: yup.string().required("Exam type is required"),
   numQuestions: yup
     .number()
     .required("Number of questions is required")
+    .positive("Number of questions must be a positive number")
     .min(1, "Must have at least 1 question")
-    .max(30, "Cannot exceed 30 questions"),
+    .max(30, "Cannot exceed 30 questions")
+    .integer("Number of questions must be a whole number"),
   durationMin: yup
     .number()
     .required("Duration is required")
-    .min(1, "Duration must be at least 1 minute"),
-  maxAttempts: yup.number().nullable(),
+    .positive("Duration must be a positive number")
+    .min(1, "Duration must be at least 1 minute")
+    .integer("Duration must be a whole number"),
+  maxAttempts: yup
+    .number()
+    .nullable()
+    .positive("Maximum attempts must be a positive number")
+    .integer("Maximum attempts must be a whole number")
+    .transform((value, originalValue) =>
+      originalValue === "" || originalValue === null ? null : value
+    ),
   passingScore: yup
     .number()
     .required("Passing score is required")
@@ -74,29 +220,14 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
     error: coursesError,
   } = useGetCoursesQuery();
 
-  // Lessons state và API
   const [lessons, setLessons] = useState([]);
   const [lessonsLoading, setLessonsLoading] = useState(false);
   const [getLessonsByCourseId] = useGetLessonsByCourseIdMutation();
   const [addTestToLesson] = useAddTestToLessonMutation();
 
-  // Processing state
   const [isProcessing, setIsProcessing] = useState(false);
-
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [createdTestData, setCreatedTestData] = useState(null);
-
-  // Debug logging
-  useEffect(() => {
-    if (coursesData) {
-      console.log("Courses data structure:", coursesData);
-      console.log("Type of coursesData:", typeof coursesData);
-      console.log("Is coursesData an array:", Array.isArray(coursesData));
-    }
-    if (coursesError) {
-      console.error("Courses API error:", coursesError);
-    }
-  }, [coursesData, coursesError]);
 
   const {
     control,
@@ -112,7 +243,7 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
       courseId: "",
       grammarLessonId: "",
       topic: [],
-      skill: "",
+      skill: [],
       questionTypes: [],
       examType: "",
       numQuestions: 10,
@@ -125,8 +256,8 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
 
   const passingScore = watch("passingScore");
   const selectedCourseId = watch("courseId");
+  const selectedSkills = watch("skill");
 
-  // Load lessons when course changes and set exam type from course
   useEffect(() => {
     const loadLessons = async () => {
       if (selectedCourseId) {
@@ -143,7 +274,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
           setLessonsLoading(false);
         }
 
-        // Set exam type from selected course's courseType
         const selectedCourse = coursesData?.find(
           (course) => course._id === selectedCourseId
         );
@@ -173,12 +303,8 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   })();
 
   const skills = [
-    // { value: "reading", label: "Reading" },
-    // { value: "writing", label: "Writing" },
-    // { value: "listening", label: "Listening" },
-    // { value: "speaking", label: "Speaking" },
-    { value: "vocabulary", label: "Vocabulary" },
     { value: "grammar", label: "Grammar" },
+    { value: "vocabulary", label: "Vocabulary" },
   ];
 
   const questionTypes = [
@@ -191,33 +317,20 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
     { value: "IELTS", label: "IELTS" },
   ];
 
-  const topics = [
-    { value: "Present Tense", label: "Present Tense" },
-    { value: "Past Tense", label: "Past Tense" },
-    { value: "Future Tense", label: "Future Tense" },
-    { value: "Conditional Sentences", label: "Conditional Sentences" },
-    { value: "Passive Voice", label: "Passive Voice" },
-    { value: "Modal Verbs", label: "Modal Verbs" },
-    { value: "Adjectives", label: "Adjectives" },
-    { value: "Adverbs", label: "Adverbs" },
-    { value: "Prepositions", label: "Prepositions" },
-    { value: "Phrasal Verbs", label: "Phrasal Verbs" },
-    { value: "Vocabulary Building", label: "Vocabulary Building" },
-    { value: "Reading Comprehension", label: "Reading Comprehension" },
-    { value: "Listening Skills", label: "Listening Skills" },
-    { value: "Writing Skills", label: "Writing Skills" },
-    { value: "Speaking Practice", label: "Speaking Practice" },
-  ];
-
   const onSubmit = async (data) => {
     try {
       setIsProcessing(true);
+
+      const primarySkill =
+        Array.isArray(data.skill) && data.skill.length > 0
+          ? data.skill[0]
+          : "grammar";
 
       const testData = {
         title: data.title,
         description: data.description,
         topic: data.topic.join(", "),
-        skill: data.skill,
+        skill: primarySkill,
         durationMin: data.durationMin,
         courseId: data.courseId,
         numQuestions: data.numQuestions,
@@ -231,7 +344,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
       const result = await createTest(testData).unwrap();
       setCreatedTestData(result);
 
-      // Bước 1: Thêm test vào lesson nếu có
       if (data.grammarLessonId) {
         await addTestToLesson({
           lessonId: data.grammarLessonId,
@@ -239,7 +351,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
         }).unwrap();
       }
 
-      // Bước 2: Tự động tạo questions
       const selectedCourse = coursesData?.find(
         (course) => course._id === data.courseId
       );
@@ -556,10 +667,10 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                     control={control}
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.grammarLessonId}>
-                        <InputLabel>Grammar Lesson (Optional)</InputLabel>
+                        <InputLabel>Lesson (Optional)</InputLabel>
                         <Select
                           {...field}
-                          label="Grammar Lesson (Optional)"
+                          label="Lesson (Optional)"
                           disabled={lessonsLoading}
                           sx={{
                             borderRadius: 2,
@@ -621,10 +732,20 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                     control={control}
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.skill}>
-                        <InputLabel>Primary Skill *</InputLabel>
+                        <InputLabel>Skills *</InputLabel>
                         <Select
                           {...field}
-                          label="Primary Skill *"
+                          multiple
+                          label="Skills *"
+                          renderValue={(selected) =>
+                            selected
+                              .map(
+                                (s) =>
+                                  skills.find((skill) => skill.value === s)
+                                    ?.label
+                              )
+                              .join(", ")
+                          }
                           sx={{
                             borderRadius: 2,
                             "&:hover .MuiOutlinedInput-notchedOutline": {
@@ -637,6 +758,15 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                         >
                           {skills.map((skill) => (
                             <MenuItem key={skill.value} value={skill.value}>
+                              <Checkbox
+                                checked={field.value?.includes(skill.value)}
+                                sx={{
+                                  color: "#667eea",
+                                  "&.Mui-checked": {
+                                    color: "#667eea",
+                                  },
+                                }}
+                              />
                               {skill.label}
                             </MenuItem>
                           ))}
@@ -661,7 +791,6 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                           label="Question Type *"
                           value={field.value?.[0] || ""}
                           onChange={(e) => {
-                            // Convert single value to array
                             field.onChange([e.target.value]);
                           }}
                           sx={{
@@ -690,69 +819,239 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
                   />
                 </Box>
 
-                {/* Topics */}
-                <Controller
-                  name="topic"
-                  control={control}
-                  render={({ field: { onChange, value, ...field } }) => (
-                    <Autocomplete
-                      {...field}
-                      multiple
-                      options={topics}
-                      getOptionLabel={(option) => option.label}
-                      value={topics.filter((topic) =>
-                        value?.includes(topic.value)
-                      )}
-                      onChange={(_, newValue) => {
-                        onChange(newValue.map((item) => item.value));
-                      }}
-                      isOptionEqualToValue={(option, value) =>
-                        option.value === value.value
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Topics *"
-                          placeholder="Search and select topics..."
-                          error={!!errors.topic}
-                          helperText={errors.topic?.message}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 2,
-                              "&:hover fieldset": {
-                                borderColor: "#667eea",
-                              },
-                              "&.Mui-focused fieldset": {
-                                borderColor: "#667eea",
-                              },
-                            },
-                          }}
-                        />
-                      )}
-                      renderOption={(props, option, { selected }) => (
-                        <li {...props}>
-                          <Checkbox
-                            style={{ marginRight: 8 }}
-                            checked={selected}
-                          />
-                          {option.label}
-                        </li>
-                      )}
-                      slotProps={{
-                        chip: {
-                          size: "medium",
-                          sx: {
-                            borderRadius: 2,
-                            bgcolor: "#e9ecfe",
-                            color: "#667eea",
-                            fontWeight: 500,
-                            border: "1px solid #d0d5f6",
-                          },
-                        },
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="#64748b"
+                    sx={{ mb: 1, fontWeight: 500 }}
+                  >
+                    Topics * (Maximum 5 topics)
+                  </Typography>
+
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                      gap: 2,
+                    }}
+                  >
+                    <Controller
+                      name="topic"
+                      control={control}
+                      render={({ field: { onChange, value } }) => {
+                        const grammarValues =
+                          value?.filter((v) =>
+                            grammarTopics.some((t) => t.value === v)
+                          ) || [];
+                        const vocabularyValues =
+                          value?.filter((v) =>
+                            vocabularyTopics.some((t) => t.value === v)
+                          ) || [];
+
+                        const handleGrammarChange = (event) => {
+                          const newGrammarValues = event.target.value;
+                          if (newGrammarValues.length <= 5) {
+                            const combinedValues = [
+                              ...newGrammarValues,
+                              ...vocabularyValues,
+                            ];
+                            onChange(combinedValues);
+                          }
+                        };
+
+                        const handleVocabularyChange = (event) => {
+                          const newVocabularyValues = event.target.value;
+                          if (newVocabularyValues.length <= 5) {
+                            const combinedValues = [
+                              ...grammarValues,
+                              ...newVocabularyValues,
+                            ];
+                            onChange(combinedValues);
+                          }
+                        };
+
+                        const totalSelected = value?.length || 0;
+
+                        return (
+                          <>
+                            <FormControl
+                              fullWidth
+                              disabled={!selectedSkills?.includes("grammar")}
+                            >
+                              <InputLabel>Grammar Topics</InputLabel>
+                              <Select
+                                multiple
+                                value={grammarValues}
+                                onChange={handleGrammarChange}
+                                input={<OutlinedInput label="Grammar Topics" />}
+                                renderValue={(selected) => (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      flexWrap: "wrap",
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    {selected.map((val) => {
+                                      const topic = grammarTopics.find(
+                                        (t) => t.value === val
+                                      );
+                                      return (
+                                        <Chip
+                                          key={val}
+                                          label={topic?.label || val}
+                                          size="small"
+                                        />
+                                      );
+                                    })}
+                                  </Box>
+                                )}
+                                sx={{
+                                  borderRadius: 2,
+                                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#667eea",
+                                  },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                    {
+                                      borderColor: "#667eea",
+                                    },
+                                }}
+                              >
+                                {grammarTopics.map((topic) => (
+                                  <MenuItem
+                                    key={topic.value}
+                                    value={topic.value}
+                                    disabled={
+                                      !grammarValues.includes(topic.value) &&
+                                      totalSelected >= 5
+                                    }
+                                  >
+                                    {topic.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+
+                            <FormControl
+                              fullWidth
+                              disabled={!selectedSkills?.includes("vocabulary")}
+                            >
+                              <InputLabel>Vocabulary Topics</InputLabel>
+                              <Select
+                                multiple
+                                value={vocabularyValues}
+                                onChange={handleVocabularyChange}
+                                input={
+                                  <OutlinedInput label="Vocabulary Topics" />
+                                }
+                                renderValue={(selected) => (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      flexWrap: "wrap",
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    {selected.map((val) => {
+                                      const topic = vocabularyTopics.find(
+                                        (t) => t.value === val
+                                      );
+                                      return (
+                                        <Chip
+                                          key={val}
+                                          label={topic?.label || val}
+                                          size="small"
+                                        />
+                                      );
+                                    })}
+                                  </Box>
+                                )}
+                                sx={{
+                                  borderRadius: 2,
+                                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#667eea",
+                                  },
+                                  "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                    {
+                                      borderColor: "#667eea",
+                                    },
+                                }}
+                              >
+                                {vocabularyTopics.map((topic) => (
+                                  <MenuItem
+                                    key={topic.value}
+                                    value={topic.value}
+                                    disabled={
+                                      !vocabularyValues.includes(topic.value) &&
+                                      totalSelected >= 5
+                                    }
+                                  >
+                                    {topic.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </>
+                        );
                       }}
                     />
+                  </Box>
+
+                  {errors.topic && (
+                    <FormHelperText error sx={{ mt: 1, ml: 2 }}>
+                      {errors.topic.message}
+                    </FormHelperText>
                   )}
-                />
+
+                  {/* <Controller
+                    name="topic"
+                    control={control}
+                    render={({ field: { value } }) =>
+                      value && value.length > 0 ? (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography
+                            variant="body2"
+                            color="#64748b"
+                            sx={{ mb: 1 }}
+                          >
+                            Selected Topics ({value.length}):
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              p: 2,
+                              bgcolor: "#f8f9ff",
+                              borderRadius: 2,
+                              border: "1px solid #e0e4f7",
+                            }}
+                          >
+                            {value.map((topicValue) => {
+                              const topic = [
+                                ...grammarTopics,
+                                ...vocabularyTopics,
+                              ].find((t) => t.value === topicValue);
+                              return (
+                                <Chip
+                                  key={topicValue}
+                                  label={topic?.label || topicValue}
+                                  size="medium"
+                                  sx={{
+                                    bgcolor: "#e9ecfe",
+                                    color: "#667eea",
+                                    fontWeight: 500,
+                                    border: "1px solid #d0d5f6",
+                                  }}
+                                />
+                              );
+                            })}
+                          </Box>
+                        </Box>
+                      ) : null
+                    }
+                  /> */}
+                </Box>
 
                 {/* Number of Questions, Duration, Maximum Attempts */}
                 <Box

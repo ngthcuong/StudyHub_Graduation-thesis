@@ -27,7 +27,9 @@ const VerifyCertificatePage = () => {
     }
 
     try {
-      const response = await verifyCertificate(code.trim()).unwrap();
+      const response = await verifyCertificate(
+        code.toUpperCase().trim()
+      ).unwrap();
 
       if (!response.certificate || response.trustLevel === "rejected") {
         if (response.errors && response.errors.length > 0) {
@@ -108,10 +110,14 @@ const VerifyCertificatePage = () => {
               size="medium"
               placeholder="Enter certificate code (e.g., CERT-250908-628UZJ)"
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              onChange={(e) => setCode(e.target.value)}
               slotProps={{
                 input: {
-                  style: { fontSize: 14, background: "#fff" },
+                  style: {
+                    fontSize: 14,
+                    background: "#fff",
+                    textTransform: "uppercase",
+                  },
                 },
               }}
             />

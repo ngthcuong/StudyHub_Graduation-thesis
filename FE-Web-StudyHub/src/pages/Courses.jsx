@@ -281,7 +281,7 @@ const Courses = () => {
           elevation={2}
           sx={{ borderRadius: "16px", overflow: "hidden", p: 2.5 }}
         >
-          <Typography variant="h4" className="!font-bold !mb-3 !text-gray-800">
+          <Typography variant="h4" className="font-bold! mb-3! text-gray-800!">
             Explore Courses
           </Typography>
 

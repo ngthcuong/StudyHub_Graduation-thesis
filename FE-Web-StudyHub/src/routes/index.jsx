@@ -43,6 +43,7 @@ import PaymentSuccessPage from "../components/PaymentSuccessPage";
 import PaymentFailedPage from "../components/PaymentFailedPage";
 import CancelPaymentPage from "../components/CancelPaymentPage";
 import Courses from "../pages/Courses";
+import ViewCertificatePage from "../pages/certificate/ViewCertificatePage";
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
       {
         path: "/verify-certificate",
         element: <VerifyCertificatePage />,
+      },
+      {
+        path: "/view-certificate/:certificateCode",
+        element: <ViewCertificatePage />,
       },
       {
         element: <ProtectedLayout />,
