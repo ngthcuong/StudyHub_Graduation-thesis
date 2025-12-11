@@ -17,14 +17,17 @@ import {
   Business as BusinessIcon,
   MenuBook as MenuBookIcon,
   Download as DownloadIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import CopyButton from "./CopyButton";
 import { downloadCertificateAsImage } from "../utils/imageGenerator";
 import CertificateVerificationBadge from "./CertificateVerificationBadge";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const CertificateDetailModal = ({ open, onClose, certificate }) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const navigate = useNavigate();
 
   const user = useSelector((state) => state.auth.user);
   const isAdmin = user?.role === "admin";
@@ -37,6 +40,10 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
       month: "2-digit",
       day: "2-digit",
     });
+  };
+
+  const handleViewCertificate = () => {
+    navigate(`/view-certificate/${certificate.certificateCode}`);
   };
 
   const handleDownloadImage = async () => {
@@ -378,6 +385,15 @@ const CertificateDetailModal = ({ open, onClose, certificate }) => {
 
         {/* Action Buttons */}
         <div className="flex justify-center gap-3 mt-6 pt-4 border-t border-gray-200">
+          <Button
+            variant="contained"
+            color="primary"
+            className="normal-case"
+            onClick={handleViewCertificate}
+            startIcon={<VisibilityIcon />}
+          >
+            View Certificate
+          </Button>
           <Button
             variant="contained"
             color="success"
