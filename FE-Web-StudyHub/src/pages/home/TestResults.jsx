@@ -9,7 +9,7 @@ import {
   MenuItem,
   InputAdornment,
   Chip,
-  Pagination,
+  TablePagination,
   CircularProgress,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -38,8 +38,8 @@ const TestResults = () => {
   const [endDate, setEndDate] = useState(null);
 
   // Pagination state
-  const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [getListAttempt] = useGetListAttemptMutation();
 
@@ -127,21 +127,25 @@ const TestResults = () => {
   }, [search, examType, status, startDate, endDate, completedTests]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginatedTests = useMemo(() => {
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
     return filtered.slice(startIndex, endIndex);
-  }, [filtered, page, itemsPerPage]);
+  }, [filtered, page, rowsPerPage]);
 
   // Reset page when filter changes
   useEffect(() => {
-    setPage(1);
+    setPage(0);
   }, [search, examType, status, startDate, endDate]);
 
-  const handlePageChange = (_event, value) => {
-    setPage(value);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // Pagination handlers
+  const handleChangePage = (_event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const handleClearAll = () => {
@@ -417,15 +421,15 @@ const TestResults = () => {
                     >
                       {isPassed ? (
                         <CheckCircleIcon
-                          sx={{ fontSize: 24, color: scoreColor }}
+                          sx={{ fontSize: 20, color: scoreColor }}
                         />
                       ) : (
-                        <CancelIcon sx={{ fontSize: 24, color: scoreColor }} />
+                        <CancelIcon sx={{ fontSize: 20, color: scoreColor }} />
                       )}
                       <Typography
-                        variant="h6"
+                        // variant="h6"
                         fontWeight={700}
-                        sx={{ color: scoreColor, mt: 0.5 }}
+                        sx={{ color: scoreColor, mt: 0.5, fontSize: 18 }}
                       >
                         {item.score}%
                       </Typography>
@@ -437,7 +441,7 @@ const TestResults = () => {
                         // variant="h6"
                         fontWeight={600}
                         color="#1F2937"
-                        sx={{ mb: 0.5, fontSize: 18 }}
+                        sx={{ mb: 0.5, fontSize: 16 }}
                       >
                         {item.title || "Untitled Test"}
                       </Typography>
@@ -446,7 +450,7 @@ const TestResults = () => {
                         {item.skill && (
                           <Chip
                             label={item.skill.toUpperCase()}
-                            size="small"
+                            // size="small"
                             sx={{
                               backgroundColor: "#E0F2F1",
                               color: "#004D40",
@@ -458,7 +462,7 @@ const TestResults = () => {
                         {item.level && (
                           <Chip
                             label={item.level}
-                            size="small"
+                            // size="small"
                             sx={{
                               backgroundColor: "#F3E5F5",
                               color: "#4A148C",
@@ -470,7 +474,7 @@ const TestResults = () => {
                         {item.examType && (
                           <Chip
                             label={item.examType}
-                            size="small"
+                            // size="small"
                             sx={{
                               backgroundColor: "#FFF3E0",
                               color: "#E65100",
@@ -516,32 +520,34 @@ const TestResults = () => {
         )}
 
         {/* Pagination */}
-        {filtered.length > 0 && totalPages > 1 && (
+        {filtered.length > 0 && (
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
-              mt: 4,
-              mb: 2,
+              mt: 3,
             }}
           >
-            <Pagination
-              count={totalPages}
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filtered.length}
+              rowsPerPage={rowsPerPage}
               page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size="large"
-              showFirstButton
-              showLastButton
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
               sx={{
-                "& .MuiPaginationItem-root": {
-                  borderRadius: 2,
-                  fontWeight: 600,
+                "& .MuiTablePagination-toolbar": {
+                  fontSize: "1rem",
                 },
-                "& .Mui-selected": {
-                  backgroundColor: "#1976d2 !important",
-                  color: "white",
+                "& .MuiTablePagination-selectLabel": {
+                  fontSize: "1rem",
+                },
+                "& .MuiTablePagination-displayedRows": {
+                  fontSize: "1rem",
+                },
+                "& .MuiTablePagination-select": {
+                  fontSize: "1rem",
                 },
               }}
             />
