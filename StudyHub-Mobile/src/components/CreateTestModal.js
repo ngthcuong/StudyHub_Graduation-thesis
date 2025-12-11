@@ -256,7 +256,12 @@ export default function ModalCreateCustomTest({ visible, onClose, onSubmit }) {
       console.log("API Response:", response);
       apiSuccess = true;
       if (payload_form.questionType === "FIB") {
-        console.log("Navigating to FillExerciseCustom");
+        console.log("Navigating to FillExerciseCustom with:", {
+          payloadForm: { ...payload_form, testId: response?.data?._id },
+        });
+        navigation.navigate("FillExerciseCustom", {
+          payloadForm: { ...payload_form, testId: response?.data?._id },
+        });
       } else if (payload_form.questionType === "MCQ") {
         navigation.navigate("MultilExerciseCustom", {
           payloadForm: { ...payload_form, testId: response?.data?._id },

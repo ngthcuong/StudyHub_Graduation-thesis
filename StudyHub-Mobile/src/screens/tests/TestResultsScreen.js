@@ -39,7 +39,9 @@ const scoreRanges = {
 // --- Hàm tiện ích (Utility Functions) ---
 
 const formatTime = (s) => {
-  console.log("Formatting time:", s);
+  if (s <= 0 || isNaN(s)) {
+    return "0m:0s";
+  }
 
   const m = Math.floor(s / 60);
   const sec = s % 60;
@@ -52,12 +54,14 @@ const TestResultsScreen = ({ navigation }) => {
   const route = useRoute();
   const theme = useTheme(); // Lấy theme để custom style
   const resultData = route.params?.resultData; // Lấy dữ liệu từ route params
+  const formattedAnswers = route.params?.formattedAnswers || [];
   const completedTests = route.params?.completedTests || false;
   const user = useSelector((state) => state.auth.user);
 
   const [recommendedCourses, setRecommendedCourses] = useState([]);
 
   console.log("TestResultsScreen received resultData:", resultData);
+  console.log("Formatted Answers:", formattedAnswers);
 
   useEffect(() => {
     fetchCourses();
@@ -82,7 +86,8 @@ const TestResultsScreen = ({ navigation }) => {
       } else {
         recommended = resultData?.attemptDetail.analysisResult.post_test_level;
       }
-      const filtered = filteredCourse.filter((course) =>
+
+      const filtered = filteredCourse?.filter((course) =>
         scoreRanges[recommended].includes(
           `${course.courseType} ${course.courseLevel}`
         )
@@ -108,8 +113,6 @@ const TestResultsScreen = ({ navigation }) => {
       console.error("Error fetching courses for recommendations:", error);
     }
   };
-
-  console.log("Recommended courses based on test result:", recommendedCourses);
 
   const [tab, setTab] = useState(0);
 
@@ -245,7 +248,7 @@ const TestResultsScreen = ({ navigation }) => {
 
   // --- JSX Rendering ---
 
-  console.log(personalized_plan.weekly_goals);
+  console.log(personalized_plan?.weekly_goals);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -279,7 +282,7 @@ const TestResultsScreen = ({ navigation }) => {
             color={customColors.error}
           />
           <StatCard
-            value={formatTime(resultStats.time)}
+            value={formatTime(resultStats?.time)}
             subtitle={`${avgTime}s average per question`}
             icon="clock-time-four"
             color={customColors.info}
@@ -563,14 +566,14 @@ const TestResultsScreen = ({ navigation }) => {
                 )}
 
                 {/* Weekly Study Plan (Accordion) */}
-                {personalized_plan.weekly_goals &&
-                  personalized_plan.weekly_goals.length > 0 && (
+                {personalized_plan?.weekly_goals &&
+                  personalized_plan?.weekly_goals?.length > 0 && (
                     <View style={{ marginTop: 16 }}>
                       <Title style={styles.cardTitle}>
                         Weekly Study Plan (
-                        {personalized_plan.weekly_goals.length} weeks)
+                        {personalized_plan?.weekly_goals?.length} weeks)
                       </Title>
-                      {personalized_plan.weekly_goals.map((week, idx) => (
+                      {personalized_plan?.weekly_goals?.map((week, idx) => (
                         <List.Accordion
                           key={idx}
                           title={week.topic || "No topic specified"}
@@ -712,7 +715,7 @@ const TestResultsScreen = ({ navigation }) => {
         {/* Action Buttons */}
         {!completedTests && (
           <View style={styles.actionButtons}>
-            <Button
+            {/* <Button
               mode="contained"
               onPress={() =>
                 Alert.alert("Action", "Retake Test functionality triggered.")
@@ -722,7 +725,7 @@ const TestResultsScreen = ({ navigation }) => {
               icon="redo"
             >
               Retake Test
-            </Button>
+            </Button> */}
             <Button
               mode="outlined"
               onPress={() =>
@@ -735,14 +738,14 @@ const TestResultsScreen = ({ navigation }) => {
               View All Tests
             </Button>
 
-            {resultData.certificate && (
+            {resultData?.certificate && (
               <Button
                 mode="contained"
                 color={customColors.success} // Màu xanh lá cây
                 onPress={() =>
                   navigation.navigate("Profile", {
                     screen: "CertificateDetail",
-                    params: { item: resultData.certificate },
+                    params: { item: resultData?.certificate },
                   })
                 }
                 style={[

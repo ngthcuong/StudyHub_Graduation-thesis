@@ -30,41 +30,6 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
   const [date, setDate] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ⚙️ MOCK DATA QUESTIONS
-  const mockQuestions = [
-    {
-      _id: "q1",
-      questionText: "What is the capital of France?",
-      options: [
-        { _id: "a1", optionText: "Berlin" },
-        { _id: "a2", optionText: "Madrid" },
-        { _id: "a3", optionText: "Paris" },
-        { _id: "a4", optionText: "Rome" },
-      ],
-    },
-    {
-      _id: "q2",
-      questionText:
-        "Choose the correct tense: 'She ___ to the office every day.'",
-      options: [
-        { _id: "b1", optionText: "go" },
-        { _id: "b2", optionText: "goes" },
-        { _id: "b3", optionText: "gone" },
-        { _id: "b4", optionText: "going" },
-      ],
-    },
-    {
-      _id: "q3",
-      questionText: "Which word is a synonym of 'happy'?",
-      options: [
-        { _id: "c1", optionText: "sad" },
-        { _id: "c2", optionText: "joyful" },
-        { _id: "c3", optionText: "angry" },
-        { _id: "c4", optionText: "tired" },
-      ],
-    },
-  ];
-
   // 🔹 Giả lập fetch test
   useEffect(() => {
     if (payloadForm || attemptDetail) {
@@ -120,7 +85,7 @@ const MultilExerciseCustomScreen = ({ navigation }) => {
             setDate(isoString);
 
             console.log("🚀 Custom Test Questions:", res);
-            setQuestions(res);
+            setQuestions({ data: res });
             setLoadingTest(false);
           } catch (error) {
             console.log("🚨 Error fetching test questions:", error);

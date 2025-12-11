@@ -39,6 +39,7 @@ import CertificateDetailScreen from "../screens/Certificate/CertificateDetailMod
 import HistoryTestResultScreen from "../screens/tests/HistoryTestResultScreen";
 import CompletedTestsScreen from "../screens/tests/CompletedTestsScreen";
 import MultilExerciseCustomScreen from "../screens/tests/MultilExerciseCustomScreen";
+import FillExerciseCustomScreen from "../screens/tests/FillExerciseCustomScreen";
 
 // custom navigators
 import AssessmentCustomScreen from "../screens/tests/AssessmentCustomScreen";
@@ -183,6 +184,11 @@ const TestsStackNavigator = () => (
       options={{ title: "Multiple Choice Custom", headerShown: false }}
     />
     <TestsStack.Screen
+      name="FillExerciseCustom"
+      component={FillExerciseCustomScreen}
+      options={{ title: "Fill Exercise Custom", headerShown: false }}
+    />
+    <TestsStack.Screen
       name="TestResults"
       component={TestResultsScreen}
       options={{ title: "Test Results", headerShown: false }}
@@ -286,6 +292,7 @@ const MainNavigator = () => {
             "FillExercise",
             "MultilExercise",
             "MultilExerciseCustom",
+            "FillExerciseCustom",
             "TestResults",
             "AssessmentCustom",
             // ProfileStack

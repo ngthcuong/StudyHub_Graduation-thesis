@@ -339,7 +339,7 @@ const submitAttempt = async (req, res) => {
 
     let certificate = null;
 
-    console.log("Test detail fetched:", testDetail);
+    console.log("Test detail fetched:", testDetail, totalScore);
 
     if (
       (totalScore / testDetail?.numQuestions) * 100 >=
