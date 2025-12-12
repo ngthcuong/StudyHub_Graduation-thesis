@@ -56,6 +56,7 @@ const issueCertificate = async (req, res, next) => {
     // Input validation
     if (!studentId || !courseId) {
       return res.status(400).json({
+        isSuccess: false,
         error: "Missing required fields",
         received: req.body,
         required: ["studentId", "courseId"],
@@ -65,14 +66,23 @@ const issueCertificate = async (req, res, next) => {
     // Use the complete issuance function from model
     const result = await certificateModel.issueCertificate(studentId, courseId);
 
-    return res.status(201).json({
-      isSuccess: true,
-      message: "Certificate issued successfully",
-      data: result,
-    });
+    if (result === null) {
+      return res.status(200).json({
+        isSuccess: false,
+        message: "Certificate already exists for this course",
+        data: result,
+      });
+    } else {
+      return res.status(201).json({
+        isSuccess: true,
+        message: "Certificate issued successfully",
+        data: result,
+      });
+    }
   } catch (error) {
     console.error("Error issuing certificate:", error);
     return res.status(500).json({
+      isSuccess: false,
       error: "Failed to issue certificate",
       details: error.message,
     });
@@ -200,7 +210,7 @@ const getCertificateByCode = async (req, res, next) => {
 
     // 1. Tìm chứng chỉ trong DB
     const mongoCert = await certificateModel.findCertificateByCertCode(
-      certificateCode
+      certificateCode.toUpperCase().trim()
     );
     if (!mongoCert) {
       return res.status(404).json({ error: "Certificate not found" });
