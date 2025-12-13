@@ -52,11 +52,11 @@ const CourseCard = ({ course, variant = "market" }) => {
     handleMenuClose();
   };
 
-  // const handleDetailsClick = (event) => {
-  //   event?.stopPropagation();
-  //   navigate(`/course/${course._id}`);
-  //   handleMenuClose();
-  // };
+  const handleDetailsClick = (event) => {
+    event?.stopPropagation();
+    navigate(`/course/${course._id}`);
+    handleMenuClose();
+  };
 
   const handleReviewModalClose = (event) => {
     event?.stopPropagation();
@@ -257,7 +257,7 @@ const CourseCard = ({ course, variant = "market" }) => {
           </ListItemText>
         </MenuItem>
 
-        {/* <MenuItem
+        <MenuItem
           onClick={(e) => {
             e.stopPropagation();
             handleDetailsClick(e);
@@ -267,7 +267,7 @@ const CourseCard = ({ course, variant = "market" }) => {
             <Info fontSize="small" />
           </ListItemIcon>
           <ListItemText>View Details</ListItemText>
-        </MenuItem> */}
+        </MenuItem>
 
         <MenuItem
           onClick={(e) => {

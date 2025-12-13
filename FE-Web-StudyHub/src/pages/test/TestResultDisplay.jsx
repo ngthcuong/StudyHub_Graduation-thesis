@@ -461,7 +461,7 @@ const TestResultDisplay = () => {
                 </Typography>
 
                 {/* Overall Goal */}
-                {personalized_plan.overall_goal && (
+                {personalized_plan?.overall_goal && (
                   <Card className="mb-4 bg-blue-50 border border-blue-200">
                     <CardContent>
                       <Stack direction="row" alignItems="center" spacing={2}>
@@ -471,7 +471,7 @@ const TestResultDisplay = () => {
                             Overall Goal
                           </Typography>
                           <Typography variant="body2" color="#64748b">
-                            {personalized_plan.overall_goal}
+                            {personalized_plan?.overall_goal}
                           </Typography>
                         </Box>
                       </Stack>
@@ -538,8 +538,8 @@ const TestResultDisplay = () => {
                           </AccordionSummary>
                           <AccordionDetails>
                             {/* Study Methods renamed from "Activities" */}
-                            {week.study_methods &&
-                              week.study_methods.length > 0 && (
+                            {week?.study_methods &&
+                              week?.study_methods?.length > 0 && (
                                 <Box sx={{ mb: 3 }}>
                                   <Typography
                                     variant="subtitle2"
@@ -549,7 +549,7 @@ const TestResultDisplay = () => {
                                     Activities:
                                   </Typography>
                                   <List dense>
-                                    {week.study_methods.map(
+                                    {week?.study_methods?.map(
                                       (method, methodIdx) => (
                                         <ListItem key={methodIdx}>
                                           <ListItemIcon>
@@ -603,8 +603,8 @@ const TestResultDisplay = () => {
                   )}
 
                 {/* Study Methods */}
-                {personalized_plan.study_methods &&
-                  personalized_plan.study_methods.length > 0 && (
+                {personalized_plan?.study_methods &&
+                  personalized_plan?.study_methods.length > 0 && (
                     <Card className="mt-4">
                       <CardContent>
                         <Typography
@@ -615,7 +615,7 @@ const TestResultDisplay = () => {
                           Recommended Study Methods
                         </Typography>
                         <Stack spacing={1}>
-                          {personalized_plan.study_methods.map(
+                          {personalized_plan?.study_methods.map(
                             (method, idx) => (
                               <Card key={idx} variant="outlined">
                                 <CardContent>
@@ -639,7 +639,7 @@ const TestResultDisplay = () => {
                   )}
 
                 {/* Notes */}
-                {personalized_plan.notes && (
+                {personalized_plan?.notes && (
                   <Card className="mt-4 bg-yellow-50 border border-yellow-200">
                     <CardContent>
                       <Typography
@@ -650,7 +650,7 @@ const TestResultDisplay = () => {
                         Important Notes
                       </Typography>
                       <Typography variant="body2" color="#64748b">
-                        {personalized_plan.notes}
+                        {personalized_plan?.notes}
                       </Typography>
                     </CardContent>
                   </Card>

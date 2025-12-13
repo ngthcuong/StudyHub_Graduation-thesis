@@ -4,8 +4,6 @@ const {
 } = require("../controllers/questionController");
 const aiService = require("../configs/aiService");
 
-const aiServiceUrl = process.env.AI_SERVICE_URL;
-
 const generateTestController = async (req, res) => {
   try {
     const {
@@ -96,9 +94,11 @@ const generateTestController = async (req, res) => {
 function transformAIQuestions(aiData, testId, numQuestions) {
   const pointsPerQuestion = parseFloat((10 / numQuestions).toFixed(2)); // tính điểm trên thang 10
 
+  console.log("aiData, testId, numQuestions:", aiData, testId, numQuestions);
+
   return {
     questions: aiData?.map((q) => {
-      const options = q.options.map((opt) => ({
+      const options = q.options?.map((opt) => ({
         optionText: opt,
         isCorrect: opt === q.answer,
       }));
@@ -106,7 +106,7 @@ function transformAIQuestions(aiData, testId, numQuestions) {
       return {
         testId,
         questionText: q.question,
-        questionType: q.type,
+        questionType: mapQuestionTypeToDb(q.type),
         options,
         points: pointsPerQuestion,
         skill: q.skill,
@@ -115,6 +115,19 @@ function transformAIQuestions(aiData, testId, numQuestions) {
       };
     }),
   };
+}
+
+// Hàm ánh xạ loại câu hỏi từ AI sang loại câu hỏi trong DB
+function mapQuestionTypeToDb(aiType) {
+  switch (aiType?.toLowerCase()) {
+    case "mcq":
+      return "multiple_choice";
+    case "fill_in_blank":
+      return "fill_blank";
+    // Thêm các trường hợp khác nếu AI trả về các loại câu hỏi khác
+    default:
+      return "multiple_choice"; // Giá trị mặc định an toàn
+  }
 }
 
 module.exports = {

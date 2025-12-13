@@ -277,8 +277,6 @@ const getAttemptDetailByUserAndTest = async (req, res) => {
       testId
     );
 
-    console.log("detail:", detail);
-
     if (!detail) {
       return res
         .status(404)

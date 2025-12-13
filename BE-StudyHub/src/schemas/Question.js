@@ -44,6 +44,7 @@ const questionSchema = new mongoose.Schema(
         "Listening",
         "Speaking",
         "Writing",
+        "Word Form",
       ],
     },
     topic: [{ type: String, trim: true }],

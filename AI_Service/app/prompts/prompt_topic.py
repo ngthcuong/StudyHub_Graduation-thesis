@@ -2,22 +2,15 @@ def generate_test_prompt(
     topic: str,
     question_types: list = None,
     num_questions: int = 10,
-    exam_type: str = "TOEIC",             # "TOEIC" | "IELTS"
-    score_range: str = None               # e.g. "TOEIC 405-600" | "IELTS 5.5-6.0"
+    exam_type: str = "TOEIC",
+    score_range: str = None
 ):
-    """
-    topic: the overall topic to guide question creation (e.g., "present simple")
-    question_types: ["multiple_choice", "fill_in_blank", "rearrange", "essay"]
-    num_questions: number of questions to generate
-    exam_type: TOEIC | IELTS
-    score_range: exam score range (e.g., TOEIC 405-600, IELTS 6.5-7.0)
-    """
     if question_types is None:
         question_types = ["multiple_choice", "fill_in_blank", "rearrange", "essay"]
 
     types_text = {
         "multiple_choice": "Multiple-choice (4 options)",
-        "fill_in_blank": "Fill in the blank",
+        "fill_in_blank": "Fill in the blank (Word Form with 4 options)", # <--- Cập nhật mô tả
         "rearrange": "Sentence rearrangement",
         "essay": "Essay (short/long)"
     }
@@ -26,35 +19,30 @@ def generate_test_prompt(
 
     return f"""
 You are an English teacher specialized in {exam_type}.
-Generate {num_questions} questions under the general theme "{topic}" (theme is only for guidance).
+Generate {num_questions} questions under the general theme "{topic}".
 The required question types: {chosen_types_text}.
 Target exam level: {exam_type} {score_range}.
 
+IMPORTANT - DISTRIBUTION RULES:
+- You MUST generate a mix of the requested question types (unless only one type was requested).
+
 Requirements for EACH question:
-- Vocabulary, grammar, and complexity must match the learner's {exam_type} {score_range} level:
-  TOEIC:
-    * 10–250 (A1): Very basic, simple sentences. Grammar: be, have, present simple.
-    * 255–400 (A2): Short conversations, past/present simple. Part 1–2 easy.
-    * 405–600 (B1): Emails, short reports. Relative clauses, perfect tenses. More traps in Part 5–6.
-    * 605–780 (B2): Contracts, company notices. Conditionals, passive. More inference.
-    * 785–900 (C1): Nearly all structures, professional vocabulary. Tricky traps, inference questions.
-    * 905–990 (C2): Near-native, complex context. Full traps, high speed.
-  IELTS:
-    * 0–3.5 (A1–A2): Basic vocabulary, struggle in communication. Very short reading/listening, simple sentences in writing.
-    * 4.0–5.0 (B1 low): Can handle familiar situations. Short texts, simple sentences.
-    * 5.5–6.0 (B1–B2): Understand medium texts, basic essays. 3–4 longer passages, limited task 2 writing.
-    * 6.5–7.0 (B2–C1): Academic communication, few grammar mistakes. Academic reading/listening, coherent essays.
-    * 7.5–8.0 (C1): Very strong, minor errors. Academic journals, in-depth essays.
-    * 8.5–9.0 (C2): Expert level, near-native. Any academic/complex content.
-- Field "skill" must be derived from the question type:
-    * multiple_choice → Grammar
-    * fill_in_blank  → Grammar
-    * rearrange      → Grammar
-    * essay          → Writing
-- Field "topic" must be a **list of subtopics/concepts specific to the question itself**, NOT the overall theme.
-- Each question must have a real correct answer (not just "A/B/C/D").
-- Provide a detailed explanation for why the answer is correct/incorrect.
-- If multiple_choice: "options" must be a raw list of answers (no numbering or letters).
+- The **Question** and **Answers** must be in **English**.
+- Vocabulary and grammar must match the learner's {exam_type} {score_range} level.
+- Field "skill" must be derived from the question type.
+
+- **Specific formatting for 'fill_in_blank':**
+    * The blank space MUST be represented by `______` followed immediately by the **base/root form** in parentheses.
+    * Example: "She drives very ______ (careful)..."
+
+- **Explanation:** MUST be written in **Vietnamese**. Keep it concise (under 40 words).
+
+IMPORTANT - JSON STRUCTURE RULES:
+- **"options" field is MANDATORY for ALL question types.**
+- **You MUST provide exactly 4 distinct options strings for every question.**
+    * If `multiple_choice`: Standard A, B, C, D options.
+    * If `fill_in_blank`: Provide the correct answer and 3 incorrect Word Form variations (distractors).
+      (E.g., if answer is "carefully", options could be ["careful", "carefully", "caring", "care"]).
 
 Return ONLY valid JSON in the following format:
 
@@ -64,15 +52,23 @@ Return ONLY valid JSON in the following format:
     {{
       "type": "multiple_choice",
       "skill": "Grammar",
-      "topic": ["<subtopic-for-this-question>"],
-      "question": "...",
-      "options": ["option1", "option2", "option3", "option4"],
-      "answer": "the correct option text",
-      "explanation": "Detailed explanation..."
+      "topic": ["Tenses"],
+      "question": "By the time he arrived, the train ______.",
+      "options": ["left", "has left", "had left", "was leaving"],
+      "answer": "had left",
+      "explanation": "Dùng thì Quá khứ hoàn thành."
     }},
-    ...
+    {{
+      "type": "fill_in_blank",
+      "skill": "Grammar",
+      "topic": ["Adverbs"],
+      "question": "She drives very ______ (careful) on snowy roads.",
+      "options": ["careful", "carefully", "carefulness", "caring"], 
+      "answer": "carefully",
+      "explanation": "Cần trạng từ 'carefully' bổ nghĩa cho động từ 'drives'."
+    }}
   ]
 }}
 
-DO NOT add extra text, DO NOT use markdown.
+DO NOT add extra text.
 """

@@ -5,5 +5,5 @@ python-dotenv
 pydantic
 google-genai
 json_repair
-
+asyncio
 

@@ -591,26 +591,28 @@ const TestResultsScreen = ({ navigation }) => {
                           descriptionStyle={styles.accordionDesc}
                         >
                           {/* Activities/Study Methods */}
-                          {week.study_methods &&
-                            week.study_methods.length > 0 && (
+                          {week?.study_methods &&
+                            week?.study_methods.length > 0 && (
                               <View style={styles.accordionDetail}>
                                 <Text style={styles.detailHeader}>
                                   Activities:
                                 </Text>
-                                {week.study_methods.map((method, methodIdx) => (
-                                  <List.Item
-                                    key={methodIdx}
-                                    title={method}
-                                    left={() => (
-                                      <List.Icon icon="file-document-outline" />
-                                    )}
-                                    titleStyle={styles.listItemTitle}
-                                    style={{
-                                      paddingVertical: 0,
-                                      paddingLeft: 20,
-                                    }}
-                                  />
-                                ))}
+                                {week?.study_methods?.map(
+                                  (method, methodIdx) => (
+                                    <List.Item
+                                      key={methodIdx}
+                                      title={method}
+                                      left={() => (
+                                        <List.Icon icon="file-document-outline" />
+                                      )}
+                                      titleStyle={styles.listItemTitle}
+                                      style={{
+                                        paddingVertical: 0,
+                                        paddingLeft: 20,
+                                      }}
+                                    />
+                                  )
+                                )}
                               </View>
                             )}
 
@@ -665,7 +667,7 @@ const TestResultsScreen = ({ navigation }) => {
                   )}
 
                 {/* Notes */}
-                {personalized_plan.notes && (
+                {personalized_plan?.notes && (
                   <Card
                     style={[
                       styles.planCard,
@@ -675,7 +677,7 @@ const TestResultsScreen = ({ navigation }) => {
                     <Card.Content>
                       <Title style={styles.planTitle}>Important Notes</Title>
                       <Paragraph style={styles.planSubtitle}>
-                        {personalized_plan.notes}
+                        {personalized_plan?.notes}
                       </Paragraph>
                     </Card.Content>
                   </Card>

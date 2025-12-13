@@ -15,16 +15,20 @@ import {
   TextField,
 } from "@mui/material";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   useCreateAttemptMutation,
   useGenerateCustomTestMutation,
+  useGetAttemptByTestAndUserMutation,
   useGetQuestionsByAttemptIdMutation,
+  useGetQuestionsByTestIdMutation,
   useGetTestByIdMutation,
+  useGetTestByTestIdMutation,
   useSubmitTestMutation,
 } from "../../services/testApi";
 import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import { useSelector } from "react-redux";
 
 const learningTips = [
   "Tip: Read carefully before filling blanks.",
@@ -47,8 +51,8 @@ const submissionTips = [
 const FillInBlankTest = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const [date, setDate] = useState(null);
+  const { id: testIdFromCourseTest } = useParams();
+  const user = useSelector((state) => state.auth.user);
 
   const { payloadForm, attemptDetail } = location.state || {};
 
@@ -57,6 +61,10 @@ const FillInBlankTest = () => {
   const [createAttempt] = useCreateAttemptMutation();
   const [submitTestTrigger] = useSubmitTestMutation();
   const [getQuestionsByAttemptId] = useGetQuestionsByAttemptIdMutation();
+  const [getTestByTestId] = useGetTestByTestIdMutation();
+  const [getQuestionsByTestIdTrigger] = useGetQuestionsByTestIdMutation();
+  const [createAttemptTrigger] = useCreateAttemptMutation();
+  const [getAttemptByTestAndUserTrigger] = useGetAttemptByTestAndUserMutation();
   const [logStudySession] = useLogStudySessionMutation();
 
   const [questions, setQuestions] = useState([]);
@@ -65,14 +73,35 @@ const FillInBlankTest = () => {
 
   const [timeLeft, setTimeLeft] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tipIndex, setTipIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [attemptId, setAttemptId] = useState(null);
   const [test, setTest] = useState(null);
   const [submissionTipIndex, setSubmissionTipIndex] = useState(0);
-  const [day, setDay] = useState(null);
+  const [date, setDate] = useState(null);
 
   const routeTestId = payloadForm?.testId;
+
+  useEffect(() => {
+    const fetchTestAndSetDuration = async () => {
+      if (testIdFromCourseTest && timeLeft === null) {
+        try {
+          const res = await getTestByTestId(testIdFromCourseTest).unwrap();
+          setTest(res);
+          const durationMin = res?.data?.durationMin;
+          if (durationMin && durationMin > 0) {
+            setTimeLeft(durationMin * 60);
+          }
+        } catch (error) {
+          console.error("Error fetching test:", error);
+        }
+      }
+    };
+
+    if (testIdFromCourseTest) {
+      fetchTestAndSetDuration();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testIdFromCourseTest]);
 
   useEffect(() => {
     const hasInitialized = localStorage.getItem("test_initialized");
@@ -93,6 +122,7 @@ const FillInBlankTest = () => {
       attemptDetail &&
       attemptDetail?.attemptNumber < attemptDetail?.maxAttempts
     ) {
+      console.log("Resuming existing attempt:", attemptDetail?._id);
       try {
         const now = new Date();
         const isoString = now.toISOString();
@@ -112,14 +142,64 @@ const FillInBlankTest = () => {
         setTest(attemptDetail?.testId);
         setAttemptId(attemptDetail?._id);
         setLoading(false);
-
-        // lấy ngày hiện tại
-        const d = new Date().getDate();
-        setDay(d);
       } catch (error) {
         console.error("Error resuming existing attempt:", error);
       }
+    } else if (testIdFromCourseTest) {
+      try {
+        setLoading(true);
+        const res = await getQuestionsByTestIdTrigger(
+          testIdFromCourseTest
+        ).unwrap();
+        console.log("testIdFromCourseTest:", testIdFromCourseTest);
+        console.log("Starting new test for test ID:", res);
+        setQuestions(res?.data);
+        setAnswersP(
+          res?.data?.map((q) =>
+            q.questionText
+              .split(/_+/g)
+              .slice(0, -1)
+              .map(() => "")
+          )
+        );
+
+        let resAttempt;
+
+        try {
+          resAttempt = await getAttemptByTestAndUserTrigger({
+            testId: testIdFromCourseTest,
+            userId: user?._id,
+          }).unwrap();
+          setAttemptId(resAttempt?.data[0]?._id);
+
+          const now = new Date();
+          const isoString = now.toISOString();
+          setDate(isoString);
+        } catch (error) {
+          console.log("No attempt info found:", error);
+        }
+        if (!resAttempt?.data?.length > 0) {
+          try {
+            const resStartAttempt = await createAttemptTrigger({
+              testId: testIdFromCourseTest,
+              maxAttempts: 10000,
+            }).unwrap();
+            setAttemptId(resStartAttempt.data._id);
+
+            const now = new Date();
+            const isoString = now.toISOString();
+            setDate(isoString);
+          } catch (error) {
+            console.log("No attempt info found:", error);
+          }
+        }
+      } catch (error) {
+        console.error("Error starting test:", error);
+      } finally {
+        setLoading(false);
+      }
     } else {
+      console.log("Generating new custom test for test ID:", routeTestId);
       try {
         setLoading(true);
 
@@ -165,9 +245,6 @@ const FillInBlankTest = () => {
               )
             );
             setLoading(false);
-            // lấy ngày hiện tại
-            const d = new Date().getDate();
-            setDay(d);
           } catch (error) {
             console.error("Error setting test data:", error);
           }
@@ -179,7 +256,7 @@ const FillInBlankTest = () => {
       }
     }
   };
-  console.log("Test data updated:", test?.data?.durationMin);
+
   useEffect(() => {
     if (test?.data?.durationMin) {
       const duration = test?.data?.durationMin;
@@ -295,18 +372,26 @@ const FillInBlankTest = () => {
       }).unwrap();
 
       if (response) {
-        // const past = new Date(startTime);
-        // const now = new Date();
+        const past = new Date(startTime);
+        const now = new Date();
 
-        // const diffMs = now - past;
+        const diffMs = now - past;
 
-        // const diffSeconds = Math.floor(diffMs / 1000);
+        const diffSeconds = Math.floor(diffMs / 1000);
 
-        // await logStudySession({
-        //   day,
-        //   exercises: attemptDetail?.testId?._id,
-        //   durationSeconds: diffSeconds,
-        // }).unwrap();
+        const day = new Date().getDate();
+
+        console.log("Logging study session:", {
+          day,
+          exercises: attemptDetail?.testId?._id || attemptId,
+          durationSeconds: diffSeconds,
+        });
+
+        await logStudySession({
+          day,
+          exercises: attemptDetail?.testId?._id || attemptId,
+          durationSeconds: diffSeconds,
+        }).unwrap();
 
         localStorage.removeItem("test_initialized");
         navigate(`/test/${testId}/result`, {
@@ -484,14 +569,14 @@ const FillInBlankTest = () => {
           </Box>
           {/* ------------------------------------------- */}
 
-          <Fade in={true} timeout={1000} key={tipIndex}>
+          <Fade in={true} timeout={1000} key={0}>
             <Typography
               sx={{
                 color: "#7f8c8d",
                 minHeight: "48px",
               }}
             >
-              {learningTips[tipIndex]}
+              {learningTips[0]}
             </Typography>
           </Fade>
 

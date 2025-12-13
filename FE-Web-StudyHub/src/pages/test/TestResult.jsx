@@ -225,28 +225,42 @@ const TestResult = () => {
     time: timeTaken,
   };
 
+  let counterAnswer = 0;
+
   // Tạo correctAnswers từ mảng `per_question` đã được kết hợp
   const correctAnswers = per_question
     .filter((q) => q && q.correct === true)
-    .map((q) => ({
-      question: q.question, // Sử dụng văn bản câu hỏi thật
-      answer: q.expected_answer || "No answer",
-      time: 0,
-      type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
-      explain: q.explain || "No explanation",
-    }));
+    .map((q) => {
+      const ans = formattedAnswers[counterAnswer];
+      counterAnswer++;
+      return {
+        question: q.question, // Sử dụng văn bản câu hỏi thật
+        answer: q.expected_answer || ans?.userAnswerText || "No answer",
+        time: 0,
+        type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
+        explain: q.explain || "No explanation",
+      };
+    });
 
   // Tạo incorrectAnswers từ mảng `per_question` đã được kết hợp
   const incorrectAnswers = per_question
     .filter((q) => q && q.correct === false)
-    .map((q) => ({
-      question: q.question, // Sử dụng văn bản câu hỏi thật
-      yourAnswer: q.user_answer || "No answer", // Sử dụng câu trả lời thật
-      correctAnswer: q.expected_answer || "No answer",
-      time: 0,
-      type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
-      explain: q.explain || "No explanation",
-    }));
+    .map((q) => {
+      const ans = formattedAnswers[counterAnswer];
+      counterAnswer++;
+      console.log("ans:", q.user_answer);
+      return {
+        question: q.question, // Sử dụng văn bản câu hỏi thật
+        yourAnswer:
+          q?.user_answer === "No Answer"
+            ? ans?.userAnswerText
+            : q?.user_answer || "No Answer", // Sử dụng câu trả lời thật
+        correctAnswer: q.expected_answer || "No answer",
+        time: 0,
+        type: `${q.skill || "Unknown"} - ${q.topic || "Unknown topic"}`,
+        explain: q.explain || "No explanation",
+      };
+    });
 
   const avgTime =
     resultStats.total > 0

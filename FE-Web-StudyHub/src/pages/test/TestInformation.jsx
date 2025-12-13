@@ -133,6 +133,8 @@ const TestInformation = () => {
       return;
     }
 
+    console.log("testInfor:", testInfoState);
+
     // Kiểm tra xem user có currentLevel với key trùng với examType của test hay không
     if (testInfor) {
       if (!user?.currentLevel || !testInfor?.examType) {
@@ -159,11 +161,19 @@ const TestInformation = () => {
         );
         return;
       }
+      if (testInfoState?.questionTypes[0] === "multiple_choice") {
+        navigate(`/test/${testPool?._id || testId}/attempt`, {
+          state: { testId: testPool?._id || testId },
+        });
+      } else if (testInfoState?.questionTypes[0] === "fill_in_blank") {
+        navigate(`/test/${testPool?._id || testId}/fill-in-blank`, {
+          state: {
+            payloadForm: { testId: testPool?._id || testId },
+          },
+        });
+      }
 
       // Nếu có currentLevel phù hợp, bắt đầu làm bài
-      navigate(`/test/${testPool._id || testId}/attempt`, {
-        state: { testId: testPool._id || testId },
-      });
     } else {
       if (!user?.currentLevel || !testInfoState?.examType) {
         dispatch(
@@ -189,10 +199,19 @@ const TestInformation = () => {
         );
         return;
       }
-      // Nếu có currentLevel phù hợp, bắt đầu làm bài
-      navigate(`/test/${testPool._id || testId}/attempt`, {
-        state: { testId: testPool._id || testId },
-      });
+
+      if (testInfoState?.questionTypes[0] === "multiple_choice") {
+        navigate(`/test/${testPool?._id || testId}/attempt`, {
+          state: { testId: testPool?._id || testId },
+        });
+      } else if (testInfoState?.questionTypes[0] === "fill_in_blank") {
+        // Nếu có currentLevel phù hợp, bắt đầu làm bài
+        navigate(`/test/${testPool?._id || testId}/fill-in-blank`, {
+          state: {
+            payloadForm: { testId: testPool?._id || testId },
+          },
+        });
+      }
     }
   };
 
