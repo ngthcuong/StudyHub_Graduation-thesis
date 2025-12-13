@@ -188,7 +188,6 @@ const TestMultipleChoiceCustom = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tipIndex, setTipIndex] = useState(0);
 
   const [submissionTipIndex, setSubmissionTipIndex] = useState(0);
 
@@ -251,28 +250,35 @@ const TestMultipleChoiceCustom = () => {
     setIsSubmitting(true);
     setIsPaused(true);
 
-    const formattedAnswers = answersP.map((selectedOptionId, index) => ({
-      questionId: questions?.data.data[index]._id,
-      selectedOptionId: selectedOptionId,
-    }));
+    const sourceQuestions = questions?.data?.data || [];
 
-    // const past = new Date(date);
-    // const now = new Date();
+    const formattedAnswers = sourceQuestions.map((question, index) => {
+      // Lấy đáp án tương ứng tại vị trí index, nếu không có (undefined/null) thì trả về null
+      const answerForThisQuestion = answersP[index] ? answersP[index] : null;
 
-    // const diffMs = now - past;
+      return {
+        questionId: question._id, // Luôn lấy đúng ID câu hỏi
+        selectedOptionId: answerForThisQuestion, // ID đáp án hoặc null
+      };
+    });
 
-    // const diffSeconds = Math.floor(diffMs / 1000);
+    const past = new Date(date);
+    const now = new Date();
 
-    // console.log("Logging study session with:", {
-    //   exercises: attemptDetail?.testId?._id,
-    //   durationSeconds: diffSeconds,
-    //   day,
-    // });
-    // await logStudySession({
-    //   day,
-    //   exercises: attemptDetail?.testId?._id,
-    //   durationSeconds: diffSeconds,
-    // }).unwrap();
+    const diffMs = now - past;
+
+    const diffSeconds = Math.floor(diffMs / 1000);
+
+    console.log("Logging study session with:", {
+      exercises: attemptDetail?.testId?._id,
+      durationSeconds: diffSeconds,
+      day,
+    });
+    await logStudySession({
+      day,
+      exercises: attemptDetail?.testId?._id,
+      durationSeconds: diffSeconds,
+    }).unwrap();
 
     try {
       const answers = formattedAnswers;
@@ -397,14 +403,14 @@ const TestMultipleChoiceCustom = () => {
           </Box>
           {/* ------------------------------------------- */}
 
-          <Fade in={true} timeout={1000} key={tipIndex}>
+          <Fade in={true} timeout={1000} key={0}>
             <Typography
               sx={{
                 color: "#7f8c8d",
                 minHeight: "48px",
               }}
             >
-              {learningTips[tipIndex]}
+              {learningTips[0]}
             </Typography>
           </Fade>
 

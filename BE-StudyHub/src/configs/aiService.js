@@ -2,27 +2,22 @@
 const axios = require("axios");
 const axiosRetry = require("axios-retry").default;
 
-// Lấy URL từ biến môi trường (hoặc dùng fallback localhost để test)
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
 
-// 1. Tạo instance axios riêng cho AI Service
+// --- PHẦN CẤU HÌNH DÙNG CHUNG (Giữ nguyên) ---
 const aiClient = axios.create({
   baseURL: AI_SERVICE_URL,
-  timeout: 60000, // 60 giây timeout
-  headers: {
-    "Content-Type": "application/json",
-  },
+  timeout: 60000,
+  headers: { "Content-Type": "application/json" },
 });
 
-// 2. Cấu hình Retry (Tự động thử lại khi lỗi)
 axiosRetry(aiClient, {
-  retries: 3, // Thử lại tối đa 3 lần
+  retries: 3,
   retryDelay: (retryCount) => {
-    console.log(`⚠️ Đang thử lại lần thứ ${retryCount}...`);
-    return axiosRetry.exponentialDelay(retryCount); // Chờ: 100ms -> 200ms -> 400ms...
+    console.log(`⚠️ [AI Service] Đang thử lại lần thứ ${retryCount}...`);
+    return axiosRetry.exponentialDelay(retryCount);
   },
   retryCondition: (error) => {
-    // Chỉ retry nếu lỗi mạng hoặc lỗi Server (5xx). Không retry lỗi 4xx.
     return (
       axiosRetry.isNetworkOrIdempotentRequestError(error) ||
       (error.response && error.response.status >= 500)
@@ -30,34 +25,46 @@ axiosRetry(aiClient, {
   },
 });
 
-/**
- * Hàm gọi AI để sinh đề thi
- * @param {Object} aiPayload - Dữ liệu cấu hình đề thi (level, topic, v.v.)
- * @returns {Promise<Object>} - Kết quả JSON từ AI
- */
-const generateTest = async (aiPayload) => {
+// --- HÀM HELPER ĐỂ TRÁNH LẶP CODE (Optional nhưng khuyên dùng) ---
+// Hàm này giúp bạn gọi bất kỳ endpoint nào mà không phải viết lại try/catch log lỗi
+const callAIEndpoint = async (endpoint, payload) => {
   try {
-    console.log("🚀 [AI Service] Đang gửi yêu cầu tới:", AI_SERVICE_URL);
-
-    const response = await aiClient.post("/generate-test-custom", aiPayload);
-
-    // Trả về data gọn gàng
-    return response.data;
+    console.log(`🚀 [AI Service] Calling: ${endpoint}`);
+    const response = await aiClient.post(endpoint, payload);
+    return response;
   } catch (error) {
-    console.error("❌ [AI Service] Thất bại:", error.message);
-
-    // Nếu có response từ server (ví dụ lỗi 400, 500), log chi tiết hơn
+    console.error(`❌ [AI Service] Error calling ${endpoint}:`, error.message);
     if (error.response) {
       console.error("   Status:", error.response.status);
       console.error("   Data:", JSON.stringify(error.response.data));
     }
-
-    // Ném lỗi ra ngoài để Controller xử lý (hoặc trả về null/default data tùy logic của bạn)
     throw error;
   }
 };
 
-// Xuất hàm ra để nơi khác dùng
+// --- CÁC HÀM CHỨC NĂNG ---
+
+/** 1. Tạo đề thi */
+const generateTest = async (aiPayload) => {
+  // Gọi endpoint /generate-test-custom
+  return await callAIEndpoint("/generate-test-custom/", aiPayload);
+};
+
+/** 2. Chấm điểm (Mới thêm vào) */
+const gradeSubmission = async (gradingPayload) => {
+  // Gọi endpoint /grade/
+  return await callAIEndpoint("/grade/", gradingPayload);
+};
+
+/** 2. Tạo bài thi cho courses */
+const generateCourseTest = async (aiPayload) => {
+  // Gọi endpoint /generate-course-test
+  return await callAIEndpoint("/generate-test/", aiPayload);
+};
+
+// --- XUẤT RA CẢ 2 HÀM ---
 module.exports = {
   generateTest,
+  gradeSubmission,
+  generateCourseTest,
 };

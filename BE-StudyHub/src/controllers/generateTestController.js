@@ -2,6 +2,7 @@ const axios = require("axios");
 const {
   createManyQuestionsService,
 } = require("../controllers/questionController");
+const aiService = require("../configs/aiService");
 
 const aiServiceUrl = process.env.AI_SERVICE_URL;
 
@@ -33,7 +34,15 @@ const generateTestController = async (req, res) => {
     });
 
     // Call AI service
-    const response = await axios.post(`${aiServiceUrl}/generate-test/`, {
+    // const response = await axios.post(`${aiServiceUrl}/generate-test/`, {
+    //   topic,
+    //   question_types,
+    //   num_questions,
+    //   exam_type,
+    //   score_range,
+    // });
+
+    const response = await aiService.generateCourseTest({
       topic,
       question_types,
       num_questions,

@@ -6,6 +6,7 @@ const attemptDetailModel = require("../models/attemptDetailModel");
 const questionModel = require("../models/questionModel");
 const testPoolModel = require("../models/testPoolModel");
 const testModel = require("../models/testModel");
+const aiService = require("../configs/aiService");
 
 const StudyStats = require("../schemas/studyStats");
 const StudyLog = require("../schemas/studyLog");
@@ -224,10 +225,12 @@ const submitAttempt = async (req, res) => {
       if (testDetail?.isTheLastTest) {
         gradingPayload.use_gemini = false; // nếu là bài test cuối, ko dùng gemini
       }
-      const response = await axios.post(
-        `${aiServiceUrl}/grade/`,
-        gradingPayload
-      );
+      // const response = await axios.post(
+      //   `${aiServiceUrl}/grade/`,
+      //   gradingPayload
+      // );
+
+      const response = await aiService.gradeSubmission(gradingPayload);
 
       resForTestResult = response?.data || {};
 
@@ -324,18 +327,6 @@ const submitAttempt = async (req, res) => {
       score: totalScore,
       attemptNumber: newAttemptNumber,
     });
-
-    // const updateData = {
-    //   currentLevel: {
-    //     TOEIC:
-    //       extractLevel(resForTestResult?.post_test_level) ||
-    //       extractLevel(resForTestResult?.current_level),
-    //   },
-    // };
-
-    // if (resForTestResult?.post_test_level) {
-    //   await userModel.updateUserById(userId, updateData);
-    // }
 
     let certificate = null;
 

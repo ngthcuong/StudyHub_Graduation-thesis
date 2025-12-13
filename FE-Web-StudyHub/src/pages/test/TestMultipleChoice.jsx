@@ -27,6 +27,7 @@ import {
   useGetTestByTestIdMutation,
   // useUpdateTestPoolMutation,
 } from "../../services/testApi";
+import { useLogStudySessionMutation } from "../../services/StudyStatsApi";
 
 const TestMultipleChoice = () => {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ const TestMultipleChoice = () => {
   const [submitTestTrigger] = useSubmitTestMutation();
   const [getQuestionsByTestIdTrigger] = useGetQuestionsByTestIdMutation();
   const [getTestByTestId] = useGetTestByTestIdMutation();
-  // const [updateTestPoolTrigger] = useUpdateTestPoolMutation();
+  const [logStudySession] = useLogStudySessionMutation();
 
   const startTest = async () => {
     try {
@@ -186,6 +187,26 @@ const TestMultipleChoice = () => {
       questionId: questions?.data[index]._id,
       selectedOptionId: selectedOptionId,
     }));
+
+    // lấy thời gian làm bài
+    const past = new Date(date);
+    const now = new Date();
+    const day = new Date().getDate();
+
+    const diffMs = now - past;
+
+    const diffSeconds = Math.floor(diffMs / 1000);
+
+    console.log("Logging study session with:", {
+      exercises: testId,
+      durationSeconds: diffSeconds,
+      day,
+    });
+    await logStudySession({
+      day,
+      exercises: testId,
+      durationSeconds: diffSeconds,
+    }).unwrap();
 
     console.log("FE payload:", {
       attemptId,

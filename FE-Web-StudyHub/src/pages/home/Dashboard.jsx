@@ -101,7 +101,7 @@ export default function Dashboard() {
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
             }`}
           >
-            Completed Lessons
+            Completed Exercises
           </button>
           <button
             onClick={() => setActiveTab("time")}

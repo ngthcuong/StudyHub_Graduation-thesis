@@ -14,26 +14,28 @@ export default function DailyLessonsChart({ data }) {
     return <p className="text-center text-gray-500">No data.</p>;
   }
 
+  console.log("🚀 DailyLessonsChart received data:", data);
+
   // ✨ Chuyển dữ liệu API → format cho Recharts
   const chartData = Object.values(
     data.reduce((acc, item) => {
       const day = item.day.toString(); // dùng ngày làm key
 
-      // Nếu chưa có ngày này trong accumulator thì khởi tạo
+      // Nếu chưa có ngày này thì khởi tạo
       if (!acc[day]) {
-        acc[day] = { day, lessons: 0 };
+        acc[day] = { day, exercises: 0 };
       }
 
-      // Nếu có trường lessons (tức là bài học), mới cộng vào
-      if (item.lessons) {
-        acc[day].lessons += 1;
+      // Nếu có exercises thì cộng số lượng exercise trong ngày đó
+      if (Array.isArray(item.exercises)) {
+        acc[day].exercises += item.exercises.length;
       }
 
       return acc;
     }, {})
   );
 
-  console.log("🚀 DailyLessonsChart chartData:", chartData);
+  console.log("🚀 Formatted chartData:", chartData);
 
   return (
     <div className="flex justify-center">
@@ -41,16 +43,20 @@ export default function DailyLessonsChart({ data }) {
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
+
             <XAxis dataKey="day" label={{ position: "insideBottom", dy: 10 }} />
+
             <YAxis allowDecimals={false} />
+
             <Tooltip
               formatter={(value, name) =>
-                name === "lessons"
-                  ? [`${value} bài học`, "Bài học hoàn thành"]
-                  : [`${value} bài học`, "Bài học hoàn thành"]
+                name === "exercises"
+                  ? [`${value} bài tập`, "Bài tập đã làm"]
+                  : value
               }
             />
-            <Bar dataKey="lessons" fill="#007bff" name="Bài học hoàn thành" />
+
+            <Bar dataKey="exercises" fill="#007bff" name="Bài tập đã làm" />
           </BarChart>
         </ResponsiveContainer>
       </div>
