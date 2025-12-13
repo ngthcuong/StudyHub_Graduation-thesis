@@ -118,6 +118,26 @@ const getCertificateByStudentId = async (learnerId) => {
 };
 
 /**
+ * Kiểm tra xem sinh viên đã có chứng chỉ của khóa học này chưa
+ * @param {string} studentId - Student ID
+ * @param {string} courseId - Course ID
+ * @returns {Boolean}
+ */
+const checkCertificateExists = async (studentId, courseId) => {
+  try {
+    const existingCertificate = await Certificate.findOne({
+      "student.id": studentId,
+      "course.id": courseId,
+    }).lean();
+
+    return !!existingCertificate;
+  } catch (error) {
+    console.error("Error checking certificate existence:", error);
+    throw new Error("Failed to check certificate existence");
+  }
+};
+
+/**
  * Validate student and course data for certificate issuance
  * @param {string} studentId - Student ID
  * @param {string} courseId - Course ID
@@ -314,10 +334,16 @@ const saveCertificateToDatabase = async (certificateInfo) => {
  * Complete certificate issuance process
  * @param {string} studentId - Student ID
  * @param {string} courseId - Course ID
- * @returns {Promise<Object>} Complete certificate issuance result
+ * @returns {Promise<Object|null>} Certificate data nếu mới cấp, null nếu đã tồn tại
  */
 const issueCertificate = async (studentId, courseId) => {
   try {
+    // Step 0: Check if certificate already exists
+    const certificateExists = await checkCertificateExists(studentId, courseId);
+    if (certificateExists) {
+      return null;
+    }
+
     // Step 1: Validate data
     const { student, course, certCode } = await validateCertificateData(
       studentId,
@@ -439,4 +465,5 @@ module.exports = {
   issueCertificate,
   getAllCertificates,
   signCertificateMetadata,
+  checkCertificateExists,
 };
