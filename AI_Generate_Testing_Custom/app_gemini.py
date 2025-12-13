@@ -136,9 +136,10 @@ Each question must be an object with:
 - level: one of {lr}
 - tags: array of short tags like "present_perfect", "conditionals_type2", "business_vocab"
 - skills: ["grammar"] or ["vocabulary"]
-- text: the question text (for gap, use ____ to mark blank)
-- options: array of options (for mcq) - include 3-5 options
-- answers: array of acceptable answers (for gap) or [correct_option_text] for mcq (do NOT include explanations)
+- text: the question text in English (for gap, use ____ to mark blank)
+- options: array of 4 options in English (for mcq)
+- answers: array of acceptable answers
+- explanation: Detailed explanation in **VIETNAMESE** (Tiếng Việt).
 
 Produce valid JSON ONLY. No commentary.
 """

@@ -2,6 +2,7 @@ const axios = require("axios");
 const {
   createManyQuestionsService,
 } = require("../controllers/questionController");
+const aiService = require("../configs/aiService");
 
 const aiServiceUrl = process.env.AI_SERVICE_URL;
 
@@ -101,10 +102,12 @@ const generateTestCustomController = async (req, res) => {
     // -----------------------------------------------------
     // 4. GỌI DỊCH VỤ AI VỚI CẤU TRÚC MỚI
     // -----------------------------------------------------
-    const aiResponse = await axios.post(
-      `${aiServiceUrl}/generate-test-custom/`, // ✅ Cập nhật Endpoint
-      aiPayload // ✅ Sử dụng Payload mới
-    );
+    // const aiResponse = await axios.post(
+    //   `${aiServiceUrl}/generate-test-custom/`, // ✅ Cập nhật Endpoint
+    //   aiPayload // ✅ Sử dụng Payload mới
+    // );
+
+    const aiResponse = await aiService.generateTest(aiPayload);
 
     // Lấy mảng câu hỏi thực sự (Giả định cấu trúc data trả về vẫn giống cũ)
     const aiData = aiResponse?.data?.data;
