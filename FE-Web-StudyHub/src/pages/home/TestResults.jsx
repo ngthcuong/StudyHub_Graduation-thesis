@@ -130,7 +130,7 @@ const TestResults = () => {
   const paginatedTests = useMemo(() => {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    return filtered.slice(startIndex, endIndex);
+    return filtered.reverse().slice(startIndex, endIndex);
   }, [filtered, page, rowsPerPage]);
 
   // Reset page when filter changes
