@@ -161,6 +161,8 @@ const TestInformation = () => {
         );
         return;
       }
+
+      console.log("testInfor.questionTypes:", testInfor.questionTypes[0]);
       if (testInfoState?.questionTypes[0] === "multiple_choice") {
         navigate(`/test/${testPool?._id || testId}/attempt`, {
           state: { testId: testPool?._id || testId },
@@ -200,6 +202,7 @@ const TestInformation = () => {
         return;
       }
 
+      console.log("testInfor.questionTypes:", testInfoState);
       if (testInfoState?.questionTypes[0] === "multiple_choice") {
         navigate(`/test/${testPool?._id || testId}/attempt`, {
           state: { testId: testPool?._id || testId },
