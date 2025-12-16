@@ -231,8 +231,11 @@ const TestResult = () => {
   const correctAnswers = per_question
     .filter((q) => q && q.correct === true)
     .map((q) => {
-      const ans = formattedAnswers[counterAnswer];
-      counterAnswer++;
+      let ans = null;
+      if (formattedAnswers) {
+        ans = formattedAnswers[counterAnswer];
+        counterAnswer++;
+      }
       return {
         question: q.question, // Sử dụng văn bản câu hỏi thật
         answer: q.expected_answer || ans?.userAnswerText || "No answer",
@@ -246,8 +249,11 @@ const TestResult = () => {
   const incorrectAnswers = per_question
     .filter((q) => q && q.correct === false)
     .map((q) => {
-      const ans = formattedAnswers[counterAnswer];
-      counterAnswer++;
+      let ans = null;
+      if (formattedAnswers) {
+        ans = formattedAnswers[counterAnswer];
+        counterAnswer++;
+      }
       console.log("ans:", q.user_answer);
       return {
         question: q.question, // Sử dụng văn bản câu hỏi thật

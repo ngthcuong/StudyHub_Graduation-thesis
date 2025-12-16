@@ -200,10 +200,11 @@ const getTestStatistics = async (req, res) => {
           if (isCustomTest) {
             if (test.createdBy) {
               const creator = await User.findById(test.createdBy)
-                .select("fullName currentLevel")
+                .select("_id fullName currentLevel")
                 .lean();
               if (creator) {
                 creatorInfo = {
+                  id: creator._id.toString(),
                   fullName: creator.fullName,
                   currentLevel: creator.currentLevel || {},
                 };

@@ -347,7 +347,9 @@ const submitAttempt = async (req, res) => {
       testDetail.isTheLastTest &&
       testDetail?.courseId
     ) {
+      console.log("Issuing certificate for user:", userId);
       certificate = await issueCertificate(userId, testDetail?.courseId);
+      console.log("Certificate issued:", certificate);
     } else if (!testDetail?.courseId) {
       console.warn("Cannot issue certificate: courseId is missing.");
     }

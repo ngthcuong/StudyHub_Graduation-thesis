@@ -515,7 +515,7 @@ const TestMultipleChoice = () => {
                         scrollbarWidth: "thin",
                       }}
                     >
-                      {current + 1}. {questions?.data[current].questionText}
+                      {current + 1}. {questions?.data[current]?.questionText}
                     </Typography>
 
                     {/* Danh sách đáp án */}
