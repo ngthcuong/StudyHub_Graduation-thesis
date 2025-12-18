@@ -44,6 +44,8 @@ import PaymentFailedPage from "../components/PaymentFailedPage";
 import CancelPaymentPage from "../components/CancelPaymentPage";
 import Courses from "../pages/Courses";
 import ViewCertificatePage from "../pages/certificate/ViewCertificatePage";
+import Test from "../pages/admin/Test";
+import TestResultEdit from "../pages/test/TestResultEdit";
 
 export const router = createBrowserRouter([
   {
@@ -130,6 +132,10 @@ export const router = createBrowserRouter([
               {
                 path: "review",
                 element: <AdminReview />,
+              },
+              {
+                path: "test/results/:attemptId",
+                element: <TestResultEdit />,
               },
               { path: "course", element: <AdminCourse /> },
               { path: "user", element: <AdminUser /> },

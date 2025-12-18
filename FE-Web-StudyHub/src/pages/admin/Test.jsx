@@ -58,10 +58,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import SnackBar from "../../components/Snackbar";
 import { useSelector, useDispatch } from "react-redux";
 import { openSnackbar } from "../../redux/slices/snackbar";
-// Import dayjs để format ngày tháng (cần cài: npm install dayjs)
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const Test = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -186,8 +187,6 @@ const Test = () => {
     }
 
     try {
-      console.log("Viewing history for test:", test.title);
-
       const res = await getAttemptDetailByUserAndTest({
         userId: test.creatorInfo.id,
         testId: test.id,
@@ -853,8 +852,14 @@ const Test = () => {
                             color="primary"
                             size="small"
                             onClick={() => {
-                              console.log("Xem chi tiết attempt:", item);
-                              // Gọi hàm xử lý mở modal chi tiết tại đây
+                              navigate(
+                                `/admin/test/results/${item?.attemptId?._id}`,
+                                {
+                                  state: {
+                                    resultData: item,
+                                  },
+                                }
+                              );
                             }}
                           >
                             <VisibilityIcon fontSize="small" />

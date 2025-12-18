@@ -27,8 +27,9 @@ const getAttemptDetailByAttemptId = async (attemptId) => {
 
 // Cập nhật AttemptDetail theo attemptId
 const updateAttemptDetailByAttemptId = async (attemptId, updateData) => {
+  const { _id, ...cleanData } = updateData;
   try {
-    return await AttemptDetail.findOneAndUpdate({ attemptId }, updateData, {
+    return await AttemptDetail.findOneAndUpdate({ _id: attemptId }, cleanData, {
       new: true,
     });
   } catch (error) {

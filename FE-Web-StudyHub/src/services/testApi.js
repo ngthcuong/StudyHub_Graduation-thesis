@@ -299,6 +299,15 @@ export const testApi = rootApi.injectEndpoints({
       }),
       invalidatesTags: ["Test"],
     }),
+
+    updateAttemptDetail: builder.mutation({
+      query: ({ attemptDetailId, updateData }) => ({
+        url: `/attempt-details/${attemptDetailId}`,
+        method: "PUT",
+        body: updateData,
+      }),
+      invalidatesTags: ["AttemptDetail"],
+    }),
   }),
 });
 
@@ -334,6 +343,7 @@ export const {
   useGetQuestionsByAttemptIdMutation,
   useUpdateAttemptMutation,
   useDeleteTestMutation,
+  useUpdateAttemptDetailMutation,
 } = testApi;
 
 export default testApi;
