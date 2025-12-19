@@ -79,8 +79,6 @@ const TestResultEdit = () => {
   const rawResultData = location?.state?.resultData;
   const formattedAnswers = location?.state?.formattedAnswers;
 
-  console.log("Received result data:", rawResultData);
-
   const [tab, setTab] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -183,19 +181,39 @@ const TestResultEdit = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const updatePayload = { analysisResult: editFormData };
+      // 1. Tạo biến chứa dữ liệu mới nhất ngay tại đây
+      const updatedAnalysisResult = editFormData;
+
+      // Tạo object resultData mới bằng cách gộp data cũ và data mới sửa
+      const newResultData = {
+        ...resultData,
+        analysisResult: updatedAnalysisResult,
+      };
+
+      // Payload cho API 1
+      const updatePayload = { analysisResult: updatedAnalysisResult };
       const targetAttemptId = resultData.attemptId._id;
+
+      // Gọi API 1 (Update Attempt)
       await updateAttempt({
         attemptId: targetAttemptId,
         updateData: updatePayload,
       }).unwrap();
 
-      setResultData((prev) => ({ ...prev, analysisResult: editFormData }));
+      // Cập nhật State (để UI hiển thị)
+      setResultData(newResultData);
 
+      // Log ra biến cục bộ mới tạo (sẽ thấy giá trị mới)
+      console.log("New resultData:", newResultData);
+
+      // Gọi API 2 (Update Attempt Detail)
+      // ✅ SỬA: Dùng newResultData thay vì resultData (vì resultData vẫn là cũ)
       const attemptDetail = await updateAttemptDetail({
-        attemptDetailId: resultData?._id,
-        updateData: resultData,
+        attemptDetailId: resultData?._id, // ID thì không đổi nên dùng cái cũ được
+        updateData: newResultData, // Dùng data mới nhất vừa tạo
       }).unwrap();
+
+      console.log("Attempt detail updated:", attemptDetail);
 
       setIsEditing(false);
       setSnackbarMessage("Feedback updated successfully!");
@@ -957,13 +975,30 @@ const TestResultEdit = () => {
                               type="number"
                               label="Hours"
                               value={week.hours}
-                              onChange={(e) =>
-                                handleWeeklyGoalChange(
-                                  idx,
-                                  "hours",
-                                  Number(e.target.value)
-                                )
-                              }
+                              inputProps={{ min: 1 }}
+                              onKeyDown={(e) => {
+                                if (e.key === "-" || e.key === "e") {
+                                  e.preventDefault();
+                                }
+                              }}
+                              onChange={(e) => {
+                                const val = e.target.value;
+
+                                // Nếu user xóa sạch ô input (rỗng), cho phép rỗng để họ gõ số mới
+                                if (val === "") {
+                                  handleWeeklyGoalChange(idx, "hours", "");
+                                  return;
+                                }
+
+                                const numVal = Number(val);
+
+                                // Nếu nhập 0 hoặc số âm (dù đã chặn phím nhưng cứ check cho chắc) -> ép về 1
+                                if (numVal < 1) {
+                                  handleWeeklyGoalChange(idx, "hours", 1);
+                                } else {
+                                  handleWeeklyGoalChange(idx, "hours", numVal);
+                                }
+                              }}
                               sx={{ width: 80, bgcolor: "white" }}
                             />
                           </Stack>

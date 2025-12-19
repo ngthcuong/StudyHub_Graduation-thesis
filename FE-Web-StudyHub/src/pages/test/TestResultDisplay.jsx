@@ -647,7 +647,7 @@ const TestResultDisplay = () => {
                         fontWeight={700}
                         sx={{ mb: 1 }}
                       >
-                        Important Notes
+                        Important Notes (Teacher)
                       </Typography>
                       <Typography variant="body2" color="#64748b">
                         {personalized_plan?.notes}
