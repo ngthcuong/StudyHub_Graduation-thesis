@@ -63,6 +63,7 @@ import { useNavigate } from "react-router-dom";
 
 const Test = () => {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -176,6 +177,7 @@ const Test = () => {
 
   // --- XỬ LÝ KHI BẤM NÚT EDIT ---
   const handleEditClick = async (test) => {
+    console.log("Clicked Edit for Test:", test, "user", user);
     if (!test?.creatorInfo?.id) {
       dispatch(
         openSnackbar({
@@ -659,20 +661,22 @@ const Test = () => {
 
                         {/* ACTIONS COLUMN */}
                         <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
-                          <Tooltip title="View Attempt History">
-                            <IconButton
-                              size="small"
-                              sx={{
-                                color: "#f59e0b",
-                                "&:hover": { backgroundColor: "#fef3c7" },
-                                mr: 0.5,
-                              }}
-                              onClick={() => handleEditClick(test)}
-                            >
-                              {/* SỬ DỤNG ICON EDIT HOẶC HISTORY TÙY Ý */}
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                          {!test.courseInfo && (
+                            <Tooltip title="View Attempt History">
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  color: "#f59e0b",
+                                  "&:hover": { backgroundColor: "#fef3c7" },
+                                  mr: 0.5,
+                                }}
+                                onClick={() => handleEditClick(test)}
+                              >
+                                {/* SỬ DỤNG ICON EDIT HOẶC HISTORY TÙY Ý */}
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                           <Tooltip title="Delete test">
                             <IconButton
                               size="small"

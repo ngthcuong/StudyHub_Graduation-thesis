@@ -18,6 +18,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   LinearProgress,
+  Grid,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -478,6 +479,162 @@ const TestResultDisplay = () => {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Progress Speed */}
+                <Card className="mb-4 bg-green-50 border border-green-200">
+                  <CardContent>
+                    <Stack direction="column" spacing={2}>
+                      {/* Header */}
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <ScheduleIcon color="success" />
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Progress Speed
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color:
+                                personalized_plan?.progress_speed?.category ===
+                                "accelerating"
+                                  ? "green"
+                                  : personalized_plan?.progress_speed
+                                      ?.category === "steady"
+                                  ? "orange"
+                                  : "red",
+                              fontWeight: 600,
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {personalized_plan?.progress_speed?.category ||
+                              "N/A"}
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      {/* Description */}
+                      <Typography variant="body2" color="text.secondary">
+                        {personalized_plan?.progress_speed?.description}
+                      </Typography>
+
+                      {/* Trend Section */}
+                      <Box
+                        sx={{
+                          borderLeft: "4px solid #22c55e",
+                          pl: 2,
+                          py: 1,
+                          backgroundColor: "#f9fafb",
+                          borderRadius: 2,
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={600}
+                          gutterBottom
+                        >
+                          Performance Trend
+                        </Typography>
+
+                        <Typography variant="body2" color="text.secondary">
+                          Past Tests:{" "}
+                          <strong>
+                            {
+                              personalized_plan?.progress_speed?.trend
+                                ?.past_tests
+                            }
+                          </strong>
+                        </Typography>
+
+                        <Typography variant="body2" color="text.secondary">
+                          Accuracy Growth Rate:{" "}
+                          <strong>
+                            {
+                              personalized_plan?.progress_speed?.trend
+                                ?.accuracy_growth_rate
+                            }
+                            %
+                          </strong>
+                        </Typography>
+
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          mt={1}
+                        >
+                          Consistency Index:{" "}
+                          <strong>
+                            {
+                              personalized_plan?.progress_speed?.trend
+                                ?.consistency_index
+                            }
+                          </strong>
+                        </Typography>
+
+                        {/* Strong & Weak Skills */}
+                        <Grid container spacing={1} mt={1}>
+                          <Grid item xs={12} md={6}>
+                            <Typography variant="body2" fontWeight={600}>
+                              Strong Skills:
+                            </Typography>
+                            <ul className="list-disc pl-5 text-sm text-gray-600">
+                              {personalized_plan?.progress_speed?.trend?.strong_skills
+                                ?.slice(0, 5)
+                                .map((skill, idx) => (
+                                  <li key={idx}>{skill}</li>
+                                ))}
+                            </ul>
+                          </Grid>
+
+                          <Grid item xs={12} md={6}>
+                            <Typography variant="body2" fontWeight={600}>
+                              Weak Skills:
+                            </Typography>
+                            <ul className="list-disc pl-5 text-sm text-gray-600">
+                              {personalized_plan?.progress_speed?.trend?.weak_skills
+                                ?.slice(0, 5)
+                                .map((skill, idx) => (
+                                  <li key={idx}>{skill}</li>
+                                ))}
+                            </ul>
+                          </Grid>
+                        </Grid>
+                      </Box>
+
+                      {/* Predicted Weeks */}
+                      <Typography variant="body2" color="text.secondary">
+                        Predicted Weeks to Reach Next Level:{" "}
+                        <strong>
+                          {
+                            personalized_plan?.progress_speed
+                              ?.predicted_reach_next_level_weeks
+                          }
+                        </strong>
+                      </Typography>
+
+                      {/* Recommendation */}
+                      <Box
+                        sx={{
+                          mt: 1,
+                          p: 2,
+                          borderRadius: 2,
+                          backgroundColor: "#f0fdf4",
+                          border: "1px solid #bbf7d0",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={600}
+                          color="green"
+                        >
+                          Recommendation
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {personalized_plan?.progress_speed?.recommendation}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
 
                 {/* General Recommendations */}
                 {recommendations.length > 0 && (
