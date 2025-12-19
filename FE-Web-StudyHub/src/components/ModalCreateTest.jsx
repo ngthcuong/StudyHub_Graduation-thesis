@@ -31,12 +31,14 @@ import * as yup from "yup";
 import {
   useCreateTestMutation,
   useGenerateTestQuestionsMutation,
+  useUpdateManyQuestionsMutation,
 } from "../services/testApi";
 import { useGetCoursesQuery } from "../services/courseApi";
 import {
   useGetLessonsByCourseIdMutation,
   useAddTestToLessonMutation,
 } from "../services/grammarLessonApi";
+import ReviewQuestionsModal from "./ReviewQuestionsModal";
 
 const grammarTopics = [
   { value: "Tenses - Present Simple", label: "Tenses - Present Simple" },
@@ -219,6 +221,7 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
     isLoading: coursesLoading,
     error: coursesError,
   } = useGetCoursesQuery();
+  const [updateManyQuestions] = useUpdateManyQuestionsMutation();
 
   const [lessons, setLessons] = useState([]);
   const [lessonsLoading, setLessonsLoading] = useState(false);
@@ -228,6 +231,9 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [createdTestData, setCreatedTestData] = useState(null);
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState([]);
 
   const {
     control,
@@ -372,9 +378,20 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
         score_range: scoreRange,
       };
 
-      await generateQuestions(questionData).unwrap();
+      const questionGen = await generateQuestions(questionData).unwrap();
 
-      handleCloseModal();
+      if (questionGen && questionGen?.data) {
+        setGeneratedQuestions(questionGen?.data);
+
+        // 2. Mở Modal Review thay vì đóng Modal Create
+        setReviewModalOpen(true);
+
+        // Tắt loading của form tạo
+        setIsProcessing(false);
+      } else {
+        // Trường hợp API không trả về data đúng format
+        handleCloseModal();
+      }
     } catch (error) {
       console.error("Error in test creation process:", error);
       setIsProcessing(false);
@@ -400,6 +417,38 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
     setCreatedTestData(null);
     setIsProcessing(false);
     onClose();
+  };
+
+  const handleReviewSave = async (updatedQuestions) => {
+    try {
+      setIsProcessing(true);
+
+      // LOGIC CẬP NHẬT:
+      // Vì API generateQuestions của bạn log ra là "questions saved successfully",
+      // nghĩa là câu hỏi ĐÃ nằm trong DB rồi.
+      // Bây giờ bạn cần gọi API để UPDATE lại nội dung vừa sửa.
+
+      console.log("Updating questions to DB:", updatedQuestions);
+
+      // Ví dụ gọi API (bạn cần implement API này):
+      await updateManyQuestions(updatedQuestions).unwrap();
+
+      // Hoặc nếu bạn chưa có API update bulk, bạn có thể loop để update từng câu (không khuyến khích nhưng chạy tạm được)
+      /*
+      for (const q of updatedQuestions) {
+         await updateQuestion({ id: q._id, body: q }); 
+      }
+      */
+
+      // Sau khi lưu xong
+      setReviewModalOpen(false);
+      handleCloseModal(); // Đóng tất cả và reset form
+      if (onSuccess) onSuccess(); // Refresh lại danh sách ở màn hình chính
+    } catch (error) {
+      console.error("Failed to update reviewed questions", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -1383,6 +1432,13 @@ const ModalCreateTest = ({ open, onClose, onSuccess }) => {
           </Alert>
         </DialogContent>
       </Dialog>
+
+      <ReviewQuestionsModal
+        open={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        questionsData={generatedQuestions}
+        onSave={handleReviewSave}
+      />
     </>
   );
 };

@@ -300,6 +300,7 @@ export const testApi = rootApi.injectEndpoints({
       invalidatesTags: ["Test"],
     }),
 
+    // 32. updateAttemptDetail
     updateAttemptDetail: builder.mutation({
       query: ({ attemptDetailId, updateData }) => ({
         url: `/attempt-details/${attemptDetailId}`,
@@ -307,6 +308,25 @@ export const testApi = rootApi.injectEndpoints({
         body: updateData,
       }),
       invalidatesTags: ["AttemptDetail"],
+    }),
+
+    // 33. updateManyQuestions
+    updateManyQuestions: builder.mutation({
+      query: (questionsData) => ({
+        url: `/questions/update-bulk`,
+        method: "PUT",
+        body: questionsData,
+      }),
+      invalidatesTags: ["Question"],
+    }),
+
+    // 34. Delete question by ID
+    deleteQuestionById: builder.mutation({
+      query: (questionId) => ({
+        url: `/questions/${questionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Question"],
     }),
   }),
 });
@@ -344,6 +364,8 @@ export const {
   useUpdateAttemptMutation,
   useDeleteTestMutation,
   useUpdateAttemptDetailMutation,
+  useUpdateManyQuestionsMutation,
+  useDeleteQuestionByIdMutation,
 } = testApi;
 
 export default testApi;

@@ -88,6 +88,31 @@ const findQuestionsByAttemptId = async (attemptId) => {
   }
 };
 
+const updateManyQuestions = async (questionsData) => {
+  try {
+    // Tạo danh sách các thao tác update
+    const operations = questionsData.map((question) => {
+      // Tách _id ra để dùng làm filter, phần còn lại là data update
+      const { _id, ...updateData } = question;
+
+      return {
+        updateOne: {
+          filter: { _id: _id },
+          update: { $set: updateData }, // $set sẽ cập nhật các trường có trong updateData
+        },
+      };
+    });
+
+    if (operations.length === 0) return { matchedCount: 0, modifiedCount: 0 };
+
+    // Thực thi bulkWrite
+    return await Question.bulkWrite(operations);
+  } catch (error) {
+    console.error("Error updating multiple questions:", error);
+    throw new Error("Failed to update multiple questions");
+  }
+};
+
 module.exports = {
   createQuestion,
   createManyQuestions,
@@ -98,4 +123,5 @@ module.exports = {
   findQuestionsByIds,
   findQuestionsByTestLevelAndCreator,
   findQuestionsByAttemptId,
+  updateManyQuestions,
 };

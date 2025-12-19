@@ -286,6 +286,44 @@ const getQuestionsByAttemptId = async (req, res) => {
   }
 };
 
+const updateManyQuestions = async (req, res) => {
+  try {
+    const questionsToUpdate = req.body;
+
+    console.log("Received questions for bulk update:", questionsToUpdate);
+
+    // 1. Validate đầu vào
+    if (!Array.isArray(questionsToUpdate) || questionsToUpdate.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Input must be a non-empty array of questions" });
+    }
+
+    // Kiểm tra xem các item có _id không
+    const isValid = questionsToUpdate.every((q) => q._id);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ error: "All questions must have an '_id' field for update" });
+    }
+
+    // 2. Gọi Model
+    const result = await questionModel.updateManyQuestions(questionsToUpdate);
+
+    // 3. Trả về kết quả
+    res.status(200).json({
+      message: "Bulk update completed",
+      data: {
+        matched: result.matchedCount, // Số lượng tìm thấy
+        modified: result.modifiedCount, // Số lượng thực tế đã thay đổi
+      },
+    });
+  } catch (error) {
+    console.error("Error in bulk update questions:", error);
+    res.status(500).json({ error: "Failed to update multiple questions" });
+  }
+};
+
 module.exports = {
   createQuestion,
   createManyQuestions,
@@ -296,4 +334,5 @@ module.exports = {
   getQuestionsByTestLevelAndCreator,
   getQuestionsByAttemptId,
   createManyQuestionsService,
+  updateManyQuestions,
 };
