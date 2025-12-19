@@ -720,9 +720,152 @@ const Test = () => {
                                 Test Information
                               </Typography>
                               {/* (Giữ nguyên code phần hiển thị thông tin chi tiết) */}
-                              <Typography variant="body2">
-                                Details about {test.title}...
-                              </Typography>
+                              {!test.courseId ||
+                              test.courseId === "000000000000000000000000" ? (
+                                <Box>
+                                  {test.creatorInfo ? (
+                                    <Table size="small">
+                                      <TableBody>
+                                        <TableRow>
+                                          <TableCell
+                                            sx={{
+                                              fontWeight: 600,
+                                              width: "30%",
+                                            }}
+                                          >
+                                            Test name:
+                                          </TableCell>
+                                          <TableCell>{test.title}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                          <TableCell
+                                            sx={{
+                                              fontWeight: 600,
+                                              width: "30%",
+                                            }}
+                                          >
+                                            Creator Name:
+                                          </TableCell>
+                                          <TableCell>
+                                            {test.creatorInfo.fullName}
+                                          </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                          <TableCell
+                                            sx={{
+                                              fontWeight: 600,
+                                              width: "30%",
+                                            }}
+                                          >
+                                            Current Level:
+                                          </TableCell>
+                                          <TableCell>
+                                            <Box
+                                              sx={{ display: "flex", gap: 1 }}
+                                            >
+                                              {test.creatorInfo.currentLevel
+                                                ?.TOEIC && (
+                                                <Chip
+                                                  label={`TOEIC: ${test.creatorInfo.currentLevel.TOEIC}`}
+                                                  size="small"
+                                                  sx={{
+                                                    backgroundColor: "#dbeafe",
+                                                    color: "#1976d2",
+                                                    fontWeight: 500,
+                                                  }}
+                                                />
+                                              )}
+                                              {test.creatorInfo.currentLevel
+                                                ?.IELTS && (
+                                                <Chip
+                                                  label={`IELTS: ${test.creatorInfo.currentLevel.IELTS}`}
+                                                  size="small"
+                                                  sx={{
+                                                    backgroundColor: "#fef3c7",
+                                                    color: "#f59e0b",
+                                                    fontWeight: 500,
+                                                  }}
+                                                />
+                                              )}
+                                              {!test.creatorInfo.currentLevel
+                                                ?.TOEIC &&
+                                                !test.creatorInfo.currentLevel
+                                                  ?.IELTS && (
+                                                  <Typography
+                                                    variant="body2"
+                                                    sx={{ color: "#6b7280" }}
+                                                  >
+                                                    Not set
+                                                  </Typography>
+                                                )}
+                                            </Box>
+                                          </TableCell>
+                                        </TableRow>
+                                      </TableBody>
+                                    </Table>
+                                  ) : (
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: "#6b7280" }}
+                                    >
+                                      Creator information not available
+                                    </Typography>
+                                  )}
+                                </Box>
+                              ) : (
+                                <Box>
+                                  {test.courseInfo ? (
+                                    <Table size="small">
+                                      <TableBody>
+                                        <TableRow>
+                                          <TableCell
+                                            sx={{
+                                              fontWeight: 600,
+                                              width: "30%",
+                                            }}
+                                          >
+                                            Test name:
+                                          </TableCell>
+                                          <TableCell>{test.title}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                          <TableCell
+                                            sx={{
+                                              fontWeight: 600,
+                                              width: "30%",
+                                            }}
+                                          >
+                                            Course Name:
+                                          </TableCell>
+                                          <TableCell>
+                                            {test.courseInfo.courseTitle}
+                                          </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                          <TableCell
+                                            sx={{
+                                              fontWeight: 600,
+                                              width: "30%",
+                                            }}
+                                          >
+                                            Lesson Name:
+                                          </TableCell>
+                                          <TableCell>
+                                            {test.courseInfo.lessonTitle}
+                                          </TableCell>
+                                        </TableRow>
+                                      </TableBody>
+                                    </Table>
+                                  ) : (
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: "#6b7280" }}
+                                    >
+                                      Course information not available
+                                    </Typography>
+                                  )}
+                                </Box>
+                              )}
                             </Box>
                           </Collapse>
                         </TableCell>
